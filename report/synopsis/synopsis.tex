@@ -47,11 +47,25 @@ Jesper Reenberg (jesper.reenberg@gmail.com)}
 \section{Project definition}
 
 Programs written in declarative programming languages has a wide veracity of
-advantages that makes them specially souted  for quick and correct statical
+advantages that makes them specially souted for quick and correct statical
 analysis.
 
+\fixme{hvilke?}
+
 The purpose of this project is to take advantages of the above to do semi
-automatic refactoring
+automatic refactoring of the source code by means of different hard coded
+plugins. One of the simplest plugins would do renaming of variable and function
+names based on scope. This can then be extended to another plugin that given two
+finite sets P (``patterns'') and C (``code'') of function definitions will
+return a series of propositions for refactoring the code C. Such a proposition
+is a set, F, of declarations such that a subset of F has the same signature as
+C but to more extend uses declarations that shares syntax tree with declarations
+from P.
+
+
+
+\fixme{bør andre typer plugins nævnes? Disse kan jo evt blot pilles væk i
+  afgrænsningen}
 
 
 
