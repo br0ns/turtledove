@@ -70,14 +70,14 @@ with declarations from $P$.
   afgrænsningen}
 
 
-\begin{quotation}
-  Programmer i deklarative programmeringssprog har en række fordele, som gør dem
-  særdeles velegnet til hurtig og korrekt statisk analyse.
-
-  Formålet med denne opgave er at udnytte ovenstående til at foretage
-  halvautomatiske refaktoreringer, som kun vanskeligt kan benyttes (eller
-  sjældent er relevante) i øvrige sprog.
-\end{quotation}
+%\begin{quotation}
+%  Programmer i deklarative programmeringssprog har en række fordele, som gør dem
+%  særdeles velegnet til hurtig og korrekt statisk analyse.
+%
+%  Formålet med denne opgave er at udnytte ovenstående til at foretage
+%  halvautomatiske refaktoreringer, som kun vanskeligt kan benyttes (eller
+%  sjældent er relevante) i øvrige sprog.
+%\end{quotation}
 
 \section{Elaboration}
 
@@ -87,15 +87,15 @@ The target audience for this tool is novice programmers in functional
 programming languages who is not used to work with the programming patterns
 and -templates from this paradime. 
 
-\begin{quotation}
-  Målgruppen for det udviklede værktøj er novicer i funktionsprogrammering, som
-  ikke er vant til at benytte de særlige programmeringsmønstre og -skabeloner
-  fra dette paradigme.
-\end{quotation}
+% \begin{quotation}
+%   Målgruppen for det udviklede værktøj er novicer i funktionsprogrammering, som
+%   ikke er vant til at benytte de særlige programmeringsmønstre og -skabeloner
+%   fra dette paradigme.
+% \end{quotation}
 
 
 
-\subsection{Implementering}
+\subsection{Implementation}
 We focus on creating a tool that will be easy to extend in the future. The tool consists of two
 parts; a package for Emacs that is responsible for doing all communication with the programmer, and
 a program that implement the actual tool(s). The communication will be done in JSON, for simplicity
@@ -109,7 +109,7 @@ is supply means for adding and removing files and for writing project files back
 \item[Parser.] Virtually every tool that does some analysis on source code need the source code to
 be represented as a syntax tree. The parser creates syntax trees from source files. The least amount
 of work to be done is to create concrete syntax trees that exactly describe the source text. Further
-analysis can be done to f.ex. obtain type information or remove derived forms (e.g. syntactic
+analysis can be done to for example obtain type information or remove derived forms (e.g., syntactic
 sugar).
 \item[The tools.] When the source text has been preprocessed the actual tools can work on it. The
 tools can then make suggestions that will be sent to the user.
@@ -119,6 +119,11 @@ Apart from the above the parts need to be tied together and communication with t
 of.
 
 
+
+
+
+\subsubsection{Thoughts about implementation:}
+\fixme{this needs to be merged into the synopsis.}
 \begin{itemize}
 \item Datastrukturer i flow ned igennem, skal bygge videre og ikke smide noget
   data væk.
@@ -145,7 +150,7 @@ of.
 \end{enumerate}
 
 \section{Afgrænsninger}
-
+\fixme{change title to english.}
 
 \begin{enumerate}
 \item There will not be developed a \textit{.CM}-file parser to the
@@ -222,7 +227,7 @@ of.
 \fixme{her kommer en tidstabel}
 
 \chapter{Flow diagram}
-
+\fixme{Make diagram bigger and still fit on page}
 \includegraphics[width=0.9\textwidth]{../drawings/flow}
 
 
