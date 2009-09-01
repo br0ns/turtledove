@@ -9,9 +9,9 @@
 \usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
 
 
-\renewcommand{\ttdefault}{pcr} % Bedre typewriter font
-%\usepackage[sc]{mathpazo}     % Palatino font
-\renewcommand{\rmdefault}{ugm} % Garamond
+%% \renewcommand{\ttdefault}{pcr} % Bedre typewriter font
+%% %\usepackage[sc]{mathpazo}     % Palatino font
+%% \renewcommand{\rmdefault}{ugm} % Garamond
 \usepackage[garamond]{mathdesign}
 
 %\overfullrule=5pt
@@ -25,8 +25,8 @@
 
 \title{Synopsis}
 
-\author{Johan Brinch (Zerrez@gmail.com), \\
-Morten Brøns-Pedersen (mortenbp@gmail.com) \\ og
+\author{Johan Brinch (zerrez@gmail.com) \and
+Morten Brøns-Pedersen (mortenbp@gmail.com) \and
 Jesper Reenberg (jesper.reenberg@gmail.com)}
 
 
@@ -42,32 +42,30 @@ Jesper Reenberg (jesper.reenberg@gmail.com)}
 
 \section{Project title}
 
-``Skal vi lege Dr.''
+``Skal vi lege Dr.?''
 
-\section{Project definition}
+\section{Project overview}
 
 Programs written in declarative programming languages has a wide veracity of
-advantages that makes them specially souted for quick and correct statical
+advantages that makes them specially suited for quick and correct statical
 analysis.
 
 \fixme{hvilke?}
 
-The purpose of this project is to take advantages of the above to do semi
-automatic refactoring of the source code by means of different hard coded
-plugins. One of the simplest plugins would do renaming of variable and function
-names based on scope. This can then be extended to another plugin that given two
-finite sets P (``patterns'') and C (``code'') of function definitions will
-return a series of propositions for refactoring the code C. Such a proposition
-is a set, F, of declarations such that a subset of F has the same signature as
-C but to more extend uses declarations that shares syntax tree with declarations
-from P.
+The main purpose of this project is to develop one or more tools based on static analysis, and to
+make these tools available to programmers - especially beginners - in a suiting manner. Preferably
+through an IDE such as f.ex. Emacs. It is paramount for real world use that the tools work on whole
+projects (described through .mlb or .cm files) and not just single SML files.\\
 
-
+The list of tools one would like to have goes on. Therefore we focus on one in particular. Namely
+semi automatic refactoring of function definition to standard forms. Given two finite sets $P$
+(``patterns'') and $C$ (``code'') of function definitions the tool will return a series of
+propositions for refactoring the code $C$. Such a proposition is a set, $F$, of declarations such that a
+subset of $F$ has the same signature as $C$ but to more extend uses declarations that shares syntax tree
+with declarations from $P$.
 
 \fixme{bør andre typer plugins nævnes? Disse kan jo evt blot pilles væk i
   afgrænsningen}
-
-
 
 
 \begin{quotation}
@@ -84,7 +82,7 @@ from P.
 \subsection{Motivation}
 
 The target audience for this tool is novice programmers in functional
-programming languages which is not used to work with the programming patterns
+programming languages who is not used to work with the programming patterns
 and -templates from this paradime. 
 
 \begin{quotation}
@@ -95,7 +93,28 @@ and -templates from this paradime.
 
 
 
-\subsection{Implementation}
+\subsection{Implementering}
+We focus on creating a tool that will be easy to extend in the future. The tool consists of two
+parts; a package for Emacs that is responsible for doing all communication with the programmer, and
+a program that implement the actual tool(s). The communication will be done in JSON, for simplicity
+and easy porting to other front ends.\\
+
+The tool should consist of some major parts:
+\begin{description}
+\item[Project manager.] The tool be able to work on whole projects. The project manager is at the
+least responsible for reading .mlb files. It can then be extended to actually manage projects. That
+is supply means for adding and removing files and for writing project files back to disk.
+\item[Parser.] Virtually every tool that does some analysis on source code need the source code to
+be represented as a syntax tree. The parser creates syntax trees from source files. The least amount
+of work to be done is to create concrete syntax trees that exactly describe the source text. Further
+analysis can be done to f.ex. obtain type information or remove derived forms (e.g. syntactic
+sugar).
+\item[The tools.] When the source text has been preprocessed the actual tools can work on it. The
+tools can then make suggestions that will be sent to the user.
+\end{description}
+
+Apart from the above the parts need to be tied together and communication with the user taken care
+of.
 
 
 \begin{itemize}
