@@ -121,6 +121,15 @@ of.
 
 \subsubsection{Source Management}
 
+The \texttt{Source Management} component is responsible for the actual IO handling when
+some component (e.g., the \texttt{SML Parser}) wants to know the actual contents
+of a file. This way it can implement a caching method of own choosing, to speed
+up content retrieval.
+
+It also needs to implement some sort of patch system, such that when a component
+request the content of a file and the user has made changes in the IDE that is
+not save to the file, these changes are also reflected in the content returned
+to the component. 
 
 
 \subsubsection{SML Parser}
@@ -132,8 +141,6 @@ of.
 
 
 \end{itemize}
-
-
 
 
 \subsubsection{Thoughts about implementation:}
@@ -162,17 +169,6 @@ of.
 \begin{enumerate}
 \item 
 \end{enumerate}
-
-\section{Afgrænsninger}
-\fixme{change title to english.}
-
-\begin{enumerate}
-\item There will not be developed a \textit{.CM}-file parser to the
-  \texttt{Source Description} interface.
-
-\item The \texttt{SML Parser} will not handle syntax errors. 
-\end{enumerate}
-
 
 \section{Task's}
 
@@ -217,6 +213,28 @@ of.
   \end{itemize}
 \end{enumerate}
 
+
+\section{Afgrænsninger}
+\fixme{change title to english.}
+
+\begin{enumerate}
+\item There will not be developed a \textit{.CM}-file parser to the
+  \texttt{Source Description} interface.
+
+\item The \texttt{SML Parser} will not handle syntax errors. 
+
+\item The \texttt{Source Description} 
+
+  \begin{itemize}
+  \item will not implement caching, but just read data from disk when requested.
+
+  \item will not implement the patch system.
+  \end{itemize}
+
+\item No user documentation of software will be produced (e.g., manual, user guide)
+\end{enumerate}
+
+
 \section{Expansion (``nice to have'')}
 
 
@@ -231,6 +249,11 @@ of.
 \item Support of \texttt{DocString} by the \texttt{Communication Bridge} so when
   the front end hovers a function call it can show the \texttt{DocString}
   describing parameters and what the function does.
+
+\item The \texttt{Source Description} implements a patch system, so when a
+  component request the content of  a file, which is is edited in the IDE and
+  not saved to the file system, it gets the content from the file system but
+  where a line is edited in the editor it gets the line from the editor instead.
 \end{enumerate}
 
 
