@@ -48,7 +48,7 @@ Jesper Reenberg (jesper.reenberg@gmail.com)}
 
 \section{Project overview}
 
-Programs written in functionel programming languages has a wide veracity of
+Programs written in functional programming languages has a wide variety of
 advantages that makes them specially suited for quick and correct statical
 analysis.
 
@@ -123,15 +123,15 @@ communication with the user taken care of.
 \subsubsection{Source Management}
 
 
-The \texttt{Source Management} component is responsible for the actual IO handling when
-some component (e.g., the \texttt{SML Parser}) wants to know the actual contents
-of a file. This way it can implement a caching method of own choosing, to speed
-up content retrieval.
+The \texttt{Source Management} component is responsible for the actual
+IO handling when some component (e.g., the \texttt{SML Parser}) wants
+to know the actual contents of a file. This way it can implement a
+caching method of own choosing, to speed up content retrieval.
 
-It also needs to implement some sort of patch system, such that when a component
-request the content of a file and the user has made changes in the IDE that is
-not save to the file, these changes are also reflected in the content returned
-to the component. 
+It also needs to implement some sort of patch system, such that when a
+component request the content of a file and the user has made changes
+in the IDE that is not save to the file, these changes are also
+reflected in the content returned to the component.
 
 
 \subsubsection{SML Parser}
@@ -221,17 +221,19 @@ to the component.
 \item There will not be developed a \textit{.CM}-file parser to the
   \texttt{Source Description} interface.
 
-\item The \texttt{SML Parser} will not handle syntax errors. 
+\item The \texttt{SML Parser} will not handle syntax errors.
 
-\item The \texttt{Source Description} 
+\item The \texttt{Source Description}
 
   \begin{itemize}
-  \item will not implement caching, but just read data from disk when requested.
+  \item will not implement caching, but just read data from disk when
+    requested.
 
   \item will not implement the patch system.
   \end{itemize}
 
-\item No user documentation of software will be produced (e.g., manual, user guide)
+\item No user documentation of software will be produced (e.g.,
+  manual, user guide)
 \end{enumerate}
 
 
@@ -239,17 +241,18 @@ to the component.
 
 
 \begin{enumerate}
-\item A incremental \texttt{SML Parser}
+\item An incremental \texttt{SML Parser}
 
-\item That the \texttt{SML Parser} can handle syntax errors. I.e. by
-  skipping the source code until next valid expression and then
-  continue to parse. The skipped part could be reported to then front
-  end and then handled appropriately (e.g., underlined).
+\item That the \texttt{SML Parser} can handle syntax errors. That is,
+  by skipping the source code until next valid expression and then
+  continue to parse. The skipped part could be reported to the
+  front-end and then handled appropriately (e.g., underlined).
 
-\item The \texttt{Source Description} implements a patch system, so when a
-  component request the content of  a file, which is is edited in the IDE and
-  not saved to the file system, it gets the content from the file system but
-  where a line is edited in the editor it gets the line from the editor instead.
+\item The \texttt{Source Description} implements a patch system, so
+  when a component request the content of a file, which is is edited
+  in the IDE and not saved to the file system, it gets the content
+  from the file system but where a line is edited in the editor it
+  gets the line from the editor instead.
 
 \item Support of \texttt{DocString} by the \texttt{Communication
     Bridge} so when the front end hovers a function call it can show
