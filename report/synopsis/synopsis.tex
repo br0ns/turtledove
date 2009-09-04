@@ -45,6 +45,7 @@ Jesper Reenberg (jesper.reenberg@gmail.com)}
 \section{Project title}
 
 ``Skal vi lege Dr.?''
+\fixme{Proper title: SMLserver?}
 
 \section{Project overview}
 
@@ -91,7 +92,7 @@ and -templates from this paradigme.
 
 
 \subsection{Implementation}
-\fixme{should implementation details be included?}
+\fixme{This is more of an  project overview, merge these two sections}
 We focus on creating a tool that will be easy to extend in the
 future. The tool consists of two parts; a package for Emacs that is
 responsible for doing all communication with the programmer, and a
@@ -120,6 +121,13 @@ Apart from the above the parts need to be tied together and
 communication with the user taken care of.
 
 
+\subsubsection{Data flow}
+\fixme{discuss the dataflow:}
+\fixme{Datastrukturer i flow ned igennem, skal bygge videre og ikke smide noget
+  data væk.}
+
+\subsubsection{Project Manager}
+
 \subsubsection{Source Management}
 
 
@@ -128,39 +136,27 @@ some component (e.g., the \texttt{SML Parser}) wants to know the actual contents
 of a file. This way it can implement a caching method of own choosing, to speed
 up content retrieval.
 
-It also needs to implement some sort of patch system, such that when a component
-request the content of a file and the user has made changes in the IDE that is
-not save to the file, these changes are also reflected in the content returned
-to the component. 
+
 
 
 \subsubsection{SML Parser}
 \begin{itemize}
 \item support for MosML \texttt{load}
+
+\item Should run in a thread for it self, so it can be restarted when
+  changes to the files are done
 \end{itemize}
 
+\subsubsection{Plugins}
 
-\subsubsection{Thoughts about implementation:}
-\fixme{this needs to be merged into the synopsis.}
-\begin{itemize}
-\item Datastrukturer i flow ned igennem, skal bygge videre og ikke smide noget
-  data væk.
+\fixme{elaborate about the refactoring plugin}
+\fixme{Plugins skal kompiles med. (Alle plugins skal være slukket fra start)}
 
-\item Al kommunikation mellem frontend og server sker igennem JSON via IO.
+\subsubsection{IO Communication Bridge}
 
-\item Plugins skal kompiles med. (Alle plugins skal være slukket fra start)
+\fixme{detailed explanation of the communication posibilities, without the
+  actual protocol (json)}
 
-
-\item Der kan tænkes flere forskellige SML parser niveauer
-  \begin{itemize}
-
-  \item Der skal derfor indføres "runlevels". Så ved hvert parsnings
-    afslut skal de plugin spawnes som "hooker" dette parsetræ
-    (evt. kun 1 tråd der efter tur eksekverer alle plugins som hooker
-    den givne level), samtidig med at der spawnes en tråd til at lave
-    næste parsnings niveau.
-  \end{itemize}
-\end{itemize}
 
 \section{Learning objectives}
 
@@ -172,7 +168,7 @@ to the component.
 \section{Task's}
 
 \begin{enumerate}
-\item Design the \texttt{Source Description} API. (1 week)
+\item Design the \texttt{Source Management} API. (1 week)
 
 \item Implement a \textit{.MLB}-file parser (\texttt{MLB Parser}) from the MLB
   definition (1 week)
@@ -195,11 +191,11 @@ to the component.
   \begin{itemize}
   \item Create the \texttt{non project files parser}\footnote{correct to the
       right name} and connect it with the \texttt{MLB Parser} into the
-    \texttt{Source Description}.
+    \texttt{Source Management}.
 
   \item Create the \texttt{Project Manager}.
 
-  \item Connect the \texttt{Source Description} with the \texttt{Project
+  \item Connect the \texttt{Source Management} with the \texttt{Project
       Manager}.
 
   \item Connect the \texttt{Project Manager} with the \texttt{SML Parser}.
@@ -219,11 +215,11 @@ to the component.
 
 \begin{enumerate}
 \item There will not be developed a \textit{.CM}-file parser to the
-  \texttt{Source Description} interface.
+  \texttt{Source Management} interface.
 
 \item The \texttt{SML Parser} will not handle syntax errors. 
 
-\item The \texttt{Source Description} 
+\item The \texttt{Source Management} 
 
   \begin{itemize}
   \item will not implement caching, but just read data from disk when requested.
@@ -246,7 +242,7 @@ to the component.
   continue to parse. The skipped part could be reported to then front
   end and then handled appropriately (e.g., underlined).
 
-\item The \texttt{Source Description} implements a patch system, so when a
+\item The \texttt{Source Management} implements a patch system, so when a
   component request the content of  a file, which is is edited in the IDE and
   not saved to the file system, it gets the content from the file system but
   where a line is edited in the editor it gets the line from the editor instead.
@@ -256,6 +252,22 @@ to the component.
   the \texttt{DocString} describing parameters and what the function
   does.
 
+\item Der kan tænkes flere forskellige SML parser niveauer
+  \begin{itemize}
+    
+  \item Der skal derfor indføres "runlevels". Så ved hvert parsnings
+    afslut skal de plugin spawnes som "hooker" dette parsetræ
+    (evt. kun 1 tråd der efter tur eksekverer alle plugins som hooker
+    den givne level), samtidig med at der spawnes en tråd til at lave
+    næste parsnings niveau.
+  \end{itemize}
+
+
+\item The \texttt{Source Managemnt} needs to implement some sort of patch
+  system, such that when a component request the content of a file and the user
+  has made changes in the IDE that is not save to the file, these changes are
+  also reflected in the content returned to the component.
+  
 \end{enumerate}
 
 
