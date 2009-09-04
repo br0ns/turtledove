@@ -27,7 +27,7 @@
 
 \title{Synopsis}
 
-\author{Johan Brinch (zerrez@gmail.com) \and
+\author{%Johan Brinch (zerrez@gmail.com) \and
 Morten Brøns-Pedersen (mortenbp@gmail.com) \and
 Jesper Reenberg (jesper.reenberg@gmail.com)}
 
@@ -48,31 +48,27 @@ Jesper Reenberg (jesper.reenberg@gmail.com)}
 
 \section{Project overview}
 
-Programs written in declarative programming languages has a wide veracity of
+Programs written in functionel programming languages has a wide veracity of
 advantages that makes them specially suited for quick and correct statical
 analysis.
 
 \fixme{hvilke?}
 
-The main purpose of this project is to develop one or more tools based on static analysis, and to
-make these tools available to programmers - especially beginners - in a suiting manner. Preferably
-through an IDE such as f.ex. Emacs. It is paramount for real world use that the tools work on whole
-projects (described through .mlb or .cm files) and not just single SML files.\\
-
-The list of tools one would like to have goes on. Therefore we focus on one in particular. Namely
-semi automatic refactoring of function definition to standard forms. Given two finite sets $P$
-(``patterns'') and $C$ (``code'') of function definitions the tool will return a series of
-propositions for refactoring the code $C$. Such a proposition is a set, $F$, of declarations such that a
-subset of $F$ has the same signature as $C$ but to more extend uses declarations that shares syntax tree
-with declarations from $P$.
+The main goal of this project is to exploit this statical analysis to
+perform semi automatic refactoring of function definitions to standard
+forms. That is, given some predefined transformations of functions, to
+hint the programmer of possible rewritings that will improve the code
+she is working on. These hints should prove helpful in writing good
+functionel code.
 
 \fixme{bør andre typer plugins nævnes? Disse kan jo evt blot pilles væk i
   afgrænsningen}
 
 
 %\begin{quotation}
-%  Programmer i deklarative programmeringssprog har en række fordele, som gør dem
-%  særdeles velegnet til hurtig og korrekt statisk analyse.
+%  Programmer i deklarative programmeringssprog har en række fordele,
+%  som gør dem særdeles velegnet til hurtig og korrekt statisk
+%  analyse.
 %
 %  Formålet med denne opgave er at udnytte ovenstående til at foretage
 %  halvautomatiske refaktoreringer, som kun vanskeligt kan benyttes (eller
@@ -85,55 +81,50 @@ with declarations from $P$.
 
 The target audience for this tool is novice programmers in functional
 programming languages who is not used to work with the programming patterns
-and -templates from this paradime. 
+and -templates from this paradigme.
 
 % \begin{quotation}
-%   Målgruppen for det udviklede værktøj er novicer i funktionsprogrammering, som
-%   ikke er vant til at benytte de særlige programmeringsmønstre og -skabeloner
-%   fra dette paradigme.
+%   Målgruppen for det udviklede værktøj er novicer i
+%   funktionsprogrammering, som ikke er vant til at benytte de særlige
+%   programmeringsmønstre og -skabeloner fra dette paradigme.
 % \end{quotation}
 
 
-
 \subsection{Implementation}
-We focus on creating a tool that will be easy to extend in the future. The tool consists of two
-parts; a package for Emacs that is responsible for doing all communication with the programmer, and
-a program that implement the actual tool(s). The communication will be done in JSON, for simplicity
-and easy porting to other front ends.\\
+\fixme{should implementation details be included?}
+We focus on creating a tool that will be easy to extend in the
+future. The tool consists of two parts; a package for Emacs that is
+responsible for doing all communication with the programmer, and a
+program that implement the actual tool(s).
 
 The tool should consist of some major parts:
 \begin{description}
-\item[Project manager.] The tool be able to work on whole projects. The project manager is at the
-least responsible for reading .mlb files. It can then be extended to actually manage projects. That
-is supply means for adding and removing files and for writing project files back to disk.
-\item[Parser.] Virtually every tool that does some analysis on source code need the source code to
-be represented as a syntax tree. The parser creates syntax trees from source files. The least amount
-of work to be done is to create concrete syntax trees that exactly describe the source text. Further
-analysis can be done to for example obtain type information or remove derived forms (e.g., syntactic
-sugar).
-\item[The tools.] When the source text has been preprocessed the actual tools can work on it. The
-tools can then make suggestions that will be sent to the user.
+\item[Project manager.] The tool be able to work on whole
+  projects. The project manager is at the least responsible for
+  reading .mlb files. It can then be extended to actually manage
+  projects. That is supply means for adding and removing files and for
+  writing project files back to disk.
+\item[Parser.] Virtually every tool that does some analysis on source
+  code need the source code to be represented as a syntax tree. The
+  parser creates syntax trees from source files. The least amount of
+  work to be done is to create concrete syntax trees that exactly
+  describe the source text. Further analysis can be done to for
+  example obtain type information or remove derived forms (e.g.,
+  syntactic sugar).
+\item[The tools.] When the source text has been preprocessed the
+  actual tools can work on it. The tools can then make suggestions
+  that will be sent to the user.
 \end{description}
 
-Apart from the above the parts need to be tied together and communication with the user taken care
-of.
+Apart from the above the parts need to be tied together and
+communication with the user taken care of.
 
 
 \subsubsection{Source Management}
-
-
-
 \subsubsection{SML Parser}
-
-
 \begin{itemize}
-
 \item support for MosML \texttt{load}
-
-
 \end{itemize}
-
-
 
 
 \subsubsection{Thoughts about implementation:}
@@ -147,20 +138,21 @@ of.
 \item Plugins skal kompiles med. (Alle plugins skal være slukket fra start)
 
 
-\item Der kan tænkes flere forskellige SML parser niveauer 
+\item Der kan tænkes flere forskellige SML parser niveauer
   \begin{itemize}
 
-  \item Der skal derfor indføres "runlevels". Så ved hvert parsnings afslut skal
-    de plugin spawnes som "hooker" dette parsetræ (evt. kun 1 tråd der efter tur
-    eksekverer alle plugins som hooker den givne level), samtidig med at der
-    spawnes en tråd til at lave næste parsnings niveau.
+  \item Der skal derfor indføres "runlevels". Så ved hvert parsnings
+    afslut skal de plugin spawnes som "hooker" dette parsetræ
+    (evt. kun 1 tråd der efter tur eksekverer alle plugins som hooker
+    den givne level), samtidig med at der spawnes en tråd til at lave
+    næste parsnings niveau.
   \end{itemize}
 \end{itemize}
 
 \section{Learning objectives}
 
 \begin{enumerate}
-\item 
+\item
 \end{enumerate}
 
 \section{Afgrænsninger}
@@ -170,7 +162,7 @@ of.
 \item There will not be developed a \textit{.CM}-file parser to the
   \texttt{Source Description} interface.
 
-\item The \texttt{SML Parser} will not handle syntax errors. 
+\item The \texttt{SML Parser} will not handle syntax errors.
 \end{enumerate}
 
 
@@ -180,7 +172,7 @@ of.
 \item Design the \texttt{Source Description} API. (1 week)
 
 \item Implement a \textit{.MLB}-file parser (\texttt{MLB Parser}) from the MLB
-  definition (1 week) 
+  definition (1 week)
 \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files}
 
 \item Design the concrete syntax tree to be used by the \texttt{SML
@@ -192,7 +184,8 @@ of.
 
 \item Create the \texttt{SMLserver} (1 week).
   \begin{itemize}
-  \item Connect the \texttt{SML Parser} and \texttt{Refactoring Plugin} using threads
+  \item Connect the \texttt{SML Parser} and \texttt{Refactoring
+      Plugin} using threads
   \end{itemize}
 
 \item Create the missing links in the \texttt{SMLserver} (2 weeks)
@@ -209,8 +202,8 @@ of.
   \item Connect the \texttt{Project Manager} with the \texttt{SML Parser}.
   \end{itemize}
 
-\item Create the \texttt{Communication Interface} between the \texttt{SMLserver}
-  and the front end
+\item Create the \texttt{Communication Interface} between the
+  \texttt{SMLserver} and the front end
   \begin{itemize}
   \item Create a plugin to the front end that will support the
     \texttt{Communication Interface}.
@@ -223,14 +216,15 @@ of.
 \begin{enumerate}
 \item A incremental \texttt{SML Parser}
 
-\item That the \texttt{SML Parser} can handle syntax errors. I.e. by skipping
-  the source code until next valid expression and then continue to parse. The
-  skipped part could be reported to then front end and then handled approprietly
-  (e.g., underlined).
+\item That the \texttt{SML Parser} can handle syntax errors. I.e. by
+  skipping the source code until next valid expression and then
+  continue to parse. The skipped part could be reported to then front
+  end and then handled approprietly (e.g., underlined).
 
-\item Support of \texttt{DocString} by the \texttt{Communication Bridge} so when
-  the front end hovers a function call it can show the \texttt{DocString}
-  describing parameters and what the function does.
+\item Support of \texttt{DocString} by the \texttt{Communication
+    Bridge} so when the front end hovers a function call it can show
+  the \texttt{DocString} describing parameters and what the function
+  does.
 \end{enumerate}
 
 
@@ -251,7 +245,7 @@ of.
 
 \end{document}
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: t
-%%% End: 
+%%% End:
