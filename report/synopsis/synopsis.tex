@@ -50,7 +50,7 @@ Jesper Reenberg (jesper.reenberg@gmail.com)}
 \section{Project overview}
 
 Programs written in functional programming languages has a wide variety of
-advantages that makes them specially suited for quick and correct statical
+advantages that make them specially suited for quick and correct statical
 analysis.
 
 \fixme{hvilke?}
@@ -59,8 +59,8 @@ The main goal of this project is to exploit this statical analysis to
 perform semi automatic refactoring of function definitions to standard
 forms. That is, given some predefined transformations of functions, to
 hint the programmer of possible rewritings that will improve the code
-she is working on. These hints should prove helpful in writing good
-functionel code.
+she is working on. These hints should prove helpful in writing idiomatic
+functional code.
 
 \fixme{bør andre typer plugins nævnes? Disse kan jo evt blot pilles væk i
   afgrænsningen}
@@ -94,33 +94,35 @@ and -templates from this paradigme.
 \subsection{Project Overview}
 \fixme{should implementation details be included?.. Yes in abstract terms.}
 
-We focus on creating a tool that will be easy to extend in the
-future. The tool consists of two parts; a package for Emacs that is
-responsible for doing all communication with the programmer, and a
-program that implement the actual tool(s).
+We focus on creating a software package that will be easy to extend in
+the future. The software consists of two parts; an extension for Emacs
+that is responsible for doing all communication with the programmer,
+and a backend that implement the actual code-specific functionality.
 
-The tool should consist of some major parts:
+The backend part is split into a few major parts:
 \begin{description}
-\item[Project manager.] The tool be able to work on whole
-  projects. The project manager is at the least responsible for
-  reading .mlb files. It can then be extended to actually manage
-  projects. That is supply means for adding and removing files and for
-  writing project files back to disk.
-\item[Parser.] Virtually every tool that does some analysis on source
-  code need the source code to be represented as a syntax tree. The
-  parser creates syntax trees from source files. The least amount of
-  work to be done is to create concrete syntax trees that exactly
-  describe the source text. Further analysis can be done to for
-  example obtain type information or remove derived forms (e.g.,
-  syntactic sugar).
-\item[The tools.] When the source text has been preprocessed the
-  actual tools can work on it. The tools can then make suggestions
-  that will be sent to the user.
+\item[Project manager.] The backend should be able to work on whole
+  projects. The project manager is required to handle parsing of ML
+  Basis files (.mlb). The project manager can later be extended to
+  actually manage projects. That is supply means for adding and
+  removing files and for updating ML Basis files with such new
+  information.
+\item[Parser.] Virtually every software system that does some analysis
+  on source code needs the source code to be represented as a syntax
+  tree. The parser handles the task of creating syntax trees from
+  source files. The least amount of work to be done is to create
+  concrete syntax trees that exactly describe the source text. This
+  can later be extended with further analysis to obtain type
+  information, remove derived forms etc.
+\item[Plugins.] When the source text has been preprocessed the actual
+  plugins can work on its syntax tree. The plugins provides
+  information that will be presented to the user through the Emacs
+  GUI. This is where the refactoring suggestions will be generated.
 \end{description}
 
 Apart from the above the parts need to be tied together and
 communication with the user taken care of.
-
+\fixme{communication has been taken care of by Emacs extension?}
 
 \subsubsection{Data flow}
 \fixme{discuss the dataflow:}
@@ -142,8 +144,8 @@ caching method of own choosing, to speed up content retrieval.
 \begin{itemize}
 \item support for MosML \texttt{load}
 
-\item Should run in a thread for it self, so it can be restarted when
-  changes to the files are done
+\item Should run in a thread for it self, so it can be restarted if
+  the file being analyzed changes
 \end{itemize}
 
 \subsubsection{Plugins}
@@ -153,7 +155,7 @@ caching method of own choosing, to speed up content retrieval.
 
 \subsubsection{IO Communication Bridge}
 
-\fixme{detailed explanation of the communication posibilities, without the
+\fixme{detailed explanation of the communication possibilities, without the
   actual protocol (json)}
 
 
@@ -213,7 +215,7 @@ caching method of own choosing, to speed up content retrieval.
 
 
 \section{Limitations}
-\fixme{change title to english.}
+\fixme{change title to English.}
 
 \begin{enumerate}
 \item There will not be developed a \textit{.CM}-file parser to the
@@ -221,7 +223,7 @@ caching method of own choosing, to speed up content retrieval.
 
 \item The \texttt{SML Parser} will not handle syntax errors.
 
-\item The \texttt{Source Management} 
+\item The \texttt{Source Management}
 
   \begin{itemize}
   \item will not implement caching, but just read data from disk when
@@ -261,7 +263,7 @@ caching method of own choosing, to speed up content retrieval.
 
 \item Der kan tænkes flere forskellige SML parser niveauer
   \begin{itemize}
-    
+
   \item Der skal derfor indføres "runlevels". Så ved hvert parsnings
     afslut skal de plugin spawnes som "hooker" dette parsetræ
     (evt. kun 1 tråd der efter tur eksekverer alle plugins som hooker
@@ -274,7 +276,7 @@ caching method of own choosing, to speed up content retrieval.
   system, such that when a component request the content of a file and the user
   has made changes in the IDE that is not save to the file, these changes are
   also reflected in the content returned to the component.
-  
+
 \end{enumerate}
 
 
