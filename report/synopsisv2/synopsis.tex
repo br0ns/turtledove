@@ -5,6 +5,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
+\usepackage[draft]{fixme}
 
 \author{Morten Brøns-Pedersen \and Jesper Reenberg}
 \title{Synopsis}
@@ -13,9 +14,10 @@
 
 \maketitle
 
-\section{Title}
-``Programmer tools based on static semantic analysis of SML programs, with special emphasis on
-semi-automatic rewriting of declarations to predefined forms.''
+\section{Title}\fixme{``Turtledove'' er en pladsholder ind til videre. Jesper synes om
+``Seagull''. Jeg har selv foreslået ``Albatros''.}
+``Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic rewriting of
+declarations to predefined standard forms.''
 
 \section{Motivation}
 Today functional programming languages are not very widespread outside academic circles. A reason
@@ -30,12 +32,16 @@ tools.
 Functional programming languages has a wide variety of advantages that make them specially suited
 for quick and correct statical analysis. The effect of this is that it will be possible to make more
 complex tools for functional programming languages than for imperative ones.
+\\
+
+We emphasize on a single tool. Namely semi-automatic rewriting of terms to predefined standard
+forms. \fixme{Hvorfor lige dette værktøj?}
 
 \section{Elaboration}
 The project can be divided into three parts.
 \begin{description}
 \item[Front end] The front end is responsible for communicating with the programmer. This
-communication goes both ways. Some tools will work automatically waiting for the programmer to
+communication goes both ways. Some tools will work automatically, waiting for the programmer to
 accept corrections and/or suggestions. Some will be initiated by the user.
 \item[Back end] The back end will perform tasks common to most tools. This includes communicating
 with the front end in a suitable format, reading and possibly writing project files, reading and
@@ -51,21 +57,75 @@ through the back end. In this project we will focus on a single tool. Se section
 \end{description}
 
 The back end and the tools are split up because most tools will have a lot of tasks in common as
-described above.
+described above.  So while the back end and the tools are actually the same piece of software, the
+distinction is an important one.
 
-So while the back end and the tools are actually the same piece of software, the distinction is an
-important one.
-
-The importance of this distinctions implies that we develop a well defined API for communication
+The importance of this distinction implies that we develop a well defined API for communication
 between the back end and the tools.
 
+We describe the project in greater detail in the next section.
+
 \section{Primary goals}
+We focus our work on the back end and a single tool. A simple front end (e.g. for Emacs) would make
+testing a lot easier, but it is not a requirement for the success of this project.
 
-\subsection{Turtledove: a framework for implementing tools based on semantic analysis}
-Hear ye, here ye! All behold the great Turtledove.
+As we wish to develop the back end and tool(s) separately from the front end, we choose to let all
+communication between the two be through plain text.
 
-\subsection{A refactoring tool}\label{primary_goals:a_refactoring_tool}
-Proof of concept, and Jakob's pet project.
+The back end and the tool(s) compiles into a single program. We name that program and it's source
+code ``Turtledove'', and we use the name interchangeably.
+
+\subsection{Turtledove: modular tool assisted programming for SML} \fixme{Hear ye, hear ye! Behold
+the Turtledove.}
+Turtledove will be used for two purposes; i) tool assisted programming, and ii) implementation of
+new tools.
+
+Since we intent that Turtledove should grow to include more than one tool, the protocol over which
+Turtledove and a compliant front end communicate need to be flexible enough to accommodate this.
+
+Turtledove will communication with the front end through stdin and stdout. It shall be possible to
+send data to a specific tool and determine from which tool outgoing data originates.
+\\
+
+Turtledove itself needs to be programmed in a modular way, as to make it easy to implement new tools
+later. The tools shall each be confined and only interact with the rest of the program through an
+API and/or the inclusion of libraries.
+\\
+
+Jeg synes jeg er begyndt at væve og klokken er mange nu, så jeg ridser resten op på dansk.
+
+API'et skal gøre det muligt for værktøjer at
+\begin{itemize}
+\item hente (up-to-date) syntaxtræer og rå kode. Men de bør ikke selv tilgå filer da Turtledove kan
+      være i stand til at afspejle ændringer som endnu ikke er gemt.
+\item modtage beskeder fra front-end'en.
+\item sende beskeder til front-end'en.
+\end{itemize}
+
+Derudover skal der lavet en del funktionalitet som værktøjer kan bruge i form af
+biblioteker. Eksempler:
+\begin{itemize}
+\item SML-parser. Det kan f.eks. være snedigt at lagre vores ``standardformer'' som SML-kode, og så
+      indlæse det på den måde.
+\item Repræsentation af syntaxtræer.
+\item Syntaxtræ-til-kode-omformer.
+\item JSON-bibliotek, samt passende datastrukturer.
+\end{itemize}
+
+Kernefunktionaliteten i Turtledove bliver:
+\begin{itemize}
+\item Læs beskeder fra front-end'en og send dem til det rigtige værktøj eller agér direkte på dem.
+\item Send beskeder fra de forskellige værktøjer til front-enden.
+\item Læs og eventuelt skriv projektfiler. Vi vil begrænse os til .mlb-filer (bruges af blandt andre
+      kittet og mlton).
+\item Indlæs kode og parse til syntaxtræer.
+\item Giv værktøjer besked når koden ændrer sig.
+\end{itemize}
+
+\subsection{A refactoring tool}\label{primary_goals:a_refactoring_tool}\fixme{Proof of concept, and Jakob's pet project.}
+For at være helt ærlig tror jeg endnu ikke at der er fuldstændig konsensus i gruppen om hvad der
+egentlig skal ske her. Så i stedet for at skrive hvad jeg mener, tror jeg det er bedst hvis vi får
+diskuteret det først.
 
 \section{Secondary goals}
 
