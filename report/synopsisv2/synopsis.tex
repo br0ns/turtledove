@@ -32,13 +32,55 @@ for quick and correct statical analysis. The effect of this is that it will be p
 complex tools for functional programming languages than for imperative ones.
 
 \section{Elaboration}
+The project can be divided into three parts.
+\begin{description}
+\item[Front end] The front end is responsible for communicating with the programmer. This
+communication goes both ways. Some tools will work automatically waiting for the programmer to
+accept corrections and/or suggestions. Some will be initiated by the user.
+\item[Back end] The back end will perform tasks common to most tools. This includes communicating
+with the front end in a suitable format, reading and possibly writing project files, reading and
+parsing source files, defining a representation of syntax trees, keeping an internal representation
+of the source code up to date and defining auxiliary functions (e.g. functions for converting syntax
+trees to source code, converting data to a format suitable for communication with the front end,
+etc.).
+\item[Tools] The tools will be initiated by the back end from which they will get a representation
+of the source code as a syntax tree or the source code itself. Messages to the individual tools from
+the front end will be delivered via the back end. The tools can send messages back to the front end
+through the back end. In this project we will focus on a single tool. Se section
+\ref{primary_goals:a_refactoring_tool} below.
+\end{description}
+
+The back end and the tools are split up because most tools will have a lot of tasks in common as
+described above.
+
+So while the back end and the tools are actually the same piece of software, the distinction is an
+important one.
+
+The importance of this distinctions implies that we develop a well defined API for communication
+between the back end and the tools.
 
 \section{Primary goals}
 
+\subsection{Turtledove: a framework for implementing tools based on semantic analysis}
+Hear ye, here ye! All behold the great Turtledove.
+
+\subsection{A refactoring tool}\label{primary_goals:a_refactoring_tool}
+Proof of concept, and Jakob's pet project.
+
 \section{Secondary goals}
 
+\subsection{A nice front end}
+For Emacs obviously.
+
 \section{Limitation}
+Nothing has to work as intended.
 
 \section{Tasks and timeline}
+\begin{quote}
+\begin{description}
+\item[\bf About six months] Do the damn thing.
+\item[\bf 2 days] Drink our brains out.
+\end{description}
+\end{quote}
 
 \end{document}
