@@ -59,7 +59,7 @@ etc.).
 \item[Tools] The tools will be initiated by the back end from which they will get a representation
 of the source code as a syntax tree or the source code itself. Messages to the individual tools from
 the front end will be delivered via the back end. The tools can send messages back to the front end
-through the back end. In this project we will focus on a single tool. Se section
+through the back end. In this project we will focus on a single tool. See section
 \ref{primary_goals:a_refactoring_tool} below.
 \end{description}
 
@@ -67,7 +67,7 @@ The back end and the tools are split up because most tools will have a lot of ta
 described above.  So while the back end and the tools are actually the same piece of software, the
 distinction is an important one.
 
-The importance of this distinction implies that we develop a well defined API for communication
+The importance of this distinction implies that we develop a well-defined API for communication
 between the back end and the tools.
 
 We describe the project in greater detail in the next section.
@@ -128,7 +128,7 @@ The core functionality is quite limited. Turtledove does two things:
       file. The one extreme is to signal a file change only when a file is saved. The other is to
       signal every key stroke. Testing will reveal the right balance.
 
-      Tools shall be signaled when the source code has changed.
+      Tools shall be signalled when the source code has changed.
 
 \item The communication between the front end and a tool is carried by Turtledove. Turtledove will
       determine the correct receiver (possibly itself) and guide data to it.
@@ -205,7 +205,7 @@ For Emacs obviously.
 \section{Limitations}
 \fixme{Nothing has to work as intended.}
 
-\begin{itemize}
+\begin{enumerate}
 \item Turtledove need not be able to read CM project files.
 
 \item The SML parser need not handle syntax errors.
@@ -226,11 +226,42 @@ For Emacs obviously.
 
 \section{Tasks and timeline}
 
-\begin{description}
-\item[About six months] Do the damn thing.
-\item[2 days] Drink our brains out.
-\item[Fix the timeline]
-\end{description}
+
+\begin{enumerate}
+\item Design the \texttt{Source Management} API.
+
+\item Implement a \textit{.MLB}-file parser (\texttt{MLB Parser}) from the MLB
+  definition \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files}
+
+\item Design the concrete syntax tree to be used by the \texttt{SML
+    Parser}. This needs to be done correct the first time.
+
+\item Implement the \texttt{SML Parser}.
+
+\item Design and implement the \texttt{Refactoring tool}.
+
+\item Implement the various needed libraries.
+
+\item Implement the \texttt{Project Manager} using the \texttt{MLB Parser}.
+
+\item Implement the \texttt{Source Management} and link it to the
+  \texttt{Project Manager}.
+
+\item Link the \texttt{SML Parser} and the \texttt{Project Manager} through the
+  \texttt{Source Management}.
+
+\item Implement the \texttt{Communication Interface}.
+
+\item Change the \texttt{SML Parser} to run in a separate thread.
+
+\item Analyse which other parts of the back end needs to be run in a separate
+  thread (e.g., each designed PAT), so communication with the front end and the
+  back end is not locked up.
+
+\end{enumerate}
+
+
+
 
 \section{Expansion (``Nice to have'')}
 \fixme{Fjern ``modulnavne''. De hører ikke hjemme her}
