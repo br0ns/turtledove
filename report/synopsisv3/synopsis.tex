@@ -315,35 +315,37 @@ For Emacs obviously.
 
 
 \begin{enumerate}
-\item Design the \texttt{Source Management} API.
 
-\item Implement a \textit{.MLB}-file parser (\texttt{MLB Parser}) from the MLB
-  definition \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files}
+\item Design an API for intercommunication between the user interface and
+  Turtledove.
 
-\item Design the concrete syntax tree to be used by the \texttt{SML
-    Parser}. This needs to be done correct the first time.
+\item Implement a parser than can parse \textit{.mlb} project files
+  \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files}
 
-\item Implement the \texttt{SML Parser}.
+\item Design the structure of the concrete syntax tree and decide which approach
+  and data type to implement it as.
 
-\item Design and implement the \texttt{Refactoring tool}.
+\item Implement a parser that can parse SML code.
 
-\item Implement the various needed libraries.
+\item Design the term rewriting tool.
 
-\item Implement the \texttt{Project Manager} using the \texttt{MLB Parser}.
+\item Implement a set of rewriting terms
 
-\item Implement the \texttt{Source Management} and link it to the
-  \texttt{Project Manager}.
+\item Implement the libraries discussed in xxx. \fixme{reference to above
+    needed. If this is left out of the synopsis then remove this task.}
 
-\item Link the \texttt{SML Parser} and the \texttt{Project Manager} through the
-  \texttt{Source Management}.
+\item Implement a project manager that given a set of file parsers (e.g., the \textit{.mlb} project file
+  parser) exposes an API such that a list of names and paths can be queried from
+  the file parser, for example.
 
-\item Implement the \texttt{Communication Interface}.
+\item Extend the project manager such that it at some point can implement smart
+  IO handling of the source files.
 
-\item Change the \texttt{SML Parser} to run in a separate thread.
+\item Implement the designed API for intercommunication between the user
+  interface and Turtledove.
 
-\item Analyse which other parts of the back end needs to be run in a separate
-  thread (e.g., each designed PAT), so communication with the front end and the
-  back end is not locked up.
+\item Analyse Turtledove and apply threading where needed (e.g., the parser for
+  SML code and Turtledove itself).
 
 \end{enumerate}
 
@@ -351,47 +353,65 @@ For Emacs obviously.
 
 
 \section{Expansion (``Nice to have'')}
-\fixme{Fjern ``modulnavne''. De hører ikke hjemme her}
+
+\fixme{Bør dette være med i synopsis, høre det ikke mere hjemme i selve
+  rapporten? Evt kunne en meget forsimplet udgave af denne liste indgå i
+  synopsen i stedet}
 
 \begin{enumerate}
 
-\item An incremental \texttt{SML parser}
 
-\item That the \texttt{SML Parser} can handle syntax errors. That is,
-  by skipping the source code until next valid expression and then
-  continue to parse. The skipped part could be reported to the
-  front-end and then handled appropriately (e.g., underlined).
+\item Extend the various parsers to be incremental where applicable (e.g., the
+  parser for SML source code).
 
-  This functionality might be available through SML-Yacc.
+\item Extend the various parsers to handle syntax errors, for example by
+  skipping the source code until the next valid declaration is fount.
+  The location in the skipped line of code where the first error were found
+  should then be reported back to the user interface such that it can do proper
+  notification to the user (e.g., underlining of erroneous code).
 
-\item The \texttt{Source Management} implements a patch system, so
-  when a component request the content of a file, which is is edited
-  in the IDE and not saved to the file system, it gets the content
-  from the file system but where a line is edited in the editor it
-  gets the line from the editor instead.
+\fixme{this might be possible through SML-Yacc?}
 
 
-\item Support of \texttt{DocString} by the \texttt{Communication
-    Bridge} so when the front end hovers a function call it can show
-  the \texttt{DocString} describing parameters and what the function
-  does.
+\item Implement transitive closures of some of the term rewriting rules by
+  adding the possibility to tag separate groups of rewriting rules that the
+  transitive closures should be applied to.
 
-\item Multiple levels of parsing of the syntax tree for example to gradually
-  remove syntactic sugar.
+
+\item Add a simplification group of term rewriting rules. For example the result
+  of the standard map form can be simplified by the following simplification
+  rule \texttt{ fn x => g x $\rightarrow$ g}
+
+
+\item Extend the term rewriting definitions such that it is possible to enforce
+  that a certain group of rules should always be applied to the result of applying
+  another specific group of rules. For example enforcing that the simplification
+  group is always applied after the standard map form rewriting rules has been applied.
+
+
+\item Extend the IO file/source code handling part of the project manager to
+  have a ``patch'' system such that code written in the editor is reflected
+  ``live'' if the SML parser decides to parse the source files, even if the
+  source files haven't been saved recently.
+
+
+\item Extend Turtledove such that the SML source code parser can report back
+  DocString information to the user interface which in turn can inform the user
+  in an appropriate way.
+
+
+
+\item Various parsings of the syntax tree to for example gradually remove
+  syntactic sugar.
   \begin{itemize}
 
-  \item A notion of ``run levels'' could be added, so at the end of each parsing
-    all plugins that hook this level will be executed and given access to this
-    specific version of the parse tree. While the plugins execute the next parse
-    of the syntax tree should continue if there is plugins depending of
-    one of the next run levels.
+  \item With this a notion of ``run levels'' could be introduced, so at the end
+    of each parsing all tools that hook this level will be notified and able to
+    act upon this specific version of the parse tree. While the next parse of
+    the syntax tree should continue if there is tools depending on one of the
+    next run levels.
 
   \end{itemize}
-
-\item The \texttt{Source Managemnt} needs to implement some sort of patch
-  system, such that when a component request the content of a file and the user
-  has made changes in the IDE that is not save to the file, these changes are
-  also reflected in the content returned to the component.
 
 \end{enumerate}
 
