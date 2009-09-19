@@ -8,9 +8,32 @@
 \usepackage{graphicx}
 \usepackage[draft]{fixme}     % Indsæt "fixme" noter i drafts.
 \usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
+\usepackage{mdwtab}
+\usepackage{mathenv}
+\usepackage{listings}
+\usepackage{amssymb}
 
 \setcounter{secnumdepth}{1} % Sæt overskriftsnummereringsdybde. Disable = -1.
 
+\lstset{ %
+% language=Octave,                % choose the language of the code
+basicstyle=\ttfamily,        % the size of the fonts that are used for the code
+basewidth=0.5em,
+% numbers=left,                   % where to put the line-numbers
+% numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+% stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+% numbersep=5pt,                  % how far the line-numbers are from the code
+% backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+% showspaces=false,               % show spaces adding particular underscores
+% showstringspaces=false,         % underline spaces within strings
+% showtabs=false,                 % show tabs within strings adding particular underscores
+% frame=single	                % adds a frame around the code
+% tabsize=2,	                % sets default tabsize to 2 spaces
+% captionpos=b,                   % sets the caption-position to bottom
+% breaklines=true,                % sets automatic line breaking
+% breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+escapeinside={(@}{@)}          % if you want to add a comment within your code
+}
 
 \author{Morten Brøns-Pedersen \and Jesper Reenberg}
 \title{Synopsis}
@@ -19,8 +42,9 @@
 
 \maketitle
 
-\fixme{Search and replace ``programmer assisting tools'' with PATs}
 \fixme{Search and replace ``plugins'' with new word ``tools''}
+\fixme{Search and replace ``IDE'' -> ``editor''}
+\fixme{Search and replace ``front end'' -> ``user interface''}
 
 %% Vi skal skifte drejningen til at handle om værktøjet. Vores motivation er at lave det værktøj. Undgå
 %% at bruge modulnavne i synopsen. Når man læser den er det ikke sikkert man har læst eller har tænkt
@@ -51,14 +75,14 @@
 
 
 \section{Title}
-``Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic rewriting of
-declarations to predefined standard forms.''
+``Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic rewriting to
+predefined standard forms.''
 
 \section{Motivation}
 Today functional programming languages are not very widespread outside academic circles. A major
-reason for this may be that not as extensive interactive development environments (IDE) exists (if
-at all) for functional programming languages compared to certain imperative languages (take
-languages in the .NET platform as an example).
+reason for this may be that not as rich development environments exists (if at all) for functional
+programming languages compared to certain imperative languages (take languages in the .NET platform
+as an example).
 
 We wish to make functional programming, specifically in SML, easier to approach for the beginner as
 well as more advantageous for the veteran.
@@ -66,46 +90,177 @@ well as more advantageous for the veteran.
 Functional programming languages has a wide variety of advantages that makes them specially suited
 for quick and correct statical analysis. The effect of this is that it will be possible to make more
 complex tools for functional programming languages than for imperative ones.
+\fixme{Er det dumt at hævde disse ting uden et opfølgende argument?}
 
-We implement semi-automatic rewriting of terms according to a set of predefined rewriting rules. We
-focus on modularity such that it will be relatively simple to implement other tools in the
-future. \fixme{Hvorfor dette værktøj? Vi behøver ikke regne typer, vi får lov at føre nogle fine
-beviser, med omskrivning kan vi let implementere flere forskellige værktøjer - især hvis vi
-implementerer den transitive afslutning af omskrivningerne.}
+We implement semi-automatic rewriting of terms according to a set of predefined rules. We focus on
+modularity such that it will be relatively simple to implement other tools based on our software in
+the future.
+\fixme{Hvorfor dette værktøj? i) Vi behøver ikke regne typer, ii) vi får lov at føre nogle fine
+beviser, iii) med omskrivning kan vi let implementere flere forskellige værktøjer - især hvis vi
+implementerer den transitive afslutning af (dele af) omskrivningerne (tænk reduktioner).}
+
+%% Experienced programmers will find that code complying to certain standard patterns is easier to
+%% read. Another advantage of standard patterns is that compilers are able to specially optimize these,
+%% possibly making such code faster.
 
 \section{Elaboration}
 We wish to be able to suggest possible rewritings to the programmer in real time, based on some
-predefined rewriting rules.
+predefined rules.
 
 This implies that our tool is initiated and responds through some user interface. There are two good
 reasons why we wish to be able to develop our tool and its user interface separately:
 \begin{enumerate}
-\item As different programmers use different editors or IDE's and generally have strong feelings
+\item As different programmers use different editors and generally have strong feelings
       about their choice we do not see it as an option to implement a new editor. Instead a user
-      interface would be implemented on top of a existing editor or IDE. We do not wish to bind our
-      tool to a single editor or IDE.
+      interface would be implemented on top of an existing editor. We do not wish to bind our
+      tool to a single one.
 \item It is not the goal of this project to implement a user interface for tool assisted
       programming.
 \end{enumerate}
 
-Since the user interface, and the tool are two distinct pieces of software we have to decide a way
-for them to communicate. We choose plain text over streams (e.g. stdin and stdout).
-
-We name our tool Turtledove.
+Since the user interface and the tool are two distinct pieces of software we have to decide a way
+for them to communicate.
 
 \subsection{Semi-automatic rewriting}
+We define a set of rewriting rules:
+\begin{eqnarray*}
+t_0 &\rightarrow& t_0'\\
+&\vdots&\\
+t_n &\rightarrow& t_n'
+\end{eqnarray*}
 
-\subsubsection{Examples}
+where $t_i$ and $t_i'$ are program terms and the free variables of $t_i'$ is a subset of the free
+variables of $t_i$.
+\\
+
+A term $u$ is an instance of a term $t$ if and only if there exists terms $x_i$ such that
+\begin{eqnarray}\label{eq:term-instance}
+t[x_0 / v_0] \cdots [x_n / v_n] =_{\alpha} u
+\end{eqnarray}
+where $v_0, \ldots, v_n$ are the free variables of $t$.
+
+The rule $t \rightarrow t'$ applies to $u$ with the result
+\begin{eqnarray}\label{eq:term-result}
+u' =_{\alpha} t'[x_0 / v_0] \cdots [x_n / v_n]
+\end{eqnarray}
+where the name mapping implied by the alpha equivalence of (\ref{eq:term-instance}) corresponds to
+that of (\ref{eq:term-result}).
+
+Notice that the free variables of $t'$ is a subset of $\{v_0, \ldots, v_n\}$.
+
+\subsubsection{Rule labeling and grouping}
+A large set of rewriting rules suggesting a large amount of rewritings may confuse the programmer as
+to which rewritings is used in which places. Therefore we label each rule with a name and an
+optional description.
+
+Since some rules group naturally together (e.g., multiple rules for rewriting boolean expressions)
+we make it possible to arrange multiple rules under a common group name.
+
+Grouping and labeling makes it easier for the programmer to see what is going on. It could also make
+it possible to turn on or off individual groups of rules or specific rules as well as computing the
+transitive closure of groups of rules.
+
+\subsubsection{Example}
+Consider the following rewriting rule for a standard map form:
+\begin{eqnarray}[TlcTl]
+\begin{lstlisting}
+fun f nil       = nil
+  | f (x :: xs) = (@$\heartsuit$@) :: f xs
+\end{lstlisting}
+&
+\
+\rightarrow
+\
+&
+\begin{lstlisting}
+val f = map (fn x => (@$\heartsuit$@))
+\end{lstlisting}\label{eq:rule-map}
+\end{eqnarray}
+
+Keep in mind that the \texttt{x} on the right hand side is related to the \texttt{x} on the left
+as illustrated below.
+
+The term
+\begin{eqnarray}[Tl]\label{eq:term-gt}
+\begin{lstlisting}
+fun gt nil       = nil
+  | gt (n :: ns) = n > 0 :: gt ns
+\end{lstlisting}
+\end{eqnarray}
+is an instance of the left hand side of (\ref{eq:rule-map}) with instantiation
+\begin{eqnarray*}[TlcTl]
+$\heartsuit$
+&
+\ =\
+&
+\texttt{n > 0}
+\end{eqnarray*}
+and alpha conversion
+\begin{eqnarray*}[TlcTl]
+\texttt{f}
+&
+\ =\
+&
+\texttt{gt}\\
+\texttt{x}
+&
+\ =\
+&
+\texttt{n}\\
+\texttt{xs}
+&
+\ =\
+&
+\texttt{ns}
+\end{eqnarray*}
+
+Now using (\ref{eq:rule-map}) we get the result
+\begin{eqnarray}[Tl]\label{eq:term-gt-result}
+\begin{lstlisting}
+val gt = map (fn n => n > 0)
+\end{lstlisting}
+\end{eqnarray}
 
 \subsection{Turtledove}
+Our implementation of the described tool is named Turtledove.
+\\
 
-\subsubsection{API}
+Since we intent that Turtledove should grow to include more than one tool we design it in such a
+way as to accommodate this. This means that functionality unique to a specific tool should be
+separated from functionality common to most tools.
 
-\subsubsection{Framework}
+Common functionality is split between core functionality needed by every tool and a collection of
+libraries that make it easier to perform common tasks.
+
+\subsubsection{Core functionality}
+The core functionality of Turtledove includes:\fixme{Tilføj ``but is not limited to''?}
+\begin{enumerate}
+\item Turtledove will take the path of an SML file or a project file either as a command line
+  argument or through the user interface after it has been started. It then reads and parses the
+  file or files contained in the project.
+
+  The user interface should signal when a file is changed and possibly what has changed within that
+  file. The one extreme is to signal a file change only when a file is saved. The other is to signal
+  every key stroke. Testing will reveal the right balance.
+  \fixme{For implementationsspecifikt?}
+
+  Tools shall be signalled when the source code has changed.
+
+\item Data is guided between the user interface and its destination. Communication is done over a
+  protocol flexible enough to allow each destination to implement its own protocol.
+\end{enumerate}
 
 \section{Primary goals}
 
 \section{Secondary goals}
+\begin{itemize}
+\item Flere relationer - hver relation n > 0 regler
+\item Transitiv afslutning (markeres)
+  - Hvorfor?
+\item Ændre relationer uden at oversætte
+\item Bevise semantikbevarelse for relationer
+\end{itemize}
+
 
 \section{Limitations}
 
@@ -174,9 +329,8 @@ code ``Turtledove'', and we use the name interchangeably.
 Turtledove will be used for two purposes; i) tool assisted programming, and ii) implementation of
 new tools.
 
-Since we intent that Turtledove should grow to include more than one tool, the
-protocol over which Turtledove and a compliant front end communicate needs to be
-flexible enough to accommodate this.
+Since we intent that Turtledove should grow to include more than one tool, the protocol over which
+Turtledove and a compliant front end communicate needs to be flexible enough to accommodate this.
 
 We choose the most flexible protocol whose only feature is to guide information to and from a
 specific tool. This implies that each tool will have to develop it's own protocol, and that the
