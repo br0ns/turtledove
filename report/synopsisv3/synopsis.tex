@@ -45,6 +45,7 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \fixme{Search and replace ``plugins'' with new word ``tools''}
 \fixme{Search and replace ``IDE'' -> ``editor''}
 \fixme{Search and replace ``front end'' -> ``user interface''}
+\fixme{skift alle itemize ud med enumerate så der kan henvises til specifikke punkter uden for denne}
 
 %% Vi skal skifte drejningen til at handle om værktøjet. Vores motivation er at lave det værktøj. Undgå
 %% at bruge modulnavne i synopsen. Når man læser den er det ikke sikkert man har læst eller har tænkt
@@ -75,8 +76,8 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 
 
 \section{Title}
-``Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic rewriting to
-predefined standard forms.''
+``Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic
+rewriting.''\fixme{Længere titel.}
 
 \section{Motivation}
 Today functional programming languages are not very widespread outside academic circles. A major
@@ -160,7 +161,7 @@ Grouping and labeling makes it easier for the programmer to see what is going on
 it possible to turn on or off individual groups of rules or specific rules as well as computing the
 transitive closure of groups of rules.
 
-\subsubsection{Example}
+\subsubsection{Example}\label{sec:example}
 Consider the following rewriting rule for a standard map form:
 \begin{eqnarray}[TlcTl]
 \begin{lstlisting}
@@ -251,200 +252,79 @@ The core functionality of Turtledove includes:\fixme{Tilføj ``but is not limite
 \end{enumerate}
 
 \section{Primary goals}
+To summarize; Turtledove should be able to
 
-\section{Secondary goals}
-\begin{itemize}
-\item Flere relationer - hver relation n > 0 regler
-\item Transitiv afslutning (markeres)
-  - Hvorfor?
-\item Ændre relationer uden at oversætte
-\item Bevise semantikbevarelse for relationer
-\end{itemize}
-
-
-\section{Limitations}
-
-\section{Learning objectives}
-
-\section{Tasks and timeline}
-
-\section{Motivation}
-Today functional programming languages are not very widespread outside academic circles. A reason
-for this is that not many PATs (programmer assisting tools) exist for functional programming languages
-compared to certain imperative languages.
-
-We wish to make functional programming, specifically in SML, easier to approach for the beginner as
-well as more advantageous for the veteran. The means by which we hope to accomplish this task is the
-development of a framework for implementing PATs, and one or more actual
-tools.
-
-Functional programming languages has a wide variety of advantages that makes them specially suited
-for quick and correct statical analysis. The effect of this is that it will be possible to make more
-complex tools for functional programming languages than for imperative ones.
-\\
-
-We emphasise on a single tool. Namely semi-automatic rewriting of terms to predefined standard
-forms. \fixme{Hvorfor lige dette værktøj?}
-
-\section{Elaboration}
-The project can be divided into three parts.
-\begin{description}
-\item[Front end] The front end is responsible for communicating with the programmer. This
-communication goes both ways. Some tools will work automatically, waiting for the programmer to
-accept corrections and/or suggestions. Some will be initiated by the user.
-\item[Back end] The back end will perform tasks common to most tools. This includes communicating
-with the front end in a suitable format, reading and possibly writing project files, reading and
-parsing source files, defining a representation of syntax trees, keeping an internal representation
-of the source code up to date and defining auxiliary functions (e.g. functions for converting syntax
-trees to source code, converting data to a format suitable for communication with the front end,
-etc.).
-\item[Tools] The tools will be initiated by the back end from which they will get a representation
-of the source code as a syntax tree or the source code itself. Messages to the individual tools from
-the front end will be delivered via the back end. The tools can send messages back to the front end
-through the back end. In this project we will focus on a single tool. See section
-\ref{primary_goals:a_refactoring_tool} below.
-\end{description}
-
-The back end and the tools are split up because most tools will have a lot of tasks in common as
-described above.  So while the back end and the tools are actually the same piece of software, the
-distinction is an important one.
-
-The importance of this distinction implies that we develop a well-defined API for communication
-between the back end and the tools.
-
-We describe the project in greater detail in the next section.
-\fixme{Denne sætning passer måske ikke så godt ind?}
-
-\section{Primary goals}
-We focus our work on the back end and a single tool. A simple front end (e.g. for Emacs) would make
-testing a lot easier, but it is not a requirement for the success of this project.
-
-As we wish to develop the back end and tool(s) separately from the front end, we choose to let all
-communication between the two be through plain text.
-
-The back end and the tool(s) compiles into a single program. We name that program and it's source
-code ``Turtledove'', and we use the name interchangeably.
-
-\subsection{Turtledove: tool assisted programming for SML} 
-Turtledove will be used for two purposes; i) tool assisted programming, and ii) implementation of
-new tools.
-
-Since we intent that Turtledove should grow to include more than one tool, the protocol over which
-Turtledove and a compliant front end communicate needs to be flexible enough to accommodate this.
-
-We choose the most flexible protocol whose only feature is to guide information to and from a
-specific tool. This implies that each tool will have to develop it's own protocol, and that the
-front end will have to support each tool individually. We don't believe this to be a serious
-limitation in practice.
-
-Therefore we will develop a small framework for serializing (e.g. as JSON) and unserializing data as
-a part of Turtledove.
-\\
-
-Turtledove will communicate with the front end through standard streams (i.e., stdin and stdout).
-\\
-
-Turtledove itself needs to be programmed in a modular way, as to make it easy to implement new tools
-later. The tools shall each be confined and only interact with the rest of the program through an
-API and/or the inclusion of libraries.
-
-The API will provide the tools with functions for;
-\begin{itemize}
-\item retrieving (up-to-date) syntax trees and raw code. No tool should access files on it's own as
-      Turtledove might track chances in files that has not yet been saved.
-\item receiving data from the front end or Turtledove (e.g. ``do this'' or ``this file has changed'').
-\item sending data to the front end.
-\end{itemize}
-
-The functionality of Turtledove is split between what Turtledove itself does --- the core
-functionality --- and the framework that is available to programmers who write tools.
-\subsubsection{Core functionality}
-The core functionality is quite limited. Turtledove does two things:
 \begin{enumerate}
-\item Turtledove will take the path of a SML file or project file either as a command line argument
-      or through the input stream after it has been started. It then reads and parses the file or
-      files contained in the project. We choose SML basis files as project files.
-
-      The front end should signal when a file is changed and possibly what has changed within that
-      file. The one extreme is to signal a file change only when a file is saved. The other is to
-      signal every key stroke. Testing will reveal the right balance.
-
-      Tools shall be signalled when the source code has changed.
-
-\item The communication between the front end and a tool is carried by Turtledove. Turtledove will
-      determine the correct receiver (possibly itself) and guide data to it.
-
-      The execution of tools will be initiated by Turtledove and done in a threaded manner. It will
-      also carry data from the tools to the front end.
+\item Read single SML files or projects.
+\item Analyze those files and suggest rewritings as described above.
+\item Be signalled when a file changes and suggest new rewritings if any.
 \end{enumerate}
 
-\subsubsection{Framework}
-Turtledove will contain a framework that helps tools perform common tasks.
+We will implement rules for at least two rewritings: Map forms (as demonstrated in Section
+\ref{sec:example}) and fold forms.
 
-This includes but is not limited to the following
-
-\begin{description}\fixme{Skriv...}
-\item[Parsing] This is crucial for the refactoring tool to.......
-
-\item[Syntax tree representation] A way to represent syntax trees in a clever and reusable way
-  that will also benefit tools to come.
-
-\item[Pretty printing] To convert syntax tree to code
-
-\item[Serializing] The communication bridge and protocol that links the back
-  end with the front end and manages inter communication.
-\end{description}
-
-% Derudover skal der lavet en del funktionalitet som værktøjer kan bruge i form af
-% biblioteker. Eksempler:
-% \begin{itemize}
-% \item SML-parser. Det kan f.eks. være snedigt at lagre vores ``standardformer'' som SML-kode, og så
-%       indlæse det på den måde.
-%
-%    Hvilke "standardformer" ?
-%
-% \item Repræsentation af syntaxtræer.
-% \item Syntaxtræ-til-kode-omformer.
-% \item JSON-bibliotek, samt passende datastrukturer.
-% \end{itemize}
-
-\subsection{A refactoring tool}
-\label{primary_goals:a_refactoring_tool}
-Sådan som vi aftalte...
-
-\subsection{Summary}
-To summarize: the primary goals of Turtledove are
-\begin{enumerate}
-\item Read messages from the front end and send them to the appropriate tool or
-      act directly upon them.
-  
-\item Send messages replies back to the front end.
-
-\item Read and possibly write SML basis files.
-\footnote{Some of the most popular SML implementations support SML basis files:
-\href{http://mlton.org/}{MLton} and \href{http://www.itu.dk/research/mlkit}{MLKit} support them
-directly and there is a tool that converts SML basis files to the CM files used by
-\href{http://smlnj.org}{SML/NJ} automatically.}
-
-\item Read source code and construct syntax trees.
-
-\item Notify tools when the source code has been changed. This should be done as a minimum when
-      source files are saved and preferably more often.
-
-\item Implement a framework that help tools do common tasks.
-\end{enumerate}
+Equivalence of terms and their transformed counterparts should ideally be proven. We acknowledge the
+complexity of such a proof, and is thus satisfied with a good argument.
 
 \section{Secondary goals}
 
-\subsection{Project management}
-Accepting changes to a project from the front end and then write those changes to the SML basis file
-containing the project.
+\fixme{Bør dette være med i synopsis, høre det ikke mere hjemme i selve
+  rapporten? Evt kunne en meget forsimplet udgave af denne liste indgå i
+  synopsen i stedet}
+Should time allow it here follows a non-exhaustive list of further work:
 
-\subsection{A nice front end}
-For Emacs obviously.
+\begin{enumerate}
+
+\item Implement project management. A project manager should at least make it easy for the user to
+  add and remove files from a project. The project manager should write changes to the SML basis
+  file containing the project to disk on the programmers behalf.
+
+\item Make a nice user interface. Probably for Emacs as we use it ourselves and thus have more
+  experience with this editor than others.
+
+\item Extend the various parsers to be incremental where applicable (e.g., the parser for SML source
+  code). The benefit would be speed gains for reparsing of files with small changes, which is often
+  the case.
+
+\item Extend the various parsers to handle syntax errors, for example by skipping the source code
+  until the next valid declaration is found. The location in the skipped line of code where the
+  first error were found should then be reported back to the user interface such that it can do
+  proper notification to the user (e.g., underlining of erroneous code).
+
+% Husk : Måske muligt med SML-Yacc..?
+
+\item Implement transitive closures. Each rewriting rule or group of rules define a relation on
+  terms. We suspect that some interesting rewritings can be defined as the transitive closure of a
+  rule or a group of rules. An annotation in the rule or rule group will tell Turtledove whether it
+  should compute the transitive closure of a rule or not.
+
+\item Add a simplification group of term rewriting rules. Consider the rule \texttt{fn x => g x
+    $\rightarrow$ g} as an example.
+
+  When defining a rule it shall be possible to try other rules on the resulting term. The map rule
+  from Section \ref{sec:example} will benefit from applying the above rule to its output. Of course
+  if the rule does not match it should do nothing.
+
+  Another option is to always try to apply a set of simplifying rules to the output of any rule.
+
+\item Extend the IO file/source code handling part of the program to have a ``patch'' system such
+  that code written in the editor is reflected ``live'' if the SML parser decides to parse the
+  source files, even if the source files haven't been saved recently.
+
+\item Extend Turtledove such that the SML source code parser can report back ``DocString''
+  information\footnote{A short description of a value or function as known from for example Eclipse
+    or Visual Studio} to the user interface which in turn can inform the user in an appropriate way.
+
+\item Various parsings of the syntax tree to for example gradually remove syntactic sugar.
+  \begin{itemize}
+  \item With this a notion of ``run levels'' could be introduced, so at the end of each parsing all
+    tools that hook this level will be notified and able to act upon this specific version of the
+    parse tree. While the next parse of the syntax tree should continue if there is tools depending
+    on one of the next run levels.
+  \end{itemize}
+\end{enumerate}
 
 \section{Limitations}
-\fixme{Nothing has to work as intended.}
 
 \begin{enumerate}
 \item Turtledove need not be able to read CM project files.
@@ -459,25 +339,24 @@ For Emacs obviously.
 \section{Learning objectives}
 
 \begin{enumerate}
-\item To develop structured, flexible and well-documented software for
-      manipulation of source code.
+\item To develop structured, flexible and well-documented software for manipulation of source code.
 \item To understand and describe source code transformations formally, and to implement such
-      transformations.
+  transformations.
 \end{enumerate}
 
-\section{Tasks and timeline}
 
+\section{Tasks}
 
 \begin{enumerate}
 
 \item Design an API for intercommunication between the user interface and
   Turtledove.
 
-\item Implement a parser than can parse \textit{.mlb} project files
+\item Implement a parser that can parse \textit{.mlb} project files
   \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files}
 
-\item Design the structure of the concrete syntax tree and decide which approach
-  and data type to implement it as.
+\item Design the structure of the concrete syntax tree and decide which approach and data type to
+  implement it as.
 
 \item Implement a parser that can parse SML code.
 
@@ -485,88 +364,19 @@ For Emacs obviously.
 
 \item Implement a set of rewriting terms
 
-\item Implement the libraries discussed in xxx. \fixme{reference to above
-    needed. If this is left out of the synopsis then remove this task.}
+\item Implement a project manager that given a set of file parsers (e.g., the \textit{.mlb} project
+  file parser) exposes an API such that a list of names and paths can be queried from the file
+  parser, for example.
 
-\item Implement a project manager that given a set of file parsers (e.g., the \textit{.mlb} project file
-  parser) exposes an API such that a list of names and paths can be queried from
-  the file parser, for example.
+\item Extend the project manager such that it at some point can implement smart IO handling of the
+  source files.
 
-\item Extend the project manager such that it at some point can implement smart
-  IO handling of the source files.
+\item Implement the designed API for intercommunication between the user interface and Turtledove.
 
-\item Implement the designed API for intercommunication between the user
-  interface and Turtledove.
-
-\item Analyse Turtledove and apply threading where needed (e.g., the parser for
-  SML code and Turtledove itself).
+\item Analyze Turtledove and apply threading where needed (e.g., the parser for SML code and
+  Turtledove itself).
 
 \end{enumerate}
 
-
-
-
-\section{Expansion (``Nice to have'')}
-
-\fixme{Bør dette være med i synopsis, høre det ikke mere hjemme i selve
-  rapporten? Evt kunne en meget forsimplet udgave af denne liste indgå i
-  synopsen i stedet}
-
-\begin{enumerate}
-
-
-\item Extend the various parsers to be incremental where applicable (e.g., the
-  parser for SML source code).
-
-\item Extend the various parsers to handle syntax errors, for example by
-  skipping the source code until the next valid declaration is fount.
-  The location in the skipped line of code where the first error were found
-  should then be reported back to the user interface such that it can do proper
-  notification to the user (e.g., underlining of erroneous code).
-
-\fixme{this might be possible through SML-Yacc?}
-
-
-\item Implement transitive closures of some of the term rewriting rules by
-  adding the possibility to tag separate groups of rewriting rules that the
-  transitive closures should be applied to.
-
-
-\item Add a simplification group of term rewriting rules. For example the result
-  of the standard map form can be simplified by the following simplification
-  rule \texttt{ fn x => g x $\rightarrow$ g}
-
-
-\item Extend the term rewriting definitions such that it is possible to enforce
-  that a certain group of rules should always be applied to the result of applying
-  another specific group of rules. For example enforcing that the simplification
-  group is always applied after the standard map form rewriting rules has been applied.
-
-
-\item Extend the IO file/source code handling part of the project manager to
-  have a ``patch'' system such that code written in the editor is reflected
-  ``live'' if the SML parser decides to parse the source files, even if the
-  source files haven't been saved recently.
-
-
-\item Extend Turtledove such that the SML source code parser can report back
-  DocString information to the user interface which in turn can inform the user
-  in an appropriate way.
-
-
-
-\item Various parsings of the syntax tree to for example gradually remove
-  syntactic sugar.
-  \begin{itemize}
-
-  \item With this a notion of ``run levels'' could be introduced, so at the end
-    of each parsing all tools that hook this level will be notified and able to
-    act upon this specific version of the parse tree. While the next parse of
-    the syntax tree should continue if there is tools depending on one of the
-    next run levels.
-
-  \end{itemize}
-
-\end{enumerate}
 
 \end{document}
