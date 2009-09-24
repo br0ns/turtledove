@@ -36,48 +36,20 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 }
 
 \author{Morten Brøns-Pedersen \and Jesper Reenberg}
-\title{Synopsis}
+\title{Project contract}
 
 \begin{document}
 
 \maketitle
 
-\fixme{Search and replace ``plugins'' with new word ``tools''}
-\fixme{Search and replace ``IDE'' -> ``editor''}
-\fixme{Search and replace ``front end'' -> ``user interface''}
-\fixme{skift alle itemize ud med enumerate så der kan henvises til specifikke punkter uden for denne}
-
-%% Vi skal skifte drejningen til at handle om værktøjet. Vores motivation er at lave det værktøj. Undgå
-%% at bruge modulnavne i synopsen. Når man læser den er det ikke sikkert man har læst eller har tænkt
-%% sig at læse kildekoden.
-
-%% Navngivning:
-%%   Programmet hedder Turtledove. Værktøjet har intet navn men kan identificeres med Turtledove idet
-%%   der ikke laves andre værktøjer
-
-%% Logisk opbygning:
-%%   Title
-%%   Motivation
-%%     Tool assisted programming i almindelighed
-%%     Vores værktøj specielt
-%%   Elaboration
-%%     Vi ønsker at opdele udviklingen af Turtledove og front-end'en.
-%%       Kommunikation foregår via tekststrømme
-%%     Hvad skal vores værktøj kunne, (næsten) helt præcist?
-%%       Kodeeksempler
-%%     For at lette udviddelsen af Turtledove vil vi prøve at holde en vis grad af modularitet
-%%       API
-%%       Libs
-%%   Primary goals
-%%   Secondary goals (nice to haves skal herunder)
-%%   Limitations
-%%   Learning objective
-%%   Tasks and timeline
-
+% \fixme{Search and replace ``plugins'' with new word ``tools''}
+% \fixme{Search and replace ``IDE'' -> ``editor''}
+% \fixme{Search and replace ``front end'' -> ``user interface''}
+% \fixme{skift alle itemize ud med enumerate så der kan henvises til specifikke punkter uden for denne}
 
 \section{Title}
 ``Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic
-rewriting.''\fixme{Længere titel.}
+rewriting.''
 
 \section{Motivation}
 Today functional programming languages are not very widespread outside academic circles. A major
@@ -96,13 +68,14 @@ complex tools for functional programming languages than for imperative ones.
 We implement semi-automatic rewriting of terms according to a set of predefined rules. We focus on
 modularity such that it will be relatively simple to implement other tools based on our software in
 the future.
+
 \fixme{Hvorfor dette værktøj? i) Vi behøver ikke regne typer, ii) vi får lov at føre nogle fine
 beviser, iii) med omskrivning kan vi let implementere flere forskellige værktøjer - især hvis vi
 implementerer den transitive afslutning af (dele af) omskrivningerne (tænk reduktioner).}
 
-%% Experienced programmers will find that code complying to certain standard patterns is easier to
-%% read. Another advantage of standard patterns is that compilers are able to specially optimize these,
-%% possibly making such code faster.
+% Experienced programmers will find that code complying to certain standard patterns is easier to
+% read. Another advantage of standard patterns is that compilers are able to specially optimize these,
+% possibly making such code faster.
 
 \section{Elaboration}
 We wish to be able to suggest possible rewritings to the programmer in real time, based on some
@@ -123,46 +96,14 @@ Since the user interface and the tool are two distinct pieces of software we hav
 for them to communicate.
 
 \subsection{Semi-automatic rewriting}
-We define a set of rewriting rules:
-\begin{eqnarray*}
-t_0 &\rightarrow& t_0'\\
-&\vdots&\\
-t_n &\rightarrow& t_n'
-\end{eqnarray*}
+We implement a set of rewriting rules. This implies the development of a suitable representation of
+rules and a theory for arguing about them.
 
-where $t_i$ and $t_i'$ are program terms and the free variables of $t_i'$ is a subset of the free
-variables of $t_i$.
-\\
-
-A term $u$ is an instance of a term $t$ if and only if there exists terms $x_i$ such that
-\begin{eqnarray}\label{eq:term-instance}
-t[x_0 / v_0] \cdots [x_n / v_n] =_{\alpha} u
-\end{eqnarray}
-where $v_0, \ldots, v_n$ are the free variables of $t$.
-
-The rule $t \rightarrow t'$ applies to $u$ with the result
-\begin{eqnarray}\label{eq:term-result}
-u' =_{\alpha} t'[x_0 / v_0] \cdots [x_n / v_n]
-\end{eqnarray}
-where the name mapping implied by the alpha equivalence of (\ref{eq:term-instance}) corresponds to
-that of (\ref{eq:term-result}).
-
-Notice that the free variables of $t'$ is a subset of $\{v_0, \ldots, v_n\}$.
-
-\subsubsection{Rule labeling and grouping}
-A large set of rewriting rules suggesting a large amount of rewritings may confuse the programmer as
-to which rewritings is used in which places. Therefore we label each rule with a name and an
-optional description.
-
-Since some rules group naturally together (e.g., multiple rules for rewriting boolean expressions)
-we make it possible to arrange multiple rules under a common group name.
-
-Grouping and labeling makes it easier for the programmer to see what is going on. It could also make
-it possible to turn on or off individual groups of rules or specific rules as well as computing the
-transitive closure of groups of rules.
+An example of a potential rule is given below.
 
 \subsubsection{Example}\label{sec:example}
-Consider the following rewriting rule for a standard map form:
+Given a suitable notion of instantiation and alpha equivalence, consider the following rewriting
+rule for a standard map form:
 \begin{eqnarray}[TlcTl]
 \begin{lstlisting}
 fun f nil       = nil
@@ -178,8 +119,8 @@ val f = map (fn x => (@$\heartsuit$@))
 \end{lstlisting}\label{eq:rule-map}
 \end{eqnarray}
 
-Keep in mind that the \texttt{x} on the right hand side is related to the \texttt{x} on the left
-as illustrated below.
+Notice that the \texttt{x} on the right hand side is related to the \texttt{x} on the left as
+illustrated below.
 
 The term
 \begin{eqnarray}[Tl]\label{eq:term-gt}
@@ -271,12 +212,12 @@ complexity of such a proof, and is thus satisfied with a good argument.
 \fixme{Bør dette være med i synopsis, høre det ikke mere hjemme i selve
   rapporten? Evt kunne en meget forsimplet udgave af denne liste indgå i
   synopsen i stedet}
-Should time allow it here follows a non-exhaustive list of further work:
+Here follows a non-exhaustive list of further work, should time allow it:
 
 \begin{enumerate}
 
 \item Implement project management. A project manager should at least make it easy for the user to
-  add and remove files from a project. The project manager should write changes to the SML basis
+  add and remove files from a project. The project manager should write changes to the ML Basis
   file containing the project to disk on the programmers behalf.
 
 \item Make a nice user interface. Probably for Emacs as we use it ourselves and thus have more
@@ -288,8 +229,8 @@ Should time allow it here follows a non-exhaustive list of further work:
 
 \item Extend the various parsers to handle syntax errors, for example by skipping the source code
   until the next valid declaration is found. The location in the skipped line of code where the
-  first error were found should then be reported back to the user interface such that it can do
-  proper notification to the user (e.g., underlining of erroneous code).
+  first error was found should then be reported back to the user interface so it can make a proper
+  notification of the user (e.g., underlining of erroneous code).
 
 % Husk : Måske muligt med SML-Yacc..?
 
@@ -316,12 +257,11 @@ Should time allow it here follows a non-exhaustive list of further work:
     or Visual Studio} to the user interface which in turn can inform the user in an appropriate way.
 
 \item Various parsings of the syntax tree to for example gradually remove syntactic sugar.
-  \begin{itemize}
-  \item With this a notion of ``run levels'' could be introduced, so at the end of each parsing all
-    tools that hook this level will be notified and able to act upon this specific version of the
-    parse tree. While the next parse of the syntax tree should continue if there is tools depending
-    on one of the next run levels.
-  \end{itemize}
+
+  With this a notion of ``run levels'' could be introduced, so at the end of each parsing all tools
+  that hook this level will be notified and able to act upon this specific version of the parse
+  tree. While the next parse of the syntax tree should continue if there is tools depending on one
+  of the next run levels.
 \end{enumerate}
 
 \section{Limitations}
@@ -339,44 +279,57 @@ Should time allow it here follows a non-exhaustive list of further work:
 \section{Learning objectives}
 
 \begin{enumerate}
-\item To develop structured, flexible and well-documented software for manipulation of source code.
+\item To develop structured, flexible and easy-to-understand software for manipulation of source code.
 \item To understand and describe source code transformations formally, and to implement such
   transformations.
 \end{enumerate}
 
 
 \section{Tasks}
+The project has both theoretical and practical aspects. Therefore a lot of tasks can potentially be
+done in parallel.
 
-\begin{enumerate}
+The two task lists below is split in mostly theoretical and practical tasks. Each list is ordered by
+descending priority.
 
-\item Design an API for intercommunication between the user interface and
+\begin{description}
+\item[Theoretical] \ \\
+\begin{description}
+\item[1 week] Research state-of-the-art literature on code rewriting.
+
+\item[1 week] Make a draft of the formal definition of ``rewriting rules''. Experiment with
+  different approaches.
+
+\item[2 weeks] Formally define ``rewriting rules''.
+
+\item[2 weeks] Define a set of rewriting rules.
+
+\item[3 weeks] Argue for the correctness and usefulness of the implemented rules.
+\end{description}
+
+\item[Practical] \ \\
+\begin{description}
+
+\item[1 week] Design an API for intercommunication between the user interface and Turtledove.
+
+\item[2 weeks] Implement a parser that can parse ML Basis project files\footnote{As described at
+    \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files} (as of September 24th, 2009).}.
+
+\item[1 weeks] Implement a project manager that given the path of a ML Basis file parses the file,
+  and models the project. It should be possible to read the contents of the files through the model.
+
+\item[2 weeks] Implement a representation of concrete syntax trees of SML source code.
+
+\item[3 weeks] Implement a SML parser.
+
+\item[2 weeks] Implement the term rewriting tool.
+
+\item[1 week] Implement the designed API for intercommunication between the user interface and
   Turtledove.
 
-\item Implement a parser that can parse \textit{.mlb} project files
-  \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files}
-
-\item Design the structure of the concrete syntax tree and decide which approach and data type to
-  implement it as.
-
-\item Implement a parser that can parse SML code.
-
-\item Design the term rewriting tool.
-
-\item Implement a set of rewriting terms
-
-\item Implement a project manager that given a set of file parsers (e.g., the \textit{.mlb} project
-  file parser) exposes an API such that a list of names and paths can be queried from the file
-  parser, for example.
-
-\item Extend the project manager such that it at some point can implement smart IO handling of the
-  source files.
-
-\item Implement the designed API for intercommunication between the user interface and Turtledove.
-
-\item Analyze Turtledove and apply threading where needed (e.g., the parser for SML code and
-  Turtledove itself).
-
-\end{enumerate}
-
+\item[2 weeks] Analyze Turtledove and apply threading where needed (e.g., the parser for SML code
+  and Turtledove itself).
+\end{description}
+\end{description}
 
 \end{document}

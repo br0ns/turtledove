@@ -1,0 +1,139 @@
+\documentclass[a4paper, oneside, final]{memoir}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+
+% bedre orddeling Gør at der som minimum skal blive to tegn på linien ved
+% orddeling og minimum flyttes to tegn ned på næste linie. Desværre er værdien
+% anvendt af babel »12«, hvilket kan give orddelingen »h-vor«.
+\renewcommand{\britishhyphenmins}{22} 
+
+% Fix of fancyref to work with memoir. Makes references look
+% nice. Redefines memoir \fref and \Fref to \refer and \Refer.
+% \usepackage{refer}             %
+% As we dont really have any use for \fref and \Fref we just undefine what
+% memoir defined them as, so fancyref can define what it wants.
+\let\fref\undefined
+\let\Fref\undefined
+\usepackage{fancyref} % Better reference. 
+
+\usepackage{pdflscape} % Gør landscape-environmentet tilgængeligt
+\usepackage{fixme}     % Indsæt "fixme" noter i drafts.
+\usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
+
+\usepackage[format=hang]{caption,subfig}
+\usepackage{graphicx}
+\usepackage{stmaryrd}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{ulem} % \sout - strike-through
+\usepackage{tikz}
+
+\lstset{ %
+% language=Octave,                % choose the language of the code
+basicstyle=\ttfamily,        % the size of the fonts that are used for the code
+basewidth=0.5em,
+% numbers=left,                   % where to put the line-numbers
+% numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+% stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+% numbersep=5pt,                  % how far the line-numbers are from the code
+% backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+% showspaces=false,               % show spaces adding particular underscores
+% showstringspaces=false,         % underline spaces within strings
+% showtabs=false,                 % show tabs within strings adding particular underscores
+% frame=single	                % adds a frame around the code
+% tabsize=2,	                % sets default tabsize to 2 spaces
+% captionpos=b,                   % sets the caption-position to bottom
+% breaklines=true,                % sets automatic line breaking
+% breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+escapeinside={(@}{@)}          % if you want to add a comment within your code
+}
+
+\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
+%\usepackage[sc]{mathpazo}     % Palatino font
+\renewcommand{\rmdefault}{ugm} % Garamond
+%\usepackage[garamond]{mathdesign}
+
+%\overfullrule=5pt
+%\setsecnumdepth{part}
+\setcounter{secnumdepth}{1} % Sæt overskriftsnummereringsdybde. Disable = -1.
+\chapterstyle{hangnum} % changes style of chapters, to look nice.
+
+\makeatletter
+\newenvironment{nonfloatingfigure}{
+  \vskip\intextsep
+  \def\@captype{figure}
+  }{
+  \vskip\intextsep
+}
+
+\newenvironment{nonfloatingtable}{
+  \vskip\intextsep
+  \def\@captype{table}
+  }{
+  \vskip\intextsep
+}
+\makeatother
+
+\author{Morten Brøns-Pedersen \and Jesper Reenberg}
+
+\title{Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic rewriting to
+predefined standard forms.}
+
+\date{\today}
+\pagestyle{plain}
+
+\begin{document}
+
+\frontmatter
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\end{abstract}
+
+\clearpage 
+\chapter*{Preface}
+This report is a 15 ECTS Bachelor project at the Computer Science
+Department (DIKU), University of Copenhagen. The authors are Martin
+Dybdal, Troels Henriksen and Jesper Reenberg. The project is
+supervised by Ken Friis Larsen, assistant professor at DIKU.
+
+\clearpage
+
+\tableofcontents*
+
+\mainmatter
+
+\chapter{Introduction}
+
+\section{Problem statement}
+\label{sec:problem-statement}
+
+\section{Motivation}
+\label{sec:motivation}
+
+\section{Reader expectations}
+
+\section{Structure outline}
+
+\chapter{...}
+...
+
+
+\chapter{Evaluation}
+\label{chap:evaluation}
+
+\chapter{Conclusions}
+
+\bibliographystyle{bibliography/theseurl}
+\bibliography{bibliography/bibliography}
+
+\appendix
+
+\chapter{...}
+
+
+
+\end{document}

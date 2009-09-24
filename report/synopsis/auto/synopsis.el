@@ -1,6 +1,5 @@
 (TeX-add-style-hook "synopsis"
  (lambda ()
-    (LaTeX-add-bibliographies)
     (TeX-add-symbols
      "EDSL")
     (TeX-run-style-hooks
@@ -10,7 +9,9 @@
      "fixme"
      "draft"
      "pdflscape"
-     "colortbl"
+     "graphicx"
+     "subfig"
+     "caption"
      "babel"
      "english"
      "inputenc"
