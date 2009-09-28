@@ -1,0 +1,165 @@
+\documentclass[a4paper, oneside, final]{memoir}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+
+% bedre orddeling Gør at der som minimum skal blive to tegn på linien ved
+% orddeling og minimum flyttes to tegn ned på næste linie. Desværre er værdien
+% anvendt af babel »12«, hvilket kan give orddelingen »h-vor«.
+\renewcommand{\britishhyphenmins}{22} 
+
+% Fix of fancyref to work with memoir. Makes references look
+% nice. Redefines memoir \fref and \Fref to \refer and \Refer.
+% \usepackage{refer}             %
+% As we dont really have any use for \fref and \Fref we just undefine what
+% memoir defined them as, so fancyref can define what it wants.
+\let\fref\undefined
+\let\Fref\undefined
+\usepackage{fancyref} % Better reference. 
+
+\usepackage{pdflscape} % Gør landscape-environmentet tilgængeligt
+\usepackage{fixme}     % Indsæt "fixme" noter i drafts.
+\usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
+
+\usepackage[format=hang]{caption,subfig}
+\usepackage{graphicx}
+\usepackage{stmaryrd}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{ulem} % \sout - strike-through
+\usepackage{tikz}
+
+\usepackage{mdwtab}
+\usepackage{mathenv}
+\usepackage{semantic} % for the \mathlig function
+
+
+\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
+%\usepackage[sc]{mathpazo}     % Palatino font
+\renewcommand{\rmdefault}{ugm} % Garamond
+%\usepackage[garamond]{mathdesign}
+
+%\overfullrule=5pt
+%\setsecnumdepth{part}
+\setcounter{secnumdepth}{1} % Sæt overskriftsnummereringsdybde. Disable = -1.
+\chapterstyle{hangnum} % changes style of chapters, to look nice.
+
+
+\begin{document}
+
+\mathlig{<}{\langle}
+\mathlig{>}{\rangle}
+
+\begin{eqnarray*}[rqcql:Tl]
+atexp & ::= & scon            & special constant \\
+& & < op > longvid            & value identifier \\
+& & \{ < exprow > \}          & recod \\
+& & \# \ lab                  & record selector \\
+& & ()                        & 0-tuple \\
+& & (exp_1 \ , \ \cdots \ , \ exp_n)  & n-tuple, $n \geq 2$ \\
+& & [exp_1 \ , \ \cdots \ , \ exp_n]  & list, $n \geq 2$ \\
+& & (exp_1 \ ; \ \cdots \ ; \ exp_n)  & sequence, $n \geq 2$ \\
+& & \texttt{let } dec \texttt{ in } exp_1 \ ; \ \cdots \ ; exp_n \texttt{ end} &
+local declaration, $n \geq 2$ \\
+& & ( \ exp \ )               & \\
+\\
+exprow & ::= & lab = exp \  < \ , \ exprow>  & expression row \\
+\\
+appexp & ::= & atexp \\
+& & appexp atexp                             & application expression \\
+\\
+infexp & ::= & appexp \\
+& & \mathit{infexp}_1 \ vid \ \mathit{infexp}_2   & infix expression \\
+\\
+exp & ::= & \mathit{infexp} \\
+& & exp \ : \ ty                                  & typed (L) \\
+& & exp_1 \texttt{ andalso } exp_2                & conjunction \\
+& & exp_1 \texttt{ oreelse } exp_2                & disjunction \\
+& & exp \texttt{ handle } match                   & handle exception \\
+& & \texttt{raise } exp                           & raise exception \\
+& & \texttt{if } exp_1 \texttt{ then } exp_2
+    \texttt{ else } exp_3                         & conditional \\
+& & \texttt{while } exp_1 \texttt{ do } exp_2     & iteration \\
+& & \texttt{case } exp \texttt{ of } match        & case analysis \\
+& & \texttt{fn } match                            & function \\
+\\
+dec & ::= & \texttt{val } tyvarseq \  valbind        & value declaration \\
+& & \texttt{fun } tyvarseq \ fvalbind                & function declaration \\
+& & \texttt{type } typbind                           & type declaration \\
+& & \texttt{datatype } datbind 
+    \ < \texttt{withtype } typbind >                 & datatype declaration \\
+& & \texttt{datatype } tycon = \texttt{datatype }
+    longtycon                                        & datatype replication \\
+& & \texttt{abstype } datbind 
+    \ <\texttt{withtype } typbind > 
+    \texttt{ with } dec \texttt{ end }               & abstype declaration \\
+& & \texttt{exception } exbind                       & exception declaration \\
+& & \texttt{local } dec_1 \texttt{ in }
+    dec_2 \texttt{ end }                             & local declaration \\
+& & \texttt{open } longstrid_1 \ \cdots 
+     \ longstrid_n                                   & open declaration, $n \geq 2$ \\
+& &                                                  & empty declaration \\
+& & dec_1 \ <;> \ dec_2                              & sequential declaration \\
+& & \texttt{infix } <d> \ vid_1 \ \cdots \ vid_n     & infix (L) directive, $n \geq 2$ \\
+& & \texttt{infixr } <d> \ vid_1 \ \cdots \ vid_n    & infix (R) directive, $n \geq 2$ \\
+& & \texttt{nonfix } vid_1 \ \cdots \ vid_n          & nonfix directive, $n \geq 2$ \\
+\\
+valbind & ::= & pat = exp \ < \texttt{and } valbind > \\
+& & \texttt{rec } valbind \\
+\\
+\mathit{fvalbind} & ::= & <\texttt{op}> vid \ atpat_{11} \ 
+    \cdots \ atpat_{1n} < :ty > = exp_1              & $m,n \geq 1$ \\
+& & | <\texttt{op}> vid \ atpat_{21} \ 
+    \cdots \ atpat_{2n} < :ty > = exp_2 \\
+& & | \qquad \cdots \qquad \cdots \\
+& & | <\texttt{op}> vid \ atpat_{m1} \ 
+    \cdots \ atpat_{mn} < :ty > = exp_m \\            
+& & \qquad <\texttt{and } \mathit{fvalbind}> \\
+\\
+typbind & ::= & tyvarseq \ tycon = ty \ <\texttt{and } datbind> \\
+\\
+datbind & ::= & tyvarseq \ tycon = conbind \ <\texttt{and } datbind> \\
+\\
+conbind & ::= & <\texttt{op}> vid \  <\texttt{if } ty> \ < \ \mid conbind > \\
+\\
+exbind & ::= & <\texttt{op}> vid \  <\texttt{of } ty> \ <\texttt{and } exbind > \\
+& & <\texttt{op}> vid = <\texttt{op}> longvid \ <\texttt{and } exbind > \\
+\\
+atpat & ::= & \_                                    & wildcard \\
+& & scon                                            & special constant \\
+& & <\texttt{op}> longvid                           & value identifier \\
+& & ()                                              & 0-tuple \\
+& & (pat_1 \ , \ \cdots \ , \ pat_n)1                  & n-tuple, $n \geq 2$ \\
+& & [pat_1 \ , \ \cdots \ , \ pat_n]                & list, $n \geq 2$ \\
+& & ( \ pat \ ) \\
+\\
+patrow & ::= & ...                                  & patrow \\
+& & lab = pat \ < \ , patrow>                       & pattern row \\
+& & vid <:ty> \ <\texttt{as } pat> \ <, \ patrow >  & label as variable \\
+\\
+pat & ::= & atpat                                   & atomic \\
+& & <\texttt{op}> longvid \ atpat                   & constructed value \\
+& & pat_1 \ vid \ pat_2                             & constructed value (infix) \\
+& & pat \ : \ ty                                    & typed \\
+& & <\texttt{op}> vid <: ty > \texttt{ as } pat     & layered \\
+\\  
+ty & ::= & tyvar                                    & type variable \\
+& & \{ \ <tyrow> \ \}                               & record type expression \\
+& & tyseq \ longtycon                               & type construction \\
+& & ty_1 \ast \cdots \ast ty_n                      & tuple type, $n \geq 2$ \\
+& & ty -> ty'                                       & function type expression (R) \\
+& & ( \ ty \ ) \\
+\\
+tyrow & ::= & lab \ : \ ty \ < \ , \ tyrow >        & type-expression row                                  
+\end{eqnarray*}
+
+
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% reftex-fref-is-default: t
+%%% End: 
