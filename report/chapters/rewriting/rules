@@ -1,0 +1,143 @@
+;; Map
+fun f (x::xs) = G :: f xs
+  | f H       = []
+
+=>
+
+fun f xs = map G xs
+
+;; Foldl
+
+fun f G b (x::xs) = f G (G(x, b)) xs
+  | f G b []      = b
+
+=>
+
+fun f G b xs = foldl G b xs
+
+;; Foldr (Højere ordens til skitsering)
+
+fun f G b (x::xs) = G(x, f G b xs)
+
+=> 
+
+fun f G b xs = foldr G b xs
+
+;; Concat
+
+fun f ((y::ys) :: xs) = y :: f (ys :: xs)
+  | f ([] :: xs)      = f (xs)
+  | f []              = []
+
+=>
+
+fun f xs = List.concat xs
+
+;; Zip 
+
+fun f ((x::xs), (y::ys)) = (x, y) :: f xs ys
+  | f (_, _)             = []
+
+=> 
+
+fun f xs ys = ListPair.zip
+
+;; Unzip 
+
+fun f ((x, y)::xl) = 
+    let
+      val (xs, ys) = f xl
+    in
+      (x :: xs, y :: ys)
+    end
+  | f [] = ([], [])
+
+=>
+
+fun f xl = ListPair.unzip xl
+
+;; Nested if
+
+if B1 then
+    if B2 then
+        G
+    else
+        H
+else
+    I
+
+=> 
+
+case (B1, B2) of
+    (true, true)   => G
+  | (true, false)  => H
+  | (false, false) => I 
+
+;; Nested    case
+
+case A of
+    A1 => (case B of 
+               B1 => G1
+             | B2 => H1
+             | .. => I1)
+  | A2 => (case B of
+               B1 => G2
+             | B2 => H2
+             | .. => I2)
+  | ...
+
+=>
+
+case (A,B) of 
+    (A1, B1) => G1
+  | (A1, B2) => H1
+  | (A1, ..) => I1
+  | (A1, B1) => G2
+  | (A2, B2) => H2
+  | (A2, ..) => I2
+  | (.., ..) => ..
+
+;; Boolsk reduktion
+
+if E then true else false => E
+
+if E then false else true => not E
+
+if E then E else false => E
+
+if not E then X else Y => if E then Y else X
+
+if X then true else Y => X oreelse Y
+
+if X then Y else false => X andalso Y
+
+if X then false else Y => not X andalso Y
+
+if X then Y else true => not X oreelse Y
+
+
+* staged 
+  1. Hinter at noget kode måske kan omskrives da det partielt matcher en regel
+  2. Kommer med deciderede forslag til omskrivninger.
+
+* simple ekvivalens regler, stage 2
+
+* mønstre ordnes efter generalitet (mere generel til sidst) definer dette præcist
+  * disjunkte mønstre/konstruktører ordnes lexikografisk. Definer præcist.
+  * ens mønstre klappes sammen
+
+* Højresiden har en "magisk" ligheds relation. Definer (brug ikke
+  dobbelt lighed). Simplificer her til mest generel mønster.
+  * Når en normal er nået er det denne der matches mod omskrivnings regler.
+
+* forskellig sekvens af arguemnter håndteres ikke lige pt.
+
+HOMEWORK
+
+* Klare definitioner.
+* Problem: Hvordan fås en canonisk/normal form for grupper.
+
+* Hvordan håndteres endeligt mange patternmatch
+
+* Brainstorm dumme mønstre
+

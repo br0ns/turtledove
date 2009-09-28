@@ -1,4 +1,4 @@
-\documentclass[a4paper, oneside, final]{memoir}
+\documentclass[a4paper, oneside, final]{memoir} 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[british]{babel}
@@ -91,8 +91,8 @@ dec & ::= & \texttt{val } tyvarseq \  valbind        & value declaration \\
 & & \texttt{datatype } tycon = \texttt{datatype }
     longtycon                                        & datatype replication \\
 & & \texttt{abstype } datbind 
-    \ <\texttt{withtype } typbind > 
-    \texttt{ with } dec \texttt{ end }               & abstype declaration \\
+    \ <\texttt{withtype } typbind >                  & abstype declaration \\
+& & \quad \texttt{ with } dec \texttt{ end } \\
 & & \texttt{exception } exbind                       & exception declaration \\
 & & \texttt{local } dec_1 \texttt{ in }
     dec_2 \texttt{ end }                             & local declaration \\
@@ -109,12 +109,12 @@ valbind & ::= & pat = exp \ < \texttt{and } valbind > \\
 \\
 \mathit{fvalbind} & ::= & <\texttt{op}> vid \ atpat_{11} \ 
     \cdots \ atpat_{1n} < :ty > = exp_1              & $m,n \geq 1$ \\
-& & | <\texttt{op}> vid \ atpat_{21} \ 
+& & \quad | <\texttt{op}> vid \ atpat_{21} \ 
     \cdots \ atpat_{2n} < :ty > = exp_2 \\
-& & | \qquad \cdots \qquad \cdots \\
-& & | <\texttt{op}> vid \ atpat_{m1} \ 
+& & \quad | \qquad \cdots \qquad \cdots \\
+& & \quad | <\texttt{op}> vid \ atpat_{m1} \ 
     \cdots \ atpat_{mn} < :ty > = exp_m \\            
-& & \qquad <\texttt{and } \mathit{fvalbind}> \\
+& & <\texttt{and } \mathit{fvalbind}> \\
 \\
 typbind & ::= & tyvarseq \ tycon = ty \ <\texttt{and } datbind> \\
 \\
@@ -152,7 +152,6 @@ ty & ::= & tyvar                                    & type variable \\
 \\
 tyrow & ::= & lab \ : \ ty \ < \ , \ tyrow >        & type-expression row                                  
 \end{eqnarray*}
-
 
 
 \end{document}

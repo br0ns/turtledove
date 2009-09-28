@@ -1,0 +1,184 @@
+\documentclass[a4paper, oneside, final]{memoir}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+
+% bedre orddeling Gør at der som minimum skal blive to tegn på linien ved
+% orddeling og minimum flyttes to tegn ned på næste linie. Desværre er værdien
+% anvendt af babel »12«, hvilket kan give orddelingen »h-vor«.
+\renewcommand{\britishhyphenmins}{22} 
+
+% Fix of fancyref to work with memoir. Makes references look
+% nice. Redefines memoir \fref and \Fref to \refer and \Refer.
+% \usepackage{refer}             %
+% As we dont really have any use for \fref and \Fref we just undefine what
+% memoir defined them as, so fancyref can define what it wants.
+\let\fref\undefined
+\let\Fref\undefined
+\usepackage{fancyref} % Better reference. 
+
+\usepackage{pdflscape} % Gør landscape-environmentet tilgængeligt
+\usepackage{fixme}     % Indsæt "fixme" noter i drafts.
+\usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
+
+\usepackage[format=hang]{caption,subfig}
+\usepackage{graphicx}
+\usepackage{stmaryrd}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{ulem} % \sout - strike-through
+\usepackage{tikz}
+
+\usepackage{mdwtab}
+\usepackage{mathenv}
+\usepackage{semantic} % for the \mathlig function
+
+
+\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
+%\usepackage[sc]{mathpazo}     % Palatino font
+\renewcommand{\rmdefault}{ugm} % Garamond
+%\usepackage[garamond]{mathdesign}
+
+%\overfullrule=5pt
+%\setsecnumdepth{part}
+\setcounter{secnumdepth}{1} % Sæt overskriftsnummereringsdybde. Disable = -1.
+\chapterstyle{hangnum} % changes style of chapters, to look nice.
+
+
+\begin{document}
+
+\mathlig{::}{\ :: \ }
+\newcommand{\fun}{\ensuremath{\mathtt{fun}}}
+\newcommand{\val}{\ensuremath{\mathtt{val}}}
+\newcommand{\flet}{\ensuremath{\mathtt{let}}}
+\newcommand{\fin}{\ensuremath{\mathtt{in}}}
+\newcommand{\fend}{\ensuremath{\mathtt{end}}}
+
+\newcommand{\map}{\ensuremath{\mathtt{map}}}
+\newcommand{\foldr}{\ensuremath{\mathtt{foldr}}}
+\newcommand{\foldl}{\ensuremath{\mathtt{foldl}}}
+
+\newcommand{\fif}{\ensuremath{\mathtt{if}}}
+\newcommand{\fthen}{\ensuremath{\mathtt{then}}}
+\newcommand{\felse}{\ensuremath{\mathtt{else}}}
+\newcommand{\true}{\ensuremath{\mathrm{true}}}
+\newcommand{\false}{\ensuremath{\mathrm{false}}}
+\newcommand{\fnot}{\ensuremath{\mathtt{not}}}
+\newcommand{\andalso}{\ensuremath{\mathrm{andalso}}}
+\newcommand{\oreelse}{\ensuremath{\mathrm{oreelse}}}
+
+\chapter{Rewriting rules}
+
+
+\section{Map}
+
+\begin{eqnarray*}[l]
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & (x::xs) & = & G :: f \ xs \\
+       | & f & H       & = & [\ ]
+  \end{eqnalign} \\
+  \multicolumn{1}{c}{\Downarrow} \\
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & xs & = & \map \ G \ xs \\
+  \end{eqnalign}
+\end{eqnarray*}
+
+\section{Foldl}
+
+\begin{eqnarray*}[l]
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & G \ b \ (x::xs) & = & f \ G \ (G(x,\ b)) \ xs \\
+       | & f & G \ b \ [\ ]      & = & b
+  \end{eqnalign} \\
+  \multicolumn{1}{c}{\Downarrow} \\
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & G \ b \ xs & = & \foldl \ G \ b \ xs \\
+  \end{eqnalign}
+\end{eqnarray*}
+
+\section{Foldr}
+
+\begin{eqnarray*}[l]
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & G \ b \ (x::xs) & = & G(x,\ f \ G \ b \ xs) \\
+       | & f & G \ b \ [\ ]      & = & b
+  \end{eqnalign} \\
+  \multicolumn{1}{c}{\Downarrow} \\
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & G \ b \ xs & = & \foldr \ G \ b \ xs \\
+  \end{eqnalign}
+\end{eqnarray*}
+
+\section{Concat}
+
+\begin{eqnarray*}[l]
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & ((y :: ys) :: xs) & = & y :: f \ (ys :: xs) \\
+       | & f & ([\ ] :: xs)        & = & f \ xs \\
+       | & f & [\ ]                & = & [\ ] \\
+  \end{eqnalign} \\
+  \multicolumn{1}{c}{\Downarrow} \\
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & xs & = & List.concat xs \\
+  \end{eqnalign}
+\end{eqnarray*}
+
+\section{Zip}
+
+\begin{eqnarray*}[l]
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & ((x :: xs),\ (y::ys)) & = & (x :: y) :: f \ xs \ ys \\
+       | & f & (\_,\ \_)               & = & [\ ] \\
+  \end{eqnalign} \\
+  \multicolumn{1}{c}{\Downarrow} \\
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & xs & = & ListPair.zip xs \\
+  \end{eqnalign}
+\end{eqnarray*}
+
+\section{Unzip}
+
+\begin{eqnarray*}[l]
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & ((x :: xs) :: xl) & = & \\
+         & \multicolumn{4}{l}{\flet} \\
+         &   & \multicolumn{3}{l}{\val \ (xs,\ ys) = f \ xl} \\
+         & \multicolumn{4}{l}{\fin} \\
+         &   & (x :: xs,\ y :: ys) \\
+         & \multicolumn{4}{l}{\fend} \\
+       | & f & [\ ]                & = & ([\ ],\ [\ ])\\
+  \end{eqnalign} \\
+  \multicolumn{1}{c}{\Downarrow} \\
+  \begin{eqnalign}[r>{\ }l>{\ }l>{\ }c>{\ }l]
+    \fun & f & xs & = & ListPair.unzip xs \\
+  \end{eqnalign}
+\end{eqnarray*}
+
+\section{Nested if}
+
+
+\section{Nested Case}
+
+
+\section{Boolean reduction}
+
+
+\begin{eqnarray*}[lcl]
+  \fif \ E \ \fthen \ \true \ \felse \ \false & \Rightarrow & E \\
+  \fif \ E \ \fthen \ \false \ \felse \ \true & \Rightarrow & \fnot E \\
+  \fif \ E \ \fthen \ E \ \felse \ \false & \Rightarrow & E \\
+  \fif \ \fnot \ E \ \fthen \ X \ \felse \ Y & \Rightarrow &\fif \ E \ \fthen \
+  Y \ \felse \ X \\
+  \fif \ X \ \fthen \ \true \ \felse \ Y & \Rightarrow & X \ \oreelse \ Y \\
+  \fif \ X \ \fthen \ Y \ \felse \ \false & \Rightarrow & X \ \andalso \ Y \\
+  \fif \ X \ \fthen \ \false \ \felse \ Y & \Rightarrow & \fnot \ X \ \andalso \
+  Y \\
+  \fif \ X \ \fthen \ Y \ \felse \ \true & \Rightarrow & \fnot \ X \ \oreelse \ Y \\
+\end{eqnarray*}
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
