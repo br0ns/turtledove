@@ -1,3 +1,4 @@
+% \documentclass[a4paper, oneside, final]{memoir} 
 \documentclass[a4paper, oneside, draft]{memoir} 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -36,114 +37,246 @@
 
 
 \renewcommand{\ttdefault}{txtt} % Bedre typewriter font
-%\usepackage[sc]{mathpazo}     % Palatino font
-\renewcommand{\rmdefault}{ugm} % Garamond
-%\usepackage[garamond]{mathdesign}
+% \usepackage[sc]{mathpazo}     % Palatino font
+% \renewcommand{\rmdefault}{ugm} % Garamond
+% \usepackage[garamond]{mathdesign}
 
-%\overfullrule=5pt
-%\setsecnumdepth{part}
+% \overfullrule=5pt
+% \setsecnumdepth{part}
 \setcounter{secnumdepth}{1} % Sæt overskriftsnummereringsdybde. Disable = -1.
 \chapterstyle{hangnum} % changes style of chapters, to look nice.
 
 \theoremstyle{definition}
 \newtheorem{judgement}{Judgement}
-
 \newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+
+
+\mathlig{||}{\parallel}
+\mathlig{<'}{\prec}
+\mathlig{>'}{\succ}
+\mathlig{<='}{\preccurlyeq}
+\mathlig{>='}{\succcurlyeq}
+\mathlig{<=}{\leq}
+\mathlig{>=}{\geq}
+\mathlig{<>}{\neq}
+\mathlig{|=}{\sqsubset}
+\mathlig{=|}{\sqsupset}
+\mathlig{==}{\equiv}
+\mathlig{==a}{=_{\alpha}}
+\mathlig{<|}{\lhd}
+\mathlig{|>}{\rhd}
 
 \begin{document}
-\chapter{Grammar}
-\fixme{remember to introduce new relations.}
+\chapter{Term rewriting in a subset of SML}
+\section{Grammar}
+\fixme{remember to introduce new relations with name.}
 \begin{eqnarray*}[rqcql:Tl]
-var & = & (a-z)* & Identifiers\\
-con & = & (A-Z)(a-z)* & Constructors\\
-num & = & \mathbb{Z}    & Natural numbers\\
-match & ::= & \epsilon                            & Empty match\\
-& & pat\texttt{.}exp\ \texttt{|}\ match               & Pattern -> expression\\
-pat & ::= & var                                       & Variable\\
-& & con\texttt{(}pat_1\texttt{,} \ldots\texttt{,} pat_n\texttt{)} & Where con
-has arity $n$\\
-exp & ::= & var                                       & Variable\\
-& & exp_1 exp_2                                     & Application\\
-& & \lambda match                                  & Abstraction\\
-& & con\texttt{(}exp_1\texttt{,} \ldots\texttt{,} exp_n\texttt{)} & Where con
-has arity $n$\\
-dec & ::= & var \mapsto exp                         & Plain value binding\\
-& & \texttt{rec}\ var \mapsto \lambda match         & Recursive value binding\\
-& & con \texttt{:} \overline{num}                           & Constructor of arity $num$\\
-& & \epsilon                             & Empty program\\
-& & dec_1 \texttt{;} dec_2                                      & Sequencing
+  var & = & (a-z)* & Identifiers\\
+  con & = & (A-Z)(a-z)* & Constructors\\
+  num & = & \mathbb{Z}    & Natural numbers\\
+  match & ::= & \epsilon                            & Empty match\\
+  & & pat\texttt{.}exp\ \texttt{|}\ match               & Pattern -> expression\\
+  pat & ::= & var                                       & Variable\\
+  & & con\texttt{(}pat_1\texttt{,} \ldots\texttt{,} pat_n\texttt{)} & Where con
+  has arity $n$\\
+  exp & ::= & var                                       & Variable\\
+  & & exp_1 exp_2                                     & Application\\
+  & & \lambda match                                  & Abstraction\\
+  & & con\texttt{(}exp_1\texttt{,} \ldots\texttt{,} exp_n\texttt{)} & Where con
+  has arity $n$\\
+  dec & ::= & var \mapsto exp                         & Plain value binding\\
+  & & \texttt{rec}\ var \mapsto \lambda match         & Recursive value binding\\
+  & & con \texttt{:} \overline{num}                           & Constructor of arity $num$\\
+  & & \epsilon                             & Empty program\\
+  & & dec_1 \texttt{;} dec_2                                      & Sequencing
 \end{eqnarray*}
 
-\fixme{korte aliaser for syntaktiske kategorier ($p$ for $pat$, $\ldots$)}
+\paragraph{Note.} In the following we write $==a$ to mean alpha equivalence. We
+also use (with superfixes, subfixes and marks) $v$, $c$, $n$, $m$, $p$, $e$ and
+$d$ to range over $var$, $con$, $num$, $match$, $pat$, $exp$ and $dec$
+respectively.
 
 \section{Total ordering on patterns}
-\fbox{Judgement $pat_1 < pat_2$}\\
+\begin{definition}[$p_1 < p_2$]
+  Assume a total transitive ordering $<$ on constructors and
+  variables. Inductively defined:
+  \begin{eqnarray}
+    v_1 &<& v_2\\
+    c\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<& v\\
+    c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<&
+    c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:con-total-order-2}
+  \end{eqnarray}
+  Where \ref{eq:con-total-order-2} holds iff
+  \[
+  c_1 < c_2 \lor c_1 = c_2 \land ( p_1 < p'_1 \lor p_1 = p'_1 \land (\ldots p_n < p'_n \ldots ))
+  \]
+\end{definition}
 
-Assume a total ordering $<$ on constructors. Inductively defined:
-\begin{eqnarray}
-con\texttt{(}pat_1\texttt{,} \ldots\texttt{,} pat_n\texttt{)} &<& var\\
-con_1\texttt{(}pat_1\texttt{,} \ldots\texttt{,} pat_n\texttt{)} &<&
-con_2\texttt{(}pat'_1\texttt{,} \ldots\texttt{,} pat'_m\texttt{)}\label{eq:con-total-order-2}
-\end{eqnarray}
-Where \ref{eq:con-total-order-2} holds iff
-\begin{eqnarray*}
-con_1 &<& con_2 \lor con_1 = con_2 \land (\\
-pat_1 &<& pat'_1 \lor pat_1 = pat'_1 \land (\\
-&\ldots&\\
-pat_n &<& pat'_n\\
-&\ldots&\\
-&))&
-\end{eqnarray*}
+\begin{lemma}[Transitivity of $<$]
+  \[
+  p_1 < p_2 \land p_2 < p_3 \Rightarrow p_1 < p_3
+  \]
+\end{lemma}
+\begin{proof}
+  If $p_3 = v$ then the result follows immediately. Therefore assume $p_3 = c_3
+  \texttt{(}p^3_1 \texttt{,} \ldots \texttt{,} p^3_n\texttt{)}$.
+  By the assumptions we have that $p_1 = c_1 \texttt{(}p^1_1 \texttt{,} \ldots
+  \texttt{,} p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots
+  \texttt{,} p^2_n\texttt{)}$ and
+  \begin{eqnarray}[c]
+    c_1 < c_2 \lor c_1 = c_2 \land ( p^1_1 < p^2_1 \lor p^1_1 = p^2_1 \land
+    (\ldots p^1_n < p^2_n \ldots )) \label{eq:trans-tot-proof-1}\\
+    c_2 < c_3 \lor c_2 = c_3 \land ( p^2_1 < p^3_1 \lor p^2_1 = p^3_1 \land
+    (\ldots p^2_n < p^3_n \ldots )) \label{eq:trans-tot-proof-2}
+  \end{eqnarray}
+  Combining \fref{eq:trans-tot-proof-1} and \fref{eq:trans-tot-proof-2} we get
+  \begin{eqnarray*}[c]
+    c_1 < c_2 \lor c_1 = c_2 \land c_2 < c_3 \lor c_2 = c_3 \land\\ ( p^1_1 < p^2_1
+    \lor p^1_1 = p^2_1 \land p^2_1 < p^3_1 \lor p^2_1 = p^3_1 \land
+    (\ldots p^1_n < p^2_n \land p^2_n < p^3_n \ldots ))
+  \end{eqnarray*}
+  And then using induction we get
+  \begin{eqnarray*}
+    c_1 < c_3 \lor c_1 = c_3 \land ( p^1_1 < p^3_1 \lor p^1_1 = p^3_1 \land
+    (\ldots p^1_n < p^3_n \ldots ))
+  \end{eqnarray*}
+  and then by definition $p_1 < p_3$.
+\end{proof}
 
 \section{Partial ordering on patterns}
-\fbox{Judgement $pat_1 \preccurlyeq pat_2$}\\
+\begin{definition}[$p_1 <=' p_2$]
+  $p_2$ generalises $p_1$ or $p_1$ is more specific than $p_2$. Inductively
+  defined.
+  \begin{eqnarray}
+    p &<='& v\\
+    c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<='&
+    c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:con-partial-order-2}
+  \end{eqnarray}
+  Where \fref{eq:con-partial-order-2} holds iff
+  \begin{eqnarray*}
+    c_1 &=& c_2 \quad \land\\
+    p_1 &<='& p'_1 \quad \land\\
+    &\ldots&\\
+    p_n &<='& p'_n
+  \end{eqnarray*}
+\end{definition}
 
-$pat_2$ generalises $pat_1$ or $pat_1$ is more specific than $pat_2$. Inductively
-defined.
+\begin{definition}[$p_1 \prec p_2$]
+  \[
+  p_1 <' p_2 \Leftrightarrow p_1 <=' p_2 \land p_1 \not ==a p_2
+  \]
+\end{definition}
 
-\begin{eqnarray}
-pat &\preccurlyeq& var\\
-con_1\texttt{(}pat_1\texttt{,} \ldots\texttt{,} pat_n\texttt{)} &\preccurlyeq&
-con_2\texttt{(}pat'_1\texttt{,} \ldots\texttt{,} pat'_m\texttt{)}\label{eq:con-partial-order-2}
-\end{eqnarray}
-Where \fref{eq:con-partial-order-2} holds iff
-\begin{eqnarray*}
-con_1 &=& con_2 \quad \land\\
-pat_1 &\preccurlyeq& pat'_1 \quad \land\\
-&\ldots&\\
-pat_n &\preccurlyeq& pat'_n
-\end{eqnarray*}
+And we write $p_1 >=' p_2$ and $p_1 >' p_2$ to mean $p_2 <=' p_1$ and $p_2 <'
+p_1$ respectively.
+
+\begin{lemma}[Transitivity of $<'$ and $<='$]
+  \begin{eqnarray*}
+    p_1 <=' p_2 \land p_2 <=' p_3 \Rightarrow p_1 <=' p_3\\
+    p_1 <' p_2 \land p_2 <' p_3 \Rightarrow p_1 <' p_3
+  \end{eqnarray*}
+  Since $<='$ is the reflexive extension of $<'$, then if $<='$ is transitive
+  clearly so is $<'$. We prove the transitivity of $<='$.
+  \begin{proof}
+    If $p_3 = v$ the result follows immediately. So assume $p_3 = c_3
+    \texttt{(}p^3_1 \texttt{,} \ldots \texttt{,} p^3_n\texttt{)}$.
+    By the assumptions we have that $p_1 = c_1 \texttt{(}p^1_1 \texttt{,} \ldots
+    \texttt{,} p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots
+    \texttt{,} p^2_n\texttt{)}$ and
+    \begin{eqnarray}[c]
+      c_1 = c_2 \land p^1_1 <=' p^2_1 \ldots p^1_n <=' p^2_n \label{eq:trans-part-proof-1}\\
+      c_2 = c_3 \land p^2_1 <=' p^3_1 \ldots p^2_n <=' p^3_n \label{eq:trans-part-proof-2}
+    \end{eqnarray}
+    Combining \fref{eq:trans-part-proof-1} and \fref{eq:trans-part-proof-2} gives us
+    \begin{eqnarray*}
+      c_1 = c_2 \land c_2 = c_3 \land p^1 <=' p^2_1 \land p^2_1 <=' p^3_1 \ldots
+      p^1_n <=' p^2_n \land p^2_n <=' p^3_n
+    \end{eqnarray*}
+    And then by induction we get
+    \begin{eqnarray*}
+      c_1 = c_3 \land p^1_1 <=' p^3_1 \ldots p^1_n <=' p^3_n
+    \end{eqnarray*}
+    which by definition gives us $p_1 <=' p_3$.
+  \end{proof}
+\end{lemma}
+
+\begin{definition}[$p_1 || p_2$]
+  \[
+  p_1 || p_2 \Leftrightarrow p_1 \not <=' p_2 \land p_2 \not <=' p_1
+  \]
+\end{definition}
+
+\begin{corollary}[Reflexivity of $||$]
+  \[
+  p_1 || p_2 \Leftrightarrow p_2 || p_1
+  \]
+\end{corollary}
+\begin{proof}
+  By definition.
+\end{proof}
+
+
+\begin{lemma}[Equivalence classes of patterns]
+  \[
+  \forall p_1, p_2 : p_1 ==a p_2 \lor p_1 <' p_2 \lor p_1 >' p_2 \lor p_1 || p_2
+  \]
+\end{lemma}
+\begin{proof}
+  Immediately by inspection.
+\end{proof}
+
+\begin{lemma}\label{part-imp-tot}
+  \[
+  p_1 <' p_2 \Rightarrow p_1 < p_2
+  \]
+\end{lemma}
+\begin{proof}
+  Immediately by induction.
+\end{proof}
 
 \section{Elimination of unused patterns}\label{sec:elim-unus-patt}
-\fbox{Judgement $match_1 \sqsupset match_2$}\\
+\begin{definition}[$m_1 =| m_2$]
+  Let
+  \[
+  m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
+  \]
+  If $p_j <=' p_i$ where $j > i$ then 
+  \[
+  m =| m'
+  \]
+  where
+  \[
+  m' = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|}
+  p_{j-1}\texttt{.}e_{j-1} \texttt{|} p_{j+1}\texttt{.}e_{j+1} \texttt{|}
+  \ldots \texttt{|} p_n\texttt{.}e_n
+  \]
+  In other words; pattern $j$ and its body can be removed from $m$.
+\end{definition}
 
-Let
-\[
-m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
-\]
-If $p_j \preccurlyeq p_i$ where $j > i$ then 
-\[
-m \sqsupset m'
-\]
-where
-\[
-m' = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|}
-p_{j-1}\texttt{.}e_{j-1} \texttt{|} p_{j+1}\texttt{.}e_{j+1} \texttt{|}
-\ldots \texttt{|} p_n\texttt{.}e_n
-\]
-In other words; pattern $j$ and its body can be removed from $m$.
+\begin{lemma}(Preservation)
+  \[
+  m \sqsupset m' \Rightarrow \forall e : \texttt{(}\lambda m\texttt{)}e \downarrow
+  v \Leftrightarrow \texttt{(}\lambda m'\texttt{)}e \downarrow v
+  \]
+\end{lemma}
+\begin{proof}
+  Trivial (as if).
+\end{proof}
 
 \section{Partially ordered form}
 \begin{definition}
-A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is in
-partially ordered form iff
-\[
-\forall i \in \{1, \ldots, n\} : p_j \not\preccurlyeq p_i \quad \textnormal{where $j > i$}
-\]
+  A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is in
+  partially ordered form iff
+  \[
+  \forall i \in \{1, \ldots, n\} : p_j \not <=' p_i \quad \textnormal{where $j > i$}
+  \]
 
-Note that every match $m$ can be transformed to an equivalent match $m'$ such
-that $m'$ is in partially ordered form, by repeated elimination of unused
-patterns (\fref{sec:elim-unus-patt}).
+  Note that every match $m$ can be transformed to an equivalent match $m'$ such
+  that $m'$ is in partially ordered form, by repeated elimination of unused
+  patterns (\fref{sec:elim-unus-patt}).
 \end{definition}
 
 \section{Generalisation of patterns}
@@ -154,56 +287,65 @@ Let the free variables of a pattern $FV_{pat} : pat \rightarrow 2^{var}$ be
 defined by $FV_{pat} = FV_{exp} \circ \kappa$, where $FV_{exp}$ denotes the free
 variables of an expression in the usual sense.\\
 
-\fbox{Judgement $(pat_1, exp_1) \lhd' (pat_2, exp_2)$}\\
-
+\begin{definition}[$(p_1, e_1) <|' (p_2, e_2)$]
 Inductively defined
 \begin{eqnarray}[c]
-(con\texttt{(}pat_1\texttt{,}\ldots\texttt{,}pat_n\texttt{)} , exp)
-\lhd'
-(x , exp[x/\kappa
-(con\texttt{(}pat_1\texttt{,}\ldots\texttt{,}pat_n\texttt{)})]) \label{eq:gen-1}\\
-\begin{eqnalign}
-(con\texttt{(}pat_1\texttt{,}\ldots\texttt{,}&pat_i&\texttt{,}\ldots\texttt{,}pat_n\texttt{)}
-, exp) \ \lhd' \\
-(con\texttt{(}pat_1\texttt{,}\ldots\texttt{,}&pat'_i&\texttt{,}\ldots\texttt{,}pat_n\texttt{)},
-exp')
-\end{eqnalign} \label{eq:gen-2}
+  (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)} , e)
+  <|'
+  (x , e[x/\kappa
+  (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)})]) \label{eq:gen-1}\\
+  \begin{eqnalign}
+    (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}&p_i&\texttt{,}\ldots\texttt{,}p_n\texttt{)}
+    , e) <|' \\
+    (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}&p'_i&\texttt{,}\ldots\texttt{,}p_n\texttt{)},
+    e')
+  \end{eqnalign} \label{eq:gen-2}
 \end{eqnarray}
 
 Where \fref{eq:gen-1} holds when $x$ is a fresh variable and
 \[
-FV_{pat}(con\texttt{(}pat_1\texttt{,}\ldots\texttt{,}pat_n\texttt{)}) \cap FV_{exp}(exp[x/\kappa
-(con\texttt{(}pat_1\texttt{,}\ldots\texttt{,}pat_n\texttt{)})]) = \emptyset
+FV_{pat}(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)}) \cap FV_{exp}(e[x/\kappa
+(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)})]) = \emptyset
 \]
 and \fref{eq:gen-2} holds when
 \[
-(pat_i , exp) \lhd' (pat'_i , exp')
+(p_i , e) <|' (p'_i , e')
 \]
+\end{definition}
 
-\begin{judgement}[$match_1 \lhd match_2$]
-  \begin{eqnarray}
-    \begin{eqnalign}
-      pat_1.exp_1 \texttt{|} \ldots \texttt{|} &pat_i.exp_i& \texttt{|} \ldots
-      \texttt{|} pat_n.exp_n \ \lhd \\
-      pat_{\pi(1)}.exp_{\pi(1)} \texttt{|} \ldots \texttt{|} &pat'_{\pi(i)}.exp'_{\pi(i)}& \texttt{|} \ldots
-      \texttt{|} pat_{\pi(n)}.exp_{\pi(n)}
-    \end{eqnalign}
-\end{eqnarray}
-When
-\[
-(pat_i, exp_i) \lhd' (pat'_i, exp'_i) \textnormal{ and } pat_i \preccurlyeq
-pat_j \Rightarrow pat'_i \preccurlyeq pat_j
-\textnormal{ for } j \in
-\{1,\ldots,n\}\]
+\begin{lemma}[Generalisation]
+  \[
+  (p_1, e_1) \lhd' (p_2, e_2) \Rightarrow p_1 <' p_2
+  \]
+\end{lemma}
+\begin{proof}
+  Straight forward induction proof.
+\end{proof}
 
-\end{judgement}
+\begin{definition}[$m_1 <| m_2$]
+%   \begin{eqnarray}
+%     \begin{eqnalign}
+%       pat_1.exp_1 \texttt{|} \ldots \texttt{|} &pat_i.exp_i& \texttt{|} \ldots
+%       \texttt{|} pat_n.exp_n \ \lhd \\
+%       pat_{\pi(1)}.exp_{\pi(1)} \texttt{|} \ldots \texttt{|} &pat'_{\pi(i)}.exp'_{\pi(i)}& \texttt{|} \ldots
+%       \texttt{|} pat_{\pi(n)}.exp_{\pi(n)}
+%     \end{eqnalign}
+%   \end{eqnarray}
+%   When
+%   \[
+%   (pat_i, exp_i) \lhd' (pat'_i, exp'_i) \textnormal{ and } pat_i \preccurlyeq
+%   pat_j \Rightarrow pat'_i \preccurlyeq pat_j
+%   \textnormal{ for } j \in
+%   \{1,\ldots,n\}\]
+To be continued...
+\end{definition}
 
 
-\section{Generalisation with unification of bodys}
+% \section{Generalisation with unification of bodys}
 
 
 
-\section{Weak unification}
+% \section{Weak unification}
 
 \end{document}
 
