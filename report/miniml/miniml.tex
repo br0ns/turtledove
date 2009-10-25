@@ -497,15 +497,20 @@ P_m &=& \{p'_m | p \in P \land p = c \texttt{(}p'_1\texttt{,}\ldots\texttt{,}p'_
 \end{definition}
 
 \section{Generalisation of patterns}
+
+In the following we define generalisation of matches using the operator $<|$ using the
+auxiliary operator $<|'$, which generalises patterns.
+
+REMOVE:\\
 The syntactic category $pat$ is a proper subset of $exp$. Let $\kappa : pat
 \rightarrow exp$ be the canonical mapping from $pat$ to $exp$.
 
 Let the free variables of a pattern $FV_{pat} : pat \rightarrow 2^{var}$ be
 defined by $FV_{pat} = FV_{exp} \circ \kappa$, where $FV_{exp}$ denotes the free
 variables of an expression in the usual sense.\\
+END REMOVE.
 
-\begin{definition}[$(p_1, e_1) <|' (p_2, e_2)$]
-Inductively defined
+\begin{definition}[Generalisation of patterns $<|'$]
 \begin{eqnarray}[c]
   (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)} , e)
   <|'
@@ -529,32 +534,61 @@ and \fref{eq:gen-2} holds when
 (p_i , e) <|' (p'_i , e')
 \]
 \end{definition}
-
-\begin{lemma}[Generalisation]
+\begin{lemma}[Generalisation] \label{lem:gener-patt}
   \[
-  (p_1, e_1) \lhd' (p_2, e_2) \Rightarrow p_1 <' p_2
+  (p_1, e_1) <|' (p_2, e_2) \Rightarrow p_1 <' p_2
   \]
 \end{lemma}
 \begin{proof}
   Straight forward induction proof.
 \end{proof}
 
-\begin{definition}[$m_1 <| m_2$]
-%   \begin{eqnarray}
-%     \begin{eqnalign}
-%       pat_1.exp_1 \texttt{|} \ldots \texttt{|} &pat_i.exp_i& \texttt{|} \ldots
-%       \texttt{|} pat_n.exp_n \ \lhd \\
-%       pat_{\pi(1)}.exp_{\pi(1)} \texttt{|} \ldots \texttt{|} &pat'_{\pi(i)}.exp'_{\pi(i)}& \texttt{|} \ldots
-%       \texttt{|} pat_{\pi(n)}.exp_{\pi(n)}
-%     \end{eqnalign}
-%   \end{eqnarray}
-%   When
-%   \[
-%   (pat_i, exp_i) \lhd' (pat'_i, exp'_i) \textnormal{ and } pat_i \preccurlyeq
-%   pat_j \Rightarrow pat'_i \preccurlyeq pat_j
-%   \textnormal{ for } j \in
-%   \{1,\ldots,n\}\]
-To be continued...
+\begin{definition}[Generalisation of matches $<|$]
+Assume that the match is partially ordered, $p_i' <' p_j$, $p_i.e_i <|'
+p'_i.e'_i$ then by \fref{lem:gener-patt} we have that $p_i <' p'_i$.
+
+\begin{eqnarray}[c]
+  \begin{eqnalign}
+    p_1.e_1 \texttt{ |} \ldots \texttt{| } &p_i.e_i& \texttt{ |} \ldots
+    \texttt{| } p_n.e_n <| \\ 
+    p_1.e_1 \texttt{ |} \ldots \texttt{| } &p'_i.e'_i&
+    \texttt{ |} \ldots \texttt{| } p_n.e_n
+  \end{eqnalign} \label{eq:gen-all-stay} \\
+  \begin{eqnalign}[Ll]
+    p_1.e_1 \texttt{ |} \ldots \texttt{| } p_m.e_m \texttt{ |} \ldots \texttt{| }
+    p_{q_1}.e_{q_1} \texttt{ |} \ldots \texttt{| } p_{q_k}.e_{q_k} \texttt{ |}
+    \ldots \texttt{| } \\ 
+    p_{q_l}.e_{q_l} \texttt{ |} \ldots \texttt{| } p_n.e_n <| & \\
+    & p_1.e_1 \texttt{ |} \ldots \texttt{| } p_{q_1}.e_{q_1} \texttt{ | }
+    p_{q_k}.e_{q_k} \texttt{ | } p_{q_l}.e_{q_l} \texttt{ | } p'_m.e'_m \texttt{
+      |} \\ 
+    & \ldots \texttt{| } p_n.e_n
+  \end{eqnalign} \label{eq:gen-all-move}\\
+  \begin{eqnalign}
+    p_1.e_1 \texttt{ |} \ldots \texttt{| } p_m.e_m \texttt{ |} &\ldots&
+    \texttt{| } p_q.e_q \texttt{ |} \ldots \texttt{| } p_n.e_n <| \\ 
+    p_1.e_1 \texttt{ |} \ldots \texttt{| } &m_q.e_q&
+    \texttt{ |} \ldots \texttt{| } p_n.e_n
+  \end{eqnalign} \label{eq:gen-all-remove}
+\end{eqnarray}
+
+
+Where \ref{eq:gen-all-stay} holds when
+\[
+(p_i || p_j \land p_i' || p_j) \lor (p_i <' p_j \land p_i' <' p_j) \quad
+\texttt{for $j \in \{i+1 \ldots n\}$ }
+\]
+and \ref{eq:gen-all-move} holds when
+\[
+p_i || p_j \land p_j <' p_i' \quad \texttt{for $j \in \{i+1 \ldots n\}$ }
+\]
+and \ref{eq:gen-all-remove} holds when
+\[
+p_i <' p_j \land p_i' = p_j \quad \texttt{for $j \in \{i+1 \ldots n\}$ }
+\]
+
+We name \ref{eq:gen-all-stay} as ``stay'', \ref{eq:gen-all-move} as ``move'' and
+\ref{eq:gen-all-remove} as ``remove''.
 \end{definition}
 
 
