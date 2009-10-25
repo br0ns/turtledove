@@ -1,0 +1,117 @@
+% \documentclass[a4paper, oneside, final]{memoir} 
+\documentclass[a4paper, oneside, draft]{memoir} 
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+
+% bedre orddeling Gør at der som minimum skal blive to tegn på linien ved
+% orddeling og minimum flyttes to tegn ned på næste linie. Desværre er værdien
+% anvendt af babel »12«, hvilket kan give orddelingen »h-vor«.
+\renewcommand{\britishhyphenmins}{22} 
+
+% Fix of fancyref to work with memoir. Makes references look
+% nice. Redefines memoir \fref and \Fref to \refer and \Refer.
+% \usepackage{refer}             %
+% As we dont really have any use for \fref and \Fref we just undefine what
+% memoir defined them as, so fancyref can define what it wants.
+\let\fref\undefined
+\let\Fref\undefined
+\usepackage{fancyref} % Better reference. 
+
+\usepackage{pdflscape} % Gør landscape-environmentet tilgængeligt
+\usepackage{fixme}     % Indsæt "fixme" noter i drafts.
+\usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
+
+\usepackage[format=hang]{caption,subfig}
+\usepackage{graphicx}
+\usepackage{stmaryrd}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{ulem} % \sout - strike-through
+\usepackage{tikz}
+
+\usepackage{mdwtab}
+\usepackage{mathenv}
+\usepackage{amsthm}
+\usepackage{semantic} % for the \mathlig function
+
+
+\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
+% \usepackage[sc]{mathpazo}     % Palatino font
+% \renewcommand{\rmdefault}{ugm} % Garamond
+% \usepackage[garamond]{mathdesign}
+
+% \overfullrule=5pt
+% \setsecnumdepth{part}
+\setcounter{secnumdepth}{1} % Sæt overskriftsnummereringsdybde. Disable = -1.
+\chapterstyle{hangnum} % changes style of chapters, to look nice.
+
+\theoremstyle{definition}
+\newtheorem{judgement}{Judgement}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{example}{Example}
+
+
+\mathlig{||}{\parallel}
+\mathlig{<'}{\prec}
+\mathlig{>'}{\succ}
+\mathlig{<='}{\preccurlyeq}
+\mathlig{>='}{\succcurlyeq}
+\mathlig{<=}{\leq}
+\mathlig{>=}{\geq}
+\mathlig{<>}{\neq}
+\mathlig{|=}{\sqsubset}
+\mathlig{=|}{\sqsupset}
+\mathlig{==}{\equiv}
+\mathlig{==a}{=_{\alpha}}
+\mathlig{<|}{\lhd}
+\mathlig{|>}{\rhd}
+
+\begin{document}
+\chapter{Examples}
+
+% assume nil < ::
+
+% Totally ordered (and thus partially due to lemma \fref{tot-imp-part}):
+% fun sum nil = 0
+%   | sum (x :: xs) = x + sum xs
+
+% or
+
+% fun sum nil = 0
+%   | sum (x :: xs) = x + sum xs
+%   | sum _ = raise Fail "Unused pattern"
+
+% Partially but not totally ordered:
+% fun sum (x :: xs) = x + sum xs
+%   | sum nil = 0
+
+
+
+
+\begin{example}
+  Total ordering of
+  \[
+  \texttt{rec } foo \mapsto \lambda (b.exp_1 \texttt{ | } a.exp_2 \texttt{ | }
+  con(y, z).exp_3 \texttt{ | } con(x, z).exp_4) 
+  \]
+  will result in
+  \[
+  \texttt{rec } foo \mapsto \lambda (con(x, z).exp_4 \texttt{ | } con(y, z).exp_3  \texttt{ | } a.exp_2 \texttt{ | }
+  b.exp_1)
+  \]
+  
+\end{example}
+
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% reftex-fref-is-default: t
+%%% End: 
