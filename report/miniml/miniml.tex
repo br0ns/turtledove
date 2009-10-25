@@ -114,6 +114,8 @@
   \Frefexname\fancyrefdefaultspacing#1#3%
 }
 
+\newcommand{\ttt}[1]{\texttt{#1}}
+
 \mathlig{||}{\parallel}
 \mathlig{<'}{\prec}
 \mathlig{>'}{\succ}
@@ -160,7 +162,61 @@ also use (with superfixes, subfixes and primes) $v$, $c$, $n$, $m$, $p$, $e$ and
 $d$ to range over $var$, $con$, $num$, $match$, $pat$, $exp$ and $dec$
 respectively.
 
-\section{Free variables and substitution}
+\section{Free variables, substitution and alpha equivalence}
+
+
+\subsection{Free variables}
+
+We define the free variables on expressions, matches and patterns with the tree
+following functions $FV_{exp}$, $FV_{match}$ and $FV_{pat}$:
+
+
+\begin{definition}[Free variables on expressions $FV_{exp}$] \ \\
+  Inductively defined:
+  \begin{eqnarray}[rl]
+    FV_{exp} (v) &= \{v\} \\
+    FV_{exp} (\lambda m) &= FV_{match} (m) \\
+    FV_{exp} (e_1e_2) &= FV_{exp} (e_1) \cup FV_{exp} (e_2) \\
+    FV_{exp} (con\ttt{(}e_1\ttt{,} \ldots \ttt{,} e_n \ttt{)}) &= FV_{exp}
+    (e_1) \cup \ldots \cup FV_{exp} (e_n)
+  \end{eqnarray}
+\end{definition}
+
+\begin{definition}[Free variables on matches $FV_{match}$]\ \\ 
+  Inductively defined:
+  \begin{eqnarray}[rl]
+    FV_{match} (\epsilon) &= \emptyset \\
+    FV_{match} (p\ttt{.}e\ \ttt{|}\ m) &= \left( FV_{exp}(e) \setminus
+      FV_{pat}(p) \right) \cup FV_{match} (m)
+  \end{eqnarray}
+\end{definition}
+
+\begin{definition}[Free variables on patterns $FV_{pat}$] \ \\
+  Inductively defined:
+  \begin{eqnarray}[rl]
+    FV_{pat} (v) &= \{v\} \\
+    FV_{pat} (con\ttt{(}p_1\ttt{,} \ldots \ttt{,} p_n\ttt{)}) &= FV_{pat} (p_1)
+    \cup \ldots \cup FV_{pat} (p_n)
+  \end{eqnarray}
+\end{definition}
+
+\subsection{Substitution}
+
+
+
+\subsection{Alpha equivalence}
+
+We denote alpha equivalence with the symbol $==a$ and use the same symbol for
+both expressions, matches and patterns. 
+
+\begin{definition}[Alpha equivalence on expressions $==a$]
+  \begin{eqnarray}[rl]
+    v_1 &==a v_2 \\
+  \end{eqnarray}
+\end{definition}
+
+Two terms are alpha equivalent if and only if they can be proven to be so using
+the above rules.
 
 \section{Semantic equivalence}
 We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
@@ -501,16 +557,10 @@ P_m &=& \{p'_m | p \in P \land p = c \texttt{(}p'_1\texttt{,}\ldots\texttt{,}p'_
 In the following we define generalisation of matches using the operator $<|$ using the
 auxiliary operator $<|'$, which generalises patterns.
 
-REMOVE:\\
+
+\begin{definition}[Generalisation of patterns $<|'$]\ \\
 The syntactic category $pat$ is a proper subset of $exp$. Let $\kappa : pat
 \rightarrow exp$ be the canonical mapping from $pat$ to $exp$.
-
-Let the free variables of a pattern $FV_{pat} : pat \rightarrow 2^{var}$ be
-defined by $FV_{pat} = FV_{exp} \circ \kappa$, where $FV_{exp}$ denotes the free
-variables of an expression in the usual sense.\\
-END REMOVE.
-
-\begin{definition}[Generalisation of patterns $<|'$]
 \begin{eqnarray}[c]
   (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)} , e)
   <|'
