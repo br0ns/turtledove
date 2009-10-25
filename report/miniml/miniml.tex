@@ -118,6 +118,8 @@
 \newcommand{\tnm}[1]{\textnormal{#1}}
 \newcommand{\mrm}[1]{\mathrm{#1}}
 
+\newcommand{\Cov}{\mathrm{Cov}}
+
 \mathlig{||}{\parallel}
 \mathlig{<'}{\prec}
 \mathlig{>'}{\succ}
@@ -159,6 +161,9 @@
   & & \epsilon                             & Empty program\\
   & & dec_1 \texttt{;} dec_2                                      & Sequencing
 \end{eqnarray*} 
+
+
+No pattern may contain a given variable more than once.
 
 \paragraph{Note.} We also use (with superfixes, subfixes and primes) $v$, $c$,
 $n$, $m$, $p$, $e$ and $d$ to range over $var$, $con$, $num$, $match$, $pat$,
@@ -288,8 +293,8 @@ evaluates to that something in $\sigma$.
 
 \section{Orderings on patterns}
 We define a total ($<=$) relation on patterns, and a partial ($<='$) relation on
-the quotient set of patterns by alpha equivalence. Then we show that they indeed
-are orderings.
+the quotient set of patterns by structural equivalence. Then we show that they
+indeed are orderings.
 
 We write $<$ and $<'$ for $<=$ and $<='$ strict (or irreflexive) counterparts
 respectively.
@@ -343,10 +348,11 @@ $<=$ and $<'$ in turn of those.
   \end{eqnarray*}
 \end{definition}
 
-\begin{definition}[Strict partial ordering, $<'$]\label{def:pat-total-order-strict}
+
+\begin{definition}[Strict partial ordering, $<'$]\label{def:pat-partial-order-strict}
   We define the strict counterpart of $<='$ by
   \begin{eqnarray*}
-      p_1 <' p_2 \Longleftrightarrow p_1 <=' p_2 \land p_1 \not ==a p_2
+      p_1 <' p_2 \Longleftrightarrow p_1 <=' p_2 \land p_1 \not == p_2
   \end{eqnarray*}
 \end{definition}
 
@@ -359,17 +365,19 @@ $<=$ and $<'$ in turn of those.
   We show that $<$ is irreflexive, transitive and total. Then it follows
   immediately by \fref{def:pat-total-order-weak} that $<=$ is a total ordering.
   \begin{description}
-  \item[Irreflexivity.] Proof by contradiction. So assume $p < p$.
-    \begin{description}
-    \item[Case $p = v$.] We get the contradiction immediately by irreflexivity
-      of $\lessdot$.
-    \item[Case $p = c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)}$.] By
-      the irreflexivity of $\lessdot$ it must be the case that
-      \begin{eqnarray*}
-        p_1 < p_1 \land \ldots \land p_n < p_n
-      \end{eqnarray*}
-      which by induction can not be the case, and we again have a contradiction.
-    \end{description}
+  \item[Irreflexivity.]
+    Proof by contradiction. So assume $p < p$.
+
+    If $p = v$ we get the contradiction immediately by irreflexivity of
+    $\lessdot$.
+
+    Therefore assume $p = c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n
+    \texttt{)}$. By the irreflexivity of $\lessdot$ it must be the case that
+    \begin{eqnarray*}
+      p_1 < p_1 \land \ldots \land p_n < p_n
+    \end{eqnarray*}
+    which by induction we see can not be the case, and we again have a
+    contradiction.
 
   \item[Transitivity.]
     Assume $p_1 < p_2 \land p_2 < p_3$. We show $p_1 < p_3$.
@@ -420,8 +428,8 @@ $<=$ and $<'$ in turn of those.
 
 \begin{lemma}[Partial ordering]\label{lem:pat-partial-orderings}
   The relation $<='$ is a partial ordering and $<'$ is a strict partial ordering
-  on the equivalence classes of patterns modulo alpha equivalence
-  ($pat_{/_{==a}}$).
+  on the equivalence classes of patterns modulo structural equivalence
+  ($pat_{/_{==}}$).
 \end{lemma}
 
 \begin{proof}
@@ -429,7 +437,7 @@ $<=$ and $<'$ in turn of those.
   that $<'$ is irreflexive and transitive.
   \begin{description}
   \item[Reflexivity.]
-    Assume $p_1 ==a p_2$. We want to show $p_1 <=' p_2$.
+    Assume $p_1 == p_2$. We want to show $p_1 <=' p_2$.
 
     If either pattern is a variable then clearly so is the other. And then $p_1
     <=' p_2$ follows by \fref{eq:pat-partial-order-weak-var}.
@@ -439,16 +447,16 @@ $<=$ and $<'$ in turn of those.
     p^2_m \texttt{)}$. It must be the case that $c_1 = c_2$, $n = m$ and $p^1_i
     ==a p^2_i$ for $i \in \{1, \ldots, n\}$.
 
-    \fixme{Henvis til definition af alfaækvivalens.}
+    \fixme{Henvis til definition af struktural ækvivalens.}
 
     It follows by induction that $p^1_1 <=' p^2_1 \land \ldots \land p^1_n <='
     p^2_n$ and then by \fref{eq:pat-partial-order-weak-con} that $p_1 <=' p_2$.
 
   \item[Antisymmetry.]
-    Assume $p_1 <=' p_2$ and $p_2 <=' p_1$. We need to show $p_1 ==a p_2$.
+    Assume $p_1 <=' p_2$ and $p_2 <=' p_1$. We need to show $p_1 == p_2$.
 
-    If either pattern is a variable then so is the other and alpha equivalence
-    follows directly.
+    If either pattern is a variable then so is the other and structural
+    equivalence follows directly.
 
     So assume that one of the patterns is a constructor pattern. By
     \fref{def:pat-partial-order-weak} it is easy to see that so must the other
@@ -458,76 +466,28 @@ $<=$ and $<'$ in turn of those.
     \begin{eqnarray*}
       p^1_1 <=' p^2_1 &\land& p^2_1 <=' p^1_1 \quad \land\\
       &\vdots&\\
-      p^n_1 <=' p^2_n &\land& p^2_n <=' p^1_n
+      p^1_n <=' p^2_n &\land& p^2_n <=' p^1_n
     \end{eqnarray*}
+    By induction we have $p^1_1 == p^2_1 \land \ldots \land p^1_n == p^2_n$ and
+    then $p_1 == p_2$.
 
-  \end{description}
-\end{proof}
+    \fixme{Henvis til definitionen af struktural ækvivalens.}
 
-%%%%%%%%%%%%%
+  \item[Transitivity.]
+    Assume $p_1 <=' p_2$ and $p_2 <=' p_3$. It must be shown that $p_1 <=' p_3$.
 
+    If $p_3 = v$ the result follows immediately. So assume $p_3 = c_3 \texttt{(}
+    p^3_1 \texttt{,} \ldots \texttt{,} p^3_n \texttt{)}$.
 
-\begin{lemma}[Transitivity of $<$]
-  \[
-  p_1 < p_2 \land p_2 < p_3 \Rightarrow p_1 < p_3
-  \]
-\end{lemma}
-\begin{proof}
-  If $p_3 = v$ then the result follows immediately. Therefore assume $p_3 = c_3
-  \texttt{(}p^3_1 \texttt{,} \ldots \texttt{,} p^3_n\texttt{)}$.
-  By the assumptions we have that $p_1 = c_1 \texttt{(}p^1_1 \texttt{,} \ldots
-  \texttt{,} p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots
-  \texttt{,} p^2_n\texttt{)}$ and
-  \begin{eqnarray}[c]
-    c_1 < c_2 \lor c_1 = c_2 \land ( p^1_1 < p^2_1 \lor p^1_1 = p^2_1 \land
-    (\ldots p^1_n < p^2_n \ldots )) \label{eq:trans-tot-proof-1}\\
-    c_2 < c_3 \lor c_2 = c_3 \land ( p^2_1 < p^3_1 \lor p^2_1 = p^3_1 \land
-    (\ldots p^2_n < p^3_n \ldots )) \label{eq:trans-tot-proof-2}
-  \end{eqnarray}
-  Combining \fref{eq:trans-tot-proof-1} and \fref{eq:trans-tot-proof-2} we get
-  \begin{eqnarray*}[c]
-    c_1 < c_2 \lor c_1 = c_2 \land c_2 < c_3 \lor c_2 = c_3 \land\\ ( p^1_1 < p^2_1
-    \lor p^1_1 = p^2_1 \land p^2_1 < p^3_1 \lor p^2_1 = p^3_1 \land
-    (\ldots p^1_n < p^2_n \land p^2_n < p^3_n \ldots ))
-  \end{eqnarray*}
-  And then using induction we get
-  \begin{eqnarray*}
-    c_1 < c_3 \lor c_1 = c_3 \land ( p^1_1 < p^3_1 \lor p^1_1 = p^3_1 \land
-    (\ldots p^1_n < p^3_n \ldots ))
-  \end{eqnarray*}
-  and then by definition $p_1 < p_3$.
-\end{proof}
-
-\begin{definition}[$p_1 <=' p_2$]
-\end{definition}
-
-\begin{definition}[$p_1 \prec p_2$]
-  \[
-  p_1 <' p_2 \Leftrightarrow p_1 <=' p_2 \land p_1 \not ==a p_2
-  \]
-\end{definition}
-
-And we write $p_1 >=' p_2$ and $p_1 >' p_2$ to mean $p_2 <=' p_1$ and $p_2 <'
-p_1$ respectively.
-
-\begin{lemma}[Transitivity of $<'$ and $<='$]
-  \begin{eqnarray*}
-    p_1 <=' p_2 \land p_2 <=' p_3 \Rightarrow p_1 <=' p_3\\
-    p_1 <' p_2 \land p_2 <' p_3 \Rightarrow p_1 <' p_3
-  \end{eqnarray*}
-  Since $<='$ is the reflexive extension of $<'$, then if $<='$ is transitive
-  clearly so is $<'$. We prove the transitivity of $<='$.
-  \begin{proof}
-    If $p_3 = v$ the result follows immediately. So assume $p_3 = c_3
-    \texttt{(}p^3_1 \texttt{,} \ldots \texttt{,} p^3_n\texttt{)}$.
-    By the assumptions we have that $p_1 = c_1 \texttt{(}p^1_1 \texttt{,} \ldots
-    \texttt{,} p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots
-    \texttt{,} p^2_n\texttt{)}$ and
+    Then clearly $p_1 = c_1 \texttt{(} p^1_1 \texttt{,} \ldots \texttt{,}
+    p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots \texttt{,}
+    p^2_n\texttt{)}$ and by \fref{eq:pat-partial-order-weak-con} we have
     \begin{eqnarray}[c]
-      c_1 = c_2 \land p^1_1 <=' p^2_1 \ldots p^1_n <=' p^2_n \label{eq:trans-part-proof-1}\\
-      c_2 = c_3 \land p^2_1 <=' p^3_1 \ldots p^2_n <=' p^3_n \label{eq:trans-part-proof-2}
+      c_1 = c_2 \land p^1_1 <=' p^2_1 \ldots p^1_n <=' p^2_n \label{eq:pat-partial-order-weak-trans-part-proof-1}\\
+      c_2 = c_3 \land p^2_1 <=' p^3_1 \ldots p^2_n <=' p^3_n \label{eq:pat-partial-order-weak-trans-part-proof-2}
     \end{eqnarray}
-    Combining \fref{eq:trans-part-proof-1} and \fref{eq:trans-part-proof-2} gives us
+    Combining \fref{eq:pat-partial-order-weak-trans-part-proof-1} and
+    \fref{eq:pat-partial-order-weak-trans-part-proof-2} gives us
     \begin{eqnarray*}
       c_1 = c_2 \land c_2 = c_3 \land p^1 <=' p^2_1 \land p^2_1 <=' p^3_1 \ldots
       p^1_n <=' p^2_n \land p^2_n <=' p^3_n
@@ -536,63 +496,77 @@ p_1$ respectively.
     \begin{eqnarray*}
       c_1 = c_3 \land p^1_1 <=' p^3_1 \ldots p^1_n <=' p^3_n
     \end{eqnarray*}
-    which by definition gives us $p_1 <=' p_3$.
-  \end{proof}
-\end{lemma}
+    which by \fref{eq:pat-partial-order-weak-con} gives us $p_1 <=' p_3$.
 
-\begin{definition}[$p_1 || p_2$]
-  \[
-  p_1 || p_2 \Leftrightarrow p_1 \not <=' p_2 \land p_2 \not <=' p_1
-  \]
-\end{definition}
+  \end{description}
 
-\begin{corollary}[Reflexivity of $||$]
-  \[
-  p_1 || p_2 \Leftrightarrow p_2 || p_1
-  \]
-\end{corollary}
-\begin{proof}
-  By definition.
+  Now we show irreflexivity and transitivity of $<'$.
+  \begin{description}
+  \item[Irreflexivity.]
+    Immediately by \fref{def:pat-partial-order-strict}.
+
+  \item[Transitivity.]
+    Immediately by the transitivity of $<='$.
+
+  \end{description}
 \end{proof}
 
+We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
+< p_1$, $p_2 <= p_1$, $p_2 <' p_1$ and $p_2 <=' p_1$ respectively.
 
-\begin{lemma}[Equivalence classes of patterns]
-  \[
-  \forall p_1, p_2 : p_1 ==a p_2 \lor p_1 <' p_2 \lor p_1 >' p_2 \lor p_1 || p_2
-  \]
+\begin{lemma}[]\label{lem:total-implies-partial}
+  If two patterns $p_1$ and $p_2$ are ordered by the partial ordering then they
+  are also ordered by the total one. That is
+  \begin{eqnarray*}
+    p_1 <' p_2 \Longrightarrow p_1 < p_2
+  \end{eqnarray*}
+\end{lemma}
+\begin{proof}
+  Straightforward using induction.
+\end{proof}
+
+\begin{definition}[Confusion, $||$]\label{def:pat-confusion}
+  Let two patterns $p_1$ and $p_2$ be given. If it is the case that neither $p_1
+  <=' p_2$ nor $p_1 >=' p_2$ we say that $p_1$ and $p_2$ are confused and we
+  write $p_1 || p_2$.
+\end{definition}
+
+\begin{lemma}[Unique relation.]
+  Given two patterns $p_1$ and $p_2$ exactly one of the following hold
+  \begin{eqnarray*}
+    p_1 &==& p_2\\
+    p_1 &<'& p_2\\
+    p_1 &>'& p_2\\
+    p_1 &||& p_2
+  \end{eqnarray*}
 \end{lemma}
 \begin{proof}
   Immediately by inspection.
 \end{proof}
 
-\begin{lemma}\label{tot-imp-part}
-  \[
-  p_1 < p_2 \Rightarrow p_1 <' p_2
-  \]
-\end{lemma}
-\begin{proof}
-  Immediately by induction.
-\end{proof}
+\section{Eliminating unused patterns}
 
 \section{Cover}
+We define a cover to be a set of patterns such that at least one of them matches
+any given value.
 
-\begin{definition}
+\begin{definition}[Cover]\label{def:cover}
   Let $P = \{p_1, \ldots, p_n \}$, and $C = \{c_1, \ldots, c_n\}$ be the constructors
   defined in the current environment. Then
   \[
-  \textnormal{Cov}P
+  \Cov(P)
   \]
-if
-\[
-  x \in \{p_1, \ldots, p_n \} \lor (\forall c \in C : \textnormal{Cov} P_1 \land
-  \ldots \textnormal{Cov} P_m)
-\]
-where
-\begin{eqnarray*}
-P_1 &=& \{p'_1 | p \in P \land p = c \texttt{(}p'_1\texttt{,}\ldots\texttt{,}p'_m\texttt{)}\}\\
-&\vdots&\\
-P_m &=& \{p'_m | p \in P \land p = c \texttt{(}p'_1\texttt{,}\ldots\texttt{,}p'_m\texttt{)}\}
-\end{eqnarray*}
+  if
+  \[
+  x \in \{p_1, \ldots, p_n \} \lor (\forall c \in C : \Cov(P_1) \land
+  \ldots \Cov(P_m))
+  \]
+  where
+  \begin{eqnarray*}
+    P_1 &=& \{p'_1 \mid c \texttt{(} p'_1 \texttt{,} \ldots \texttt{,} p'_m \texttt{)} \in P\}\\
+    &\vdots&\\
+    P_m &=& \{p'_m \mid c \texttt{(} p'_1 \texttt{,} \ldots \texttt{,} p'_m \texttt{)} \in P\}
+  \end{eqnarray*}
 \end{definition}
 
 \section{Elimination of unused patterns}\label{sec:elim-unus-patt}
