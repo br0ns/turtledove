@@ -160,7 +160,7 @@ also use (with superfixes, subfixes and primes) $v$, $c$, $n$, $m$, $p$, $e$ and
 $d$ to range over $var$, $con$, $num$, $match$, $pat$, $exp$ and $dec$
 respectively.
 
-\section{Free variables and substitution}
+\section{Free variables, substitution and alpha equivalence}
 
 \section{Semantic equivalence}
 We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
@@ -169,8 +169,9 @@ $d'$, then if $d$ evaluates to something in an environment $\sigma$ then $d'$
 evaluates to that something in $\sigma$.
 
 \section{Orderings on patterns}
-We define a total ($<=$) and a partial ($<='$) relation on patterns. Then we show
-that they indeed are orderings.
+We define a total ($<=$) relation on patterns, and a partial ($<='$) relation on
+the quotient set of patterns by alpha equivalence. Then we show that they indeed
+are orderings.
 
 We write $<$ and $<'$ for $<=$ and $<='$ strict (or irreflexive) counterparts
 respectively.
@@ -301,7 +302,8 @@ $<=$ and $<'$ in turn of those.
 
 \begin{lemma}[Partial ordering]\label{lem:pat-partial-orderings}
   The relation $<='$ is a partial ordering and $<'$ is a strict partial ordering
-  on patterns.
+  on the equivalence classes of patterns modulo alpha equivalence
+  ($pat_{/_{==a}}$).
 \end{lemma}
 
 \begin{proof}
@@ -309,16 +311,37 @@ $<=$ and $<'$ in turn of those.
   that $<'$ is irreflexive and transitive.
   \begin{description}
   \item[Reflexivity.]
-    We want to show $p <=' p$.
+    Assume $p_1 ==a p_2$. We want to show $p_1 <=' p_2$.
 
-    If $p = v$ then it follows by \fref{eq:pat-partial-order-weak-var}.
+    If either pattern is a variable then clearly so is the other. And then $p_1
+    <=' p_2$ follows by \fref{eq:pat-partial-order-weak-var}.
 
-    So assume $p = c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)}$. It
-    follows by induction that $p_1 <=' p_1 \land \ldots \land p_n <=' p_n$ and
-    then by \fref{eq:pat-partial-order-weak-con} that $p <=' p$.
+    So assume $p_1 = c_1 \texttt{(} p^1_1 \texttt{,} \ldots \texttt{,} p^1_n
+    \texttt{)}$ and $p_2 = c_2 \texttt{(} p^2_1 \texttt{,} \ldots \texttt{,}
+    p^2_m \texttt{)}$. It must be the case that $c_1 = c_2$, $n = m$ and $p^1_i
+    ==a p^2_i$ for $i \in \{1, \ldots, n\}$.
+
+    \fixme{Henvis til definition af alfaækvivalens.}
+
+    It follows by induction that $p^1_1 <=' p^2_1 \land \ldots \land p^1_n <='
+    p^2_n$ and then by \fref{eq:pat-partial-order-weak-con} that $p_1 <=' p_2$.
 
   \item[Antisymmetry.]
-    
+    Assume $p_1 <=' p_2$ and $p_2 <=' p_1$. We need to show $p_1 ==a p_2$.
+
+    If either pattern is a variable then so is the other and alpha equivalence
+    follows directly.
+
+    So assume that one of the patterns is a constructor pattern. By
+    \fref{def:pat-partial-order-weak} it is easy to see that so must the other
+    and the constructors must be the same. So $p_1 = c \texttt{(} p^1_1
+    \texttt{,} \ldots \texttt{,} p^1_n \texttt{)}$ and $p_2 = c \texttt{(} p^2_1
+    \texttt{,} \ldots \texttt{,} p^2_n \texttt{)}$, and furthermore
+    \begin{eqnarray*}
+      p^1_1 <=' p^2_1 &\land& p^2_1 <=' p^1_1 \quad \land\\
+      &\vdots&\\
+      p^n_1 <=' p^2_n &\land& p^2_n <=' p^1_n
+    \end{eqnarray*}
 
   \end{description}
 \end{proof}
