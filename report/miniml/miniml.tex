@@ -160,16 +160,15 @@
   & & dec_1 \texttt{;} dec_2                                      & Sequencing
 \end{eqnarray*} 
 
-\paragraph{Note.} In the following we write $==a$ to mean alpha equivalence. We
-also use (with superfixes, subfixes and primes) $v$, $c$, $n$, $m$, $p$, $e$ and
-$d$ to range over $var$, $con$, $num$, $match$, $pat$, $exp$ and $dec$
-respectively.
+\paragraph{Note.} We also use (with superfixes, subfixes and primes) $v$, $c$,
+$n$, $m$, $p$, $e$ and $d$ to range over $var$, $con$, $num$, $match$, $pat$,
+$exp$ and $dec$ respectively.
 
 \section{Free variables, substitution and alpha equivalence}
 
 \subsection{Structural equivalence of patterns}
 
-We define two patterns to be structural equivalent with the following operator
+We define two patterns to be structurally equivalent with the operator
 $==_\sigma$ where $\sigma$ is a mapping of variables in one pattern to the
 corresponding variables in another pattern.
 
@@ -178,9 +177,9 @@ $[x \mapsto z, y \mapsto x]$
 
 \fixme{show that sigma is a bijection on variables}
 
-\begin{definition}[Structural equivalence of patterns $==_\sigma$]
+\begin{definition}[Structural equivalence of patterns, $==_\sigma$]
   \begin{eqnarray}[rlqTl]
-    v_1 &==_{\sigma} v_2  & for $\sigma == [v_1 \mapsto v_2]$ \label{eq:struct-eq-var} \\
+    v_1 &==_{\sigma} v_2  & where $\sigma = [v_1 \mapsto v_2]$ \label{eq:struct-eq-var} \\
     c\ttt{(}p^1_1 \ttt{,} \ldots \ttt{,} p^1_n \ttt{)} & ==_{\sigma}
     c\ttt{(}p^2_1 \ttt{,} \ldots \ttt{,} p^2_n \ttt{)} & \label{eq:struct-eq-con}
   \end{eqnarray}
@@ -198,7 +197,7 @@ where $++$ is defined by
   (g ++ f)x &= f(x) & if $x \in \mrm{Dom}(f)$\\
   (g ++ f)x &= g(x) & otherwise
 \end{eqnarray*}
-note that the domains of each of the $\sigma$s are disjoint because no variable
+Note that the domains of each of the $\sigma$s are disjoint because no variable
 can occur more than once in a pattern.
 \end{definition}
 
@@ -215,18 +214,18 @@ We define the free variables on expressions, matches and patterns with the tree
 following functions $FV_{exp}$, $FV_{match}$ and $FV_{pat}$:
 
 
-\begin{definition}[Free variables on expressions $FV_{exp}$] \ \\
+\begin{definition}[Free variables on expressions, $FV_{exp}$] \ \\
   Inductively defined:
   \begin{eqnarray}[rl]
     FV_{exp} (v) &= \{v\} \\
     FV_{exp} (\lambda m) &= FV_{match} (m) \\
     FV_{exp} (e_1e_2) &= FV_{exp} (e_1) \cup FV_{exp} (e_2) \\
-    FV_{exp} (con\ttt{(}e_1\ttt{,} \ldots \ttt{,} e_n \ttt{)}) &= FV_{exp}
+    FV_{exp} (c\ttt{(}e_1\ttt{,} \ldots \ttt{,} e_n \ttt{)}) &= FV_{exp}
     (e_1) \cup \ldots \cup FV_{exp} (e_n)
   \end{eqnarray}
 \end{definition}
 
-\begin{definition}[Free variables on matches $FV_{match}$]\ \\ 
+\begin{definition}[Free variables on matches, $FV_{match}$]\ \\ 
   Inductively defined:
   \begin{eqnarray}[rl]
     FV_{match} (\epsilon) &= \emptyset \\
@@ -235,11 +234,11 @@ following functions $FV_{exp}$, $FV_{match}$ and $FV_{pat}$:
   \end{eqnarray}
 \end{definition}
 
-\begin{definition}[Free variables on patterns $FV_{pat}$] \ \\
+\begin{definition}[Free variables on patterns, $FV_{pat}$] \ \\
   Inductively defined:
   \begin{eqnarray}[rl]
     FV_{pat} (v) &= \{v\} \\
-    FV_{pat} (con\ttt{(}p_1\ttt{,} \ldots \ttt{,} p_n\ttt{)}) &= FV_{pat} (p_1)
+    FV_{pat} (c\ttt{(}p_1\ttt{,} \ldots \ttt{,} p_n\ttt{)}) &= FV_{pat} (p_1)
     \cup \ldots \cup FV_{pat} (p_n)
   \end{eqnarray}
 \end{definition}
@@ -253,14 +252,33 @@ following functions $FV_{exp}$, $FV_{match}$ and $FV_{pat}$:
 We denote alpha equivalence with the symbol $==a$ and use the same symbol for
 both expressions, matches and patterns. 
 
-\begin{definition}[Alpha equivalence on expressions $==a$]
+\begin{definition}[Alpha equivalence on expressions, $==a$]
   \begin{eqnarray}[rl]
-    v_1 &==a v_2 \\
+    \sigma |- v_1 &==a v_2 \label{eq:alpha-var} \\
+    \sigma |- e_1e_2 &==a e_3e_4 \label{eq:alpha-exp} \\
+    \sigma |- \lambda m_1 &==a \lambda m_2 \label{eq:alpha-match} \\
+    \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a 
+    c\ttt{(}e^2_1 \ttt{,} \ldots \ttt{,} e^2_n \ttt{)} \label{eq:alpha-con}
   \end{eqnarray}
+
+where \fref{eq:alpha-var} holds iff 
+\[
+\sigma (v_1) = v_2 \lor v_1 = v_2
+\]
+and \fref{eq:alpha-exp} holds iff
+\[
+\sigma |- e_1 ==a e_3 \land \sigma |- e_2 ==a e_4
+\]
+and \fref{eq:alpha-match} holds iff alpha equivalence on matches holds \\
+and \fref{eq:alpha-con} holds iff
+\[
+\sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n
+\]
 \end{definition}
 
-Two terms are alpha equivalent if and only if they can be proven to be so using
-the above rules.
+Note that we write $t_1 ==a t_2$ to denote $[] |- t_1 ==a t_2$ and that two
+terms are alpha equivalent if and only if they can be proven to be so using the
+above rules.
 
 \section{Semantic equivalence}
 We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
@@ -279,7 +297,7 @@ respectively.
 As it turns out it is easier to define $<$ and $<='$ directly and then define
 $<=$ and $<'$ in turn of those.
 
-\begin{definition}[Strict total ordering $<$]\label{def:pat-total-order-strict}
+\begin{definition}[Strict total ordering, $<$]\label{def:pat-total-order-strict}
   Assume a total strict ordering $\lessdot$ on constructors and
   variables\footnote{For example let all constructors come before all variables
     and let variables and constructors be ordered lexicographically among
@@ -301,14 +319,14 @@ $<=$ and $<'$ in turn of those.
   \]
 \end{definition}
 
-\begin{definition}[Total ordering $<=$]\label{def:pat-total-order-weak}
+\begin{definition}[Total ordering, $<=$]\label{def:pat-total-order-weak}
   We define the reflexive cousin:
   \begin{eqnarray*}
     p_1 <= p_2 \Longleftrightarrow p_1 < p_2 \lor p_1 = p_2
   \end{eqnarray*}
 \end{definition}
 
-\begin{definition}[Partial ordering $<='$]\label{def:pat-partial-order-weak}
+\begin{definition}[Partial ordering, $<='$]\label{def:pat-partial-order-weak}
   We say that $p_2$ weakly generalises $p_1$ or $p_1$ is at least as specific as
   $p_2$ and we write $p_1 <=' p_2$. Inductively defined.
   \begin{eqnarray}
@@ -325,7 +343,7 @@ $<=$ and $<'$ in turn of those.
   \end{eqnarray*}
 \end{definition}
 
-\begin{definition}[Strict partial ordering $<'$]\label{def:pat-total-order-strict}
+\begin{definition}[Strict partial ordering, $<'$]\label{def:pat-total-order-strict}
   We define the strict counterpart of $<='$ by
   \begin{eqnarray*}
       p_1 <' p_2 \Longleftrightarrow p_1 <=' p_2 \land p_1 \not ==a p_2
