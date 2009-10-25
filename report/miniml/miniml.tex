@@ -266,18 +266,30 @@ both expressions, matches and patterns.
     c\ttt{(}e^2_1 \ttt{,} \ldots \ttt{,} e^2_n \ttt{)} \label{eq:alpha-con}
   \end{eqnarray}
 
-where \fref{eq:alpha-var} holds iff 
+where \fref{eq:alpha-var} holds if
 \[
-\sigma (v_1) = v_2 \lor v_1 = v_2
+\sigma (v_1) = v_2 \lor \left( v_1 = v_2 \tnm{ and } \sigma(v_1),\sigma(v_2)
+  \tnm{ is undefined} \right)
 \]
-and \fref{eq:alpha-exp} holds iff
+and \fref{eq:alpha-exp} holds if
 \[
 \sigma |- e_1 ==a e_3 \land \sigma |- e_2 ==a e_4
 \]
-and \fref{eq:alpha-match} holds iff alpha equivalence on matches holds \\
-and \fref{eq:alpha-con} holds iff
+and \fref{eq:alpha-match} holds if alpha equivalence on matches holds \\
+and \fref{eq:alpha-con} holds if
 \[
 \sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n
+\]
+\end{definition}
+
+\begin{definition}[Alpha equivalence on matches, $==a$]
+  \begin{eqnarray}[rl]
+    \sigma |- \epsilon &==a \epsilon \label{eq:alpha-epsilon} \\
+    \sigma |- p_1\ttt{.}e_1 &==a p_2\ttt{.}e_2 \land \sigma |- m_1 ==a m_2 \label{eq:alpha-pat-exp}
+  \end{eqnarray}
+where \fref{eq:alpha-pat-exp} holds if
+\[
+p_1 ==_{\sigma'} p_2 \land \sigma ++ \sigma' |- e_1 ==a e_2
 \]
 \end{definition}
 
