@@ -115,6 +115,8 @@
 }
 
 \newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\tnm}[1]{\textnormal{#1}}
+\newcommand{\mrm}[1]{\mathrm{#1}}
 
 \mathlig{||}{\parallel}
 \mathlig{<'}{\prec}
@@ -130,6 +132,7 @@
 \mathlig{==a}{=_{\alpha}}
 \mathlig{<|}{\lhd}
 \mathlig{|>}{\rhd}
+\mathlig{++}{+\!\!\!+}
 
 \begin{document}
 \chapter{Term rewriting in a subset of SML}
@@ -164,6 +167,46 @@ respectively.
 
 \section{Free variables, substitution and alpha equivalence}
 
+\subsection{Structural equivalence of patterns}
+
+We define two patterns to be structural equivalent with the following operator
+$==_\sigma$ where $\sigma$ is a mapping of variables in one pattern to the
+corresponding variables in another pattern.
+
+An example could be $A(x,y) ==_\sigma A(z,x)$ where $\sigma$ becomes the mapping
+$[x \mapsto z, y \mapsto x]$
+
+\fixme{show that sigma is a bijection on variables}
+
+\begin{definition}[Structural equivalence of patterns $==_\sigma$]
+  \begin{eqnarray}[rlqTl]
+    v_1 &==_{\sigma} v_2  & for $\sigma == [v_1 \mapsto v_2]$ \label{eq:struct-eq-var} \\
+    c\ttt{(}p^1_1 \ttt{,} \ldots \ttt{,} p^1_n \ttt{)} & ==_{\sigma}
+    c\ttt{(}p^2_1 \ttt{,} \ldots \ttt{,} p^2_n \ttt{)} & \label{eq:struct-eq-con}
+  \end{eqnarray}
+
+where \fref{eq:struct-eq-con} holds iff 
+
+\begin{eqnarray*}[c]
+  p^1_1 ==_{\sigma_1} p^2_1 \\
+  \vdots \\
+  p^1_n ==_{\sigma^n} p^2_n
+\end{eqnarray*}
+and $\sigma = \sigma_1 ++ \ldots ++ \ \sigma_n$
+where $++$ is defined by 
+\begin{eqnarray*}[rlqTl]
+  (g ++ f)x &= f(x) & if $x \in \mrm{Dom}(f)$\\
+  (g ++ f)x &= g(x) & otherwise
+\end{eqnarray*}
+note that the domains of each of the $\sigma$s are disjoint because no variable
+can occur more than once in a pattern.
+\end{definition}
+
+Note that we write $==$ to denote $==_\sigma$ for a suitable $\sigma$ where
+$\sigma$ has no interest.
+
+\fixme{Show equivalence relation: reflexive, symmetric and transitive.}
+\fixme{maybe show $p_1 ==_\sigma p_2$ iff $p_2 ==_{\sigma^{-1}} p_1$.}
 
 \subsection{Free variables}
 
