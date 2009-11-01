@@ -140,6 +140,8 @@
 \mathlig{<|}{\lhd}
 \mathlig{|>}{\rhd}
 \mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
+\mathlig{~>e}{\stackrel{elim}{\leadsto}}
+\mathlig{~>g}{\stackrel{gen}{\leadsto}}
 
 \begin{document}
 \chapter{Term rewriting in a subset of SML}
@@ -321,9 +323,10 @@ not just alpha equivalent.
 
 \subsection{Alpha equivalence}
 
-We denote alpha equivalence of expressions with the symbol $==a$.
+We define alpha equivalence for expressions and for pattern-expression pairs. We
+use the symbol $==a$ for both relations.
 
-\begin{definition}[Alpha equivalence on expressions, $==a$]
+\begin{definition}[Alpha equivalence of expressions, $==a$]\label{def:alpha-equivalence}
   First we define alpha equivalence given a mapping of bound variables:
   \begin{eqnarray}
     \sigma |- v_1 &==a& v_2 \label{eq:alpha-var} \\
@@ -345,17 +348,28 @@ v_1 &= v_2 & otherwise,
 \]
 \fref{eq:alpha-match} holds if
 \begin{eqnarray*}
-  p^1_1 ==_{\pi_1} p^2_1 &\land& \sigma ++ \pi_1 |- e^1_1 ==a e^2_1\\
+  (p^1_1, e^1_1) ==a (p^2_1, e^2_1)\\
   &\vdots&\\
-  p^1_n ==_{\pi_n} p^2_n &\land& \sigma ++ \pi_n |- e^1_n ==a e^2_n
+  (p^1_n, e^1_n) ==a (p^2_n, e^2_n)
 \end{eqnarray*}
 and \fref{eq:alpha-con} holds if
 \[
-\sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n
+\sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n.
 \]
 
+\begin{definition}[Alpha equivalence of pattern-expression pairs, $==a$]\label{def:alpha-equivalence-patexp}
+  Again we assume a mapping of bound variables. It is the case that
+  \[
+  \sigma |- (p_1, e_1) ==a (p_2, e_2)
+  \]
+  exactly when $p_1 ==_\pi p_2$ and
+  \[
+  \sigma ++ \pi |- e_1 ==a e_2
+  \]
+\end{definition}
+
 If $e_1$ and $e_2$ are alpha equivalent expressions we write $e_1 ==a e_2$ which
-is a shorthand for $[] |- e_1 ==a e_2$.
+is a shorthand for $[] |- e_1 ==a e_2$. Similarly for pattern-expression pairs.
 \end{definition}
 
 \section{Semantic equivalence}
@@ -600,7 +614,7 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
   write $p_1 || p_2$.
 \end{definition}
 
-\begin{lemma}[Unique relation.]
+\begin{lemma}[Unique relation]\label{lem:unique-rel}
   Given two patterns $p_1$ and $p_2$ exactly one of the following hold
   \begin{eqnarray*}
     p_1 &==& p_2\\
@@ -614,6 +628,18 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
 \end{proof}
 
 \section{Eliminating unused patterns}
+A function is simply a match. And a match is a list of pairs of patterns and
+corresponding bodys.
+
+The input to a function is tried against the patterns from top to bottom. An
+unused pattern is a pattern that will never see a value which it matches.
+
+This can happen for two reasons.
+\begin{enumerate}
+\item The pattern will never be tried against the input because the input
+  matches an earlier pattern. \label{item:unused-reason-1}
+\item The pattern is only tried against inputs it doesn't match. \label{item:unused-reason-2}
+\end{enumerate}
 
 \subsection{Cover}\label{sec:cover}
 We define a cover to be a set of patterns such that at least one of them matches
@@ -638,142 +664,216 @@ any given value.
   \end{eqnarray*}
 \end{definition}
 
+Any pattern following patterns that taken together are a cover is unused because
+of reason \ref{item:unused-reason-1}.
+
 \subsection{Shadowed patterns}\label{sec:shadowed-patterns}
-\begin{definition}[$m_1 =| m_2$]
+If a pattern is unused because of reason \ref{item:unused-reason-2} we say that
+it is shadowed.
+\begin{definition}[Shadowed]
   Let
   \[
   m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
   \]
-  If $p_j <=' p_i$ where $j > i$ then 
+  If $p_j <=' p_i$ for some $1 \leq i < j \leq n$, then $p_j$ is shadowed (by
+  $p_i$).
+\end{definition}
+
+We can now define the elimination of unused patterns.
+\begin{definition}[Elimination]
+  We define a reduction relation $\stackrel{elim}{\leadsto}$ that expresses the
+  elimination of exactly one pattern from a match.
+
+  Let
   \[
-  m =| m'
+  m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
   \]
-  where
+  If there exist a $p_i$ such that $\{p_1, \ldots, p_{i-1}\}$ is a cover or
+  $p_i$ is shadowed, then it is unused and can be eliminated. The resulting
+  match is
   \[
   m' = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|}
   p_{j-1}\texttt{.}e_{j-1} \texttt{|} p_{j+1}\texttt{.}e_{j+1} \texttt{|}
-  \ldots \texttt{|} p_n\texttt{.}e_n
+  \ldots \texttt{|} p_n\texttt{.}e_n,
   \]
-  In other words; pattern $j$ and its body can be removed from $m$.
+  and we write $m \stackrel{elim}{\leadsto} m'$.
+
+  \fixme{Decide upon a symbol for the reduction relation.}
 \end{definition}
 
+% \begin{definition}[$m_1 =| m_2$]
+%   Let
+%   \[
+%   m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
+%   \]
+%   If $p_j <=' p_i$ where $j > i$ then 
+%   \[
+%   m =| m'
+%   \]
+%   where
+%   \[
+%   m' = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|}
+%   p_{j-1}\texttt{.}e_{j-1} \texttt{|} p_{j+1}\texttt{.}e_{j+1} \texttt{|}
+%   \ldots \texttt{|} p_n\texttt{.}e_n
+%   \]
+%   In other words; pattern $j$ and its body can be removed from $m$.
+% \end{definition}
+
 \begin{lemma}(Preservation)
+  If an unused pattern is removed from a program, then the resulting program is
+  semantically equivalent.
+
+  That is
   \[
-  m \sqsupset m' \Rightarrow \forall e : \texttt{(}\lambda m\texttt{)}e \downarrow
-  v \Leftrightarrow \texttt{(}\lambda m'\texttt{)}e \downarrow v
+  m \stackrel{elim}{\leadsto} m' ==> \lambda m \sim \lambda m'
   \]
 \end{lemma}
 \begin{proof}
   Trivial (as if).
 \end{proof}
 
-\section{Unification of function bodys}
+\section{Generalisiation}
+Sometimes patterns get unnecessary complex. If for example a pattern (or one of
+its subpatterns) is a constructor pattern whose subpatterns are all variables,
+and those variables are only used as arguments to the same constructor (in the
+same order) in the function body, then the constructor could simply be replaced
+by a fresh variable in pattern and body. That is generalisation of the pattern.
+
+Sometimes the generalisation of a pattern makes it equivalent to another pattern
+in the match. And sometimes the two patterns corresponding bodys will merge
+seamlessly, such that two patterns can be made to one.
+\\[1em]
+First we need some auxiliary definitions.
 
 \subsection{Partially ordered form}
 \begin{definition}
   A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is in
-  partially ordered form iff
+  partially ordered form if
   \[
   \forall i \in \{1, \ldots, n\} : p_j \not <=' p_i \quad \textnormal{where $j > i$}
   \]
-
   Note that every match $m$ can be transformed to an equivalent match $m'$ such
-  that $m'$ is in partially ordered form, by repeated elimination of unused
-  patterns (\fref{sec:elim-unus-patt}).
+  that $m'$ is in partially ordered form, by repeated elimination of shadowed
+  patterns (\fref{sec:shadowed-patterns}).
 \end{definition}
 
 \subsection{Generalisation of patterns}
+We define generalisation of a single pair of a pattern and its body. We write
+$(p, e) |> (p', e')$ to mean that the pattern $p$ with its body $e$ generalises
+to the pattern $p'$ with the body $e'$.
 
-In the following we define generalisation of matches using the operator $<|$ using the
-auxiliary operator $<|'$, which generalises patterns.
-
-
-\begin{definition}[Generalisation of patterns $<|'$]\ \\
-\begin{eqnarray}[c]
-  (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)} , e)
-  <|'
-  (x , e[x/\kappa
-  (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)})]) \label{eq:gen-1}\\
-  \begin{eqnalign}
-    (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}&p_i&\texttt{,}\ldots\texttt{,}p_n\texttt{)}
-    , e) <|' \\
-    (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}&p'_i&\texttt{,}\ldots\texttt{,}p_n\texttt{)},
-    e')
-  \end{eqnalign} \label{eq:gen-2}
+\begin{definition}[Generalisation of single pattern-body pairs, $|>$]
+Inductively defined:
+\begin{eqnarray}
+  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} , e) &|>& (x , e[x
+  / \kappa (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} )]) \label{eq:single-gen-1}\\
+  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_i \texttt{,} \ldots
+  \texttt{,} p_n \texttt{)}, e) &|>&
+  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p'_i \texttt{,} \ldots
+  \texttt{,} p_n \texttt{)}, e') \label{eq:single-gen-2}
 \end{eqnarray}
-
-Where \fref{eq:gen-1} holds when $x$ is a fresh variable and
+Where \fref{eq:single-gen-1} holds when $x$ is a fresh variable and
 \[
 FV_{pat}(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)}) \cap FV_{exp}(e[x/\kappa
 (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)})]) = \emptyset
 \]
-and \fref{eq:gen-2} holds when
+and \fref{eq:single-gen-2} holds when \fref{eq:single-gen-1} does not and
 \[
-(p_i , e) <|' (p'_i , e')
+(p_i , e) |> (p'_i , e')
 \]
 \end{definition}
-\begin{lemma}[Generalisation] \label{lem:gener-patt}
+
+\begin{lemma}\label{lem:single-gen-imp-gen}
+  If a pattern $p$ (and some body) is generalised to $p'$ (and some other
+  body), then $p'$ strictly generalises $p$. In other words
   \[
-  (p_1, e_1) <|' (p_2, e_2) \Rightarrow p_1 <' p_2
+  (p, e) |> (p', e') ==> p <' p'.
   \]
 \end{lemma}
 \begin{proof}
-  Straight forward induction proof.
+  Straightforward induction proof.
 \end{proof}
 
-\subsection{Elimination by unification}
-\begin{definition}[Generalisation of matches $<|$]
-Assume that the match is partially ordered, $p_i' <' p_j$, $p_i.e_i <|'
-p'_i.e'_i$ then by \fref{lem:gener-patt} we have that $p_i <' p'_i$.
+\subsection{Generalisation of matches}
+For the generalisation of a match $m$, we require $m$ to be in partially ordered
+form.
+\\[1em]
+When generalising a pattern several things might happen. Assume
+\begin{eqnarray*}[rqTcql]
+  m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
+  \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
+  e'_i).
+\end{eqnarray*}
+Now, perhaps $m$ can be generalised if we substitute $p'_i$ for $p_i$ and $e'_i$
+for $e_i$. We would like the resulting match to be partially ordered too, so we
+must be cautious. Since we know from \fref{lem:single-gen-imp-gen} that $p'_i >'
+p_i$ the first part of the match $p_1 \texttt{.} e_1 \texttt{|} \ldots
+\texttt{|} p'_i \texttt{.} e'_i$ must still be partially ordered. So we consider
+the patterns $p_j$ for $j > i$.
 
-\begin{eqnarray}[c]
-  \begin{eqnalign}
-    p_1.e_1 \texttt{ |} \ldots \texttt{| } &p_i.e_i& \texttt{ |} \ldots
-    \texttt{| } p_n.e_n <| \\ 
-    p_1.e_1 \texttt{ |} \ldots \texttt{| } &p'_i.e'_i&
-    \texttt{ |} \ldots \texttt{| } p_n.e_n
-  \end{eqnalign} \label{eq:gen-all-stay} \\
-  \begin{eqnalign}[Ll]
-    p_1.e_1 \texttt{ |} \ldots \texttt{| } p_m.e_m \texttt{ |} \ldots \texttt{| }
-    p_{q_1}.e_{q_1} \texttt{ |} \ldots \texttt{| } p_{q_k}.e_{q_k} \texttt{ |}
-    \ldots \texttt{| } \\ 
-    p_{q_l}.e_{q_l} \texttt{ |} \ldots \texttt{| } p_n.e_n <| & \\
-    & p_1.e_1 \texttt{ |} \ldots \texttt{| } p_{q_1}.e_{q_1} \texttt{ | }
-    p_{q_k}.e_{q_k} \texttt{ | } p_{q_l}.e_{q_l} \texttt{ | } p'_m.e'_m \texttt{
-      |} \\ 
-    & \ldots \texttt{| } p_n.e_n
-  \end{eqnalign} \label{eq:gen-all-move}\\
-  \begin{eqnalign}
-    p_1.e_1 \texttt{ |} \ldots \texttt{| } p_m.e_m \texttt{ |} &\ldots&
-    \texttt{| } p_q.e_q \texttt{ |} \ldots \texttt{| } p_n.e_n <| \\ 
-    p_1.e_1 \texttt{ |} \ldots \texttt{| } &m_q.e_q&
-    \texttt{ |} \ldots \texttt{| } p_n.e_n
-  \end{eqnalign} \label{eq:gen-all-remove}
-\end{eqnarray}
+% Note that by \fref{lem:unique-rel} we know that either $p_i <' p_j$ or $p_i ||
+% p_j$.
 
+Four scenarios arise
+\begin{enumerate}
+\item $p'_i$ and $p_j$ are equivalent. The pattern was generalised to one that
+  already existed. Now the only hope is that $e'_i$ and $e_j$ merge. By this we
+  mean $(p'_i, e') ==a (p_j, e_j)$ (\fref{def:alpha-equivalence-patexp}).
 
-Where \ref{eq:gen-all-stay} holds when
-\[
-(p_i || p_j \land p_i' || p_j) \lor (p_i <' p_j \land p_i' <' p_j) \quad
-\texttt{for $j \in \{i+1 \ldots n\}$ }
-\]
-and \ref{eq:gen-all-move} holds when
-\[
-p_i || p_j \land p_j <' p_i' \quad \texttt{for $j \in \{i+1 \ldots n\}$ }
-\]
-and \ref{eq:gen-all-remove} holds when
-\[
-p_i <' p_j \land p_i' = p_j \quad \texttt{for $j \in \{i+1 \ldots n\}$ }
-\]
+  If this is the case then either one of $p'_i \texttt{.} e'_i$ or $p_j
+  \texttt{.} e_j$ shall be removed. \label{item:gen-scen-1}
+\item $p'_i$ relates to $p_j$ in the same way that $p_i$ does. So if $p_i <'
+  p_j$, then $p'_i <' p_j$ and if $p_i == p_j$ then $p'_i == p_j$. In this case
+  nothing must be done. \label{item:gen-scen-2}
+\item $p_i || p_j$ and $p'_i >' p_j$. So now $p'_i$ ``steals'' $p_j$s input. But
+  because $p_i$ and $p_j$ were confused we know that $p_j$ will not steal any
+  input originally intended for $p_i$. So we move $p_j$ and its body up, in the
+  match so they come before $p'_i$. \label{item:gen-scen-3}
+\item $p_i <' p_j$ and $p'_i >' p_j$. This means that $p'_i$ will match input
+  intended for $p_j$ but we can not move $p_j$ above $p'_i$ for then it will
+  steal input originally intended for $p_i$. So in this case $m$ can not be
+  generalised. \label{item:gen-scen-4}
+\end{enumerate}
 
-We name \ref{eq:gen-all-stay} as ``stay'', \ref{eq:gen-all-move} as ``move'' and
-\ref{eq:gen-all-remove} as ``remove''.
+\begin{definition}
+  We define a reduction relation $\stackrel{gen}{\leadsto}$ that expresses the
+  generalisation of exactly one pattern from a match.
+
+  Let
+  \begin{eqnarray*}[rqTcql]
+    m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
+    \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
+    e'_i).
+  \end{eqnarray*}
+  and assume that a generalisation as described above can be done. Then the
+  resulting match is
+  \begin{eqnarray}
+    m' &=& p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_{i-1} \texttt{.}
+    e_{i-1} \label{eq:gen-1}\\
+    &\texttt{|}& p_{m_1} \texttt{.} e_{m_1} \texttt{|} \ldots \texttt{|} p_{m_k}
+    \texttt{.} e_{m_k} \label{eq:gen-2}\\
+    &\texttt{|}& (p'_i \texttt{.} e'_i) \label{eq:gen-3}\\
+    &\texttt{|}& p_{s_1} \texttt{.} e_{s_1} \texttt{|} \ldots \texttt{|} p_{s_l}
+    \texttt{.} e_{s_l} \label{eq:gen-4}
+  \end{eqnarray}
+
+  Where (\ref{eq:gen-1}) is the part up until $p_i$, (\ref{eq:gen-2}) are the
+  patterns that get moved in scenario \ref{item:gen-scen-3} and (\ref{eq:gen-4})
+  are the ones that stay (scenario \ref{item:gen-scen-2}). Line (\ref{eq:gen-3})
+  is put in parentheses because is should be deleted in the case of scenario
+  \ref{item:gen-scen-1}. And of course $m_1 < \ldots < m_k$.
+
+  And we write $m ~>g m'$.
+  
 \end{definition}
 
+\section{Normal form}
+We say that the function $\lambda m$ is a normal form if there does not exist an
+$m'$ such that $m ~>g m'$ or $m ~>e m'$.
 
-% \section{Generalisation with unification of bodys}
-
-
+\begin{lemma}
+  We expect the normal form to be unique (in some sense).
+\end{lemma}
 
 % \section{Weak unification}
 
