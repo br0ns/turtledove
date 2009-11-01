@@ -25,21 +25,23 @@
 \usepackage[format=hang]{caption,subfig}
 \usepackage{graphicx}
 \usepackage{stmaryrd}
-\usepackage{amssymb}
 \usepackage{listings}
 \usepackage{ulem} % \sout - strike-through
 \usepackage{tikz}
 
 \usepackage{mdwtab}
 \usepackage{mathenv}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{semantic} % for the \mathlig function
 
 
 \renewcommand{\ttdefault}{txtt} % Bedre typewriter font
-% \usepackage[sc]{mathpazo}     % Palatino font
-% \renewcommand{\rmdefault}{ugm} % Garamond
-% \usepackage[garamond]{mathdesign}
+%% \usepackage[sc]{mathpazo}     % Palatino font
+%% \renewcommand{\rmdefault}{ugm} % Garamond
+%% \usepackage[garamond]{mathdesign}
 
 % \overfullrule=5pt
 % \setsecnumdepth{part}
@@ -75,7 +77,7 @@
   \freflemname\fancyrefdefaultspacing#1#3%
 }
 \Frefformat{vario}{\fancyreflemlabelprefix}{%
-  \Freflemname\fancyrefdeaultspacing#1#3%
+  \Freflemname\fancyrefdefaultspacing#1#3%
 }
 
 \newcommand*{\fancyrefthmlabelprefix}{thm}
@@ -119,6 +121,9 @@
 \newcommand{\mrm}[1]{\mathrm{#1}}
 
 \newcommand{\Cov}{\mathrm{Cov}}
+\providecommand{\FV}{\mathrm{FV}}
+\providecommand{\Dom}{\mathrm{Dom}}
+
 
 \mathlig{||}{\parallel}
 \mathlig{<'}{\prec}
@@ -134,7 +139,7 @@
 \mathlig{==a}{=_{\alpha}}
 \mathlig{<|}{\lhd}
 \mathlig{|>}{\rhd}
-\mathlig{++}{+\!\!\!+}
+\mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
 
 \begin{document}
 \chapter{Term rewriting in a subset of SML}
@@ -159,144 +164,199 @@
   & & \texttt{rec}\ var \mapsto \lambda match         & Recursive value binding\\
   & & con \texttt{:} \overline{num}                           & Constructor of arity $num$\\
   & & \epsilon                             & Empty program\\
-  & & dec_1 \texttt{;} dec_2                                      & Sequencing
+  & & dec_1 \texttt{;} dec_2
 \end{eqnarray*} 
-
 
 No pattern may contain a given variable more than once.
 
-\paragraph{Note.} We also use (with superfixes, subfixes and primes) $v$, $c$,
-$n$, $m$, $p$, $e$ and $d$ to range over $var$, $con$, $num$, $match$, $pat$,
-$exp$ and $dec$ respectively.
+\paragraph{Note.} In constructor declarations the arity is overlined to enhance
+the difference between numerals and their representation. In practice we write
+the syntactic representation of a numeral as the numeral set in typewriter
+font.
 
-\section{Free variables, substitution and alpha equivalence}
+We use (with superfixes, subfixes and primes) $v$, $c$, $n$, $m$, $p$, $e$
+and $d$ to range over $var$, $con$, $num$, $match$, $pat$, $exp$ and $dec$
+respectively.
 
-\subsection{Structural equivalence of patterns}
+\section{A note about evaluation}
+We expect programs to be run in an environment containing predefined functions
+(that is variables bound to predefined functions) and constructors. Thus the
+program
+\begin{quote}
+\begin{verbatim}
++ (pair (1, 8))
+\end{verbatim}
+\end{quote}
+might make perfect sense (if in particular \texttt{+} is a variable bound to a
+suitable function (perhaps addition), and \texttt{pair}, \texttt{1} and
+\texttt{8} are constructors of arity 2, 0 and 0, respectively).
+\section{Auxiliary definitions}
 
-We define two patterns to be structurally equivalent with the operator
-$==_\sigma$ where $\sigma$ is a mapping of variables in one pattern to the
-corresponding variables in another pattern.
+In the following we define what we mean by equivalence of patterns (with a
+permutation of variables), free variables (for expressions, matches and
+patterns), substitution (in expressions) and alpha equivalence (of expressions).
 
-An example could be $A(x,y) ==_\sigma A(z,x)$ where $\sigma$ becomes the mapping
-$[x \mapsto z, y \mapsto x]$
+\paragraph{Note.} If $f : A -> B$ and $g : A -> B$ are arbitrary mappings then
+\begin{eqnarray*}[rlqTl]
+  (g ++ f)(x) &= f(x) & if $x \in \Dom(f)$\\
+  (g ++ f)(x) &= g(x) & otherwise
+\end{eqnarray*}
 
-\fixme{show that sigma is a bijection on variables}
+We write $p \subseteq p'$ to mean that $p$ is a (exact, not just equivalent)
+subpattern of $p'$. In particular we have\footnote{See \fref{sec:free-variables}
+  for the definition of $\FV_{pat}$.} $x \subseteq p$ exactly when $x \in
+\FV_{pat}(p)$. The relation is reflexive.
 
-\begin{definition}[Structural equivalence of patterns, $==_\sigma$]
+The syntactic category $pat$ is a proper subset of $exp$. Let $\kappa : pat ->
+exp$ be the canonical mapping from $pat$ to $exp$. It is injective so it has a
+left inverse $\kappa^{-1} : exp -> pat$. $\kappa^{-1}$ is clearly not total.
+
+\subsection{Equivalence of patterns}
+We say that two patterns are equivalent if they have the same form. Two patterns
+have the same form if they are both a variable, or they start in the same
+constructor and their subpatterns have the same form.
+
+Clearly each variable in the first pattern has a counterpart in the second. If
+$p_1$ and $p_2$ are equivalent we write $==_\pi$ where $\pi$ is a permutation of
+variables, such that for each variable $x$ in $p_1$ its counterpart in $p_2$ is
+$\pi(x)$.
+
+For example we have $A(x,y) ==_\pi A(z,x)$ where $\pi = [x \mapsto z, y \mapsto x]$.
+
+\fixme{maybe: show that sigma is a permutation of variables}
+
+\begin{definition}[Equivalence of patterns, $==_\pi$]
   \begin{eqnarray}[rlqTl]
-    v_1 &==_{\sigma} v_2  & where $\sigma = [v_1 \mapsto v_2]$ \label{eq:struct-eq-var} \\
-    c\ttt{(}p^1_1 \ttt{,} \ldots \ttt{,} p^1_n \ttt{)} & ==_{\sigma}
+    v_1 &==_{\pi} v_2  & where $\pi = [v_1 \mapsto v_2]$ \label{eq:struct-eq-var} \\
+    c\ttt{(}p^1_1 \ttt{,} \ldots \ttt{,} p^1_n \ttt{)} & ==_{\pi}
     c\ttt{(}p^2_1 \ttt{,} \ldots \ttt{,} p^2_n \ttt{)} & \label{eq:struct-eq-con}
   \end{eqnarray}
-
-where \fref{eq:struct-eq-con} holds iff 
-
+where \fref{eq:struct-eq-con} holds if
 \begin{eqnarray*}[c]
-  p^1_1 ==_{\sigma_1} p^2_1 \\
+  p^1_1 ==_{\pi_1} p^2_1 \\
   \vdots \\
-  p^1_n ==_{\sigma^n} p^2_n
+  p^1_n ==_{\pi_n} p^2_n
 \end{eqnarray*}
-and $\sigma = \sigma_1 ++ \ldots ++ \ \sigma_n$
-where $++$ is defined by 
-\begin{eqnarray*}[rlqTl]
-  (g ++ f)x &= f(x) & if $x \in \mrm{Dom}(f)$\\
-  (g ++ f)x &= g(x) & otherwise
-\end{eqnarray*}
+and $\pi = \pi_1 ++ \ldots ++ \pi_n$.
+
 Note that the domains of each of the $\sigma$s are disjoint because no variable
-can occur more than once in a pattern.
+can occur more than once in a pattern (by the definition of the syntax).
+
+We write $==$ to mean $==_\pi$ (with a suitable $\pi$) where $\pi$ has no
+interest. Thus equivalence of patterns is defined by $==$. It is \emph{not}
+defined by $==_\pi$ when $\pi$ is fixed.
 \end{definition}
 
-We write $==$ to denote $==_\sigma$ for a suitable $\sigma$ where
-$\sigma$ has no interest.
 
 \fixme{Show equivalence relation: reflexive, symmetric and transitive.}
-\fixme{maybe show $p_1 ==_\sigma p_2$ iff $p_2 ==_{\sigma^{-1}} p_1$.}
+\fixme{maybe: show $p_1 ==_\pi p_2$ iff $p_2 ==_{\pi^{-1}} p_1$.}
 
 
-\subsection{Free variables}
+\subsection{Free variables}\label{sec:free-variables}
 
-We define the free variables on expressions, matches and patterns with the tree
-following functions $FV_{exp}$, $FV_{match}$ and $FV_{pat}$:
+We denote the free variables of expressions, matches and patterns with the tree
+functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
 
-
-\begin{definition}[Free variables on expressions, $FV_{exp}$] \ \\
+\begin{definition}[Free variables of expressions, $\FV_{exp}$] \ \\
   Inductively defined:
-  \begin{eqnarray}[rl]
-    FV_{exp} (v) &= \{v\} \\
-    FV_{exp} (\lambda m) &= FV_{match} (m) \\
-    FV_{exp} (e_1e_2) &= FV_{exp} (e_1) \cup FV_{exp} (e_2) \\
-    FV_{exp} (c\ttt{(}e_1\ttt{,} \ldots \ttt{,} e_n \ttt{)}) &= FV_{exp}
-    (e_1) \cup \ldots \cup FV_{exp} (e_n)
+  \begin{eqnarray}
+    \FV_{exp} (v) &=& \{v\} \\
+    \FV_{exp} (\lambda m) &=& \FV_{match} (m) \\
+    \FV_{exp} (e_1e_2) &=& \FV_{exp} (e_1) \cup \FV_{exp} (e_2) \\
+    \FV_{exp} (c\ttt{(}e_1\ttt{,} \ldots \ttt{,} e_n \ttt{)}) &=& \FV_{exp}
+    (e_1) \cup \ldots \cup \FV_{exp} (e_n)
   \end{eqnarray}
 \end{definition}
 
-\begin{definition}[Free variables on matches, $FV_{match}$]\ \\ 
+\begin{definition}[Free variables of matches, $\FV_{match}$]\ \\ 
   Inductively defined:
-  \begin{eqnarray}[rl]
-    FV_{match} (\epsilon) &= \emptyset \\
-    FV_{match} (p\ttt{.}e\ \ttt{|}\ m) &= \left( FV_{exp}(e) \setminus
-      FV_{pat}(p) \right) \cup FV_{match} (m)
+  \begin{eqnarray}
+    \FV_{match} (\epsilon) &=& \emptyset \\
+    \FV_{match} (p\ttt{.}e\ \ttt{|}\ m) &=& \left( \FV_{exp}(e) \setminus
+      \FV_{pat}(p) \right) \cup \FV_{match} (m)
   \end{eqnarray}
 \end{definition}
 
-\begin{definition}[Free variables on patterns, $FV_{pat}$] \ \\
+\begin{definition}[Free variables of patterns, $\FV_{pat}$] \ \\
   Inductively defined:
-  \begin{eqnarray}[rl]
-    FV_{pat} (v) &= \{v\} \\
-    FV_{pat} (c\ttt{(}p_1\ttt{,} \ldots \ttt{,} p_n\ttt{)}) &= FV_{pat} (p_1)
-    \cup \ldots \cup FV_{pat} (p_n)
+  \begin{eqnarray}
+    \FV_{pat} (v) &=& \{v\} \\
+    \FV_{pat} (c\ttt{(}p_1\ttt{,} \ldots \ttt{,} p_n\ttt{)}) &=& \FV_{pat} (p_1)
+    \cup \ldots \cup \FV_{pat} (p_n)
   \end{eqnarray}
 \end{definition}
 
 \subsection{Substitution}
+We define substitution in expressions. An expression can be substituted for any
+(sub)expression of an expressions, not just variables.
 
+\begin{definition}[Substitution]
+  If $e_1$, $e_2$ and $e_3$ are expressions we write $e_1[e_2/e_3]$ to be the
+  result of substituting all occurrences of $e_3$ in $e_1$ with $e_2$.
+  \begin{eqnarray}
+    e_1[e_2/e_3] &=& e_2 \quad \mrm{if}\ e_1 = e_3 \label{eq:subst-sub}\\
+    (e^1_1 e^2_1)[e_2/e_3] &=& e^1_1[e_2/e_3] e^2_1[e_2/e_3] \label{eq:subst-app}\\
+    \lambda p_1 \texttt{.} e_1 \texttt{|} m &=& \lambda p_1 \texttt{.} e'_1
+    \texttt{|} m' \label{eq:subst-lam}\\
+    (c \texttt{(}e^1_1 \texttt{,} \ldots \texttt{,} e^1_n \texttt{)})[e_2/e_3]
+    &=& c \texttt{(}e^1_1[e_2/e_3] \texttt{,} \ldots \texttt{,} e^1_n[e_2/e_3]
+    \texttt{)} \label{eq:subst-con}
+  \end{eqnarray}
+Where in \fref{eq:subst-lam} we have
+\begin{eqnarray*}[rlqTl]
+  e'_1 &= e_1 & if $\kappa^{-1}(e_3) \subseteq p_1$\\
+  e'_1 &= e_1[e_2/e_3]
+\end{eqnarray*}
+and
+\[
+(\lambda m)[e_2/e_3] = \lambda m'
+\]
 
+In \fref{eq:subst-app}, \fref{eq:subst-lam} and \fref{eq:subst-con} we require
+that \fref{eq:subst-sub} does not apply.
+
+Note that in \fref{eq:subst-sub} we require $e_1$ and $e_3$ to be exactly equal,
+not just alpha equivalent.
+\end{definition}
 
 \subsection{Alpha equivalence}
 
-We denote alpha equivalence with the symbol $==a$ and use the same symbol for
-both expressions, matches and patterns. 
+We denote alpha equivalence of expressions with the symbol $==a$.
 
 \begin{definition}[Alpha equivalence on expressions, $==a$]
-  \begin{eqnarray}[rl]
-    \sigma |- v_1 &==a v_2 \label{eq:alpha-var} \\
-    \sigma |- e_1e_2 &==a e_3e_4 \label{eq:alpha-exp} \\
-    \sigma |- \lambda m_1 &==a \lambda m_2 \label{eq:alpha-match} \\
-    \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a 
+  First we define alpha equivalence given a mapping of bound variables:
+  \begin{eqnarray}
+    \sigma |- v_1 &==a& v_2 \label{eq:alpha-var} \\
+    \sigma |- e^1_1e^1_2 &==a& e^2_1e^2_1 \label{eq:alpha-exp} \\
+    \sigma |- \lambda p^1_1 \texttt{.} e^1_1 \texttt{|} \ldots \texttt{|} p^1_n
+    \texttt{.} e^1_n &==a& \lambda p^2_1 \texttt{.} e^2_1 \texttt{|} \ldots \texttt{|} p^2_n
+    \texttt{.} e^2_n \label{eq:alpha-match} \\
+    \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a& 
     c\ttt{(}e^2_1 \ttt{,} \ldots \ttt{,} e^2_n \ttt{)} \label{eq:alpha-con}
   \end{eqnarray}
-
-where \fref{eq:alpha-var} holds if
+where \fref{eq:alpha-var} holds
+\begin{eqnarray*}[rlqTl]
+\sigma (v_1) &= v_2 & if $v_1 \in \Dom(\sigma)$\\
+v_1 &= v_2 & otherwise,
+\end{eqnarray*}
+\fref{eq:alpha-exp} holds if
 \[
-\sigma (v_1) = v_2 \lor \left( v_1 = v_2 \tnm{ and } \sigma(v_1),\sigma(v_2)
-  \tnm{ is undefined} \right)
+\sigma |- e^1_1 ==a e^2_1 \land \sigma |- e^1_2 ==a e^2_1,
 \]
-and \fref{eq:alpha-exp} holds if
-\[
-\sigma |- e_1 ==a e_3 \land \sigma |- e_2 ==a e_4
-\]
-and \fref{eq:alpha-match} holds if alpha equivalence on matches holds \\
+\fref{eq:alpha-match} holds if
+\begin{eqnarray*}
+  p^1_1 ==_{\pi_1} p^2_1 &\land& \sigma ++ \pi_1 |- e^1_1 ==a e^2_1\\
+  &\vdots&\\
+  p^1_n ==_{\pi_n} p^2_n &\land& \sigma ++ \pi_n |- e^1_n ==a e^2_n
+\end{eqnarray*}
 and \fref{eq:alpha-con} holds if
 \[
 \sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n
 \]
+
+If $e_1$ and $e_2$ are alpha equivalent expressions we write $e_1 ==a e_2$ which
+is a shorthand for $[] |- e_1 ==a e_2$.
 \end{definition}
-
-\begin{definition}[Alpha equivalence on matches, $==a$]
-  \begin{eqnarray}[rl]
-    \sigma |- \epsilon &==a \epsilon \label{eq:alpha-epsilon} \\
-    \sigma |- p_1\ttt{.}e_1 &==a p_2\ttt{.}e_2 \land \sigma |- m_1 ==a m_2 \label{eq:alpha-pat-exp}
-  \end{eqnarray}
-where \fref{eq:alpha-pat-exp} holds if
-\[
-p_1 ==_{\sigma'} p_2 \land \sigma ++ \sigma' |- e_1 ==a e_2
-\]
-\end{definition}
-
-We write $t_1 ==a t_2$ to denote $[] |- t_1 ==a t_2$.
-
-Note that two terms are alpha equivalent if and only if they can be proven to be
-so using the above rules.
 
 \section{Semantic equivalence}
 We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
@@ -322,16 +382,12 @@ $<=$ and $<'$ in turn of those.
     themselves. Note that constructors and variables are not compared in the
     definition of $<$.}. We inductively define:
   \begin{eqnarray}
-    v_1 &<& v_2\label{eq:pat-total-order-strict-var}\\
+    v_1 &<& v_2 \quad \mrm{if}\ v_1 \lessdot v_2\label{eq:pat-total-order-strict-var}\\
     c\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<& v\\
     c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<&
     c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:pat-total-order-strict-con}
   \end{eqnarray}
-  Where \fref{eq:pat-total-order-strict-var} holds if
-  \[
-  v_1 \lessdot v_2
-  \]
-  and \fref{eq:pat-total-order-strict-con} holds if
+  Where \fref{eq:pat-total-order-strict-con} holds if
   \[
   c_1 \lessdot c_2 \lor (c_1 = c_2 \land ( p_1 < p'_1 \lor p_1 = p'_1 \land (\ldots p_n < p'_n \ldots )))
   \]
@@ -559,7 +615,7 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
 
 \section{Eliminating unused patterns}
 
-\section{Cover}
+\subsection{Cover}\label{sec:cover}
 We define a cover to be a set of patterns such that at least one of them matches
 any given value.
 
@@ -582,7 +638,7 @@ any given value.
   \end{eqnarray*}
 \end{definition}
 
-\section{Elimination of unused patterns}\label{sec:elim-unus-patt}
+\subsection{Shadowed patterns}\label{sec:shadowed-patterns}
 \begin{definition}[$m_1 =| m_2$]
   Let
   \[
@@ -611,7 +667,9 @@ any given value.
   Trivial (as if).
 \end{proof}
 
-\section{Partially ordered form}
+\section{Unification of function bodys}
+
+\subsection{Partially ordered form}
 \begin{definition}
   A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is in
   partially ordered form iff
@@ -624,15 +682,13 @@ any given value.
   patterns (\fref{sec:elim-unus-patt}).
 \end{definition}
 
-\section{Generalisation of patterns}
+\subsection{Generalisation of patterns}
 
 In the following we define generalisation of matches using the operator $<|$ using the
 auxiliary operator $<|'$, which generalises patterns.
 
 
 \begin{definition}[Generalisation of patterns $<|'$]\ \\
-The syntactic category $pat$ is a proper subset of $exp$. Let $\kappa : pat
-\rightarrow exp$ be the canonical mapping from $pat$ to $exp$.
 \begin{eqnarray}[c]
   (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)} , e)
   <|'
@@ -665,6 +721,7 @@ and \fref{eq:gen-2} holds when
   Straight forward induction proof.
 \end{proof}
 
+\subsection{Elimination by unification}
 \begin{definition}[Generalisation of matches $<|$]
 Assume that the match is partially ordered, $p_i' <' p_j$, $p_i.e_i <|'
 p'_i.e'_i$ then by \fref{lem:gener-patt} we have that $p_i <' p'_i$.
