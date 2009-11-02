@@ -60,8 +60,8 @@
 \mathlig{>'}{\succ}
 \mathlig{<='}{\preccurlyeq}
 \mathlig{>='}{\succcurlyeq}
-\mathlig{<=}{\leq}
-\mathlig{>=}{\geq}
+\mathlig{<=}{\leqslant}
+\mathlig{>=}{\geqslant}
 \mathlig{<>}{\neq}
 \mathlig{|=}{\sqsubset}
 \mathlig{=|}{\sqsupset}
@@ -69,6 +69,15 @@
 \mathlig{==a}{=_{\alpha}}
 \mathlig{<|}{\lhd}
 \mathlig{|>}{\rhd}
+\mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
+\mathlig{~>e}{\stackrel{elim}{\leadsto}}
+\mathlig{~>g}{\stackrel{gen}{\leadsto}}
+
+\newcommand{\patexp}[2]{#1 \texttt{.} #2}
+\newcommand{\fargs}[2]{#1 \texttt{ | } #2}
+\newcommand{\cargs}[2]{#1 \texttt{,} #2}
+\newcommand{\con}[2]{#1 \texttt{(} #2 \texttt{)}}
+\newcommand{\fcall}[2]{#1 \texttt{(} #2 \texttt{)}}
 
 \begin{document}
 \chapter{Examples}
@@ -92,22 +101,52 @@
 
 
 
-\begin{example}
-  Total ordering of
-  \[
-  \texttt{rec } foo \mapsto \lambda (b.exp_1 \texttt{ | } a.exp_2 \texttt{ | }
-  con(y, z).exp_3 \texttt{ | } con(x, z).exp_4) 
-  \]
-  will result in
-  \[
-  \texttt{rec } foo \mapsto \lambda (con(x, z).exp_4 \texttt{ | } con(y, z).exp_3  \texttt{ | } a.exp_2 \texttt{ | }
-  b.exp_1)
-  \]
-  
+\begin{example}[Strict total ordering, $<$]
+  Given then following function $foo$
+  \begin{eqnarray*}[rl]
+    \texttt{rec } foo & \mapsto \lambda (b.exp_1 \texttt{ | } a.exp_2 \texttt{ | }
+    con(y, z).exp_3 \texttt{ | } con(x, z).exp_4) \\
+\tabpause{then strict total ordering will result in}
+    \texttt{rec } foo & \mapsto \lambda (con(x\texttt{,} z)\texttt{.}exp_4 \texttt{ |
+    } con(y\texttt{,} z)\texttt{.}exp_3 \texttt{ | } a\texttt{.}exp_2 \texttt{ | }
+    b\texttt{.}exp_1)
+\end{eqnarray*}
 \end{example}
 
 
+\begin{example}[Strict partial ordering, $<'$]
+  Given the following function $combine$
+  \begin{eqnarray*}[rll]
+    \texttt{rec } combine \mapsto 
+    & \lambda ( & \patexp{\con{::}{\cargs{x}{\con{::}{\cargs{y}{xl}}}}}{\fcall{::}{\cargs{\con{pair}{\cargs{x}{y}}}{combine(xl)}}} \\
+      & \texttt{|} & \patexp{\fcall{::}{\cargs{xl}{nil}}}{nil} \\
+      & \texttt{|} & \patexp{nil}{nil} )\\
+\tabpause{then partial ordering will result in}
+    \texttt{rec } combine \mapsto 
+    & \lambda ( & hej \\
+    & \texttt{|} & ... )
+  \end{eqnarray*}
+  
+
+\end{example}
+
+
+\begin{example}[Elimination, $~>e$]
+
+\end{example}
+
+
+\begin{example}[Generalisation of single pattern-body pairs, $|>$]
+
+\end{example}
+
+
+\begin{example}[Reduction relation, $~>g$]
+
+\end{example}
+
 \end{document}
+
 
 
 %%% Local Variables: 
