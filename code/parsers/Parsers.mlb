@@ -1,0 +1,8 @@
+local
+$(SML_LIB)/basis/basis.mlb
+../Basic.mlb
+in
+
+SourceText.sig SourceText.sml
+
+end

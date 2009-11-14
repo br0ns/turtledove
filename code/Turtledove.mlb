@@ -1,0 +1,9 @@
+local
+$(SML_LIB)/basis/basis.mlb
+in
+Basic.mlb
+
+parsers/Parsers.mlb
+
+main.sml
+end

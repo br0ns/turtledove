@@ -1,0 +1,52 @@
+local
+$(SML_LIB)/basis/basis.mlb
+in
+Ordering.sig
+ListSort.sig
+
+  (* Signatures
+   *)
+Set.sig
+(* Multiset.sig *)
+Map.sig
+OrderedSet.sig
+(* OrderedMultiset.sig *)
+OrderedMap.sig
+Heap.sig
+Queue.sig
+Tree.sig
+Array.sig
+(* Graph.sig *)
+(* LabeledGraph.sig *)
+
+  (* Implementations
+   *)
+QuickSort.sml
+
+ListSet.sml
+(* ListOrderedSetFn.sml *)
+(* RedBlackOrderedSetFn.sml *)
+(* ListMultiset.sml *)
+(* ListMinHeap.sml *)
+(* ListMaxHeap.sml *)
+(* RedBlackOrderedMap.sml *)
+
+(* ListMap.sml *)
+ListOrderedMapFn.sml
+
+(* ListHeapFn.sml *)
+
+TreeFn.sml
+
+  (* Default implementations
+   *)
+ListSort.sml
+Set.sml
+(* Map.sml *)
+(* OrderedSetFn.sml *)
+(* MinHeap.sml *)
+(* MaxHeap.sml *)
+OrderedMapFn.sml
+Dictionary.sml
+Tree.sml
+end

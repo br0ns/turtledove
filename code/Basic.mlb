@@ -1,0 +1,15 @@
+local
+$(SML_LIB)/basis/basis.mlb
+in
+mylib/MyLib.mlb
+
+Constants.sml
+Flags.sig FlagsFn.sml Flags.sml
+Crash.sig Crash.sml
+
+TextUtils.sig TextUtils.sml
+
+Report.sig Report.sml
+
+Show.sig Show.sml
+end
