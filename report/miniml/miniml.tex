@@ -244,9 +244,9 @@ and $\pi = \pi_1 ++ \ldots ++ \pi_n$.
 Note that the domains of each of the $\sigma$s are disjoint because no variable
 can occur more than once in a pattern (by the definition of the syntax).
 
-We write $==$ to mean $==_\pi$ (with a suitable $\pi$) where $\pi$ has no
-interest. Thus equivalence of patterns is defined by $==$. It is \emph{not}
-defined by $==_\pi$ when $\pi$ is fixed.
+We write $==$ to mean $==_\pi$ (with a suitable non-fixed $\pi$) where $\pi$ has no
+interest. Equivalence of patterns is defined by $==_\pi$, \emph{only} when $\pi$
+is not fixed.
 \end{definition}
 
 
@@ -348,9 +348,9 @@ v_1 &= v_2 & otherwise,
 \]
 \fref{eq:alpha-match} holds if
 \begin{eqnarray*}
-  (p^1_1, e^1_1) ==a (p^2_1, e^2_1)\\
+  (p^1_1, e^1_1) &==a& (p^2_1, e^2_1)\\
   &\vdots&\\
-  (p^1_n, e^1_n) ==a (p^2_n, e^2_n)
+  (p^1_n, e^1_n) &==a& (p^2_n, e^2_n)
 \end{eqnarray*}
 and \fref{eq:alpha-con} holds if
 \[
@@ -376,7 +376,8 @@ is a shorthand for $[] |- e_1 ==a e_2$. Similarly for pattern-expression pairs.
 We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
 if $e_2$ is substituted for $e_1$ (or vice versa) in any program $d$ to obtain
 $d'$, then if $d$ evaluates to something in an environment $\sigma$ then $d'$
-evaluates to that something in $\sigma$.
+evaluates to that something in $\sigma$, and if $d$ diverges in $\sigma$ so does
+$d'$.
 
 \section{Orderings on patterns}
 We define a total ($<=$) relation on patterns, and a partial ($<='$) relation on
@@ -818,12 +819,12 @@ Four scenarios arise
 \begin{enumerate}
 \item $p'_i$ and $p_j$ are equivalent. The pattern was generalised to one that
   already existed. Now the only hope is that $e'_i$ and $e_j$ merge. By this we
-  mean $(p'_i, e') ==a (p_j, e_j)$ (\fref{def:alpha-equivalence-patexp}).
+  mean $(p'_i, e'_i) ==a (p_j, e_j)$ (\fref{def:alpha-equivalence-patexp}).
 
   If this is the case then either one of $p'_i \texttt{.} e'_i$ or $p_j
   \texttt{.} e_j$ shall be removed. \label{item:gen-scen-1}
 \item $p'_i$ relates to $p_j$ in the same way that $p_i$ does. So if $p_i <'
-  p_j$, then $p'_i <' p_j$ and if $p_i == p_j$ then $p'_i == p_j$. In this case
+  p_j$, then $p'_i <' p_j$ and if $p_i || p_j$ then $p'_i || p_j$. In this case
   nothing must be done. \label{item:gen-scen-2}
 \item $p_i || p_j$ and $p'_i >' p_j$. So now $p'_i$ ``steals'' $p_j$s input. But
   because $p_i$ and $p_j$ were confused we know that $p_j$ will not steal any
