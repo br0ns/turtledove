@@ -1,0 +1,153 @@
+\section{Orderings on patterns}
+
+\begin{proof}
+  We show that $<$ is irreflexive, transitive and total. Then it follows
+  immediately by \fref{def:pat-total-order-weak} that $<=$ is a total ordering.
+  \begin{description}
+  \item[Irreflexivity.]
+    Proof by contradiction. So assume $p < p$.
+
+    If $p = v$ we get the contradiction immediately by irreflexivity of
+    $\lessdot$.
+
+    Therefore assume $p = c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n
+    \texttt{)}$. By the irreflexivity of $\lessdot$ it must be the case that
+    \begin{eqnarray*}
+      p_1 < p_1 \land \ldots \land p_n < p_n
+    \end{eqnarray*}
+    which by induction we see can not be the case, and we again have a
+    contradiction.
+
+  \item[Transitivity.]
+    Assume $p_1 < p_2 \land p_2 < p_3$. We show $p_1 < p_3$.
+
+    If $p_3 = v$ then the result follows immediately. Therefore assume $p_3 = c_3
+    \texttt{(}p^3_1 \texttt{,} \ldots \texttt{,} p^3_n\texttt{)}$.
+    By the assumptions we have that $p_1 = c_1 \texttt{(}p^1_1 \texttt{,} \ldots
+    \texttt{,} p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots
+    \texttt{,} p^2_n\texttt{)}$ and
+    \begin{eqnarray}[c]
+      c_1 < c_2 \lor c_1 = c_2 \land ( p^1_1 < p^2_1 \lor p^1_1 = p^2_1 \land
+      (\ldots p^1_n < p^2_n \ldots )) \label{eq:trans-tot-proof-1}\\
+      c_2 < c_3 \lor c_2 = c_3 \land ( p^2_1 < p^3_1 \lor p^2_1 = p^3_1 \land
+      (\ldots p^2_n < p^3_n \ldots )) \label{eq:trans-tot-proof-2}
+    \end{eqnarray}
+    Combining \fref{eq:trans-tot-proof-1} and \fref{eq:trans-tot-proof-2} we get
+    \begin{eqnarray*}[c]
+      c_1 < c_2 \lor c_1 = c_2 \land c_2 < c_3 \lor c_2 = c_3 \land\\ ( p^1_1 < p^2_1
+      \lor p^1_1 = p^2_1 \land p^2_1 < p^3_1 \lor p^2_1 = p^3_1 \land
+      (\ldots p^1_n < p^2_n \land p^2_n < p^3_n \ldots ))
+    \end{eqnarray*}
+    And then using induction we get
+    \begin{eqnarray*}
+      c_1 < c_3 \lor c_1 = c_3 \land ( p^1_1 < p^3_1 \lor p^1_1 = p^3_1 \land
+      (\ldots p^1_n < p^3_n \ldots ))
+    \end{eqnarray*}
+    and then by definition $p_1 < p_3$.
+
+  \item[Totality.]
+    Consider patterns $p_1 \neq p_2$. If either one is a variable we have $p_1
+    < p_2$ or $p_2 < p_1$ directly by \fref{eq:pat-total-order-strict-con} or by
+    the totality of $\lessdot$ and \fref{eq:pat-total-order-strict-var}.
+
+    So assume $p_1 = c_1\texttt{(}p^1_1\texttt{,}\ldots\texttt{,}p^1_n\texttt{)}$
+    and $p_2 = c_2\texttt{(}p^2_1\texttt{,}\ldots\texttt{,}p^2_n\texttt{)}$.
+
+    If $c_1 \neq c_2$ we get $p_1 < p_2$ or $p_2 < p_1$ by the totality of
+    $\lessdot$ and \fref{eq:pat-total-order-strict-con}.
+
+    So assume $c_1 = c_2$. By induction we have $p^1_i < p^2_i \lor p^2_i <
+    p^1_i \lor p^1_i = p^2_i$ for $i \in \{1, \ldots, n\}$. But it must be the
+    case that $p^1_i \neq p^2_i$ for some $i$ for else $p_1 = p_2$ and then we
+    have a contradiction. This implies that $p_1 < p_2$ (if $p^1_i < p^2_i$) or
+    $p_2 < p_1$ (if $p^2_i < p^1_i$).
+
+  \end{description}
+\end{proof}
+
+
+
+\begin{proof}
+  We show that $<='$ is reflexive, antisymmetric and transitive. Then we show
+  that $<'$ is irreflexive and transitive.
+  \begin{description}
+  \item[Reflexivity.]
+    Assume $p_1 == p_2$. We want to show $p_1 <=' p_2$.
+
+    If either pattern is a variable then clearly so is the other. And then $p_1
+    <=' p_2$ follows by \fref{eq:pat-partial-order-weak-var}.
+
+    So assume $p_1 = c_1 \texttt{(} p^1_1 \texttt{,} \ldots \texttt{,} p^1_n
+    \texttt{)}$ and $p_2 = c_2 \texttt{(} p^2_1 \texttt{,} \ldots \texttt{,}
+    p^2_m \texttt{)}$. It must be the case that $c_1 = c_2$, $n = m$ and $p^1_i
+    ==a p^2_i$ for $i \in \{1, \ldots, n\}$.
+
+    \fixme{Henvis til definition af struktural ækvivalens.}
+
+    It follows by induction that $p^1_1 <=' p^2_1 \land \ldots \land p^1_n <='
+    p^2_n$ and then by \fref{eq:pat-partial-order-weak-con} that $p_1 <=' p_2$.
+
+  \item[Antisymmetry.]
+    Assume $p_1 <=' p_2$ and $p_2 <=' p_1$. We need to show $p_1 == p_2$.
+
+    If either pattern is a variable then so is the other and structural
+    equivalence follows directly.
+
+    So assume that one of the patterns is a constructor pattern. By
+    \fref{def:pat-partial-order-weak} it is easy to see that so must the other
+    and the constructors must be the same. So $p_1 = c \texttt{(} p^1_1
+    \texttt{,} \ldots \texttt{,} p^1_n \texttt{)}$ and $p_2 = c \texttt{(} p^2_1
+    \texttt{,} \ldots \texttt{,} p^2_n \texttt{)}$, and furthermore
+    \begin{eqnarray*}
+      p^1_1 <=' p^2_1 &\land& p^2_1 <=' p^1_1 \quad \land\\
+      &\vdots&\\
+      p^1_n <=' p^2_n &\land& p^2_n <=' p^1_n
+    \end{eqnarray*}
+    By induction we have $p^1_1 == p^2_1 \land \ldots \land p^1_n == p^2_n$ and
+    then $p_1 == p_2$.
+
+    \fixme{Henvis til definitionen af struktural ækvivalens.}
+
+  \item[Transitivity.]
+    Assume $p_1 <=' p_2$ and $p_2 <=' p_3$. It must be shown that $p_1 <=' p_3$.
+
+    If $p_3 = v$ the result follows immediately. So assume $p_3 = c_3 \texttt{(}
+    p^3_1 \texttt{,} \ldots \texttt{,} p^3_n \texttt{)}$.
+
+    Then clearly $p_1 = c_1 \texttt{(} p^1_1 \texttt{,} \ldots \texttt{,}
+    p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots \texttt{,}
+    p^2_n\texttt{)}$ and by \fref{eq:pat-partial-order-weak-con} we have
+    \begin{eqnarray}[c]
+      c_1 = c_2 \land p^1_1 <=' p^2_1 \ldots p^1_n <=' p^2_n \label{eq:pat-partial-order-weak-trans-part-proof-1}\\
+      c_2 = c_3 \land p^2_1 <=' p^3_1 \ldots p^2_n <=' p^3_n \label{eq:pat-partial-order-weak-trans-part-proof-2}
+    \end{eqnarray}
+    Combining \fref{eq:pat-partial-order-weak-trans-part-proof-1} and
+    \fref{eq:pat-partial-order-weak-trans-part-proof-2} gives us
+    \begin{eqnarray*}
+      c_1 = c_2 \land c_2 = c_3 \land p^1 <=' p^2_1 \land p^2_1 <=' p^3_1 \ldots
+      p^1_n <=' p^2_n \land p^2_n <=' p^3_n
+    \end{eqnarray*}
+    And then by induction we get
+    \begin{eqnarray*}
+      c_1 = c_3 \land p^1_1 <=' p^3_1 \ldots p^1_n <=' p^3_n
+    \end{eqnarray*}
+    which by \fref{eq:pat-partial-order-weak-con} gives us $p_1 <=' p_3$.
+
+  \end{description}
+
+  Now we show irreflexivity and transitivity of $<'$.
+  \begin{description}
+  \item[Irreflexivity.]
+    Immediately by \fref{def:pat-partial-order-strict}.
+
+  \item[Transitivity.]
+    Immediately by the transitivity of $<='$.
+
+  \end{description}
+\end{proof}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

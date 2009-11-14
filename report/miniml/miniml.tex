@@ -1,4 +1,4 @@
-% \documentclass[a4paper, oneside, final]{memoir} 
+%\documentclass[a4paper, oneside, final]{memoir} 
 \documentclass[a4paper, oneside, draft]{memoir} 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -143,743 +143,87 @@
 \mathlig{~>e}{\stackrel{elim}{\leadsto}}
 \mathlig{~>g}{\stackrel{gen}{\leadsto}}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	    	     Forside
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter % open mode for reading @ signed variables 
+\def\maketitle{%
+  \null
+  \thispagestyle{empty}%
+  \vfill
+  \begin{center}\leavevmode
+    \normalfont
+    \Huge{\raggedleft \@title\par}%
+    \hrulefill\par
+    \Large{\raggedright \subtitle\par}%
+    \vskip 2cm
+    {\@date\par}%
+  \end{center}%
+  \vfill
+  \begin{flushleft}
+    {\large \@author } \\
+    {\footnotesize \suplementInfo }
+  \end{flushleft}
+  \cleardoublepage % lave 1 ekstre side blank efter
+  \clearpage % Terminates the page here. Everything else vil be placed on next page.
+}
+\makeatother % closing mode for reading @ signed variables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		Data til forside
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Term rewriting in a subset of SML}
+\def\subtitle{Foundation of Computer Graphics}			 
+\author{Morten Brøns-Pedersen and Jesper Reenberg}	  
+\def\suplementInfo{
+  \kern 5pt \hrule width 11pc \kern 5pt % putter 5pt spacing oven over og neden under stregen
+  Dept. of Computer Science \\
+  University of Copenhagen}
+% \date{} % used to set explicit dates
+
 \begin{document}
+
+\frontmatter
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+....
+\end{abstract}
+
+\clearpage 
+\chapter*{Preface}
+This paper is part of a preparational exercise done to ease the making of a 22.5
+ECTS point project about ``Term rewriting in SML''at the Computer Science
+Department (DIKU), University of Copenhagen. Authers of both projects are Morten
+Brøns-Pedersen and Jesper Reenberg and they are both supervised by Jakob Grue
+Simonsen, Assistant professor at DIKU
+
+\clearpage
+
+\tableofcontents*
+
+\mainmatter
+
 \chapter{Term rewriting in a subset of SML}
 
-\section{Grammar}
-\fixme{remember to introduce new relations with name.}
-\begin{eqnarray*}[rqcql:Tl]
-  var & = & (a-z)+ & Identifiers\\
-  con & = & (A-Z)(a-z)* & Constructors\\
-  num & = & \mathbb{Z}    & Natural numbers\\
-  match & ::= & \epsilon                            & Empty match\\
-  & & pat\texttt{.}exp\ \texttt{|}\ match               & Pattern -> expression\\
-  pat & ::= & var                                       & Variable\\
-  & & con\texttt{(}pat_1\texttt{,} \ldots\texttt{,} pat_n\texttt{)} & Where con
-  has arity $n$\\
-  exp & ::= & var                                       & Variable\\
-  & & exp_1 exp_2                                     & Application\\
-  & & \lambda match                                  & Abstraction\\
-  & & con\texttt{(}exp_1\texttt{,} \ldots\texttt{,} exp_n\texttt{)} & Where con
-  has arity $n$\\
-  dec & ::= & var \mapsto exp                         & Plain value binding\\
-  & & \texttt{rec}\ var \mapsto \lambda match         & Recursive value binding\\
-  & & con \texttt{:} \overline{num}                           & Constructor of arity $num$\\
-  & & \epsilon                             & Empty program\\
-  & & dec_1 \texttt{;} dec_2
-\end{eqnarray*} 
+\input{chapters/rewriting}
 
-No pattern may contain a given variable more than once.
+\chapter{Examples}
+\input{chapters/examples}
 
-\paragraph{Note.} In constructor declarations the arity is overlined to enhance
-the difference between numerals and their representation. In practice we write
-the syntactic representation of a numeral as the numeral set in typewriter
-font.
+\appendix
 
-We use (with superfixes, subfixes and primes) $v$, $c$, $n$, $m$, $p$, $e$
-and $d$ to range over $var$, $con$, $num$, $match$, $pat$, $exp$ and $dec$
-respectively.
+\chapter{Symbol table}
 
-\section{A note about evaluation}
-We expect programs to be run in an environment containing predefined functions
-(that is variables bound to predefined functions) and constructors. Thus the
-program
-\begin{quote}
-\begin{verbatim}
-+ (pair (1, 8))
-\end{verbatim}
-\end{quote}
-might make perfect sense (if in particular \texttt{+} is a variable bound to a
-suitable function (perhaps addition), and \texttt{pair}, \texttt{1} and
-\texttt{8} are constructors of arity 2, 0 and 0, respectively).
-\section{Auxiliary definitions}
+\input{appendix/symbol_table}
 
-In the following we define what we mean by equivalence of patterns (with a
-permutation of variables), free variables (for expressions, matches and
-patterns), substitution (in expressions) and alpha equivalence (of expressions).
 
-\paragraph{Note.} If $f : A -> B$ and $g : A -> B$ are arbitrary mappings then
-\begin{eqnarray*}[rlqTl]
-  (g ++ f)(x) &= f(x) & if $x \in \Dom(f)$\\
-  (g ++ f)(x) &= g(x) & otherwise
-\end{eqnarray*}
+\chapter{Proofs}
 
-We write $p \subseteq p'$ to mean that $p$ is a (exact, not just equivalent)
-subpattern of $p'$. In particular we have\footnote{See \fref{sec:free-variables}
-  for the definition of $\FV_{pat}$.} $x \subseteq p$ exactly when $x \in
-\FV_{pat}(p)$. The relation is reflexive.
-
-The syntactic category $pat$ is a proper subset of $exp$. Let $\kappa : pat ->
-exp$ be the canonical mapping from $pat$ to $exp$. It is injective so it has a
-left inverse $\kappa^{-1} : exp -> pat$. $\kappa^{-1}$ is clearly not total.
-
-\subsection{Equivalence of patterns}
-We say that two patterns are equivalent if they have the same form. Two patterns
-have the same form if they are both a variable, or they start in the same
-constructor and their subpatterns have the same form.
-
-Clearly each variable in the first pattern has a counterpart in the second. If
-$p_1$ and $p_2$ are equivalent we write $==_\pi$ where $\pi$ is a permutation of
-variables, such that for each variable $x$ in $p_1$ its counterpart in $p_2$ is
-$\pi(x)$.
-
-For example we have $A(x,y) ==_\pi A(z,x)$ where $\pi = [x \mapsto z, y \mapsto x]$.
-
-\fixme{maybe: show that sigma is a permutation of variables}
-
-\begin{definition}[Equivalence of patterns, $==_\pi$]
-  \begin{eqnarray}[rlqTl]
-    v_1 &==_{\pi} v_2  & where $\pi = [v_1 \mapsto v_2]$ \label{eq:struct-eq-var} \\
-    c\ttt{(}p^1_1 \ttt{,} \ldots \ttt{,} p^1_n \ttt{)} & ==_{\pi}
-    c\ttt{(}p^2_1 \ttt{,} \ldots \ttt{,} p^2_n \ttt{)} & \label{eq:struct-eq-con}
-  \end{eqnarray}
-where \fref{eq:struct-eq-con} holds if
-\begin{eqnarray*}[c]
-  p^1_1 ==_{\pi_1} p^2_1 \\
-  \vdots \\
-  p^1_n ==_{\pi_n} p^2_n
-\end{eqnarray*}
-and $\pi = \pi_1 ++ \ldots ++ \pi_n$.
-
-Note that the domains of each of the $\sigma$s are disjoint because no variable
-can occur more than once in a pattern (by the definition of the syntax).
-
-We write $==$ to mean $==_\pi$ (with a suitable non-fixed $\pi$) where $\pi$ has no
-interest. Equivalence of patterns is defined by $==_\pi$, \emph{only} when $\pi$
-is not fixed.
-\end{definition}
-
-
-\fixme{Show equivalence relation: reflexive, symmetric and transitive.}
-\fixme{maybe: show $p_1 ==_\pi p_2$ iff $p_2 ==_{\pi^{-1}} p_1$.}
-
-
-\subsection{Free variables}\label{sec:free-variables}
-
-We denote the free variables of expressions, matches and patterns with the tree
-functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
-
-\begin{definition}[Free variables of expressions, $\FV_{exp}$] \ \\
-  Inductively defined:
-  \begin{eqnarray}
-    \FV_{exp} (v) &=& \{v\} \\
-    \FV_{exp} (\lambda m) &=& \FV_{match} (m) \\
-    \FV_{exp} (e_1e_2) &=& \FV_{exp} (e_1) \cup \FV_{exp} (e_2) \\
-    \FV_{exp} (c\ttt{(}e_1\ttt{,} \ldots \ttt{,} e_n \ttt{)}) &=& \FV_{exp}
-    (e_1) \cup \ldots \cup \FV_{exp} (e_n)
-  \end{eqnarray}
-\end{definition}
-
-\begin{definition}[Free variables of matches, $\FV_{match}$]\ \\ 
-  Inductively defined:
-  \begin{eqnarray}
-    \FV_{match} (\epsilon) &=& \emptyset \\
-    \FV_{match} (p\ttt{.}e\ \ttt{|}\ m) &=& \left( \FV_{exp}(e) \setminus
-      \FV_{pat}(p) \right) \cup \FV_{match} (m)
-  \end{eqnarray}
-\end{definition}
-
-\begin{definition}[Free variables of patterns, $\FV_{pat}$] \ \\
-  Inductively defined:
-  \begin{eqnarray}
-    \FV_{pat} (v) &=& \{v\} \\
-    \FV_{pat} (c\ttt{(}p_1\ttt{,} \ldots \ttt{,} p_n\ttt{)}) &=& \FV_{pat} (p_1)
-    \cup \ldots \cup \FV_{pat} (p_n)
-  \end{eqnarray}
-\end{definition}
-
-\subsection{Substitution}
-We define substitution in expressions. An expression can be substituted for any
-(sub)expression of an expressions, not just variables.
-
-\begin{definition}[Substitution]
-  If $e_1$, $e_2$ and $e_3$ are expressions we write $e_1[e_2/e_3]$ to be the
-  result of substituting all occurrences of $e_3$ in $e_1$ with $e_2$.
-  \begin{eqnarray}
-    e_1[e_2/e_3] &=& e_2 \quad \mrm{if}\ e_1 = e_3 \label{eq:subst-sub}\\
-    (e^1_1 e^2_1)[e_2/e_3] &=& e^1_1[e_2/e_3] e^2_1[e_2/e_3] \label{eq:subst-app}\\
-    \lambda p_1 \texttt{.} e_1 \texttt{|} m &=& \lambda p_1 \texttt{.} e'_1
-    \texttt{|} m' \label{eq:subst-lam}\\
-    (c \texttt{(}e^1_1 \texttt{,} \ldots \texttt{,} e^1_n \texttt{)})[e_2/e_3]
-    &=& c \texttt{(}e^1_1[e_2/e_3] \texttt{,} \ldots \texttt{,} e^1_n[e_2/e_3]
-    \texttt{)} \label{eq:subst-con}
-  \end{eqnarray}
-Where in \fref{eq:subst-lam} we have
-\begin{eqnarray*}[rlqTl]
-  e'_1 &= e_1 & if $\kappa^{-1}(e_3) \subseteq p_1$\\
-  e'_1 &= e_1[e_2/e_3]
-\end{eqnarray*}
-and
-\[
-(\lambda m)[e_2/e_3] = \lambda m'
-\]
-
-In \fref{eq:subst-app}, \fref{eq:subst-lam} and \fref{eq:subst-con} we require
-that \fref{eq:subst-sub} does not apply.
-
-Note that in \fref{eq:subst-sub} we require $e_1$ and $e_3$ to be exactly equal,
-not just alpha equivalent.
-\end{definition}
-
-\subsection{Alpha equivalence}
-
-We define alpha equivalence for expressions and for pattern-expression pairs. We
-use the symbol $==a$ for both relations.
-
-\begin{definition}[Alpha equivalence of expressions, $==a$]\label{def:alpha-equivalence}
-  First we define alpha equivalence given a mapping of bound variables:
-  \begin{eqnarray}
-    \sigma |- v_1 &==a& v_2 \label{eq:alpha-var} \\
-    \sigma |- e^1_1e^1_2 &==a& e^2_1e^2_1 \label{eq:alpha-exp} \\
-    \sigma |- \lambda p^1_1 \texttt{.} e^1_1 \texttt{|} \ldots \texttt{|} p^1_n
-    \texttt{.} e^1_n &==a& \lambda p^2_1 \texttt{.} e^2_1 \texttt{|} \ldots \texttt{|} p^2_n
-    \texttt{.} e^2_n \label{eq:alpha-match} \\
-    \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a& 
-    c\ttt{(}e^2_1 \ttt{,} \ldots \ttt{,} e^2_n \ttt{)} \label{eq:alpha-con}
-  \end{eqnarray}
-where \fref{eq:alpha-var} holds
-\begin{eqnarray*}[rlqTl]
-\sigma (v_1) &= v_2 & if $v_1 \in \Dom(\sigma)$\\
-v_1 &= v_2 & otherwise,
-\end{eqnarray*}
-\fref{eq:alpha-exp} holds if
-\[
-\sigma |- e^1_1 ==a e^2_1 \land \sigma |- e^1_2 ==a e^2_1,
-\]
-\fref{eq:alpha-match} holds if
-\begin{eqnarray*}
-  (p^1_1, e^1_1) &==a& (p^2_1, e^2_1)\\
-  &\vdots&\\
-  (p^1_n, e^1_n) &==a& (p^2_n, e^2_n)
-\end{eqnarray*}
-and \fref{eq:alpha-con} holds if
-\[
-\sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n.
-\]
-
-\begin{definition}[Alpha equivalence of pattern-expression pairs, $==a$]\label{def:alpha-equivalence-patexp}
-  Again we assume a mapping of bound variables. It is the case that
-  \[
-  \sigma |- (p_1, e_1) ==a (p_2, e_2)
-  \]
-  exactly when $p_1 ==_\pi p_2$ and
-  \[
-  \sigma ++ \pi |- e_1 ==a e_2
-  \]
-\end{definition}
-
-If $e_1$ and $e_2$ are alpha equivalent expressions we write $e_1 ==a e_2$ which
-is a shorthand for $[] |- e_1 ==a e_2$. Similarly for pattern-expression pairs.
-\end{definition}
-
-\section{Semantic equivalence}
-We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
-if $e_2$ is substituted for $e_1$ (or vice versa) in any program $d$ to obtain
-$d'$, then if $d$ evaluates to something in an environment $\sigma$ then $d'$
-evaluates to that something in $\sigma$, and if $d$ diverges in $\sigma$ so does
-$d'$.
-
-\section{Orderings on patterns}
-We define a total ($<=$) relation on patterns, and a partial ($<='$) relation on
-the quotient set of patterns by structural equivalence. Then we show that they
-indeed are orderings.
-
-We write $<$ and $<'$ for $<=$ and $<='$ strict (or irreflexive) counterparts
-respectively.
-
-As it turns out it is easier to define $<$ and $<='$ directly and then define
-$<=$ and $<'$ in turn of those.
-
-\begin{definition}[Strict total ordering, $<$]\label{def:pat-total-order-strict}
-  Assume a total strict ordering $\lessdot$ on constructors and
-  variables\footnote{For example let all constructors come before all variables
-    and let variables and constructors be ordered lexicographically among
-    themselves. Note that constructors and variables are not compared in the
-    definition of $<$.}. We inductively define:
-  \begin{eqnarray}
-    v_1 &<& v_2 \quad \mrm{if}\ v_1 \lessdot v_2\label{eq:pat-total-order-strict-var}\\
-    c\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<& v\\
-    c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<&
-    c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:pat-total-order-strict-con}
-  \end{eqnarray}
-  Where \fref{eq:pat-total-order-strict-con} holds if
-  \[
-  c_1 \lessdot c_2 \lor (c_1 = c_2 \land ( p_1 < p'_1 \lor p_1 = p'_1 \land (\ldots p_n < p'_n \ldots )))
-  \]
-\end{definition}
-
-\begin{definition}[Total ordering, $<=$]\label{def:pat-total-order-weak}
-  We define the reflexive cousin:
-  \begin{eqnarray*}
-    p_1 <= p_2 \Longleftrightarrow p_1 < p_2 \lor p_1 = p_2
-  \end{eqnarray*}
-\end{definition}
-
-\begin{definition}[Partial ordering, $<='$]\label{def:pat-partial-order-weak}
-  We say that $p_2$ weakly generalises $p_1$ or $p_1$ is at least as specific as
-  $p_2$ and we write $p_1 <=' p_2$. Inductively defined.
-  \begin{eqnarray}
-    p &<='& v \label{eq:pat-partial-order-weak-var}\\
-    c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<='&
-    c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:pat-partial-order-weak-con}
-  \end{eqnarray}
-  Where \fref{eq:pat-partial-order-weak-con} holds if
-  \begin{eqnarray*}
-    c_1 &=& c_2 \quad \land\\
-    p_1 &<='& p'_1 \quad \land\\
-    &\ldots&\\
-    p_n &<='& p'_n
-  \end{eqnarray*}
-\end{definition}
-
-
-\begin{definition}[Strict partial ordering, $<'$]\label{def:pat-partial-order-strict}
-  We define the strict counterpart of $<='$ by
-  \begin{eqnarray*}
-      p_1 <' p_2 \Longleftrightarrow p_1 <=' p_2 \land p_1 \not == p_2
-  \end{eqnarray*}
-\end{definition}
-
-\begin{lemma}[Total ordering]\label{lem:pat-total-orderings}
-  The relation $<=$ is a total ordering, and $<$ is a strict total ordering on
-  patterns.
-\end{lemma}
-
-\begin{proof}
-  We show that $<$ is irreflexive, transitive and total. Then it follows
-  immediately by \fref{def:pat-total-order-weak} that $<=$ is a total ordering.
-  \begin{description}
-  \item[Irreflexivity.]
-    Proof by contradiction. So assume $p < p$.
-
-    If $p = v$ we get the contradiction immediately by irreflexivity of
-    $\lessdot$.
-
-    Therefore assume $p = c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n
-    \texttt{)}$. By the irreflexivity of $\lessdot$ it must be the case that
-    \begin{eqnarray*}
-      p_1 < p_1 \land \ldots \land p_n < p_n
-    \end{eqnarray*}
-    which by induction we see can not be the case, and we again have a
-    contradiction.
-
-  \item[Transitivity.]
-    Assume $p_1 < p_2 \land p_2 < p_3$. We show $p_1 < p_3$.
-
-    If $p_3 = v$ then the result follows immediately. Therefore assume $p_3 = c_3
-    \texttt{(}p^3_1 \texttt{,} \ldots \texttt{,} p^3_n\texttt{)}$.
-    By the assumptions we have that $p_1 = c_1 \texttt{(}p^1_1 \texttt{,} \ldots
-    \texttt{,} p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots
-    \texttt{,} p^2_n\texttt{)}$ and
-    \begin{eqnarray}[c]
-      c_1 < c_2 \lor c_1 = c_2 \land ( p^1_1 < p^2_1 \lor p^1_1 = p^2_1 \land
-      (\ldots p^1_n < p^2_n \ldots )) \label{eq:trans-tot-proof-1}\\
-      c_2 < c_3 \lor c_2 = c_3 \land ( p^2_1 < p^3_1 \lor p^2_1 = p^3_1 \land
-      (\ldots p^2_n < p^3_n \ldots )) \label{eq:trans-tot-proof-2}
-    \end{eqnarray}
-    Combining \fref{eq:trans-tot-proof-1} and \fref{eq:trans-tot-proof-2} we get
-    \begin{eqnarray*}[c]
-      c_1 < c_2 \lor c_1 = c_2 \land c_2 < c_3 \lor c_2 = c_3 \land\\ ( p^1_1 < p^2_1
-      \lor p^1_1 = p^2_1 \land p^2_1 < p^3_1 \lor p^2_1 = p^3_1 \land
-      (\ldots p^1_n < p^2_n \land p^2_n < p^3_n \ldots ))
-    \end{eqnarray*}
-    And then using induction we get
-    \begin{eqnarray*}
-      c_1 < c_3 \lor c_1 = c_3 \land ( p^1_1 < p^3_1 \lor p^1_1 = p^3_1 \land
-      (\ldots p^1_n < p^3_n \ldots ))
-    \end{eqnarray*}
-    and then by definition $p_1 < p_3$.
-
-  \item[Totality.]
-    Consider patterns $p_1 \neq p_2$. If either one is a variable we have $p_1
-    < p_2$ or $p_2 < p_1$ directly by \fref{eq:pat-total-order-strict-con} or by
-    the totality of $\lessdot$ and \fref{eq:pat-total-order-strict-var}.
-
-    So assume $p_1 = c_1\texttt{(}p^1_1\texttt{,}\ldots\texttt{,}p^1_n\texttt{)}$
-    and $p_2 = c_2\texttt{(}p^2_1\texttt{,}\ldots\texttt{,}p^2_n\texttt{)}$.
-
-    If $c_1 \neq c_2$ we get $p_1 < p_2$ or $p_2 < p_1$ by the totality of
-    $\lessdot$ and \fref{eq:pat-total-order-strict-con}.
-
-    So assume $c_1 = c_2$. By induction we have $p^1_i < p^2_i \lor p^2_i <
-    p^1_i \lor p^1_i = p^2_i$ for $i \in \{1, \ldots, n\}$. But it must be the
-    case that $p^1_i \neq p^2_i$ for some $i$ for else $p_1 = p_2$ and then we
-    have a contradiction. This implies that $p_1 < p_2$ (if $p^1_i < p^2_i$) or
-    $p_2 < p_1$ (if $p^2_i < p^1_i$).
-
-  \end{description}
-\end{proof}
-
-\begin{lemma}[Partial ordering]\label{lem:pat-partial-orderings}
-  The relation $<='$ is a partial ordering and $<'$ is a strict partial ordering
-  on the equivalence classes of patterns modulo structural equivalence
-  ($pat_{/_{==}}$).
-\end{lemma}
-
-\begin{proof}
-  We show that $<='$ is reflexive, antisymmetric and transitive. Then we show
-  that $<'$ is irreflexive and transitive.
-  \begin{description}
-  \item[Reflexivity.]
-    Assume $p_1 == p_2$. We want to show $p_1 <=' p_2$.
-
-    If either pattern is a variable then clearly so is the other. And then $p_1
-    <=' p_2$ follows by \fref{eq:pat-partial-order-weak-var}.
-
-    So assume $p_1 = c_1 \texttt{(} p^1_1 \texttt{,} \ldots \texttt{,} p^1_n
-    \texttt{)}$ and $p_2 = c_2 \texttt{(} p^2_1 \texttt{,} \ldots \texttt{,}
-    p^2_m \texttt{)}$. It must be the case that $c_1 = c_2$, $n = m$ and $p^1_i
-    ==a p^2_i$ for $i \in \{1, \ldots, n\}$.
-
-    \fixme{Henvis til definition af struktural ækvivalens.}
-
-    It follows by induction that $p^1_1 <=' p^2_1 \land \ldots \land p^1_n <='
-    p^2_n$ and then by \fref{eq:pat-partial-order-weak-con} that $p_1 <=' p_2$.
-
-  \item[Antisymmetry.]
-    Assume $p_1 <=' p_2$ and $p_2 <=' p_1$. We need to show $p_1 == p_2$.
-
-    If either pattern is a variable then so is the other and structural
-    equivalence follows directly.
-
-    So assume that one of the patterns is a constructor pattern. By
-    \fref{def:pat-partial-order-weak} it is easy to see that so must the other
-    and the constructors must be the same. So $p_1 = c \texttt{(} p^1_1
-    \texttt{,} \ldots \texttt{,} p^1_n \texttt{)}$ and $p_2 = c \texttt{(} p^2_1
-    \texttt{,} \ldots \texttt{,} p^2_n \texttt{)}$, and furthermore
-    \begin{eqnarray*}
-      p^1_1 <=' p^2_1 &\land& p^2_1 <=' p^1_1 \quad \land\\
-      &\vdots&\\
-      p^1_n <=' p^2_n &\land& p^2_n <=' p^1_n
-    \end{eqnarray*}
-    By induction we have $p^1_1 == p^2_1 \land \ldots \land p^1_n == p^2_n$ and
-    then $p_1 == p_2$.
-
-    \fixme{Henvis til definitionen af struktural ækvivalens.}
-
-  \item[Transitivity.]
-    Assume $p_1 <=' p_2$ and $p_2 <=' p_3$. It must be shown that $p_1 <=' p_3$.
-
-    If $p_3 = v$ the result follows immediately. So assume $p_3 = c_3 \texttt{(}
-    p^3_1 \texttt{,} \ldots \texttt{,} p^3_n \texttt{)}$.
-
-    Then clearly $p_1 = c_1 \texttt{(} p^1_1 \texttt{,} \ldots \texttt{,}
-    p^1_n\texttt{)}$, $p_2 = c_2 \texttt{(}p^2_1 \texttt{,} \ldots \texttt{,}
-    p^2_n\texttt{)}$ and by \fref{eq:pat-partial-order-weak-con} we have
-    \begin{eqnarray}[c]
-      c_1 = c_2 \land p^1_1 <=' p^2_1 \ldots p^1_n <=' p^2_n \label{eq:pat-partial-order-weak-trans-part-proof-1}\\
-      c_2 = c_3 \land p^2_1 <=' p^3_1 \ldots p^2_n <=' p^3_n \label{eq:pat-partial-order-weak-trans-part-proof-2}
-    \end{eqnarray}
-    Combining \fref{eq:pat-partial-order-weak-trans-part-proof-1} and
-    \fref{eq:pat-partial-order-weak-trans-part-proof-2} gives us
-    \begin{eqnarray*}
-      c_1 = c_2 \land c_2 = c_3 \land p^1 <=' p^2_1 \land p^2_1 <=' p^3_1 \ldots
-      p^1_n <=' p^2_n \land p^2_n <=' p^3_n
-    \end{eqnarray*}
-    And then by induction we get
-    \begin{eqnarray*}
-      c_1 = c_3 \land p^1_1 <=' p^3_1 \ldots p^1_n <=' p^3_n
-    \end{eqnarray*}
-    which by \fref{eq:pat-partial-order-weak-con} gives us $p_1 <=' p_3$.
-
-  \end{description}
-
-  Now we show irreflexivity and transitivity of $<'$.
-  \begin{description}
-  \item[Irreflexivity.]
-    Immediately by \fref{def:pat-partial-order-strict}.
-
-  \item[Transitivity.]
-    Immediately by the transitivity of $<='$.
-
-  \end{description}
-\end{proof}
-
-We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
-< p_1$, $p_2 <= p_1$, $p_2 <' p_1$ and $p_2 <=' p_1$ respectively.
-
-\begin{lemma}[]\label{lem:total-implies-partial}
-  If two patterns $p_1$ and $p_2$ are ordered by the partial ordering then they
-  are also ordered by the total one. That is
-  \begin{eqnarray*}
-    p_1 <' p_2 \Longrightarrow p_1 < p_2
-  \end{eqnarray*}
-\end{lemma}
-\begin{proof}
-  Straightforward using induction.
-\end{proof}
-
-\begin{definition}[Confusion, $||$]\label{def:pat-confusion}
-  Let two patterns $p_1$ and $p_2$ be given. If it is the case that neither $p_1
-  <=' p_2$ nor $p_1 >=' p_2$ we say that $p_1$ and $p_2$ are confused and we
-  write $p_1 || p_2$.
-\end{definition}
-
-\begin{lemma}[Unique relation]\label{lem:unique-rel}
-  Given two patterns $p_1$ and $p_2$ exactly one of the following hold
-  \begin{eqnarray*}
-    p_1 &==& p_2\\
-    p_1 &<'& p_2\\
-    p_1 &>'& p_2\\
-    p_1 &||& p_2
-  \end{eqnarray*}
-\end{lemma}
-\begin{proof}
-  Immediately by inspection.
-\end{proof}
-
-\section{Eliminating unused patterns}
-A function is simply a match. And a match is a list of pairs of patterns and
-corresponding bodys.
-
-The input to a function is tried against the patterns from top to bottom. An
-unused pattern is a pattern that will never see a value which it matches.
-
-This can happen for two reasons.
-\begin{enumerate}
-\item The pattern will never be tried against the input because the input
-  matches an earlier pattern. \label{item:unused-reason-1}
-\item The pattern is only tried against inputs it doesn't match. \label{item:unused-reason-2}
-\end{enumerate}
-
-\subsection{Cover}\label{sec:cover}
-We define a cover to be a set of patterns such that at least one of them matches
-any given value.
-
-\begin{definition}[Cover]\label{def:cover}
-  Let $P = \{p_1, \ldots, p_n \}$, and $C = \{c_1, \ldots, c_n\}$ be the constructors
-  defined in the current environment. Then
-  \[
-  \Cov(P)
-  \]
-  if
-  \[
-  x \in \{p_1, \ldots, p_n \} \lor (\forall c \in C : \Cov(P_1) \land
-  \ldots \Cov(P_m))
-  \]
-  where
-  \begin{eqnarray*}
-    P_1 &=& \{p'_1 \mid c \texttt{(} p'_1 \texttt{,} \ldots \texttt{,} p'_m \texttt{)} \in P\}\\
-    &\vdots&\\
-    P_m &=& \{p'_m \mid c \texttt{(} p'_1 \texttt{,} \ldots \texttt{,} p'_m \texttt{)} \in P\}
-  \end{eqnarray*}
-\end{definition}
-
-Any pattern following patterns that taken together are a cover is unused because
-of reason \ref{item:unused-reason-1}.
-
-\subsection{Shadowed patterns}\label{sec:shadowed-patterns}
-If a pattern is unused because of reason \ref{item:unused-reason-2} we say that
-it is shadowed.
-\begin{definition}[Shadowed]
-  Let
-  \[
-  m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
-  \]
-  If $p_j <=' p_i$ for some $1 \leq i < j \leq n$, then $p_j$ is shadowed (by
-  $p_i$).
-\end{definition}
-
-We can now define the elimination of unused patterns.
-\begin{definition}[Elimination]
-  We define a reduction relation $\stackrel{elim}{\leadsto}$ that expresses the
-  elimination of exactly one pattern from a match.
-
-  Let
-  \[
-  m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
-  \]
-  If there exist a $p_i$ such that $\{p_1, \ldots, p_{i-1}\}$ is a cover or
-  $p_i$ is shadowed, then it is unused and can be eliminated. The resulting
-  match is
-  \[
-  m' = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|}
-  p_{j-1}\texttt{.}e_{j-1} \texttt{|} p_{j+1}\texttt{.}e_{j+1} \texttt{|}
-  \ldots \texttt{|} p_n\texttt{.}e_n,
-  \]
-  and we write $m \stackrel{elim}{\leadsto} m'$.
-
-  \fixme{Decide upon a symbol for the reduction relation.}
-\end{definition}
-
-% \begin{definition}[$m_1 =| m_2$]
-%   Let
-%   \[
-%   m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
-%   \]
-%   If $p_j <=' p_i$ where $j > i$ then 
-%   \[
-%   m =| m'
-%   \]
-%   where
-%   \[
-%   m' = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|}
-%   p_{j-1}\texttt{.}e_{j-1} \texttt{|} p_{j+1}\texttt{.}e_{j+1} \texttt{|}
-%   \ldots \texttt{|} p_n\texttt{.}e_n
-%   \]
-%   In other words; pattern $j$ and its body can be removed from $m$.
-% \end{definition}
-
-\begin{lemma}(Preservation)
-  If an unused pattern is removed from a program, then the resulting program is
-  semantically equivalent.
-
-  That is
-  \[
-  m \stackrel{elim}{\leadsto} m' ==> \lambda m \sim \lambda m'
-  \]
-\end{lemma}
-\begin{proof}
-  Trivial (as if).
-\end{proof}
-
-\section{Generalisiation}
-Sometimes patterns get unnecessary complex. If for example a pattern (or one of
-its subpatterns) is a constructor pattern whose subpatterns are all variables,
-and those variables are only used as arguments to the same constructor (in the
-same order) in the function body, then the constructor could simply be replaced
-by a fresh variable in pattern and body. That is generalisation of the pattern.
-
-Sometimes the generalisation of a pattern makes it equivalent to another pattern
-in the match. And sometimes the two patterns corresponding bodys will merge
-seamlessly, such that two patterns can be made to one.
-\\[1em]
-First we need some auxiliary definitions.
-
-\subsection{Partially ordered form}
-\begin{definition}
-  A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is in
-  partially ordered form if
-  \[
-  \forall i \in \{1, \ldots, n\} : p_j \not <=' p_i \quad \textnormal{where $j > i$}
-  \]
-  Note that every match $m$ can be transformed to an equivalent match $m'$ such
-  that $m'$ is in partially ordered form, by repeated elimination of shadowed
-  patterns (\fref{sec:shadowed-patterns}).
-\end{definition}
-
-\subsection{Generalisation of patterns}
-We define generalisation of a single pair of a pattern and its body. We write
-$(p, e) |> (p', e')$ to mean that the pattern $p$ with its body $e$ generalises
-to the pattern $p'$ with the body $e'$.
-
-\begin{definition}[Generalisation of single pattern-body pairs, $|>$]
-Inductively defined:
-\begin{eqnarray}
-  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} , e) &|>& (x , e[x
-  / \kappa (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} )]) \label{eq:single-gen-1}\\
-  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_i \texttt{,} \ldots
-  \texttt{,} p_n \texttt{)}, e) &|>&
-  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p'_i \texttt{,} \ldots
-  \texttt{,} p_n \texttt{)}, e') \label{eq:single-gen-2}
-\end{eqnarray}
-Where \fref{eq:single-gen-1} holds when $x$ is a fresh variable and
-\[
-FV_{pat}(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)}) \cap FV_{exp}(e[x/\kappa
-(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)})]) = \emptyset
-\]
-and \fref{eq:single-gen-2} holds when \fref{eq:single-gen-1} does not and
-\[
-(p_i , e) |> (p'_i , e')
-\]
-\end{definition}
-
-\begin{lemma}\label{lem:single-gen-imp-gen}
-  If a pattern $p$ (and some body) is generalised to $p'$ (and some other
-  body), then $p'$ strictly generalises $p$. In other words
-  \[
-  (p, e) |> (p', e') ==> p <' p'.
-  \]
-\end{lemma}
-\begin{proof}
-  Straightforward induction proof.
-\end{proof}
-
-\subsection{Generalisation of matches}
-For the generalisation of a match $m$, we require $m$ to be in partially ordered
-form.
-\\[1em]
-When generalising a pattern several things might happen. Assume
-\begin{eqnarray*}[rqTcql]
-  m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
-  \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
-  e'_i).
-\end{eqnarray*}
-Now, perhaps $m$ can be generalised if we substitute $p'_i$ for $p_i$ and $e'_i$
-for $e_i$. We would like the resulting match to be partially ordered too, so we
-must be cautious. Since we know from \fref{lem:single-gen-imp-gen} that $p'_i >'
-p_i$ the first part of the match $p_1 \texttt{.} e_1 \texttt{|} \ldots
-\texttt{|} p'_i \texttt{.} e'_i$ must still be partially ordered. So we consider
-the patterns $p_j$ for $j > i$.
-
-% Note that by \fref{lem:unique-rel} we know that either $p_i <' p_j$ or $p_i ||
-% p_j$.
-
-Four scenarios arise
-\begin{enumerate}
-\item $p'_i$ and $p_j$ are equivalent. The pattern was generalised to one that
-  already existed. Now the only hope is that $e'_i$ and $e_j$ merge. By this we
-  mean $(p'_i, e'_i) ==a (p_j, e_j)$ (\fref{def:alpha-equivalence-patexp}).
-
-  If this is the case then either one of $p'_i \texttt{.} e'_i$ or $p_j
-  \texttt{.} e_j$ shall be removed. \label{item:gen-scen-1}
-\item $p'_i$ relates to $p_j$ in the same way that $p_i$ does. So if $p_i <'
-  p_j$, then $p'_i <' p_j$ and if $p_i || p_j$ then $p'_i || p_j$. In this case
-  nothing must be done. \label{item:gen-scen-2}
-\item $p_i || p_j$ and $p'_i >' p_j$. So now $p'_i$ ``steals'' $p_j$s input. But
-  because $p_i$ and $p_j$ were confused we know that $p_j$ will not steal any
-  input originally intended for $p_i$. So we move $p_j$ and its body up, in the
-  match so they come before $p'_i$. \label{item:gen-scen-3}
-\item $p_i <' p_j$ and $p'_i >' p_j$. This means that $p'_i$ will match input
-  intended for $p_j$ but we can not move $p_j$ above $p'_i$ for then it will
-  steal input originally intended for $p_i$. So in this case $m$ can not be
-  generalised. \label{item:gen-scen-4}
-\end{enumerate}
-
-\begin{definition}
-  We define a reduction relation $\stackrel{gen}{\leadsto}$ that expresses the
-  generalisation of exactly one pattern from a match.
-
-  Let
-  \begin{eqnarray*}[rqTcql]
-    m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
-    \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
-    e'_i).
-  \end{eqnarray*}
-  and assume that a generalisation as described above can be done. Then the
-  resulting match is
-  \begin{eqnarray}
-    m' &=& p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_{i-1} \texttt{.}
-    e_{i-1} \label{eq:gen-1}\\
-    &\texttt{|}& p_{m_1} \texttt{.} e_{m_1} \texttt{|} \ldots \texttt{|} p_{m_k}
-    \texttt{.} e_{m_k} \label{eq:gen-2}\\
-    &\texttt{|}& (p'_i \texttt{.} e'_i) \label{eq:gen-3}\\
-    &\texttt{|}& p_{s_1} \texttt{.} e_{s_1} \texttt{|} \ldots \texttt{|} p_{s_l}
-    \texttt{.} e_{s_l} \label{eq:gen-4}
-  \end{eqnarray}
-
-  Where (\ref{eq:gen-1}) is the part up until $p_i$, (\ref{eq:gen-2}) are the
-  patterns that get moved in scenario \ref{item:gen-scen-3} and (\ref{eq:gen-4})
-  are the ones that stay (scenario \ref{item:gen-scen-2}). Line (\ref{eq:gen-3})
-  is put in parentheses because is should be deleted in the case of scenario
-  \ref{item:gen-scen-1}. And of course $m_1 < \ldots < m_k$.
-
-  And we write $m ~>g m'$.
-  
-\end{definition}
-
-\section{Normal form}
-We say that the function $\lambda m$ is a normal form if there does not exist an
-$m'$ such that $m ~>g m'$ or $m ~>e m'$.
-
-\begin{lemma}
-  We expect the normal form to be unique (in some sense).
-\end{lemma}
-
-% \section{Weak unification}
+\input{appendix/proofs}
 
 \end{document}
-
 
 %%% Local Variables: 
 %%% mode: latex
