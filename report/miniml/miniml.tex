@@ -79,6 +79,12 @@
 \Frefformat{vario}{\fancyreflemlabelprefix}{%
   \Freflemname\fancyrefdefaultspacing#1#3%
 }
+\frefformat{plain}{\fancyreflemlabelprefix}{%
+  \freflemname\fancyrefdefaultspacing#1%
+}
+\Frefformat{plain}{\fancyreflemlabelprefix}{%
+  \Freflemname\fancyrefdefaultspacing#1%
+}
 
 \newcommand*{\fancyrefthmlabelprefix}{thm}
 \fancyrefaddcaptions{english}{
@@ -172,8 +178,8 @@
 %		Data til forside
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Term rewriting in a subset of SML}
-\def\subtitle{Foundation of Computer Graphics}			 
-\author{Morten Brøns-Pedersen and Jesper Reenberg}	  
+\def\subtitle{\footnotesize{A joined Smartypants inc. and Morning Wood Productions venture.}
+\author{Morten Brøns-Pedersen and Jesper Reenberg}}
 \def\suplementInfo{
   \kern 5pt \hrule width 11pc \kern 5pt % putter 5pt spacing oven over og neden under stregen
   Dept. of Computer Science \\
@@ -194,8 +200,8 @@
 \clearpage 
 \chapter*{Preface}
 This paper is part of a preparational exercise done to ease the making of a 22.5
-ECTS point project about ``Term rewriting in SML''at the Computer Science
-Department (DIKU), University of Copenhagen. Authers of both projects are Morten
+ECTS point project about ``Term rewriting in SML'' at the Department of Computer
+Science (DIKU), University of Copenhagen. Authers of both projects are Morten
 Brøns-Pedersen and Jesper Reenberg and they are both supervised by Jakob Grue
 Simonsen, Assistant professor at DIKU
 

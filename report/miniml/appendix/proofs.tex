@@ -1,6 +1,10 @@
 \section{Orderings on patterns}
 
-\begin{proof}
+\subsection{Proof of the total ordering relation}
+\label{sec:proof-total-orderings}
+
+
+\begin{proof}[Proof of {\fref[plain]{lem:pat-total-orderings}}]
   We show that $<$ is irreflexive, transitive and total. Then it follows
   immediately by \fref{def:pat-total-order-weak} that $<=$ is a total ordering.
   \begin{description}
@@ -65,9 +69,10 @@
   \end{description}
 \end{proof}
 
+\subsection{Proof of the partial ordering relation}
+\label{sec:proof-partial-orderings}
 
-
-\begin{proof}
+\begin{proof}[Proof of {\fref[plain]{lem:pat-partial-orderings}}]
   We show that $<='$ is reflexive, antisymmetric and transitive. Then we show
   that $<'$ is irreflexive and transitive.
   \begin{description}
@@ -149,5 +154,5 @@
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: t
+%%% TeX-master: "../miniml"
 %%% End: 
