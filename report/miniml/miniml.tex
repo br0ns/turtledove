@@ -1,5 +1,5 @@
 %\documentclass[a4paper, oneside, final]{memoir} 
-\documentclass[a4paper, oneside, draft]{memoir} 
+\documentclass[a4paper, oneside, final]{memoir} 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[british]{babel}
@@ -19,7 +19,7 @@
 \usepackage{fancyref} % Better reference. 
 
 \usepackage{pdflscape} % Gør landscape-environmentet tilgængeligt
-\usepackage{fixme}     % Indsæt "fixme" noter i drafts.
+\usepackage[draft]{fixme}     % Indsæt "fixme" noter i drafts.
 \usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
 
 \usepackage[format=hang]{caption,subfig}
@@ -36,7 +36,6 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{semantic} % for the \mathlig function
-
 
 \renewcommand{\ttdefault}{txtt} % Bedre typewriter font
 %% \usepackage[sc]{mathpazo}     % Palatino font
@@ -166,11 +165,17 @@
     {\@date\par}%
   \end{center}%
   \vfill
+\begin{minipage}{80pt}
+\includegraphics*[scale=0.75]{imgs/nat-logo}
+\end{minipage}
+\begin{minipage}{300pt}
   \begin{flushleft}
     {\large \@author } \\
     {\footnotesize \suplementInfo }
+
   \end{flushleft}
-  \cleardoublepage % lave 1 ekstre side blank efter
+\end{minipage}
+\cleardoublepage % lave 1 ekstre side blank efter
   \clearpage % Terminates the page here. Everything else vil be placed on next page.
 }
 \makeatother % closing mode for reading @ signed variables
