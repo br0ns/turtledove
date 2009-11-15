@@ -23,6 +23,166 @@
 % fun sum (x :: xs) = x + sum xs
 %   | sum nil = 0
 
+\fixme{Fyld på med tekst}
+
+\section{Auciliary definitions}
+
+\begin{example}[Suppattern, $\subseteq$]
+  \label{ex:suppattern1}
+  \begin{eqnarray*}
+    \ttt{x} &\subseteq& \ttt{A(x,y)} \\
+    \ttt{y} &\subseteq& \ttt{A(x,y)}
+\end{eqnarray*}
+Whereas this is not a suppattern
+\begin{eqnarray*}
+  \ttt{z} \not \subseteq \ttt{A(x,y)}
+\end{eqnarray*}
+\end{example}
+
+
+\begin{example}[Pattern equivalence, $==_{\pi}$]
+  \label{ex:pattern-equiv1}
+  \begin{eqnarray*}
+    \ttt{A(x,y)} &==_{\pi}& \ttt{A(f,g)}\\
+    \ttt{A(f,g)} &==_{\pi'}& \ttt{A(x,y)}
+  \end{eqnarray*}
+with 
+  \begin{eqnarray*}
+    \pi &=& [x\mapsto f, y \mapsto g] \\
+    \pi' &=& [f \mapsto x, g \mapsto y]
+\end{eqnarray*}
+
+Whereas these patterns are not equivalent
+
+  \begin{eqnarray*}
+    \ttt{A(x,y)} &\not ==& \ttt{B(h,j)} \\
+    \ttt{1} &\not ==& \ttt{2}
+  \end{eqnarray*}
+\end{example}
+
+\begin{example}[Free variables, $\mrm{FV}$]
+\label{ex:free-variables1}
+\begin{eqnarray*}[c]
+  \FV_{exp} \left( 
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\ttt{f}, \ttt{g} \} \\
+%
+  \FV_{match} \left( 
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (Nil, Nil) . Cons(Nil, Nil)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\} \\
+%
+  \FV_{pat} \left( 
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\ttt{x}, \ttt{xs}\} \\
+\end{eqnarray*}
+\end{example}
+
+
+\begin{example}[Substitution]
+\label{ex:substituation1}
+
+\begin{eqnarray*}[c]
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+  | y . x
+\end{lstlisting}
+  \end{eqnalign}
+\right) \left[ \ttt{z}/\ttt{x} \right] \quad = \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+  | y . z
+\end{lstlisting}
+  \end{eqnalign} \\
+%
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . Cons (1, x)
+\end{lstlisting}
+  \end{eqnalign}
+\right) \left[ \ttt{z}/\ttt{Cons (1, x)} \right] \quad = \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . z
+\end{lstlisting}
+  \end{eqnalign} \\
+\end{eqnarray*}
+
+whereas this is not
+
+\begin{eqnarray*}
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+\end{lstlisting}
+  \end{eqnalign}
+\right) [ \ttt{z}/\ttt{x} ] \quad \neq \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun z . z
+\end{lstlisting}
+  \end{eqnalign}
+\end{eqnarray*}
+\end{example}
+
+\begin{example}[Alpha equivalence, $==a$]
+\label{ex:alpha-equivalence1}
+
+\begin{eqnarray*}[c]
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  ==a
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (y, ys) . Cons(f y, g ys)
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+
+whereas this is not, as the free variables are not the same
+
+\begin{eqnarray*}[c]
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \not ==a
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (y, ys) . Cons(h y, j ys)
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+\end{example}
+
+
+
+
 \section{Ordering}
 
 \paragraph{Note.} The below examples on orderings are not semantically
@@ -30,32 +190,33 @@ equivalent, but shows only how the ordering relation works.
 
 
 \begin{example}[Strict total ordering, $<$]
+\fixme{this is totally wrong but the idea is somewhat ok...}
   Given then following function $foo$
   \begin{eqnarray*}[rl]
     \texttt{rec } foo & \mapsto \fun (b\ttt{.}exp_1 \texttt{ | } a\ttt{.}exp_2 \texttt{ | }
-    con(y, z)\ttt{.}exp_3 \texttt{ | } con(x, z)\ttt{.}exp_4) \\
+    cons(y, z)\ttt{.}exp_3 \texttt{ | } cons(x, z)\ttt{.}exp_4) \\
 \tabpause{then strict total ordering will result in}
-    \texttt{rec } foo & \mapsto \fun (con(x\texttt{,} z)\texttt{.}exp_4 \texttt{ |
-    } con(y\texttt{,} z)\texttt{.}exp_3 \texttt{ | } a\texttt{.}exp_2 \texttt{ | }
+    \texttt{rec } foo & \mapsto \fun (cons(x\texttt{,} z)\texttt{.}exp_4 \texttt{ |
+    } cons(y\texttt{,} z)\texttt{.}exp_3 \texttt{ | } a\texttt{.}exp_2 \texttt{ | }
     b\texttt{.}exp_1)
 \end{eqnarray*}
 \end{example}
 
 
 \begin{example}[Strict partial ordering, $<'$]
-  Given the following function $combine$
-  \begin{eqnarray*}[rll>{\ttt{.}}l]
-    \texttt{rec } combine \mapsto 
-    & \fun & \con{::}{\cargs{x}{\con{::}{\cargs{y}{xl}}}} & \fcall{::}{\cargs{\con{pair}{\cargs{x}{y}}}{combine(xl)}} \\
-      & \pipe & \fcall{::}{\cargs{xl}{nil}} & \mathrel{nil} \\
-      & \pipe & \mathrel{nil} & \mathrel{nil}\\
-\tabpause{then partial ordering will result in}
-    \texttt{rec } combine \mapsto 
-    & \fun & hej \\
-    & \pipe & ...
-  \end{eqnarray*}
-  \fixme{uheldigt, eftersom ingen af patternsne ordner partielt mellem hinanden
-    grundet aritet?}
+%   Given the following function $combine$
+%   \begin{eqnarray*}[rll>{\ttt{.}}l]
+%     \texttt{rec } combine \mapsto 
+%     & \fun & \con{cons}{\cargs{x}{\con{cons}{\cargs{y}{xl}}}} & \fcall{cons}{\cargs{\con{pair}{\cargs{x}{y}}}{combine(xl)}} \\
+%       & \pipe & \fcall{cons}{\cargs{xl}{nil}} & \mathrel{nil} \\
+%       & \pipe & \mathrel{nil} & \mathrel{nil}\\
+% \tabpause{then partial ordering will result in}
+%     \texttt{rec } combine \mapsto 
+%     & \fun & hej \\
+%     & \pipe & ...
+%   \end{eqnarray*}
+%   \fixme{uheldigt, eftersom ingen af patternsne ordner partielt mellem hinanden
+%     grundet aritet?}
 \end{example}
 
 
