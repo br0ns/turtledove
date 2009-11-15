@@ -2,6 +2,9 @@
 
 
 \section{Grammar}
+\newcommand{\fun}{\ttt{fun}\ }
+\newcommand{\rec}{\ttt{rec}\ }
+
 \fixme{remember to introduce new relations with name.}
 \begin{eqnarray*}[rqcql:Tl]
   var & = & (a-z)+ & Identifiers\\
@@ -14,11 +17,11 @@
   has arity $n$\\
   exp & ::= & var                                       & Variable\\
   & & exp_1 exp_2                                     & Application\\
-  & & \lambda match                                  & Abstraction\\
+  & & \fun match                                  & Abstraction\\
   & & con\texttt{(}exp_1\texttt{,} \ldots\texttt{,} exp_n\texttt{)} & Where con
   has arity $n$\\
   dec & ::= & var \mapsto exp                         & Plain value binding\\
-  & & \texttt{rec}\ var \mapsto \lambda match         & Recursive value binding\\
+  & & \rec var \mapsto \fun match         & Recursive value binding\\
   & & con \texttt{:} \overline{num}                           & Constructor of arity $num$\\
   & & \epsilon                             & Empty program\\
   & & dec_1 \texttt{;} dec_2
@@ -54,31 +57,38 @@ In the following we define what we mean by equivalence of patterns (with a
 permutation of variables), free variables (for expressions, matches and
 patterns), substitution (in expressions) and alpha equivalence (of expressions).
 
-\paragraph{Note.} If $f : A -> B$ and $g : A -> B$ are arbitrary mappings then
+\paragraph{Note.}
+\begin{enumerate}
+\item 
+If $f : A -> B$ and $g : A -> B$ are arbitrary mappings then
 \begin{eqnarray*}[rlqTl]
   (g ++ f)(x) &= f(x) & if $x \in \Dom(f)$\\
   (g ++ f)(x) &= g(x) & otherwise
 \end{eqnarray*}
 
-We write $p \subseteq p'$ to mean that $p$ is a (exact, not just equivalent)
-subpattern of $p'$. In particular we have\footnote{See \fref{sec:free-variables}
-  for the definition of $\FV_{pat}$.} $x \subseteq p$ exactly when $x \in
-\FV_{pat}(p)$. The relation is reflexive.
+\item
+We write $p \subseteq p'$ to mean that $p$ is a subpattern of $p'$. More
+precisely this is the case if $p = p'$ or if $p' = c \ttt{(} p_1 \ttt{,} \ldots
+\ttt{,} p_n \ttt{)}$ and $p \subseteq p_i$ for some $i \in \{1, \ldots, n\}$.
 
+In particular we have\footnote{See \fref{sec:free-variables}
+  for the definition of $\FV_{pat}$.} $x \subseteq p$ exactly when $x \in
+\FV_{pat}(p)$. The relation is obviously reflexive.
+
+\item
 The syntactic category $pat$ is a proper subset of $exp$. Let $\kappa : pat ->
 exp$ be the canonical mapping from $pat$ to $exp$. It is injective so it has a
 left inverse $\kappa^{-1} : exp -> pat$. $\kappa^{-1}$ is clearly not total.
+\end{enumerate}
 
 \subsection{Equivalence of patterns}
 \label{sec:equivalence-patterns}
-We say that two patterns are equivalent if they have the same form. Two patterns
-have the same form if they are both a variable, or they start in the same
-constructor and their subpatterns have the same form.
+We say that two patterns are equivalent if they can be transformed into
+each other by a suitable renaming of the variables.
 
-Clearly each variable in the first pattern has a counterpart in the second. If
-$p_1$ and $p_2$ are equivalent we write $==_\pi$ where $\pi$ is a permutation of
-variables, such that for each variable $x$ in $p_1$ its counterpart in $p_2$ is
-$\pi(x)$.
+If $p_1$ and $p_2$ are equivalent we write $==_\pi$ where $\pi$ is a permutation
+of variables, such that for each variable $x$ in $p_1$ its counterpart in $p_2$
+is $\pi(x)$.
 
 For example we have $A(x,y) ==_\pi A(z,x)$ where $\pi = [x \mapsto z, y \mapsto x]$.
 
@@ -121,7 +131,7 @@ functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
   Inductively defined:
   \begin{eqnarray}
     \FV_{exp} (v) &=& \{v\} \\
-    \FV_{exp} (\lambda m) &=& \FV_{match} (m) \\
+    \FV_{exp} (\fun m) &=& \FV_{match} (m) \\
     \FV_{exp} (e_1e_2) &=& \FV_{exp} (e_1) \cup \FV_{exp} (e_2) \\
     \FV_{exp} (c\ttt{(}e_1\ttt{,} \ldots \ttt{,} e_n \ttt{)}) &=& \FV_{exp}
     (e_1) \cup \ldots \cup \FV_{exp} (e_n)
@@ -156,7 +166,7 @@ We define substitution in expressions. An expression can be substituted for any
   \begin{eqnarray}
     e_1[e_2/e_3] &=& e_2 \quad \mrm{if}\ e_1 = e_3 \label{eq:subst-sub}\\
     (e^1_1 e^2_1)[e_2/e_3] &=& e^1_1[e_2/e_3] e^2_1[e_2/e_3] \label{eq:subst-app}\\
-    \lambda p_1 \texttt{.} e_1 \texttt{|} m &=& \lambda p_1 \texttt{.} e'_1
+    \fun p_1 \texttt{.} e_1 \texttt{|} m &=& \fun p_1 \texttt{.} e'_1
     \texttt{|} m' \label{eq:subst-lam}\\
     (c \texttt{(}e^1_1 \texttt{,} \ldots \texttt{,} e^1_n \texttt{)})[e_2/e_3]
     &=& c \texttt{(}e^1_1[e_2/e_3] \texttt{,} \ldots \texttt{,} e^1_n[e_2/e_3]
@@ -169,14 +179,14 @@ Where in \fref{eq:subst-lam} we have
 \end{eqnarray*}
 and
 \[
-(\lambda m)[e_2/e_3] = \lambda m'
+(\fun m)[e_2/e_3] = \fun m'
 \]
 
-In \fref{eq:subst-app}, \fref{eq:subst-lam} and \fref{eq:subst-con} we require
-that \fref{eq:subst-sub} does not apply.
+In \fref[plain]{eq:subst-app}, \fref[plain]{eq:subst-lam} and
+\fref{eq:subst-con}  we require that \fref[plain]{eq:subst-sub} does not apply.
 
-Note that in \fref{eq:subst-sub} we require $e_1$ and $e_3$ to be exactly equal,
-not just alpha equivalent.
+Note that in \fref[plain]{eq:subst-sub} we require $e_1$ and $e_3$ to be exactly
+equal, not just alpha equivalent.
 \end{definition}
 
 \subsection{Alpha equivalence}
@@ -191,8 +201,8 @@ use the symbol $==a$ for both relations.
   \begin{eqnarray}
     \sigma |- v_1 &==a& v_2 \label{eq:alpha-var} \\
     \sigma |- e^1_1e^1_2 &==a& e^2_1e^2_1 \label{eq:alpha-exp} \\
-    \sigma |- \lambda p^1_1 \texttt{.} e^1_1 \texttt{|} \ldots \texttt{|} p^1_n
-    \texttt{.} e^1_n &==a& \lambda p^2_1 \texttt{.} e^2_1 \texttt{|} \ldots \texttt{|} p^2_n
+    \sigma |- \fun p^1_1 \texttt{.} e^1_1 \texttt{|} \ldots \texttt{|} p^1_n
+    \texttt{.} e^1_n &==a& \fun p^2_1 \texttt{.} e^2_1 \texttt{|} \ldots \texttt{|} p^2_n
     \texttt{.} e^2_n \label{eq:alpha-match} \\
     \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a& 
     c\ttt{(}e^2_1 \ttt{,} \ldots \ttt{,} e^2_n \ttt{)} \label{eq:alpha-con}
@@ -432,7 +442,7 @@ We can now define the elimination of unused patterns.
 
   That is
   \[
-  m ~>e m' ==> \lambda m \sim \lambda m'
+  m ~>e m' ==> \fun m \sim \fun m'
   \]
 \end{lemma}
 
@@ -454,7 +464,7 @@ seamlessly, such that two patterns can be made to one.
 First we need some auxiliary definitions.
 
 \subsection{Partially ordered form}
-\begin{definition}
+\begin{definition}\label{def:part-order-form}
   A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is in
   partially ordered form if
   \[
@@ -562,7 +572,7 @@ Four scenarios arise
     e_{i-1} \label{eq:gen-1}\\
     &\texttt{|}& p_{m_1} \texttt{.} e_{m_1} \texttt{|} \ldots \texttt{|} p_{m_k}
     \texttt{.} e_{m_k} \label{eq:gen-2}\\
-    &\texttt{|}& (p'_i \texttt{.} e'_i) \label{eq:gen-3}\\
+    (&\texttt{|}& p'_i \texttt{.} e'_i \ ) \label{eq:gen-3}\\
     &\texttt{|}& p_{s_1} \texttt{.} e_{s_1} \texttt{|} \ldots \texttt{|} p_{s_l}
     \texttt{.} e_{s_l} \label{eq:gen-4}
   \end{eqnarray}
@@ -578,12 +588,26 @@ Four scenarios arise
 \end{definition}
 
 \section{Normal form}
-We say that the function $\lambda m$ is a normal form if there does not exist an
-$m'$ such that $m ~>g m'$ or $m ~>e m'$.
+We say that the function $\fun m$ is a normal form if there does not exist an
+$m'$ such that $m ~>e m'$ or $m ~>g m'$.
+
+\subsection{Reducing to normal form}
+Consider a function $\fun m$. It can be converted to a normal form by repeatedly
+eliminating and generalising patterns.
+
+Note that $m$ should be in partially ordered form (\fref{def:part-order-form}) in
+order to generalise its patterns. Luckily we can convert it to a partially
+ordered form by repeated elimination.
+
+\begin{lemma}
+  If a function $f$ can be converted to the normal form $f'$, then $f$ and $f'$
+  are semantically equivalent.
+\end{lemma}
 
 \begin{lemma}
   We expect the normal form to be unique (in some sense).
 \end{lemma}
+
 
 % \section{Weak unification}
 

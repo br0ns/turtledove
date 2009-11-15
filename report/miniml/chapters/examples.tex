@@ -4,6 +4,7 @@
 \newcommand{\cargs}[2]{#1 \texttt{,} #2}
 \newcommand{\con}[2]{#1 \texttt{(} #2 \texttt{)}}
 \newcommand{\fcall}[2]{#1 \texttt{(} #2 \texttt{)}}
+\newcommand{\pipe}{\phantom{\ttt{fu}}\ttt{|}}
 
 
 % assume nil < ::
@@ -31,10 +32,10 @@ equivalent, but shows only how the ordering relation works.
 \begin{example}[Strict total ordering, $<$]
   Given then following function $foo$
   \begin{eqnarray*}[rl]
-    \texttt{rec } foo & \mapsto \lambda (b.exp_1 \texttt{ | } a.exp_2 \texttt{ | }
-    con(y, z).exp_3 \texttt{ | } con(x, z).exp_4) \\
+    \texttt{rec } foo & \mapsto \fun (b\ttt{.}exp_1 \texttt{ | } a\ttt{.}exp_2 \texttt{ | }
+    con(y, z)\ttt{.}exp_3 \texttt{ | } con(x, z)\ttt{.}exp_4) \\
 \tabpause{then strict total ordering will result in}
-    \texttt{rec } foo & \mapsto \lambda (con(x\texttt{,} z)\texttt{.}exp_4 \texttt{ |
+    \texttt{rec } foo & \mapsto \fun (con(x\texttt{,} z)\texttt{.}exp_4 \texttt{ |
     } con(y\texttt{,} z)\texttt{.}exp_3 \texttt{ | } a\texttt{.}exp_2 \texttt{ | }
     b\texttt{.}exp_1)
 \end{eqnarray*}
@@ -43,15 +44,15 @@ equivalent, but shows only how the ordering relation works.
 
 \begin{example}[Strict partial ordering, $<'$]
   Given the following function $combine$
-  \begin{eqnarray*}[rll]
+  \begin{eqnarray*}[rll>{\ttt{.}}l]
     \texttt{rec } combine \mapsto 
-    & \lambda ( & \patexp{\con{::}{\cargs{x}{\con{::}{\cargs{y}{xl}}}}}{\fcall{::}{\cargs{\con{pair}{\cargs{x}{y}}}{combine(xl)}}} \\
-      & \texttt{|} & \patexp{\fcall{::}{\cargs{xl}{nil}}}{nil} \\
-      & \texttt{|} & \patexp{nil}{nil} )\\
+    & \fun & \con{::}{\cargs{x}{\con{::}{\cargs{y}{xl}}}} & \fcall{::}{\cargs{\con{pair}{\cargs{x}{y}}}{combine(xl)}} \\
+      & \pipe & \fcall{::}{\cargs{xl}{nil}} & \mathrel{nil} \\
+      & \pipe & \mathrel{nil} & \mathrel{nil}\\
 \tabpause{then partial ordering will result in}
     \texttt{rec } combine \mapsto 
-    & \lambda ( & hej \\
-    & \texttt{|} & ... )
+    & \fun & hej \\
+    & \pipe & ...
   \end{eqnarray*}
   \fixme{uheldigt, eftersom ingen af patternsne ordner partielt mellem hinanden
     grundet aritet?}
