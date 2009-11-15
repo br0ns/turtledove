@@ -1,14 +1,11 @@
-
-
-
 \section{Grammar}
 \newcommand{\fun}{\ttt{fun}\ }
 \newcommand{\rec}{\ttt{rec}\ }
 
 \fixme{remember to introduce new relations with name.}
 \begin{eqnarray*}[rqcql:Tl]
-  var & = & (a-z)+ & Identifiers\\
-  con & = & (A-Z)(a-z)* & Constructors\\
+  var & = & \ttt{[a-z]+} & Identifiers\\
+  con & = & \ttt{[A-Z][a-z]* | [0-9]+} & Constructors\\
   num & = & \mathbb{Z}    & Natural numbers\\
   match & ::= & \epsilon                            & Empty match\\
   & & pat\texttt{.}exp\ \texttt{|}\ match               & Pattern -> expression\\
@@ -43,11 +40,11 @@ We expect programs to be run in an environment containing predefined functions
 (that is variables bound to predefined functions) and constructors. Thus the
 program
 \begin{quote}
-\begin{verbatim}
-+ (pair (1, 8))
-\end{verbatim}
+% \begin{verbatim}
+\ttt{x $\mapsto$ plus (pair (1, 8))}
+% \end{verbatim}
 \end{quote}
-might make perfect sense (if in particular \texttt{+} is a variable bound to a
+might make perfect sense (if in particular \ttt{plus} is a variable bound to a
 suitable function (perhaps addition), and \texttt{pair}, \texttt{1} and
 \texttt{8} are constructors of arity 2, 0 and 0, respectively).
 \section{Auxiliary definitions}
@@ -65,6 +62,10 @@ If $f : A -> B$ and $g : A -> B$ are arbitrary mappings then
   (g ++ f)(x) &= f(x) & if $x \in \Dom(f)$\\
   (g ++ f)(x) &= g(x) & otherwise
 \end{eqnarray*}
+and
+\[
+  \Dom (g ++ f) = \Dom (g) \cup \Dom (f).
+\]
 
 \item
 We write $p \subseteq p'$ to mean that $p$ is a subpattern of $p'$. More
