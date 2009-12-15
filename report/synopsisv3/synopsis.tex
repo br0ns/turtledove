@@ -1,4 +1,4 @@
-\documentclass[a4paper,oneside]{article}
+\documentclass[a4paper,oneside,final]{article}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -47,151 +47,125 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 % \fixme{Search and replace ``front end'' -> ``user interface''}
 % \fixme{skift alle itemize ud med enumerate så der kan henvises til specifikke punkter uden for denne}
 
-\section{Title}
-``Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic
-rewriting.''
+\section{Title} ``Turtledove: Tool assisted programming in SML, with special
+emphasis on semi-automatic rewriting.''
 
 \section{Motivation}
-Today functional programming languages are not very widespread outside academic circles. A major
-reason for this may be that not as rich development environments exists (if at all) for functional
-programming languages compared to certain imperative languages (take languages in the .NET platform
-as an example).
+Today functional programming languages are not very widespread outside academic
+circles. A major reason for this may be that not as rich development
+environments exists (if at all) for functional programming languages compared to
+certain imperative languages (take languages in the .NET platform as an
+example).
 
-We wish to make functional programming, specifically in SML, easier to approach for the beginner as
-well as more advantageous for the veteran.
+We wish to make functional programming, specifically in SML, easier to approach
+for the beginner as well as more advantageous for the veteran.
 
-Functional programming languages has a wide variety of advantages that makes them specially suited
-for quick and correct statical analysis. The effect of this is that it will be possible to make more
-complex tools for functional programming languages than for imperative ones.
-\fixme{Er det dumt at hævde disse ting uden et opfølgende argument?}
+Statically typed functional programming languages has a variety of advantages
+that makes them specially suited for quick and correct static analysis. The
+effect of this is that it will be possible to make more complex tools for
+functional programming languages than for imperative ones.
+% \fixme{Er det dumt at hævde disse ting uden et opfølgende argument?}
 
-We implement semi-automatic rewriting of terms according to a set of predefined rules. We focus on
-modularity such that it will be relatively simple to implement other tools based on our software in
-the future.
+We implement semi-automatic rewriting of terms according to a set of predefined
+rules. We focus on modularity such that it will be relatively simple to
+implement other tools based on our software in the future.
 
-\fixme{Hvorfor dette værktøj? i) Vi behøver ikke regne typer, ii) vi får lov at føre nogle fine
-beviser, iii) med omskrivning kan vi let implementere flere forskellige værktøjer - især hvis vi
-implementerer den transitive afslutning af (dele af) omskrivningerne (tænk reduktioner).}
+% \fixme{Hvorfor dette værktøj? i) Vi behøver ikke regne typer, ii) vi får lov at
+%   føre nogle fine beviser, iii) med omskrivning kan vi let implementere flere
+%   forskellige værktøjer - især hvis vi implementerer den transitive afslutning
+%   af (dele af) omskrivningerne (tænk reduktioner).}
 
-% Experienced programmers will find that code complying to certain standard patterns is easier to
-% read. Another advantage of standard patterns is that compilers are able to specially optimize these,
-% possibly making such code faster.
+% Experienced programmers will find that code complying to certain standard
+% patterns is easier to read. Another advantage of standard patterns is that
+% compilers are able to specially optimize these, possibly making such code
+% faster.
 
 \section{Elaboration}
-We wish to be able to suggest possible rewritings to the programmer in real time, based on some
-predefined rules.
+We wish to be able to suggest possible rewritings to the programmer in real
+time, based on some predefined rules.
 
 This implies that our tool is initiated and responds through some user
 interface. There are two good reasons why we wish to be able to develop our tool
 and its user interface separately:
 
 \begin{enumerate}
-\item As different programmers use different editors and generally have strong feelings
-      about their choice we do not see it as an option to implement a new editor. Instead a user
-      interface would be implemented on top of an existing editor. We do not wish to bind our
-      tool to a single one.
-\item It is not the goal of this project to implement a user interface for tool assisted
-      programming.
+\item As different programmers use different editors and generally have strong
+  feelings about their choice we do not see it as an option to implement a new
+  editor. Instead a user interface would be implemented on top of an existing
+  editor. We do not wish to bind our tool to a single one.
+\item It is not the goal of this project to implement a user interface for tool
+  assisted programming.
 \end{enumerate}
 
-Since the user interface and the tool are two distinct pieces of software we have to decide a way
-for them to communicate.
+Since the user interface and the tool are two distinct pieces of software we
+have to decide a way for them to communicate.
 
 \subsection{Semi-automatic rewriting}
-We implement a set of rewriting rules. This implies the development of a suitable representation of
-rules and a theory for arguing about them.
+We implement a set of rewriting rules. This implies the development of a
+suitable representation of rules and a theory for arguing about them.
 
 An example of a potential rule is given below.
 
-\subsubsection{Example}\label{sec:example}
-Given a suitable notion of instantiation and alpha equivalence, consider the following rewriting
-rule for a standard map form:
+\subsubsection{Example}\label{sec:example} 
+Given a suitable notion of instantiation and alpha equivalence, consider the
+following rewriting rule for a standard map form:
 \begin{eqnarray}[TlcTl]
-\begin{lstlisting}
-fun f nil       = nil
-  | f (x :: xs) = (@$\heartsuit$@) :: f xs
-\end{lstlisting}
-&
-\
-\rightarrow
-\
-&
-\begin{lstlisting}
-val f = map (fn x => (@$\heartsuit$@))
+\begin{lstlisting} fun f nil = nil | f (x :: xs) = (@$\heartsuit$@) :: f xs
+\end{lstlisting} & \ \rightarrow \ &
+\begin{lstlisting} val f = map (fn x => (@$\heartsuit$@))
 \end{lstlisting}\label{eq:rule-map}
 \end{eqnarray}
 
-Notice that the \texttt{x} on the right hand side is related to the \texttt{x} on the left as
-illustrated below.
+Notice that the \texttt{x} on the right hand side is related to the \texttt{x}
+on the left as illustrated below.
 
 The term
 \begin{eqnarray}[Tl]\label{eq:term-gt}
-\begin{lstlisting}
-fun gt nil       = nil
-  | gt (n :: ns) = n > 0 :: gt ns
+\begin{lstlisting} fun gt nil = nil | gt (n :: ns) = n > 0 :: gt ns
 \end{lstlisting}
-\end{eqnarray}
-is an instance of the left hand side of (\ref{eq:rule-map}) with instantiation
-\begin{eqnarray*}[TlcTl]
-$\heartsuit$
-&
-\ =\
-&
-\texttt{n > 0}
-\end{eqnarray*}
-and alpha conversion
-\begin{eqnarray*}[TlcTl]
-\texttt{f}
-&
-\ =\
-&
-\texttt{gt}\\
-\texttt{x}
-&
-\ =\
-&
-\texttt{n}\\
-\texttt{xs}
-&
-\ =\
-&
-\texttt{ns}
+\end{eqnarray} is an instance of the left hand side of (\ref{eq:rule-map}) with
+instantiation
+\begin{eqnarray*}[TlcTl] $\heartsuit$ & \ =\ & \texttt{n > 0}
+\end{eqnarray*} and alpha conversion
+\begin{eqnarray*}[TlcTl] \texttt{f} & \ =\ & \texttt{gt}\\ \texttt{x} & \ =\ &
+\texttt{n}\\ \texttt{xs} & \ =\ & \texttt{ns}
 \end{eqnarray*}
 
 Now using (\ref{eq:rule-map}) we get the result
 \begin{eqnarray}[Tl]\label{eq:term-gt-result}
-\begin{lstlisting}
-val gt = map (fn n => n > 0)
+\begin{lstlisting} val gt = map (fn n => n > 0)
 \end{lstlisting}
 \end{eqnarray}
 
 \subsection{Turtledove}
-Our implementation of the described tool is named Turtledove.
-\\
+Our implementation of the described tool is named Turtledove.\\
 
-Since we intent that Turtledove should grow to include more than one tool we design it in such a
-way as to accommodate this. This means that functionality unique to a specific tool should be
-separated from functionality common to most tools.
+Since we intent that Turtledove should grow to include more than one tool we
+design it in such a way as to accommodate this. This means that functionality
+unique to a specific tool should be separated from functionality common to most
+tools.
 
-Common functionality is split between core functionality needed by every tool and a collection of
-libraries that make it easier to perform common tasks.
+Common functionality is split between core functionality needed by every tool
+and a collection of libraries that make it easier to perform common tasks.
 
 \subsubsection{Core functionality}
-The core functionality of Turtledove includes:\fixme{Tilføj ``but is not limited to''?}
-\begin{enumerate}
-\item Turtledove will take the path of an SML file or a project file either as a command line
-  argument or through the user interface after it has been started. It then reads and parses the
-  file or files contained in the project.
+The core functionality of Turtledove includes:
 
-  The user interface should signal when a file is changed and possibly what has changed within that
-  file. The one extreme is to signal a file change only when a file is saved. The other is to signal
-  every key stroke. Testing will reveal the right balance.
-  \fixme{For implementationsspecifikt?}
+\begin{enumerate}
+\item Turtledove will take the path of an SML file or a project file either as a
+  command line argument or through the user interface after it has been
+  started. It then reads and parses the file or files contained in the project.
+
+  The user interface should signal when a file is changed and possibly what has
+  changed within that file. The one extreme is to signal a file change only when
+  a file is saved. The other is to signal every key stroke. Testing will reveal
+  the right balance.
 
   Tools shall be signalled when the source code has changed.
 
-\item Data is guided between the user interface and its destination. Communication is done over a
-  protocol flexible enough to allow each destination to implement its own protocol.
+\item Data is guided between the user interface and its
+  destination. Communication is done over a protocol flexible enough to allow
+  each destination to implement its own protocol.
 \end{enumerate}
 
 \section{Primary goals}
@@ -200,74 +174,79 @@ To summarize; Turtledove should be able to
 \begin{enumerate}
 \item Read single SML files or projects.
 \item Analyze those files and suggest rewritings as described above.
-\item Be signalled when a file changes and suggest new rewritings if any.
+\item Be signalled when a file changes and suggest new rewritings if any exists.
 \end{enumerate}
 
-We will implement rules for at least two rewritings: Map forms (as demonstrated in Section
-\ref{sec:example}) and fold forms.
+We will implement rules for at least two rewritings: Map forms (as demonstrated
+in Section \ref{sec:example}) and fold forms.
 
-Equivalence of terms and their transformed counterparts should ideally be proven. We acknowledge the
-complexity of such a proof, and is thus satisfied with a good argument.
+Equivalence of terms and their transformed counterparts should ideally be
+proven. We acknowledge the complexity of such a proof, and is thus satisfied
+with a good argument.
 
 \section{Secondary goals}
-
-\fixme{Bør dette være med i synopsis, høre det ikke mere hjemme i selve
-  rapporten? Evt kunne en meget forsimplet udgave af denne liste indgå i
-  synopsen i stedet}
 Here follows a non-exhaustive list of further work, should time allow it:
 
 \begin{enumerate}
 
-\item Implement project management. A project manager should at least make it easy for the user to
-  add and remove files from a project. The project manager should write changes to the ML Basis
-  file containing the project to disk on the programmers behalf.
+\item Implement project management. A project manager should at least make it
+  easy for the user to add and remove files from a project. The project manager
+  should write changes to the ML Basis file containing the project to disk on
+  the programmers behalf.
 
-\item Make a nice user interface. Probably for Emacs as we use it ourselves and thus have more
-  experience with this editor than others.
+\item Make a nice user interface. Probably for Emacs as we use it ourselves and
+  thus have more experience with this editor than other ones.
 
-\item Extend the various parsers to be incremental where applicable (e.g., the parser for SML source
-  code). The benefit would be speed gains for reparsing of files with small changes, which is often
-  the case.
+\item Extend the various parsers to be incremental where applicable (e.g., the
+  parser for SML source code). The benefit would be speed gains for reparsing of
+  files with small changes, which is often the case.
 
-\item Extend the various parsers to handle syntax errors, for example by skipping the source code
-  until the next valid declaration is found. The location in the skipped line of code where the
-  first error was found should then be reported back to the user interface so it can make a proper
+\item Extend the various parsers to handle syntax errors, for example by
+  skipping the source code until the next valid declaration is found. The
+  location in the skipped line of code where the first error was found should
+  then be reported back to the user interface so it can make a proper
   notification of the user (e.g., underlining of erroneous code).
 
 % Husk : Måske muligt med SML-Yacc..?
 
-\item Implement transitive closures. Each rewriting rule or group of rules define a relation on
-  terms. We suspect that some interesting rewritings can be defined as the transitive closure of a
-  rule or a group of rules. An annotation in the rule or rule group will tell Turtledove whether it
-  should compute the transitive closure of a rule or not.
+\item Implement transitive closures. Each rewriting rule or group of rules
+  define a relation on terms. We suspect that some interesting rewritings can be
+  defined as the transitive closure of a rule or a group of rules. An annotation
+  in the rule or rule group will tell Turtledove whether it should compute the
+  transitive closure of a rule or not.
 
-\item Add a simplification group of term rewriting rules. Consider the rule \texttt{fn x => g x
-    $\rightarrow$ g} as an example.
+\item Add a simplification group of term rewriting rules. Consider the rule
+  \texttt{fn x => g x $\rightarrow$ g} as an example.
 
-  When defining a rule it shall be possible to try other rules on the resulting term. The map rule
-  from Section \ref{sec:example} will benefit from applying the above rule to its output. Of course
-  if the rule does not match it should do nothing.
+  When defining a rule it shall be possible to try other rules on the resulting
+  term. The map rule from Section \ref{sec:example} will benefit from applying
+  the above rule to its output. Of course if the rule does not match it should
+  do nothing.
 
-  Another option is to always try to apply a set of simplifying rules to the output of any rule.
+  Another option is to always try to apply a set of simplifying rules to the
+  output of any rule.
 
-\item Extend the IO file/source code handling part of the program to have a ``patch'' system such
-  that code written in the editor is reflected ``live'' if the SML parser decides to parse the
-  source files, even if the source files haven't been saved recently.
+\item Extend the IO file/source code handling part of the program to have a
+  ``patch'' system such that code written in the editor is reflected ``live'' if
+  the SML parser decides to parse the source files, even if the source files
+  haven't been saved recently.
 
-\item Extend Turtledove such that the SML source code parser can report back ``DocString''
-  information\footnote{A short description of a value or function as known from for example Eclipse
-    or Visual Studio} to the user interface which in turn can inform the user in an appropriate way.
+\item Extend Turtledove such that the SML source code parser can report back
+  ``DocString'' information \footnote{A short description of a value or function
+    as known from for example Eclipse or Visual Studio.} to the user interface
+  which in turn can inform the user in an appropriate way.
 
-\item Various parsings of the syntax tree to for example gradually remove syntactic sugar.
+\item Various parsings of the syntax tree to for example gradually remove
+  syntactic sugar.
 
-  With this a notion of ``run levels'' could be introduced, so at the end of each parsing all tools
-  that hook this level will be notified and able to act upon this specific version of the parse
-  tree. While the next parse of the syntax tree should continue if there is tools depending on one
-  of the next run levels.
+  With this a notion of ``run levels'' could be introduced, so at the end of
+  each parsing all tools that hook a given level will be notified and able to
+  act upon this specific version of the parse tree. While the next parse of the
+  syntax tree should continue if there is tools depending on one of the next run
+  levels.
 \end{enumerate}
 
 \section{Limitations}
-
 \begin{enumerate}
 \item Turtledove need not be able to read CM project files.
 
@@ -275,68 +254,93 @@ Here follows a non-exhaustive list of further work, should time allow it:
 
 \item Changes to unsaved files need not be reflected inside Turtledove.
 
-\item No user documentation of software will be produced (e.g., manual, user guide).
+\item No user documentation of software need be produced (e.g., manual, user
+  guide).
 \end{enumerate}
 
 \section{Learning objectives}
-
 \begin{enumerate}
-\item To develop structured, flexible and easy-to-understand software for manipulation of source code.
-\item To understand and describe source code transformations formally, and to implement such
-  transformations.
+\item To develop structured, flexible and easy-to-understand software for
+  manipulation of source code.
+\item To understand and describe source code transformations formally, and to
+  implement such transformations.
 \end{enumerate}
 
-
 \section{Tasks}
-
-The project starts November the 9th (week 46) and ends June the 18th (week
+The project starts December the 14th (week 51) and ends June the 18th (week
 24). A lot of the individual task can potentially be done in parallel as the
 project has both theoretical and practical aspects.
 
 Weeks 52-1, 4, 13 and 15 are reserved for holidays and exams.
 
-The two task lists below is split in mostly theoretical and practical tasks. Each list is ordered by
-descending priority.
+The two task lists below is split in mostly theoretical and practical
+tasks. Each list is ordered by descending priority.
 
 \begin{description}
-\fixme{Ny tidsplan, jotak!}
-\item[Theoretical] \ \\
+\item[Theoretical]\
   \begin{description}
-  \item[week 46] Research state-of-the-art literature on code rewriting.
+  \item[week 51] Research state-of-the-art literature on code rewriting.
     
-  \item[week 47] Make a draft of the formal definition of ``rewriting rules''. Experiment with
-    different approaches.
+  \item[week 2-3] Make a draft of the formal definition of ``rewriting
+    rules''. Experiment with different approaches. Determine and define a
+    framework (helper functions, predicates on syntactic entities,
+    transformations, canonical forms, etc.).
+    \begin{itemize}
+    \item[-] \it A short paper (approximately 20 pages) that defines term
+      rewriting for a subset of SML. Examples of use are given.
+    \end{itemize}
     
-  \item[week 48-49] Formally define ``rewriting rules''.
+  \item[week 4-5] Formally define ``rewriting rules'' and framework.
+    \begin{itemize}
+    \item[-] \it The given definitions and framework is extended to full SML.
+    \end{itemize}
     
-  \item[week 50-51] Define a set of rewriting rules.
+  \item[week 5-7] Define a set of rewriting rules. Experiment with real world
+    code examples.
     
-  \item[week 52,53,1] Argue for the correctness and usefulness of the implemented rules.
+  \item[week 8-9] Argue for the correctness and usefulness of the implemented
+    rules.
+
+  \item[week 17-20] Finish the report.
   \end{description}
-  
-\item[Practical] \ \\
+
+\item[Practical]\
   \begin{description}
     
-  \item[week 46] Design an API for intercommunication between the user interface and Turtledove.
+  \item[week 2-3] Design an API for intercommunication between the user
+    interface and Turtledove. Maybe implement a small library of utility
+    functions.
     
-  \item[week 47-48] Implement a parser that can parse ML Basis project files\footnote{As described at
-      \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files} (as of September 24th, 2009).}.
+  \item[week 2-3] Implement a parser that can parse ML Basis project files
+    \footnote{As described at
+      \url{http://www.itu.dk/research/mlkit/index.php/ML_Basis_Files} (as of
+      September 24th, 2009).}.
     
-  \item[week 49] Implement a project manager that given the path of a ML Basis file parses the file,
-    and models the project. It should be possible to read the contents of the files through the model.
+  \item[week 4-5] Implement a project manager that given the path of a ML Basis
+    file parses the file, and models the project. It should be possible to read
+    the contents of the files through the model.
     
-  \item[week 50-51] Implement a representation of concrete syntax trees of SML source code.
+  \item[week 5-6] Implement a representation of concrete syntax trees of SML
+    source code.
     
-  \item[week 52,53,1] Implement a SML parser.
+  \item[week 7-8] Implement an SML parser.
+
+  \item[week 9-11] Implement the term rewriting framework.
     
-  \item[week 2-3] Implement the term rewriting tool.
+  \item[week 10-12] Implement the term rewriting tool. Including the actual
+    rules.
     
-  \item[week 4] Implement the designed API for intercommunication between the user interface and
-    Turtledove.
+  \item[week 13] Implement the designed API for intercommunication between the
+    user interface and Turtledove.
     
-  \item[week 5-6] Analyse Turtledove and apply threading where needed (e.g., the parser for SML code
-    and Turtledove itself).
+  \item[week 14-16] Analyse Turtledove and apply threading where needed (e.g.,
+    the parser for SML code and Turtledove itself). Improve performance and tidy
+    up the code if needed.
+
   \end{description}
+
+\item[week 20-24] Buffer, secondary goals.
+
 \end{description}
 
 \end{document}
