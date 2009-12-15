@@ -1,0 +1,215 @@
+\documentclass[a4paper, oneside, final]{memoir}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+
+\usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
+\usepackage[rounded]{syntax} % Part of the mdwtools package
+
+\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
+%\usepackage[sc]{mathpazo}     % Palatino font
+\renewcommand{\rmdefault}{ugm} % Garamond
+%\usepackage[garamond]{mathdesign}
+
+\begin{document}
+
+
+\chapter*{Intercommunication}
+
+
+\section*{Protocol}
+
+
+The communication protocol between the development environment and Turtledove is
+vary simple and versatile with almost no limitations. The protocol utilises JSON
+(JavaScript Object Notation) \footnote{\url{http://www.json.org/}} for the data
+payload which makes it easy to serialise different types of values to and from
+the desired tools inside Turtledove.
+
+Besides the data payload the protocol consists of a ``CallerID'' string and a
+``DestinationID'' string which is described below
+
+\begin{description}
+\item[CallerID] is a string specified by the development environment. This
+  string is not used in any way by Turtledove but is returned in the response
+  string. This string is intended for internal bookkeeping in the development
+  environment for example to distinguish which file/buffer and/or at which line
+  and column the response originated from.
+
+  As there is a possibility of Turtledove getting multi threaded, this is a good
+  way of handling multiple request to Turtledove that may have different
+  response times (One request waiting for a new complete reparse of the project code
+  and another requesting a static lookup of some data).
+
+  If the development environment don't need the use of this string an empty
+  string can be passed to Turtledove.
+
+  Some of the tools may report back when they are done doing something, without
+  the development environment has invoked it. In these cases an empty string
+  will be used as ``CallerID''.
+
+\item[DestinationID] is a string that needs to match a named destination in
+  Turtledove. Examples of such a named destination, also including name of
+  tools:
+
+  \begin{itemize}
+  \item ``Turtledove'': This is for communication with the main program. This
+    includes enabling/disabling of individual tools, status information and
+    closing down the server gracefully.
+
+  \item ``ProjectManager'': This is for communication with the project
+    manager. This include actions such as modifying text, creation/deletion of
+    files and projects.
+  \end{itemize}
+\end{description}
+
+
+\begin{grammar}
+  <request> ::= \[[ "CallerID" "\\n" "DestinationID" "\\n" <JSON-value> "\\n\\n" \]]
+
+  <response> ::= \[[ "DestinationID" "\\n" "CallerID" "\\n" <JSON-value> "\\n\\n" \]]
+
+  <JSON-value> ::= \[[ 
+  \begin{stack}
+    <JSON-string> \\
+    <JSON-number> \\
+    <JSON-object> \\ 
+    <JSON-array> \\
+    "true" \\
+    "false" \\
+    "null"
+  \end{stack}
+  \]]   
+
+  <JSON-string> ::= \[[
+  "\""
+  \begin{stack}
+    \\
+    \fbox {
+      \begin{minipage}{1,6in}
+        \begin{center}
+          Any\ unicode\ char\ except\ '{\char 34}',\ '$\backslash$'\ 
+          and\ any\ control\ chars 
+        \end{center}
+      \end{minipage}
+    }
+    \\
+    "\\"
+    \begin{stack}
+      "\"" \\
+      "\\" \\
+      "/" \\
+      "b" \\
+      "f" \\
+      "n" \\
+      "r" \\
+      "t" \\
+      "u"
+    \end{stack}
+  \end{stack}
+  "\""
+  \]]
+  
+  <JSON-object> ::= \[[
+  "{"
+    \begin{stack}
+      \\
+      
+      \begin{rep}
+        <JSON-string> ":" <JSON-value> \\
+        ","
+      \end{rep}
+    \end{stack}
+    "}"
+  \]]
+
+  <JSON-array> ::= \[[
+  "["
+  \begin{stack}
+    \\
+    \begin{rep}
+      <JSON-value> \\
+      ","
+    \end{rep}
+  \end{stack}
+  "]"
+  \]]
+
+  <JSON-number> ::= \[[
+  \begin{stack}
+    \\
+    "-"
+  \end{stack}
+  \begin{stack}
+    "0" \\
+    1--9
+    \begin{rep}
+      \\
+      1--9
+    \end{rep}
+  \end{stack}
+  \begin{stack}
+    \\
+    "." 
+    \begin{rep}
+      \\
+      1--9
+    \end{rep}
+  \end{stack}
+  \begin{stack}
+    \\
+    \begin{stack}
+      e \\
+      E
+    \end{stack}
+    \begin{stack}
+      \\
+      "+" \\
+      "-" 
+    \end{stack}
+    \begin{rep}
+      \\
+      1--9
+    \end{rep}
+  \end{stack}
+  \]]
+  
+\end{grammar}
+
+
+Eksempel:
+\begin{verbatim}
+some_id \n ProjectManager \n {"command" : "add", "file" : "myfoo.sml"} \n\n
+\end{verbatim}
+\ \\ \\
+
+It is important to remember that the resulting string sent to and from
+Turtledove must not contain any newlines except the ones that are mandatory by
+the protocol. This is a requirement even though the definition of JSON allows
+whitespace between a pair of tokens, as it would then render it impossible to
+determine when the request/response is done.
+
+We have chosen the newline character as a separator of the fields as it
+makes it easy for debug pretty printing and since a newline character is the least
+likely character to be in a name/id.
+
+The same argument applies to the decision of using double newline chars to mark
+the end of a request or response. 
+
+\section*{Useful commands}
+
+
+\paragraph{Get names in scope}
+
+
+
+
+\end{document}
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% reftex-fref-is-default: t
+%%% End: 
