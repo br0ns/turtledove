@@ -1,12 +1,12 @@
 
 
-functor ListOrderedMapFn (Ord : Ordering) :> OrderedMap where type key = Ord.domain =
+functor ListOrderedMapFn (Key : Ordered) :> OrderedMap where type key = Key.t =
 struct
 
-    type key = Ord.domain
-    type 'a map = (key * 'a) list
+    type key = Key.t
+    type 'a t = (key * 'a) list
 
-    val compare = Ord.compare
+    val compare = Key.compare
 
     val empty = nil
 

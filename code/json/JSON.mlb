@@ -1,0 +1,9 @@
+local
+$(SML_LIB)/basis/basis.mlb
+../mylib/MyLib.mlb
+../Basic.mlb
+in
+
+JSON.sig JSON.sml
+
+end

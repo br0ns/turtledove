@@ -1,7 +1,7 @@
 local
 $(SML_LIB)/basis/basis.mlb
 in
-Ordering.sig
+Ordered.sig
 ListSort.sig
 
   (* Signatures
@@ -34,9 +34,9 @@ ListSet.sml
 (* ListMap.sml *)
 ListOrderedMapFn.sml
 
-(* ListHeapFn.sml *)
+PairingHeapFn.sml
 
-TreeFn.sml
+MapTreeFn.sml
 
   (* Default implementations
    *)
@@ -44,9 +44,10 @@ ListSort.sml
 Set.sml
 (* Map.sml *)
 (* OrderedSetFn.sml *)
-(* MinHeap.sml *)
-(* MaxHeap.sml *)
 OrderedMapFn.sml
 Dictionary.sml
+HeapFn.sml
+IntMinHeap.sml
+IntMaxHeap.sml
 Tree.sml
 end

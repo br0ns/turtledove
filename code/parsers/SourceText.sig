@@ -7,6 +7,8 @@ sig
     val reread : source_text -> source_text
 
     val getSource : source_text -> int -> int -> string
+    val getFileName : source_text -> string
+    val getSize : source_text -> int
 
     val patch : source_text -> int -> int -> string -> source_text
     val patchLine : source_text -> int -> string -> source_text

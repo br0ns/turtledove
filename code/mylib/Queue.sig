@@ -2,16 +2,16 @@
 
 signature Queue =
 sig
-    type 'a queue
+    type 'a t
 
-    val empty      : 'a queue
-    val push       : 'a queue -> 'a -> 'a queue
-    val pushList   : 'a queue -> 'a list -> 'a queue
-    val append     : 'a queue -> 'a queue -> 'a queue
-    val isEmpty    : 'a queue -> bool
-    val size       : 'a queue -> int
-    val pop        : 'a queue -> 'a
-    val peek       : 'a queue -> 'a
+    val empty      : 'a t
+    val push       : 'a t -> 'a -> 'a t
+    val pushList   : 'a t -> 'a list -> 'a t
+    val append     : 'a t -> 'a t -> 'a t
+    val isEmpty    : 'a t -> bool
+    val size       : 'a t -> int
+    val pop        : 'a t -> 'a t
+    val peek       : 'a t -> 'a
 
-    val toString   : ('a -> string) -> 'a queue -> string
+    val toString   : ('a -> string) -> 'a t -> string
 end

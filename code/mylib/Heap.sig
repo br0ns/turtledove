@@ -3,22 +3,27 @@
 signature Heap =
 sig
     eqtype key
-    type 'a heap
+    type 'a t
 
-    val empty      : 'a heap
-    val insert     : 'a heap -> key * 'a -> 'a heap
-    val push       : 'a heap -> key * 'a -> 'a heap
-    val insertList : 'a heap -> (key * 'a) list -> 'a heap
-    val merge      : 'a heap -> 'a heap -> 'a heap
-    val map        : ('a -> 'b) -> 'a heap -> 'b heap
-    val isEmpty    : 'a heap -> bool
-    val size       : 'a heap -> int
-    val pop        : 'a heap -> 'a
-    val popi       : 'a heap -> key * 'a
-    val peek       : 'a heap -> 'a
-    val peeki      : 'a heap -> key * 'a
-    val toList     : 'a heap -> 'a list
-    val toListi    : 'a heap -> (key * 'a) list
+    val empty      : 'a t
+    val isEmpty    : 'a t -> bool
+    val insert     : 'a t -> key * 'a -> 'a t
+    val delete     : 'a t -> 'a t
+    val min        : 'a t -> 'a
+    val merge      : 'a t -> 'a t -> 'a t
 
-    val toString   : (key -> string) -> ('a -> string) -> 'a heap -> string
+    val insertList : 'a t -> (key * 'a) list -> 'a t
+    val map        : ('a -> 'b) -> 'a t -> 'b t
+    val size       : 'a t -> int
+
+    (* aliases for insert, delete and min *)
+    val push       : 'a t -> key * 'a -> 'a t
+    val pop        : 'a t -> 'a t
+    val peek       : 'a t -> 'a
+
+    val peeki      : 'a t -> key * 'a
+    val toList     : 'a t -> 'a list
+    val toListi    : 'a t -> (key * 'a) list
+
+    val toString   : (key -> string) -> ('a -> string) -> 'a t -> string
 end

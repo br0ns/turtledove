@@ -31,9 +31,11 @@ struct
                    ) (String.fields (fn c => c = #"\n") s)
         )
         
-    (* It is not checked whether the source reader was constructoed from a string *)
     fun reread (SOME f, st) = fromFile f
-      | reread (NONE, _) = die "Can't reread SourceText returned from fromString."
+      | reread (NONE, _) = die "Can't reread SourceText constructed from string."
+
+    fun getFileName (SOME f, _) = f
+      | getFileName (NONE, _) = "<source text constructed from string>"
 
     fun getSource (f, ls) pl pr =
         let
@@ -54,6 +56,8 @@ struct
         in
             String.concat (drop ls 0)
         end
+
+    fun getSize (_, ls) = foldl (fn ((s, _), a) => s + a) 0 ls
 
     fun patch st pl pr sub = Crash.unimplemented "SourceText.patch"
 
@@ -77,8 +81,23 @@ struct
             lexingFn
         end
 
-    fun posToString st p = Crash.unimplemented "SourceText.posToString"
+    fun posToRowCol (_, ls) p =
+        let
+            fun loop ((n, _) :: ls) l p =
+                if n > p then
+                    (l, p)
+                else
+                    loop ls (l + 1) (p - n)
+        in
+            loop ls 0 p
+        end
+        
+    fun posToString st p =
+        let
+            val f = getFileName st
+            val (r, c) = posToRowCol st p
+        in
+            f ^ ":" ^ r ^ "." ^ c
 
-    fun posToReport st p = Crash.unimplemented "SourceText.posToReport"
-
+    val posToReport = Report.text o posToString
 end

@@ -1,9 +1,32 @@
-local
 $(SML_LIB)/basis/basis.mlb
-in
-Basic.mlb
 
-parsers/Parsers.mlb
+mylib/MyLib.mlb
+
+Constants.sml
+Flags.sig FlagsFn.sml Flags.sml
+Crash.sig Crash.sml
+UniqId.sig UniqId.sml
+
+TextUtils.sig TextUtils.sml
+
+Report.sig Report.sml
+
+Show.sig Show.sml
+
+
+local
+SourceText.sig SourceText.sml
+
+LexicalError.sig LexicalError.sml
+
+MLBLexUtils.sig MLBLexUtils.sml
+
+Comments.sig Comments.sml
+
+in
+
+end
 
 main.sml
+
 end

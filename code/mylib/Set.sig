@@ -2,47 +2,47 @@
 
 signature Set =
 sig
-    eqtype ''a set
+    eqtype ''a t
 
-    val empty      : ''a set
-    val singleton  : ''a -> ''a set
-    val insert     : ''a set -> ''a -> ''a set
-    val delete     : ''a set -> ''a -> ''a set
-    val fromList   : ''a list -> ''a set
-    val insertList : ''a set -> ''a list -> ''a set
+    val empty      : ''a t
+    val singleton  : ''a -> ''a t
+    val insert     : ''a t -> ''a -> ''a t
+    val delete     : ''a t -> ''a -> ''a t
+    val fromList   : ''a list -> ''a t
+    val insertList : ''a t -> ''a list -> ''a t
 
-    val union      : ''a set -> ''a set -> ''a set
-    val inter      : ''a set -> ''a set -> ''a set
-    val diff       : ''a set -> ''a set -> ''a set
+    val union      : ''a t -> ''a t -> ''a t
+    val inter      : ''a t -> ''a t -> ''a t
+    val diff       : ''a t -> ''a t -> ''a t
 
-    val subset     : ''a set -> ''a set -> bool
-    val equal      : ''a set -> ''a set -> bool
-    val member     : ''a set -> ''a -> bool
-    val isEmpty    : ''a set -> bool
+    val subset     : ''a t -> ''a t -> bool
+    val equal      : ''a t -> ''a t -> bool
+    val member     : ''a t -> ''a -> bool
+    val isEmpty    : ''a t -> bool
 
-    val toList     : ''a set -> ''a list
+    val toList     : ''a t -> ''a list
 
-    val card       : ''a set -> int
+    val card       : ''a t -> int
 
-    val collate    : (''a -> ''a -> order) -> ''a set -> ''a set -> order
+    val collate    : (''a -> ''a -> order) -> ''a t -> ''a t -> order
 
-    val partition  : (''a -> bool) -> ''a set -> ''a set * ''a set
-    val filter     : (''a -> bool) -> ''a set -> ''a set
-    val remove     : (''a -> bool) -> ''a set -> ''a set
-    val exists     : (''a -> bool) -> ''a set -> bool
-    val all        : (''a -> bool) -> ''a set -> bool
-    val find       : (''a -> bool) -> ''a set -> ''a option
+    val partition  : (''a -> bool) -> ''a t -> ''a t * ''a t
+    val filter     : (''a -> bool) -> ''a t -> ''a t
+    val remove     : (''a -> bool) -> ''a t -> ''a t
+    val exists     : (''a -> bool) -> ''a t -> bool
+    val all        : (''a -> bool) -> ''a t -> bool
+    val find       : (''a -> bool) -> ''a t -> ''a option
 
-    val app        : (''a -> unit) -> ''a set -> unit
-    val map        : (''a -> ''b) -> ''a set -> ''b set
-    val mapPartial : (''a -> ''b option) -> ''a set -> ''b set
-    val fold       : (''a * 'b -> 'b) -> 'b -> ''a set -> 'b
+    val app        : (''a -> unit) -> ''a t -> unit
+    val map        : (''a -> ''b) -> ''a t -> ''b t
+    val mapPartial : (''a -> ''b option) -> ''a t -> ''b t
+    val fold       : (''a * 'b -> 'b) -> 'b -> ''a t -> 'b
 
-    val split      : ''a set -> (''a * ''a set) option
+    val split      : ''a t -> (''a * ''a t) option
 
     (* May raise Empty *)
-    val some       : ''a set -> ''a
+    val some       : ''a t -> ''a
 
     (* Takes a printing function for ''a and a triple of left, right and delimitor *)
-    val toString   : (''a -> string) -> string * string * string-> ''a set -> string
+    val toString   : (''a -> string) -> string * string * string-> ''a t -> string
 end

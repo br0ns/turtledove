@@ -6,6 +6,8 @@ mylib/MyLib.mlb
 Constants.sml
 Flags.sig FlagsFn.sml Flags.sml
 Crash.sig Crash.sml
+Utils.sig Utils.sml
+UniqId.sig UniqId.sml
 
 TextUtils.sig TextUtils.sml
 

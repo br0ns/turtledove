@@ -5,4 +5,10 @@ in
 
 SourceText.sig SourceText.sml
 
+LexicalError.sig LexicalError.sml
+
+MLBLexUtils.sig MLBLexUtils.sml
+
+Comments.sig Comments.sml
+
 end

@@ -3,16 +3,16 @@
 signature Array =
 sig
 
-    type 'a array
+    type 'a t
 
-    val empty  : 'a array
+    val empty  : 'a t
 
-    val get    : 'a array -> int -> 'a array option
-    val set    : 'a array -> int -> 'a -> 'a array
-    val change : 'a array -> int -> ('a -> 'a) -> 'a array
+    val get    : 'a t -> int -> 'a t option
+    val set    : 'a t -> int -> 'a -> 'a t
+    val change : 'a t -> int -> ('a -> 'a) -> 'a t
 
-    val append : 'a array -> 'a -> 'a array
+    val append : 'a t -> 'a -> 'a t
 
-    val length : 'a array -> int
+    val length : 'a t -> int
 
 end

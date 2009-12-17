@@ -2,29 +2,29 @@
 
 signature Tree =
 sig
-    type 'a tree
+    type 'a t
     eqtype node
 
     val root : node
 
-    val create : 'a -> 'a tree
-    val insert : 'a tree -> node -> 'a -> (node * 'a tree)
-    val insertList : 'a tree -> node -> 'a list -> (node list * 'a tree)
-    val insertTree : 'a tree -> node -> 'a tree -> (node * 'a tree)
+    val create : 'a -> 'a t
+    val insert : 'a t -> node -> 'a -> (node * 'a t)
+    val insertList : 'a t -> node -> 'a list -> (node list * 'a t)
+    val insertTree : 'a t -> node -> 'a t -> (node * 'a t)
 
-    val delete : 'a tree -> node -> 'a tree
+    val delete : 'a t -> node -> 'a t
 
-    val value : 'a tree -> node -> 'a
-    val children : 'a tree -> node -> node list
-    val parent : 'a tree -> node -> node option
-    val change : 'a tree -> node -> ('a -> 'a) -> 'a tree
-    val update : 'a tree -> node -> 'a -> 'a tree
+    val value : 'a t -> node -> 'a
+    val children : 'a t -> node -> node list
+    val parent : 'a t -> node -> node option
+    val change : 'a t -> node -> ('a -> 'a) -> 'a t
+    val update : 'a t -> node -> 'a -> 'a t
 
-    val size : 'a tree -> int
-    val height : 'a tree -> int
+    val size : 'a t -> int
+    val height : 'a t -> int
 
-    val map : ('a -> 'b) -> 'a tree -> 'b tree
-    val foldpr : ('a * 'b -> 'b) -> 'b -> 'a tree -> 'b
-    val foldin : ('a * 'b -> 'b) -> 'b -> 'a tree -> 'b
-    val foldpo : ('a * 'b -> 'b) -> 'b -> 'a tree -> 'b
+    val map : ('a -> 'b) -> 'a t -> 'b t
+    val foldpr : ('a * 'b -> 'b) -> 'b -> 'a t -> 'b
+    val foldin : ('a * 'b -> 'b) -> 'b -> 'a t -> 'b
+    val foldpo : ('a * 'b -> 'b) -> 'b -> 'a t -> 'b
 end

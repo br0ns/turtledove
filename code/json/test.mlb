@@ -1,0 +1,10 @@
+local
+
+$(SML_LIB)/basis/basis.mlb
+JSON.mlb
+
+in
+
+test.sml
+
+end

@@ -1,10 +1,16 @@
-structure Report : Report =
+(* NOT FINISHED *)
+
+structure Report :> Report =
 struct
     datatype post =
              Text of string
-           | Indent of report
+           | Verb of string
+           | Indent of t
+           | Itemize of string * t list
+           | Frame of t
+           | Row of t list
 
-    withtype report = post list
+    withtype t = post list
 
     fun verbatim s = [Text s]
 
@@ -20,4 +26,5 @@ struct
 
     and postToString (Text s) = s
       | postToString (Indent r) = TextUtils.indent Constants.TAB_WIDTH (toString r)
+      | postToString _ = Crash.unimplemented "Report.postToString"
 end

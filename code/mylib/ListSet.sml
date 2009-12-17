@@ -3,7 +3,7 @@
 structure ListSet :> Set =
 struct
 
-    type ''a set = ''a list
+    type ''a t = ''a list
 
     val empty = nil
 

@@ -1,10 +1,10 @@
 signature Report =
 sig
-    type report
+    type t
 
-    val text : string -> report
-    val indent : report -> report
-    val verbatim : string -> report
-    val ++ : report * report -> report
-    val toString : report -> string
+    val text : string -> t
+    val indent : t -> t
+    val verbatim : string -> t
+    val ++ : t * t -> t
+    val toString : t -> string
 end
