@@ -91,7 +91,10 @@ struct
                       | _ => fail cs "Expected comma or ] in array."
                 end
 
-            val (l, cs) = loop (skipWhitespace cs)
+            val (l, cs) =
+                case skipWhitespace cs of
+                    #"]" :: cs => (nil, skipWhitespace cs)
+                  | cs => loop cs
         in
             (Array l, cs)
         end
