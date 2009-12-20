@@ -14,9 +14,8 @@ sig
     val writeMany : t list -> string
 
     structure Converter : sig
-        type 'a t
         type json
-        exception Match
+        type 'a t
         val make : {toJSON : 'a -> json, fromJSON : json -> 'a} -> 'a t
         val object : 'a t -> 'a Dictionary.t t
         val array : 'a t -> 'a list t
@@ -25,7 +24,7 @@ sig
         val bool : bool t
         val null : unit t
         val json : json t
-    end
+    end where type json = t
 
     val from : 'a Converter.t -> string -> 'a
     val fromMany : 'a Converter.t -> string -> 'a list
