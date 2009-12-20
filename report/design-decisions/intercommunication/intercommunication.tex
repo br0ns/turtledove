@@ -6,10 +6,33 @@
 \usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
 \usepackage[rounded]{syntax} % Part of the mdwtools package
 
+\let\fref\undefined
+\let\Fref\undefined
+\usepackage{fancyref
+}
+\usepackage{amsthm} % theorems
+
 \renewcommand{\ttdefault}{txtt} % Bedre typewriter font
 %\usepackage[sc]{mathpazo}     % Palatino font
 \renewcommand{\rmdefault}{ugm} % Garamond
 %\usepackage[garamond]{mathdesign}
+
+
+\theoremstyle{definition}
+\newtheorem{example}{Example}
+
+\newcommand*{\fancyrefexlabelprefix}{ex}
+\fancyrefaddcaptions{english}{
+  \newcommand*{\Frefexname}{Example}
+  \newcommand*{\frefexname}{\MakeLowercase{\Frefexname}}
+}
+\frefformat{vario}{\fancyrefexlabelprefix}{%
+  \frefexname\fancyrefdefaultspacing#1#3%
+}
+\Frefformat{vario}{\fancyrefexlabelprefix}{%
+  \Frefexname\fancyrefdefaultspacing#1#3%
+}
+
 
 \begin{document}
 
@@ -145,7 +168,7 @@ Besides the data payload the protocol consists of a ``CallerID'' string and a
     1--9
     \begin{rep}
       \\
-      1--9
+      0--9
     \end{rep}
   \end{stack}
   \begin{stack}
@@ -153,7 +176,7 @@ Besides the data payload the protocol consists of a ``CallerID'' string and a
     "." 
     \begin{rep}
       \\
-      1--9
+      0--9
     \end{rep}
   \end{stack}
   \begin{stack}
@@ -169,19 +192,12 @@ Besides the data payload the protocol consists of a ``CallerID'' string and a
     \end{stack}
     \begin{rep}
       \\
-      1--9
+      0--9
     \end{rep}
   \end{stack}
   \]]
   
 \end{grammar}
-
-
-Eksempel:
-\begin{verbatim}
-some_id \n ProjectManager \n {"command" : "add", "file" : "myfoo.sml"} \n\n
-\end{verbatim}
-\ \\ \\
 
 It is important to remember that the resulting string sent to and from
 Turtledove must not contain any newlines except the ones that are mandatory by
@@ -196,12 +212,65 @@ likely character to be in a name/id.
 The same argument applies to the decision of using double newline chars to mark
 the end of a request or response. 
 
+
+\paragraph{Examples}
+
+
+
+\begin{example} If a file needs to be added then the following string could be
+  sent to the ``Projectmanager'':
+\begin{verbatim}
+"some_id \n ProjectManager \n {\"command\" : \"addfile\", 
+                                  \"file\" : \"myfoo.sml\"} \n\n"
+\end{verbatim}
+\end{example}
+
+
 \section*{Useful commands}
+
+ Below is a draft of which commands might be useful to implement in the final system. 
+
+\subsection*{Turtledove}
+
+\begin{description}
+\item[quit] This command closes down the server in a graceful way.
+\end{description}
+
+\subsection*{ProjectManager }
+
+\begin{description}
+\item[OpenProject] Makes the project manager open a project. If the
+  project doesn't exists, then a new project with the name is created.
+
+  If another project is currently opened, then this project is closed, if told
+  to do so.
+\item[CloseProject] makes the project manager close the currently opened project,
+  saving any unsaved changes if told to do so. 
+\item[DeleteProject] Makes the project manager delete the currently opened project
+  with all its files.
+\item[AddFile] Adds a new file to the project.
+\item[DeleteFile] Deletes a file contained in the project
+\item[ChangeFile] Add or delete content in a open file contained in the
+  project. This command should be used when ever the user adds or deletes text
+  from any file contained in the project, so the project manager can an
+  up to date version of the file, without having to reread the file again and
+  thus also at some point do incremental parsing of the changes only.
+\end{description}
 
 
 \paragraph{Get names in scope}
 
+Returns a list of identifiers visible from the current scope. This is particular
+handy for doing auto completion and 
 
+
+\paragraph{Goto definition}
+
+Gets the filename and position of the definition of the specified function
+
+\paragraph{Rename}
+
+Rename a function or identifier together with its definition and all its uses.
 
 
 \end{document}

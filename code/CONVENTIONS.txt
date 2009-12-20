@@ -1,0 +1,33 @@
+Signatur og Struktur navne skrives i CammelCase med stort begyndelsesbogstav.
+Type erklæringer er lower case med bundstreger
+Funktorer slutter altid på "Fn" og skrives som Signaturer og Strukturer.
+
+Værdi- og undtagelseskonstruktører er CammelCase med Stort begyndelsesbogstav.
+
+
+Eksempel:
+        
+    structure Report :> report
+    struct
+
+        datatype t = FooBar of string
+
+        fun toString rep = ...
+        fun show rep = ...
+
+    end
+
+
+
+Hver struktur skal altid implementere følgende 2 funktioner som minimum:
+
+val show: t -> Report.t
+    Denne funktion skal bruges som den "dybe" representation af strukturen.  I
+    de fleste tilfælde vil dette være en 2d ascii representation af strukturens
+    indhold, fx i form af et træ eller en tabel.
+
+    Dette kan altså ses som en preaty print af strukturen.
+
+val toString: t -> string
+    Denne funktion skal bruges som en "flad" representation af strukturen.  Aka,
+    returnere den streng som mest generisk representerer strukturens indhold.
