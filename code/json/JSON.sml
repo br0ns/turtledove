@@ -1,4 +1,4 @@
-structure JSON : JSON =
+structure JSON :> JSON =
 struct
     datatype t = Object of t Dictionary.t
                | Array of t list
@@ -6,9 +6,10 @@ struct
                | Number of real
                | Bool of bool
                | Null
-    exception Parse of string * string
+    exception Parse of Report.t
 
-    fun fail cs s = raise Parse (s, implode cs)
+    exception Parse' of string * int
+    fun fail cs s = raise Parse' (s, length cs)
     fun die s = Crash.impossible ("JSON: " ^ s)
 
     fun skipWhitespace (c :: cs) =
@@ -176,10 +177,24 @@ struct
     and rNull (#"n" :: #"u" :: #"l" :: #"l" :: cs) = (Null, skipWhitespace cs)
       | rNull cs = fail cs "Not null."
 
+    fun error (e, s, n) =
+        let
+            open Report
+            infix ++
+        in
+            raise Parse (
+                  text ("JSON: " ^ e) ++
+                  text "in" ++
+                  indent (text s) ++
+                  text ("at position " ^ Int.toString n)
+                  )
+        end
+
     fun read s =
-        case rValue (explode s) of
-            (v, nil) => v
-          | _ => fail (explode s) "Not a JSON value."
+        (case rValue (explode s) of
+             (v, nil) => v
+           | _ => fail (explode s) "Not a JSON value."
+        ) handle Parse' (e, n) => error (e, s, size s - n)
     fun readMany s =
         let
             fun loop nil = nil
@@ -191,7 +206,7 @@ struct
                 end
         in
             loop (explode s)
-        end
+        end handle Parse' (e, n) => error (e, s, size s - n)
 
     fun write (Object d) =
         let
@@ -227,10 +242,13 @@ struct
     fun to (_, t) = write o t
     fun toMany (_, t) = writeMany o map t
 
-    type 'a converter = (t -> 'a) * ('a -> t)
-    structure Convert =
+    structure Converter =
     struct
+        type json = t
+        type 'a t = (json -> 'a) * ('a -> json)
         exception Match
+
+        fun make {toJSON, fromJSON} = (fromJSON, toJSON)
 
         fun object (f, t) =
             (fn Object d => Dictionary.map f d

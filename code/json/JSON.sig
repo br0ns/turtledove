@@ -1,27 +1,35 @@
 signature JSON =
 sig
-    type t
-    exception Parse of string * string
+    datatype t = Object of t Dictionary.t
+               | Array of t list
+               | String of string
+               | Number of real
+               | Bool of bool
+               | Null
+    exception Parse of Report.t
 
     val read : string -> t
     val readMany : string -> t list
     val write : t -> string
     val writeMany : t list -> string
 
-    type 'a converter = (t -> 'a) * ('a -> t)
-    val from : 'a converter -> string -> 'a
-    val fromMany : 'a converter -> string -> 'a list
-    val to : 'a converter -> 'a -> string
-    val toMany : 'a converter -> 'a list -> string
-
-    structure Convert : sig
+    structure Converter : sig
+        type 'a t
+        type json
         exception Match
-        val object : 'a converter -> 'a Dictionary.t converter
-        val array : 'a converter -> 'a list converter
-        val string : string converter
-        val number : real converter
-        val bool : bool converter
-        val null : unit converter
-        val json : t converter
+        val make : {toJSON : 'a -> json, fromJSON : json -> 'a} -> 'a t
+        val object : 'a t -> 'a Dictionary.t t
+        val array : 'a t -> 'a list t
+        val string : string t
+        val number : real t
+        val bool : bool t
+        val null : unit t
+        val json : json t
     end
+
+    val from : 'a Converter.t -> string -> 'a
+    val fromMany : 'a Converter.t -> string -> 'a list
+    val to : 'a Converter.t -> 'a -> string
+    val toMany : 'a Converter.t -> 'a list -> string
+
 end
