@@ -1,99 +1,98 @@
-This tree is very bad if nodes are deleted, as the size of the tree grows monotonically
+(* Fully implemented - Yay *)
 
-structure PlainTree :> Tree =
+functor PlainTreeFn (Map : OrderedMap where type key = int) :> Tree =
 struct
-    fun die _ = raise Fail "Unimplemented"
-
     type node = int list
-    datatype 'a t = E
-                  | T of 'a * 'a t list
+    (* data * next_node * children *)
+    datatype 'a t = T of 'a * int * 'a t Map.t
 
     val root = nil
 
-    fun create x = T (x, nil)
+    fun create x = T (x, 0, Map.empty)
 
-    fun modnth _ nil _ = raise Domain
-      | modnth f (x :: xs) 0 = f x :: xs
-      | modnth f (x :: xs) n = x :: modnth f xs (n - 1)
+    fun insertTrees t ns ts' =
+        let
+            (* Worst hack ever *)
+            val n = ref 0
+            val s = length ts'
 
+            fun ins (n :: ns) (T (v, n', ts)) =
+                T (v, n', Map.modify (ins ns) ts n)
+              | ins nil (T (v, n', ts)) =
+                (n := n' ;
+                 T (v, n' + s,
+                    #1 (foldl (fn (t', (ts, n')) =>
+                                  (valOf (Map.insert ts (n', t')), n' + 1)
+                              ) (ts, n') ts')
+                   ) handle Option.Option => raise Domain
+                )
+        in
+            (List.tabulate (s, fn x => ns @ [!n + x]), ins ns t)
+        end
+
+    fun insertList t n xs = insertTrees t n (map create xs)
     fun insertTree t n t' =
         let
-            fun ins (T (v, ts), n :: ns) =
-                let
-                    val (n', ts') = insnth (n, ts, ns)
-                in
-                    (n', T (v, ts'))
-                end
-              | ins (T (v, ts), nil) = 
-                (length ts, ts @ [t'])
-              | ins _ = raise Domain
-
-            and insnth (_, nil, _) = raise Domain
-              | insnth (0, t :: ts, ns) =
-                let
-                    val (n', t') = ins (t, ns)
-                in
-                    (n', t' :: ts)
-                end
-              | insnth (n, t :: ts, ns) = 
-                let
-                    val (n', ts') = insnth (n - 1, ts, ns)
-                in
-                    (n', t :: ts')
-                end
+            val (ns, t) = insertTrees t n [t']
         in
-            ins (t, n)
+            (hd ns, t)
         end
-
     fun insert t n = insertTree t n o create
 
-    fun delete (T (v, ts), nil) = E
-      | delete  = 
+    fun delete (T (v, n', ts)) [n] =
+        T (v, n', Map.delete ts n)
+      | delete (T (v, n', ts)) (n :: ns) =
+        T (v, n', Map.modify (fn t => delete t ns) ts n)
+      | delete _ _ = raise Domain
 
-functor MapTreeFn (Map : OrderedMap where type key = int) :> Tree =
-struct
+    fun lookup (T (v, _, _)) nil = v
+      | lookup (T (_, _, ts)) (n :: ns) = lookup (Map.lookup ts n) ns
 
-    type node = Map.key
-    type 'a t = int * int * ('a * node option * node list) Map.t
-
-    val root = 0
-
-    fun create x = (1, 1, Map.singleton (root, (x, NONE, nil)))
-
-    fun insert (n', s, m) n x =
+    fun children t ns =
         let
-            val m' = valOf (Map.change m n (fn (x, p, cs) => (x, p, n' :: cs)))
-            val m'' = valOf (Map.insert m' (n', (x, SOME n, nil)))
+            fun children' (T (_, _, ts)) nil =
+                map (fn n => ns @ [n]) (Map.domain ts)
+              | children' (T (_, _, ts)) (n :: ns) =
+                children' (Map.lookup ts n) ns
         in
-            (n', (n' + 1, s + 1, m''))
+            children' t ns
         end
 
-    fun insertList _ = raise Fail ""
-    fun insertTree _ = raise Fail ""
+    fun parent _ nil = NONE
+      | parent _ [_] = SOME nil
+      | parent t (n :: ns) = SOME (n :: valOf (parent t ns))
 
-    fun delete _ = raise Fail ""
+    fun sub t nil = t
+      | sub (T (_, _, ts)) (n :: ns) = sub (Map.lookup ts n) ns
 
-    fun context (_, _, m) n =
-        case Map.lookup m n of
-            SOME c => c
-          | NONE   => raise Fail "Impossible: Invalid node"
+    fun modify f (T (v, n', ts)) nil = T (f v, n', ts)
+      | modify f (T (v, n', ts)) (n :: ns) =
+        T (v, n', Map.modify (fn t => modify f t ns) ts n)
 
-    fun value t n = (fn (x, _, _) => x) (context t n)
+    fun update (T (_, n', ts)) nil v' = T (v', n', ts)
+      | update (T (v, n', ts)) (n :: ns) v' =
+        T (v, n', Map.modify (fn t => update t ns v') ts n)
 
-    fun children t n = (fn (_, _, cs) => cs) (context t n)
+    fun toList (T (v, _, ts)) = v :: (List.concat o map toList o Map.range) ts
 
-    fun parent t n = (fn (_, p, _) => p) (context t n)
+    fun size (T (_, _, ts)) = 1 + (foldl op+ 0 o map size o Map.range) ts
 
-    fun change _ = raise Fail ""
-    fun update _ = raise Fail ""
+    fun height (T (_, _, ts)) = 1 + (foldl Int.max 0 o map height o Map.range) ts
 
-    fun size (_, s, _) = s
+    fun map f (T (v, n', ts)) = T (f v, n', Map.map (map f) ts)
 
-    fun height _ = raise Fail ""
+    fun fold f b (T (v, _, ts)) =
+        foldl (fn (t, a) => fold f a t) (f (v, b)) (Map.range ts)
 
-    fun map _ = raise Fail ""
-    fun foldpr _ = raise Fail ""
-    fun foldin _ = raise Fail ""
-    fun foldpo _ = raise Fail ""
-                         
+    structure Walk =
+    struct
+        fun this (T (v, _, _)) = v
+        fun children (T (_, _, ts)) = Map.range ts
+        fun go v ts =
+            let
+                val (_, t) = insertTrees (create v) root ts
+            in
+                t
+            end
+    end
 end

@@ -2,6 +2,8 @@
 
 functor MapTreeFn (Map : OrderedMap where type key = int) :> Tree =
 struct
+    fun die _ = raise Fail "MapTreeFn: Unimplemented."
+
     type node = Map.key
     (* data * parent * children *)
     type 'a context = 'a * node option * node list
@@ -20,7 +22,9 @@ struct
             (n', (n' + 1, s + 1, m''))
         end
 
-    fun insertTree _ = raise Fail ""
+    val insertTree = die
+    val insertTrees = die
+    val insertList = die
 
     fun delete (n', s, m) n =
         let
@@ -41,7 +45,7 @@ struct
             (n', s - d, m'')
         end
 
-    fun value (_, _, m) n =
+    fun lookup (_, _, m) n =
         let
             val (x, _, _) = Map.lookup m n
         in
@@ -62,7 +66,7 @@ struct
             p
         end
 
-    fun sub _ _ = raise Fail ""
+    val sub = die
 
     fun modify f (n', s, m) n =
         (n', s, Map.modify (fn (x, p, cs) => (f x, p, cs)) m n)
@@ -70,15 +74,20 @@ struct
     fun update (n', s, m) n x =
         (n', s, Map.modify (fn (_, p, cs) => (x, p, cs)) m n)
 
-    fun toList _ = raise Fail ""
+    fun toList (_, _, m) = map (fn (x, _, _) => x) (Map.range m)
 
     fun size (_, s, _) = s
 
-    fun height _ = raise Fail ""
+    val height = die
 
-    fun map _ = raise Fail ""
-    fun foldpr _ = raise Fail ""
-    fun foldin _ = raise Fail ""
-    fun foldpo _ = raise Fail ""
-                         
+    val map = die
+
+    val fold = die
+
+    structure Walk =
+    struct
+        val this = die
+        val children = die
+        val go = die
+    end
 end

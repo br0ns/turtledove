@@ -1,7 +1,7 @@
 structure SourceText :> SourceText =
 struct
     (* filename * (line lenght * line text) list *)
-    type source_text = string option * (int * string) list
+    type t = string option * (int * string) list
 
     fun die msg = Crash.impossible ("SourceText: " ^ msg)
 

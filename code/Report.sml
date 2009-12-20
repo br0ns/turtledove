@@ -26,5 +26,7 @@ struct
 
     and postToString (Text s) = s
       | postToString (Indent r) = TextUtils.indent Constants.TAB_WIDTH (toString r)
-      | postToString _ = Crash.unimplemented "Report.postToString"
+      | postToString _ = "<Unimplemented>"
+
+    val print = fn r => print (toString r ^ "\n")
 end

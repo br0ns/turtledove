@@ -1,6 +1,6 @@
 (* Default Tree implementation *)
 
-structure Tree = MapTreeFn (
+structure Tree = PlainTreeFn (
                  ListOrderedMapFn (struct
                                    type t = int
                                    fun compare x y = Int.compare (x, y)

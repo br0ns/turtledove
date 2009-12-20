@@ -1,20 +1,20 @@
 signature SourceText =
 sig
-    type source_text
+    type t
 
-    val fromString : string -> source_text 
-    val fromFile : string -> source_text
-    val reread : source_text -> source_text
+    val fromString : string -> t 
+    val fromFile : string -> t
+    val reread : t -> t
 
-    val getSource : source_text -> int -> int -> string
-    val getFileName : source_text -> string
-    val getSize : source_text -> int
+    val getSource : t -> int -> int -> string
+    val getFileName : t -> string
+    val getSize : t -> int
 
-    val patch : source_text -> int -> int -> string -> source_text
-    val patchLine : source_text -> int -> string -> source_text
+    val patch : t -> int -> int -> string -> t
+    val patchLine : t -> int -> string -> t
 
-    val mkLexingFn : source_text -> int -> string
+    val mkLexingFn : t -> int -> string
 
-    val posToString : source_text -> int -> string
-    val posToReport : source_text -> int -> Report.report
+    val posToString : t -> int -> string
+    val posToReport : t -> int -> Report.report
 end

@@ -1,0 +1,7 @@
+local
+$(SML_LIB)/basis/basis.mlb
+MyLib.mlb
+../Show.sig ../Show.sml
+in
+test.sml
+end

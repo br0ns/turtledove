@@ -1,7 +1,7 @@
 local
 $(SML_LIB)/basis/basis.mlb
-in
 mylib/MyLib.mlb
+in
 
 Constants.sml
 Flags.sig FlagsFn.sml Flags.sml
@@ -11,7 +11,7 @@ UniqId.sig UniqId.sml
 
 TextUtils.sig TextUtils.sml
 
-Report.sig Report.sml
+Report.mlb
 
 Show.sig Show.sml
 end

@@ -1,8 +1,10 @@
 local
 $(SML_LIB)/basis/basis.mlb
+../Report.mlb
 in
 Ordered.sig
 ListSort.sig
+Benchmark.sig Benchmark.sml
 
   (* Signatures
    *)
@@ -25,7 +27,7 @@ QuickSort.sml
 
 ListSet.sml
 (* ListOrderedSetFn.sml *)
-(* RedBlackOrderedSetFn.sml *)
+RedBlackOrderedSetFn.sml
 (* ListMultiset.sml *)
 (* ListMinHeap.sml *)
 (* ListMaxHeap.sml *)
@@ -37,6 +39,7 @@ ListOrderedMapFn.sml
 PairingHeapFn.sml
 
 MapTreeFn.sml
+PlainTreeFn.sml
 
   (* Default implementations
    *)

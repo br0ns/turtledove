@@ -6,7 +6,7 @@ type pos = int
 type svalue = T.svalue
 type ('a,'b) token = ('a,'b) T.token
 type lexresult = (svalue, pos) token
-type lexarg = SourceText.source_text
+type lexarg = SourceText.t
 type arg = lexarg
 
 fun eof st =

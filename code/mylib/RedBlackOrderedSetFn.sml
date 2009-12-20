@@ -49,17 +49,17 @@ struct
     val fromList = foldl (fn (x, s) => insert s x) empty
 
     fun foldl _ b E = b
-      | foldl (T (_, l, x, r)) f b = foldl r f (f (x, foldl l f b))
+      | foldl f b (T (_, l, x, r)) = foldl f (f (x, foldl f b l)) r
 
     fun foldr _ b E = b
-      | foldr (T (_, l, x, r)) f b = foldr l f (f (x, foldr r f b))
+      | foldr f b (T (_, l, x, r)) = foldr f (f (x, foldr f b r)) l
 
     fun partition p = foldl (fn (x, (s, s')) =>
                                 if p x then
                                     (insert s x, s')
                                 else 
                                     (s, insert s' x)
-                            ) empty
+                            ) (empty, empty)
     fun filter p = foldl (fn (x, s) => if p x then insert s x else s) empty
 
     fun exists _ E = false
@@ -71,13 +71,13 @@ struct
     fun find _ E = NONE
       | find p (T (_, l, x, r)) =
         if p x then
-            x
+            SOME x
         else
             case find p l of
-                SOME x => x
+                SOME x => SOME x
               | NONE => find p r
 
-    val union = foldl insert
+    val union = foldl (fn (e, s) => insert s e)
     fun inter s = filter (member s)
     val diff = foldl delete
 

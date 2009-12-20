@@ -42,7 +42,7 @@ open MLBGrammarUtils
        | strid of Strid.t
 
 %pos int
-%arg (st) : SourceText.source_text
+%arg (st) : SourceText.t
 %eop EOF
 %noshift EOF
 %verbose
