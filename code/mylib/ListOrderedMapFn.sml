@@ -36,27 +36,21 @@ struct
           | EQUAL   => (k, v) :: ys
           | LESS    => (k, v) :: (k', v') :: ys
 
-    fun change nil _ _ = NONE
-      | change ((k', v') :: ys) k f =
+    fun fromList xs = foldl (fn (x, m) => update m x) empty xs
+
+    fun modify _ nil _ = raise Domain
+      | modify f ((k', v') :: ys) k =
         case compare k k' of
-            GREATER =>
-            (case change ys k f of
-                 SOME ys => SOME ((k', v') :: ys)
-               | NONE    => NONE
-            )
-          | EQUAL   => SOME ((k', f v') :: ys)
-          | LESS    => NONE
+            GREATER => (k', v') :: modify f ys k
+          | EQUAL   => (k', f v') :: ys
+          | LESS    => raise Domain
 
-    fun updateList ys xs = foldl (fn (x, ys) => update ys x) ys xs
-
-    fun fromList xr = updateList empty xr
-
-    fun lookup nil _ = NONE
+    fun lookup nil _ = raise Domain
       | lookup ((k', v') :: ys) k =
         case compare k k' of
             GREATER => lookup ys k
-          | EQUAL   => SOME v'
-          | LESS    => NONE
+          | EQUAL   => v'
+          | LESS    => raise Domain
 
     fun inDomain nil _ = false
       | inDomain ((k', _) :: ys) k =
@@ -87,53 +81,50 @@ struct
     fun lasti nil = raise Empty
       | lasti ys = hd (rev ys)
 
-    fun splitFirst nil = NONE
-      | splitFirst (y :: ys) = SOME (y, ys)
+    fun splitFirst nil = raise Empty
+      | splitFirst (y :: ys) = (y, ys)
 
-    fun splitLast ys =
-        case splitFirst (rev ys) of
-            NONE         => NONE
-          | SOME (y, ys) => SOME (y, rev ys)
+    fun splitLast xs = splitFirst (rev xs)
 
     val split = splitFirst
 
-    fun unimp () = raise Fail "Not implemented"
+    fun unimp _ = raise Fail "Not implemented"
 
-    fun collate _ = unimp ()
+    val collate = unimp
 
-    fun partition _ = unimp ()
-    fun partitioni _ = unimp ()
-    fun filter _ = unimp ()
-    fun filteri _ = unimp ()
-    fun remove _ = unimp ()
-    fun removei _ = unimp ()
-    fun exists _ = unimp ()
-    fun existsi _ = unimp ()
-    fun all _ = unimp ()
-    fun alli _ = unimp ()
-    fun find _ = unimp ()
-    fun findi _ = unimp ()
+    val partition = unimp
+    val partitioni = unimp
+    val filter = unimp
+    val filteri = unimp
+    val remove = unimp
+    val removei = unimp
+    val exists = unimp
+    val existsi = unimp
+    val all = unimp
+    val alli = unimp
+    val find = unimp
+    val findi = unimp
 
-    fun app _ = unimp ()
-    fun appi _ = unimp ()
-    fun map _ = unimp ()
-    fun mapi _ = unimp ()
-    fun mapPartial _ = unimp ()
-    fun mapPartiali _ = unimp ()
-    fun foldl _ = unimp ()
-    fun foldli _ = unimp ()
-    fun foldr _ = unimp ()
-    fun foldri _ = unimp ()
+    val app = unimp
+    val appi = unimp
+    val map = unimp
+    val mapi = unimp
+    val mapPartial = unimp
+    val mapPartiali = unimp
+    val foldl = unimp
+    val foldli = unimp
+    val foldr = unimp
+    val foldri = unimp
 
-    fun union _ = unimp ()
-    fun unioni _ = unimp ()
-    fun inter _ = unimp ()
-    fun interi _ = unimp ()
+    val union = unimp
+    val unioni = unimp
+    val inter = unimp
+    val interi = unimp
 
-    fun merge _ = unimp ()
-    fun mergi _ = unimp ()
+    val merge = unimp
+    val mergi = unimp
 
-    fun plus _ = unimp ()
+    val plus = unimp
                  
-    fun toString _ = unimp ()
+    val toString = unimp
 end

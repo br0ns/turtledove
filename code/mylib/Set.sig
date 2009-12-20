@@ -9,12 +9,12 @@ sig
     val insert     : ''a t -> ''a -> ''a t
     val delete     : ''a t -> ''a -> ''a t
     val fromList   : ''a list -> ''a t
-    val insertList : ''a t -> ''a list -> ''a t
 
     val union      : ''a t -> ''a t -> ''a t
     val inter      : ''a t -> ''a t -> ''a t
     val diff       : ''a t -> ''a t -> ''a t
 
+    (* subset s s': all elements in s' is also in s *)
     val subset     : ''a t -> ''a t -> bool
     val equal      : ''a t -> ''a t -> bool
     val member     : ''a t -> ''a -> bool
@@ -28,7 +28,6 @@ sig
 
     val partition  : (''a -> bool) -> ''a t -> ''a t * ''a t
     val filter     : (''a -> bool) -> ''a t -> ''a t
-    val remove     : (''a -> bool) -> ''a t -> ''a t
     val exists     : (''a -> bool) -> ''a t -> bool
     val all        : (''a -> bool) -> ''a t -> bool
     val find       : (''a -> bool) -> ''a t -> ''a option
@@ -38,7 +37,7 @@ sig
     val mapPartial : (''a -> ''b option) -> ''a t -> ''b t
     val fold       : (''a * 'b -> 'b) -> 'b -> ''a t -> 'b
 
-    val split      : ''a t -> (''a * ''a t) option
+    val split      : ''a t -> ''a * ''a t
 
     (* May raise Empty *)
     val some       : ''a t -> ''a

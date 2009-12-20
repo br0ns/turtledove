@@ -2,9 +2,11 @@
 
 functor MapTreeFn (Map : OrderedMap where type key = int) :> Tree =
 struct
-
     type node = Map.key
-    type 'a t = int * int * ('a * node option * node list) Map.t
+    (* data * parent * children *)
+    type 'a context = 'a * node option * node list
+    (* next_node * size * 'a context Map.t *)
+    type 'a t = int * int * 'a context Map.t
 
     val root = 0
 
@@ -12,30 +14,63 @@ struct
 
     fun insert (n', s, m) n x =
         let
-            val m' = valOf (Map.change m n (fn (x, p, cs) => (x, p, n' :: cs)))
-            val m'' = valOf (Map.insert m' (n', (x, SOME n, nil)))
+            val m' = Map.modify (fn (x, p, cs) => (x, p, n' :: cs)) m n
+            val m'' = Map.update m' (n', (x, SOME n, nil))
         in
             (n', (n' + 1, s + 1, m''))
         end
 
-    fun insertList _ = raise Fail ""
     fun insertTree _ = raise Fail ""
 
-    fun delete _ = raise Fail ""
+    fun delete (n', s, m) n =
+        let
+            val (_, pOp, cs) = Map.lookup m n
+            val p = valOf pOp
+            val m' = Map.modify (fn (x, p, cs) =>
+                                    (x, p, List.filter (fn n' => n' <> n) cs)
+                                ) m p
 
-    fun context (_, _, m) n =
-        case Map.lookup m n of
-            SOME c => c
-          | NONE   => raise Fail "Impossible: Invalid node"
+            fun delete' (n, (m, d)) =
+                let
+                    val (_, _, cs) = Map.lookup m n
+                in
+                    foldl delete' (Map.delete m n, d + 1) cs
+                end
+            val (m'', d) = delete' (n, (m', 0))
+        in
+            (n', s - d, m'')
+        end
 
-    fun value t n = (fn (x, _, _) => x) (context t n)
+    fun value (_, _, m) n =
+        let
+            val (x, _, _) = Map.lookup m n
+        in
+            x
+        end
 
-    fun children t n = (fn (_, _, cs) => cs) (context t n)
+    fun children (_, _, m) n =
+        let
+            val (_, _, cs) = Map.lookup m n
+        in
+            cs
+        end
 
-    fun parent t n = (fn (_, p, _) => p) (context t n)
+    fun parent (_, _, m) n =
+        let
+            val (_, p, _) = Map.lookup m n
+        in
+            p
+        end
 
-    fun change _ = raise Fail ""
-    fun update _ = raise Fail ""
+    fun sub _ _ = raise Fail ""
+
+    fun modify f (n', s, m) n =
+        (n', s, Map.modify (fn (x, p, cs) => (f x, p, cs)) m n)
+
+    fun update (n', s, m) n x =
+        (n', s, Map.modify (fn (_, p, cs) => (x, p, cs)) m n)
+
+    fun toList _ = raise Fail ""
 
     fun size (_, s, _) = s
 

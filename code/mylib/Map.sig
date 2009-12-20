@@ -12,10 +12,13 @@ sig
     val insert      : (''a, 'b) t -> ''a * 'b -> (''a, 'b) t option
     val fromList    : (''a * 'b) list -> (''a, 'b) t
 
+    (* Inserts if key is not in the maps domain *)
+    val update      : (''a, 'b) t -> ''a * 'b -> (''a, 'b) t
+
+    (* May raise Domain *)
     val delete      : (''a, 'b) t -> ''a -> (''a, 'b) t
-    val update      : (''a, 'b) t -> (''a * 'b) -> (''a, 'b) t
-    val updateList  : (''a, 'b) t -> (''a * 'b) list -> (''a, 'b) t
-    val lookup      : (''a, 'b) t -> ''a -> 'b option
+    val modify      : ('b -> 'b) -> (''a, 'b) t -> ''a -> (''a, 'b) t
+    val lookup      : (''a, 'b) t -> ''a -> 'b
 
     val inDomain    : (''a, 'b) t -> ''a -> bool
     val isEmpty     : (''a, 'b) t -> bool
@@ -25,7 +28,7 @@ sig
     val toList      : (''a, 'b) t -> (''a * 'b) list
     val domain      : (''a, 'b) t -> ''a list
     val range       : (''a, 'b) t -> 'b list
-    val split       : (''a, 'b) t -> ((''a * 'b) * (''a, 'b) t) option
+    val split       : (''a, 'b) t -> (''a * 'b) * (''a, 'b) t
 
     val collate     : ('b -> 'b -> order) -> (''a, 'b) t -> (''a, 'b) t -> order
 
@@ -33,8 +36,6 @@ sig
     val partitioni  : (''a * 'b -> bool) -> (''a, 'b) t -> (''a, 'b) t * (''a, 'b) t
     val filter      : ('b -> bool) -> (''a, 'b) t -> (''a, 'b) t
     val filteri     : (''a * 'b -> bool) -> (''a, 'b) t -> (''a, 'b) t
-    val remove      : ('b -> bool) -> (''a, 'b) t -> (''a, 'b) t
-    val removei     : (''a * 'b -> bool) -> (''a, 'b) t -> (''a, 'b) t
     val exists      : ('b -> bool) -> (''a, 'b) t -> bool
     val existsi     : (''a * 'b -> bool) -> (''a, 'b) t -> bool
     val all         : ('b -> bool) -> (''a, 'b) t -> bool

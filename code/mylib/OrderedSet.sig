@@ -11,7 +11,6 @@ sig
     val insert     : t -> element -> t
     val delete     : t -> element -> t
     val fromList   : element list -> t
-    val insertList : t -> element list -> t
 
     val union      : t -> t -> t
     val inter      : t -> t -> t
@@ -31,7 +30,6 @@ sig
 
     val partition  : (element -> bool) -> t -> t * t
     val filter     : (element -> bool) -> t -> t
-    val remove     : (element -> bool) -> t -> t
     val exists     : (element -> bool) -> t -> bool
     val all        : (element -> bool) -> t -> bool
     val find       : (element -> bool) -> t -> element option
@@ -42,7 +40,9 @@ sig
     val foldl      : (element * 'a -> 'a) -> 'a -> t -> 'a
     val foldr      : (element * 'a -> 'a) -> 'a -> t -> 'a
 
-    val split      : t -> (element * t) option
+    val split      : t -> element * t
+    val splitLeast : t -> element * t
+    val splitGreatest : t -> element * t
 
     val least      : t -> element
     (* Least element in the set. May raise Empty *)
@@ -53,6 +53,6 @@ sig
     (* Some element in the set. May raise Empty *)
     val some       : t -> element
 
-    (* Takes a printing function for ''a and a triple of left, right and delimitor *)
+    (* Takes a printing function for element and a triple of left, right and delimitor *)
     val toString   : (element -> string) -> string * string * string-> t -> string
 end

@@ -13,11 +13,13 @@ sig
     val insert      : 'a t -> key * 'a -> 'a t option
     val fromList    : (key * 'a) list -> 'a t
 
-    val delete      : 'a t -> key -> 'a t
+    (* Inserts if key is not in the maps domain *)
     val update      : 'a t -> key * 'a -> 'a t
-    val change      : 'a t -> key -> ('a -> 'a) -> 'a t option
-    val updateList  : 'a t -> (key * 'a) list -> 'a t
-    val lookup      : 'a t -> key -> 'a option
+
+    (* May raise Domain *)
+    val delete      : 'a t -> key -> 'a t
+    val modify      : ('a -> 'a) -> 'a t -> key -> 'a t
+    val lookup      : 'a t -> key -> 'a
 
     val inDomain    : 'a t -> key -> bool
     val isEmpty     : 'a t -> bool
@@ -34,9 +36,9 @@ sig
     val last        : 'a t -> 'a
     val lasti       : 'a t -> key * 'a
 
-    val split       : 'a t -> ((key * 'a) * 'a t) option
-    val splitFirst  : 'a t -> ((key * 'a) * 'a t) option
-    val splitLast   : 'a t -> ((key * 'a) * 'a t) option
+    val split       : 'a t -> (key * 'a) * 'a t
+    val splitFirst  : 'a t -> (key * 'a) * 'a t
+    val splitLast   : 'a t -> (key * 'a) * 'a t
 
     val collate     : ('a -> 'a -> order) -> 'a t -> 'a t -> order
 
@@ -44,8 +46,6 @@ sig
     val partitioni  : (key * 'a -> bool) -> 'a t -> 'a t * 'a t
     val filter      : ('a -> bool) -> 'a t -> 'a t
     val filteri     : (key * 'a -> bool) -> 'a t -> 'a t
-    val remove      : ('a -> bool) -> 'a t -> 'a t
-    val removei     : (key * 'a -> bool) -> 'a t -> 'a t
     val exists      : ('a -> bool) -> 'a t -> bool
     val existsi     : (key * 'a -> bool) -> 'a t -> bool
     val all         : ('a -> bool) -> 'a t -> bool
@@ -55,7 +55,7 @@ sig
 
     val app         : ('a -> unit) -> 'a t -> unit
     val appi        : (key * 'a -> unit) -> 'a t -> unit
-    val map         : ('a -> 'b) -> 'a t -> 'b t
+    val map         : ('a -> 'b) -> 'at -> 'b t
     val mapi        : (key * 'a -> 'b) -> 'a t -> 'b t
     val mapPartial  : ('a -> 'b option) -> 'a t -> 'b t
     val mapPartiali : (key * 'a -> 'b option) -> 'a t -> 'b t

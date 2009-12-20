@@ -60,8 +60,8 @@ struct
 
     val fold = foldl
 
-    fun split nil = NONE
-      | split (x::xs) = SOME (x, xs)
+    fun split nil = raise Empty
+      | split (x::xs) = (x, xs)
 
     fun some (x :: _) = x
       | some _ = raise Empty
