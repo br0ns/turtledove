@@ -39,7 +39,7 @@ sig
         val bool : bool t
         val null : unit t
         val json : json t
-    end
+    end where type json = t
 
     (* Converts from a string to a SML representation of a JSON value (JSON.t) given the
        specified Converter *)

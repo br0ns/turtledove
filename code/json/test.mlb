@@ -2,6 +2,7 @@ local
 
 $(SML_LIB)/basis/basis.mlb
 JSON.mlb
+../Show.sig ../Show.sml
 
 in
 

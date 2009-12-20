@@ -88,7 +88,7 @@ struct
                         in
                             (v :: l, cs)
                         end
-                      | #"]" :: cs => (nil, skipWhitespace cs)
+                      | #"]" :: cs => ([v], skipWhitespace cs)
                       | _ => fail cs "Expected comma or ] in array."
                 end
 
@@ -246,7 +246,6 @@ struct
     struct
         type json = t
         type 'a t = (json -> 'a) * ('a -> json)
-        exception Match
 
         fun make {toJSON, fromJSON} = (fromJSON, toJSON)
 
