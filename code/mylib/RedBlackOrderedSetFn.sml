@@ -1,4 +1,5 @@
-
+(* This deserves a reference to Chris Okasaki 1993 for the datatype, insert, member and balance funktions *)
+(* Delete is implemented from Haskell code http://www.cs.kent.ac.uk/people/staff/smk/redblack/Untyped.hs *)
 
 functor RedBlackOrderedSetFn (Element : Ordered) :> OrderedSet where type element = Element.t =
 struct
@@ -14,6 +15,10 @@ struct
 
     fun singleton x = T (B, E, x, E)
 
+
+    fun sub1 T (B, l, y, r) = T (R, l, y, r)
+      | sub1 _ = die "Invariance violation"
+
     fun balance (B, T (R, T (R, a, x, b), y, c), z, d) =
         T (R, T (B, a, x, b), y, T (B, c, z, d))
       | balance (B, T (R, a, x, T (R, b, y, c)), z, d) = 
@@ -24,12 +29,36 @@ struct
         T (R, T (B, a, x, b), y, T (B, c, z, d))
       | balance x = T x
 
+
+    fun balanceLeft (T (R, ll, ly, lr)) y r = T (R, T (B, ll, ly, lr), y, r)
+      | balanceLeft l y (T (B, rl, ry, rr)) = balance l y (T (R, rl, ry, rr))
+      | balanceLeft l y (T (R, (T (B, rll, rly, rlr)), ry, rr) = T (R, (T (B, l, rll)), rly, (balance rlr ry (sub1 rr)))
+
+    fun app E r = r
+      | app l E = l
+      | app (T (R, ll, ly, lr)) (T (R, rl, ry, rr)) = 
+        (case app lr rl of
+           T (R, l, y, r) => T (R, (T (R, ll, ly, l)), y, (T (R, r, ry, rr)))
+         | x => T (R, ll, ly, (T (R, x, ry, rr)))
+        )
+      | app (T (B, ll, ly, lr)) (T (B, rl, ry, rr))  = 
+        (case app lr rl of
+           T (R, l, y, r) => T (R, (T (B, ll, ly, l)), y, (T (B, r, ry, rr)))
+         | x => ballanceLeft ll ly (T (B, x, ry rr))
+        )
+      | app l (T (R, rl, ry, rr))  = T (R, (app l rl), ry, rr)
+      | app (T (R, ll, ly, lr)) r  = T (R, ll, ly, (app lr r))
+
+    fun balanceRight l y (T (T, rl, ry, rr)) = T (R, l, y (T (B, rl, ry, rr)))
+      | balanceRight (T (B, ll, ly, lr)) y r = balance (T (R, ll, ly, lr)) y r
+      | balanceRight (T (R, ll, ly, (T (B, lrl, lry, lrr)))) y r = T (R, balance (sub1 ll) ly lrl, lry, T (B, lrr, y r))
+
     fun insert s x =
         let
             fun insert' E = T (R, E, x, E)
               | insert' (s as T (c, l, y, r)) =
                 case Element.compare x y of
-                    LESS    => balance (c, insert' l, y, r)
+                    LESS    => balancle (c, insert' l, y, r)
                   | GREATER => balance (c, l, y, insert' r)
                   | EQUAL   => s
             val T (_, l, x, r) = insert' s
@@ -44,7 +73,25 @@ struct
           | GREATER => member r x
           | EQUAL   => true
 
-    val delete = die
+    fun delete s x = 
+        let
+          fun delete' E = E
+            | delete' (T (_, l, y, r)) =
+              case Element.compare x y of
+                LESS => delFromLeft l y r
+              | GREATER => delFromRight l y r
+              | EQUAL => app l r
+              
+          and delFromLeft (l as T (B, _, _, _)) y r = balanceLeft (delete' l) y r
+            | delFromLeft l y r = T (R, (delete' l), y, r)
+
+          and delFromRight l y (r as T (B, _, _, _)) = balanceRight l y (delete' r)
+            | delFromRight l y r = T (R, l, y, (delete' r))
+        in
+          case delete' s of
+            T (_, l, y, r) => T (B, l, y, r)
+          | _             =>  E
+        end
 
     val fromList = foldl (fn (x, s) => insert s x) empty
 
