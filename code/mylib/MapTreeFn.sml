@@ -1,4 +1,4 @@
-
+(* Terrible implementation - an example of what not to do *)
 
 functor MapTreeFn (Map : OrderedMap where type key = int) :> Tree =
 struct
@@ -14,6 +14,13 @@ struct
 
     fun create x = (1, 1, Map.singleton (root, (x, NONE, nil)))
 
+    fun lookup (_, _, m) n =
+        let
+            val (x, _, _) = Map.lookup m n
+        in
+            x
+        end
+
     fun insert (n', s, m) n x =
         let
             val m' = Map.modify (fn (x, p, cs) => (x, p, n' :: cs)) m n
@@ -22,9 +29,32 @@ struct
             (n', (n' + 1, s + 1, m''))
         end
 
-    val insertTree = die
-    val insertTrees = die
+    fun insertTree (n', s, m) n (n'', s', m') =
+        let
+            val m = Map.modify (fn (x, p, cs) => (x, p, n' :: cs)) m n
+            fun offset (x, pop, cs) =
+                let
+                    fun f n = n + n'
+                in
+                    (x, Option.map f pop, List.map f cs)
+                end
+            fun ins m nil = m
+              | ins m ((n, t) :: ts) = ins (Map.update m (n + n', offset t)) ts
+        in
+            (n', (n' + n'', s + s', ins m (Map.toList m')))
+        end
+
+    fun insertTrees t n ts =
+        foldl (fn (t', (ns, t)) =>
+                  let
+                      val (n, t) = insertTree t n t'
+                  in
+                      (n :: ns, t)
+                  end
+              ) (nil, t) ts
     val insertList = die
+
+    val remove = die
 
     fun delete (n', s, m) n =
         let
@@ -43,13 +73,6 @@ struct
             val (m'', d) = delete' (n, (m', 0))
         in
             (n', s - d, m'')
-        end
-
-    fun lookup (_, _, m) n =
-        let
-            val (x, _, _) = Map.lookup m n
-        in
-            x
         end
 
     fun children (_, _, m) n =
@@ -86,8 +109,13 @@ struct
 
     structure Walk =
     struct
-        val this = die
-        val children = die
-        val go = die
+        fun this t = lookup t root
+        val children = fn t => List.map (sub t) (children t root)
+        fun go v ts =
+            let
+                val (_, t) = insertTrees (create v) root ts
+            in
+                t
+            end
     end
 end

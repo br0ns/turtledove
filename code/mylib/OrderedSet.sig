@@ -23,7 +23,7 @@ sig
 
     val compare    : t -> t -> order
 
-    (* Returns a ordered list of elements of the set *)
+    (* Returns an ordered list of elements of the set *)
     val toList     : t -> element list
 
     val card       : t -> int

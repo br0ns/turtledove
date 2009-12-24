@@ -16,6 +16,7 @@ sig
     val update      : (''a, 'b) t -> ''a * 'b -> (''a, 'b) t
 
     (* May raise Domain *)
+    val remove      : (''a, 'b) t -> ''a -> 'b * (''a, 'b) t
     val delete      : (''a, 'b) t -> ''a -> (''a, 'b) t
     val modify      : ('b -> 'b) -> (''a, 'b) t -> ''a -> (''a, 'b) t
     val lookup      : (''a, 'b) t -> ''a -> 'b

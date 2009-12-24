@@ -16,8 +16,11 @@ sig
     (* Inserts if key is not in the maps domain *)
     val update      : 'a t -> key * 'a -> 'a t
 
-    (* May raise Domain *)
+    (* Does nothing if map is empty *)
     val delete      : 'a t -> key -> 'a t
+
+    (* May raise Domain *)
+    val remove      : 'a t -> key -> 'a * 'a t
     val modify      : ('a -> 'a) -> 'a t -> key -> 'a t
     val lookup      : 'a t -> key -> 'a
 
@@ -26,6 +29,7 @@ sig
 
     val size        : 'a t -> int
 
+    (* Ordered by keys - least to greatest *)
     val toList      : 'a t -> (key * 'a) list
     val domain      : 'a t -> key list
     val range       : 'a t -> 'a list
@@ -55,7 +59,7 @@ sig
 
     val app         : ('a -> unit) -> 'a t -> unit
     val appi        : (key * 'a -> unit) -> 'a t -> unit
-    val map         : ('a -> 'b) -> 'at -> 'b t
+    val map         : ('a -> 'b) -> 'a t -> 'b t
     val mapi        : (key * 'a -> 'b) -> 'a t -> 'b t
     val mapPartial  : ('a -> 'b option) -> 'a t -> 'b t
     val mapPartiali : (key * 'a -> 'b option) -> 'a t -> 'b t

@@ -23,6 +23,18 @@ struct
           | EQUAL   => NONE
           | LESS    => SOME ((k, v) :: (k', v') :: ys)
                        
+    fun remove nil _ = raise Domain
+      | remove ((k', v') :: ys) k =
+        case compare k k' of
+            GREATER =>
+            let
+                val (v, ys') = remove ys k
+            in
+                (v, (k', v') :: ys')
+            end
+          | EQUAL   => (v', ys)
+          | LESS    => raise Domain
+
     fun delete nil _ = nil
       | delete ((k', v') :: ys) k =
         case compare k k' of
@@ -96,8 +108,6 @@ struct
     val partitioni = unimp
     val filter = unimp
     val filteri = unimp
-    val remove = unimp
-    val removei = unimp
     val exists = unimp
     val existsi = unimp
     val all = unimp
