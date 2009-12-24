@@ -1,6 +1,6 @@
 (* Fully implemented - Yay *)
 
-functor PlainTreeFn (Map : OrderedMap where type key = int) :> Tree =
+functor TrieTreeFn (Map : OrderedMap where type key = int) :> Tree =
 struct
     type node = int list
     (* data * next_node * children *)
@@ -22,9 +22,9 @@ struct
                 (n := n' ;
                  T (v, n' + s,
                     #1 (foldl (fn (t', (ts, n')) =>
-                                  (valOf (Map.insert ts (n', t')), n' + 1)
+                                  (Map.update ts (n', t'), n' + 1)
                               ) (ts, n') ts')
-                   ) handle Option.Option => raise Domain
+                   )
                 )
         in
             (List.tabulate (s, fn x => ns @ [!n + x]), ins ns t)
@@ -39,6 +39,24 @@ struct
         end
     fun insert t n = insertTree t n o create
 
+    fun remove t ns =
+        let
+            val t' = ref t
+            fun remove' (T (v, n', ts)) [n] =
+                let
+                    val (t, ts') = Map.remove ts n
+                in
+                    (t' := t ;
+                     T (v, n', ts')
+                    )
+                end
+              | remove' (T (v, n', ts)) (n :: ns) =
+                T (v, n', Map.modify (fn t => remove' t ns) ts n)
+              | remove' _ _ = raise Domain
+        in
+            (!t', remove' t ns)
+        end
+            
     fun delete (T (v, n', ts)) [n] =
         T (v, n', Map.delete ts n)
       | delete (T (v, n', ts)) (n :: ns) =
@@ -86,13 +104,19 @@ struct
 
     structure Walk =
     struct
-        fun this (T (v, _, _)) = v
-        fun children (T (_, _, ts)) = Map.range ts
-        fun go v ts =
-            let
-                val (_, t) = insertTrees (create v) root ts
-            in
-                t
-            end
+        type 'a tree = 'a t
+        type 'a t = 'a tree * 'a tree list
+        fun init t = (t, nil)
+        fun this (T (v, _, _), _) = v
+        fun children (p as T (_, _, ts), w) = List.map (fn t => (t, p :: w)) (Map.range ts)
+        fun parent (_, p :: w) = SOME (p, w)
+          | parent _ = NONE
     end
+    fun join v ts =
+        let
+            val (_, t) = insertTrees (create v) root ts
+        in
+            t
+        end
+
 end
