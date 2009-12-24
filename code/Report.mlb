@@ -1,7 +1,6 @@
 local
 $(SML_LIB)/basis/basis.mlb
 Constants.sml
-TextUtils.sig TextUtils.sml
 in
 Report.sig Report.sml
 end
