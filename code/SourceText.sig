@@ -13,8 +13,8 @@ sig
     val patch : t -> int -> int -> string -> t
     val patchLine : t -> int -> string -> t
 
-    val mkLexingFn : t -> int -> string
+    val makeReader : t -> int -> string
 
     val posToString : t -> int -> string
-    val posToReport : t -> int -> Report.report
+    val showPos : t -> int -> Report.t
 end

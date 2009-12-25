@@ -14,4 +14,7 @@ TextUtils.sig TextUtils.sml
 Report.mlb
 
 Show.sig Show.sml
+
+Path.sig Path.sml
+SourceText.sig SourceText.sml
 end

@@ -1,27 +1,27 @@
 structure T = Tokens
-structure C = LexUtils.Comments
-structure S = LexUtils.String
+structure C = Source.Comments
+structure S = Source.String
 
 type pos = int
 type svalue = T.svalue
 type ('a,'b) token = ('a,'b) T.token
 type lexresult = (svalue, pos) token
-type lexarg = SourceText.t
+type lexarg = Source.t
 type arg = lexarg
 
-fun eof st =
-    if C.depth () = 0 then
-        T.EOF (C.get (), ~1, ~1)
+fun eof source =
+    if C.depth source = 0 then
+        T.EOF (~1, ~1)
     else
-        LexError.raise (st,
-                        C.openedAt (),
-                        "Unclosed comment")
+        Source.lexError source
+                        (C.openedAt source)
+                        "Unclosed comment"
 
 %%
 
-%s C S SS;
+%s C S F;
 %header (functor MLBLexFun (structure Tokens : MLB_TOKENS));
-%arg (st : UserDeclarations.arg);
+%arg (source : UserDeclarations.arg);
 alphanum=[A-Za-z'_0-9]*;
 alphanumId=[A-Za-z]{alphanum};
 id={alphanumId};
@@ -68,78 +68,81 @@ hexDigit=[0-9a-fA-F];
 <INITIAL>"structure" 
                 => ( T.STRUCTURE (yypos, yypos + 9) );
 
-<INITIAL>{id}   => ( T.ID (yytext, yypos + size yytext) );
-<INITIAL>{file} => ( T.FILE (yytext, yypos + size yytext) );
+<INITIAL>{id}   => ( T.ID (yytext, yypos, yypos + size yytext) );
+<INITIAL>{file} => ( T.FILE (yytext, yypos, yypos + size yytext) );
 
 <INITIAL>\"     => ( YYBEGIN S ;
-                     S.clear () ;
+                     S.clear source ;
                      continue ()
                    );
 <INITIAL>"(*"   => ( YYBEGIN C ;
-                     C.new yypos ;
+                     C.new source yypos ;
                      continue ()
                    );
-<INITIAL>.      => ( LexError.raise (st, yypos, "Illegal token") ;
+<INITIAL>.      => ( Source.lexError source yypos "Illegal token" ;
                      continue ()
                    );
 
-<C>"(*"         => ( C.inc ;
+<C>"(*"         => ( C.inc source ;
                      continue ()
                    );
-<C>"*)"         => ( C.dec ;
-                     (if C.depth () = 0 then
-                          YYBEGIN MLB
+<C>"*)"         => ( C.dec source ;
+                     (if C.depth source = 0 then
+                          YYBEGIN INITIAL
                       else
                           ()
                      ) ;
                      continue ()
                   );
-<C>.            => ( C.append yytext ;
+<C>.            => ( C.append source yytext ;
                      continue ()
                   );
-<C>\n           => ( C.append yytext ;
+<C>\n           => ( C.append source yytext ;
                      continue ()
                    );
 
 <S>\"           => ( YYBEGIN INITIAL ;
                      let
-                         val s = S.get ()
+                         val s = S.get source
                      in
                          T.STRING (s, yypos - size s, yypos)
                      end
                    );
-<S>\\a          => ( S.appendChar #"\a"; continue () );
-<S>\\b          => ( S.appendChar #"\b"; continue () );
-<S>\\f          => ( S.appendChar #"\f"; continue () );
-<S>\\n          => ( S.appendChar #"\n"; continue () );
-<S>\\r          => ( S.appendChar #"\r"; continue () );
-<S>\\t          => ( S.appendChar #"\t"; continue () );
-<S>\\v          => ( S.appendChar #"\v"; continue () );
-<S>\\\"         => ( S.appendChar #"\\"; continue () );
-<S>\\\\         => ( S.appendChar #"\""; continue () );
-<S>\\\^.        => ( S.appendControlChar yytext (LexError.raise st yypos) ;
+<S>\\a          => ( S.appendChar source #"\a"; continue () );
+<S>\\b          => ( S.appendChar source #"\b"; continue () );
+<S>\\f          => ( S.appendChar source #"\f"; continue () );
+<S>\\n          => ( S.appendChar source #"\n"; continue () );
+<S>\\r          => ( S.appendChar source #"\r"; continue () );
+<S>\\t          => ( S.appendChar source #"\t"; continue () );
+<S>\\v          => ( S.appendChar source #"\v"; continue () );
+<S>\\\"         => ( S.appendChar source #"\\"; continue () );
+<S>\\\\         => ( S.appendChar source #"\""; continue () );
+<S>\\\^.        => ( S.appendControlChar source yytext
+                                         (Source.lexError source yypos) ;
                      continue ()
                    );
-<S>\\[0-9]{3}   => ( S.appendAsciiChar yytext (LexError.raise st yypos) ;
+<S>\\[0-9]{3}   => ( S.appendAsciiChar source yytext
+                                       (Source.lexError source yypos) ;
                      continue ()
                    );
 <S>\\u{hexDigit}{4} 
-                => ( S.appendUnicodeChar yytext (LexError.raise st yypos) ;
-
-
-<S>\\{nrws}     => ( YYBEGIN F ; continue () );
-<S>\\{eol}      => ( YYBEGIN F ; continue () );
-<S>\\           => ( LexError.raise st yypos "Illegal string escape" ;
+                => ( S.appendUnicodeChar source yytext
+                                         (Source.lexError source yypos) ;
                      continue ()
                    );
-<S>{eol}        => ( LexError.raise st yypos "Unclosed string" ;
+<S>\\{nrws}     => ( YYBEGIN F ; continue () );
+<S>\\{eol}      => ( YYBEGIN F ; continue () );
+<S>\\           => ( Source.lexError source yypos "Illegal string escape" ;
+                     continue ()
+                   );
+<S>{eol}        => ( Source.lexError source yypos "Unclosed string" ;
                      continue ()
                    );
 <S>" "|[\033-\126]  
-                => ( S.append yytext ;
+                => ( S.append source yytext ;
                      continue ()
                    );
-<S>.            => ( LexError.raise st (yypos + 1) "Illegal character in string" ;
+<S>.            => ( Source.lexError source (yypos + 1) "Illegal character in string" ;
                      continue ()
                    );
 
@@ -148,6 +151,6 @@ hexDigit=[0-9a-fA-F];
 <F>\\           => ( YYBEGIN S ;
                      continue ()
                    );
-<F>.            => ( LexError.raise st yypos "Unclosed string" ;
+<F>.            => ( Source.lexError source yypos "Unclosed string" ;
                      continue ()
                    );

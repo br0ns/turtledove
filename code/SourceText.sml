@@ -70,15 +70,15 @@ struct
             (f, insert ls l)
         end
 
-    fun mkLexingFn (f, ls) =
+    fun makeReader (f, ls) =
         let
             val ls = ref ls
-            fun lexingFn _ =
+            fun reader _ =
                 case !ls of
                     nil => ""
                   | (_, l) :: r => (ls := r ; l)
         in
-            lexingFn
+            reader
         end
 
     fun posToRowCol (_, ls) p =
@@ -88,6 +88,7 @@ struct
                     (l, p)
                 else
                     loop ls (l + 1) (p - n)
+              | loop _ _ _ = die "Position outside file."
         in
             loop ls 0 p
         end
@@ -97,7 +98,8 @@ struct
             val f = getFileName st
             val (r, c) = posToRowCol st p
         in
-            f ^ ":" ^ r ^ "." ^ c
+            f ^ ":" ^ Int.toString r ^ "." ^ Int.toString c
+        end
 
-    val posToReport = Report.text o posToString
+    fun showPos st = Report.text o posToString st
 end

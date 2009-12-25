@@ -3,44 +3,31 @@ struct
     exception Crash
 
     fun assert (msg, cond) =
-        if cond then
-            ()
+        (* andalso short circuits so cond is only evaluated when assertions are
+           on *)
+        if Flags.get "Debug.Assert" andalso not (cond ()) then
+            (print ("\n!! Assertion failed:\n!! " ^ msg ^ "\n") ;
+             raise Crash
+            )
         else
-            let
-                val _ =
-                    if not cond andalso Flags.get "Debug.Assert" then
-                        (print "!! Assertion failed:\n" ;
-                         print ("!! " ^ msg ^ "\n"))
-                    else
-                        ()
-            in
-                raise Crash
-            end
+            ()
 
-    fun impossible msg =
-        let
-            val _ = 
-                if Flags.get "Debug.Impossible" then
-                    (print "!! Something impossible happened:\n" ;
-                     print ("!! " ^ msg ^ "\n"))
-                else
-                    ()
-        in
-            raise Crash
-        end
-        
-    fun unimplemented msg =
-        let
-            val _ =
-                if Flags.get "Debug.Unimplemented" then
-                    (print "!! Not implemented:\n" ;
-                     print ("!! " ^ msg ^ "\n"))
-                else
-                    ()
-        in
-            raise Crash
-        end
-
+    fun impossible msg = (
+        (if Flags.get "Debug.Impossible" then
+            print ("\n!! Something impossible happened:\n!! " ^ msg ^ "\n")
+         else
+             ()) ;
+        raise Crash
+    )
+            
+    fun unimplemented msg = (
+        (if Flags.get "Debug.Unimplemented" then
+             print ("\n!! Not implemented:\n!! " ^ msg ^ "\n")
+         else
+             ()) ;
+        raise Crash
+    )
+                            
     fun debug msg =
         if Flags.get "Debug" then
             print ("-- " ^ msg ^ "\n")

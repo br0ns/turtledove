@@ -7,7 +7,7 @@ Værdi- og undtagelseskonstruktører er CammelCase med Stort begyndelsesbogstav.
 
 Eksempel:
         
-    structure Report :> report
+    structure Report :> Report
     struct
 
         datatype t = FooBar of string
@@ -18,6 +18,15 @@ Eksempel:
     end
 
 
+
+Nogle strukturer modellerer objekter. Disse strukturer skal definere typen t som
+er typen af de objekter der modelleres.
+Desuden kan defineres
+  val compare : t -> t -> order
+TODO: bør typen være t * t -> order som i Standardbiblioteket?
+  val + : t * t -> t
+  val - : t * t -> t
+Osv. efter behov.
 
 Hver struktur skal altid implementere følgende 2 funktioner som minimum:
 

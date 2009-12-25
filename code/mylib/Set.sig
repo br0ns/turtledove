@@ -11,6 +11,7 @@ sig
     val fromList   : ''a list -> ''a t
 
     val union      : ''a t -> ''a t -> ''a t
+    (* val concat     : ''a t list -> ''a t *)
     val inter      : ''a t -> ''a t -> ''a t
     val diff       : ''a t -> ''a t -> ''a t
 

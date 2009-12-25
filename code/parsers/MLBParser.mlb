@@ -1,0 +1,20 @@
+local
+$(SML_LIB)/basis/basis.mlb
+../Basic.mlb
+../mylib/MyLib.mlb
+../ml-yacc-lib/ml-yacc-lib.mlb
+
+Source.sig Source.sml
+LexUtils.sig LexUtils.sml
+
+basis grammar = bas MLBGrammar.sml end
+open grammar
+
+MLB.yacc.sig MLB.yacc.sml
+MLB.lex.sml
+in
+
+open grammar
+MLBParser.sml
+
+end

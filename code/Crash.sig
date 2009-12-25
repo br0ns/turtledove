@@ -2,10 +2,17 @@
 
 signature Crash =
 sig
-    exception Crash                       (* Throw on error *)
+    (* Throw on error *)
+    exception Crash
 
-    val assert : (string * bool) -> unit  (* Throws Crash if condition is false *)
-    val impossible : string -> 'a         (* For things that "can't" happen *)
+    (* Throws Crash if (lazy) condition is false *)
+    val assert : string * (unit -> bool) -> unit
+
+    (* For things that "can't" happen *)
+    val impossible : string -> 'a
+
     val unimplemented : string -> 'a
-    val debug : string -> unit            (* Doesn't throw Crash *)
+
+    (* Doesn't throw Crash, just prints to StdOut *)
+    val debug : string -> unit
 end

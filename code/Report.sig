@@ -29,73 +29,78 @@
 *)
 signature Report =
 sig
-    structure FloatH :
-    sig datatype t = Left | Center | Right end
+  structure FloatH :
+            sig datatype t = Left | Center | Right end
 
-    structure FloatV :
-    sig datatype t = Top | Center | Bottom end
+  structure FloatV :
+            sig datatype t = Top | Center | Bottom end
 
-    structure Format :
-    sig datatype t = Plain | Paragraph | Indent end
+  structure Format :
+            sig datatype t = Plain | Paragraph | Indent end
 
-    structure BorderStyle :
-    sig datatype t = StyleA | StyleB | StyleC end
+  structure BorderStyle :
+            sig datatype t = StyleA | StyleB | StyleC end
 
-    structure EnumStyle :
-    sig datatype t = Number | Letter | Roman end
+  structure EnumStyle :
+            sig datatype t = Number | Letter | Roman end
 
-    structure Side :
-    sig datatype t = Left | Right | Top | Bottom end
+  structure Side :
+            sig datatype t = Left | Right | Top | Bottom end
 
-    structure Heading :
-    sig datatype t = Both | Vertical | Horizontal end
+  structure Heading :
+            sig datatype t = Both | Vertical | Horizontal end
 
-    exception Width (* Output area is not wide enough *)
+  exception Width (* Output area is not wide enough *)
 
-    datatype t = Text      of {floath      : FloatH.t,
-                               floatv      : FloatV.t,
-                               format      : Format.t,
-                               contents    : string
-                              }
-               | Row       of t list
-               | Col       of t list
-               | Fill
-               | SpaceH    of int
-               | SpaceV    of int
-               | Indent    of {indentation : int,
-                               contents    : t
-                              }
-               | Itemize   of {bullet      : string option,
-                               items       : t list
-                              }
-               | Enumerate of {style       : EnumStyle.t,
-                               items       : t list
-                              }
-               | Border    of {borderstyle : BorderStyle.t,
-                               sides       : Side.t list,
-                               contents    : t
-                              }
-               | Table     of {borderstyle : BorderStyle.t,
-                               heading     : Heading.t,
-                               items       : t list list
-                              }
+  datatype t = Text      of {floath      : FloatH.t,
+                             floatv      : FloatV.t,
+                             format      : Format.t,
+                             contents    : string
+                            }
+             | Row       of t list
+             | Col       of t list
+             | Fill
+             | SpaceH    of int
+             | SpaceV    of int
+             | Indent    of {indentation : int,
+                             contents    : t
+                            }
+             | Itemize   of {bullet      : string option,
+                             items       : t list
+                            }
+             | Enumerate of {style       : EnumStyle.t,
+                             items       : t list
+                            }
+             | Border    of {borderstyle : BorderStyle.t,
+                             sides       : Side.t list,
+                             contents    : t
+                            }
+             | Table     of {borderstyle : BorderStyle.t,
+                             heading     : Heading.t,
+                             items       : t list list
+                            }
 
-    val text' : FloatH.t -> FloatV.t -> Format.t -> string -> t
-    val text : string -> t
-    val paragraph : string -> t
-    val indent : t -> t
-    val ++ : t * t -> t
-    val @@ : t * t -> t
-    val itemize : t list -> t
-    val itemize' : string -> t list -> t
-    val enumerate : t list -> t
-    val enumerate' : EnumStyle.t -> t list -> t
+  val text' : FloatH.t -> FloatV.t -> Format.t -> string -> t
+  val text : string -> t
+  val paragraph : string -> t
+  val indent : t -> t
+  val ++ : t * t -> t
 
-    val row : t list -> t
-    val column : t list -> t
+  val @@ : t * t -> t
+  val itemize : t list -> t
+  val itemize' : string -> t list -> t
+  val itemizenl : t list -> t
+  val itemizenl' : string -> t list -> t
+  val enumerate : t list -> t
+  val enumerate' : EnumStyle.t -> t list -> t
+  val enumeratenl : t list -> t
+  val enumeratenl' : EnumStyle.t -> t list -> t
 
-    val nl : t
+  val row : t list -> t
+  val column : t list -> t
 
-    val toString : t -> string
-    val print : t -> unit
+  val nl : t
+
+  val toString : t -> string
+  val print : t -> unit
 end

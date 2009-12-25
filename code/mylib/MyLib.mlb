@@ -1,5 +1,6 @@
 local
 $(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
 ../Report.mlb
 in
 Ordered.sig
@@ -27,7 +28,7 @@ QuickSort.sml
 
 ListSet.sml
 (* ListOrderedSetFn.sml *)
-RedBlackOrderedSetFn.sml
+(* RedBlackOrderedSetFn.sml *)
 (* ListMultiset.sml *)
 (* ListMinHeap.sml *)
 (* ListMaxHeap.sml *)
@@ -35,11 +36,13 @@ RedBlackOrderedSetFn.sml
 
 (* ListMap.sml *)
 ListOrderedMapFn.sml
+UnbalancedOrderedMapFn.sml
+SMLNJMapFn.sml
 
 PairingHeapFn.sml
 
-MapTreeFn.sml
-PlainTreeFn.sml
+(* MapTreeFn.sml *)
+TrieTreeFn.sml
 
   (* Default implementations
    *)
