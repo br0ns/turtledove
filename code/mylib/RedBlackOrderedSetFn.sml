@@ -16,23 +16,19 @@ struct
     fun singleton x = T (B, E, x, E)
 
 
-    fun sub1 T (B, l, y, r) = T (R, l, y, r)
+    fun sub1 (T (B, l, y, r)) = T (R, l, y, r)
       | sub1 _ = die "Invariance violation"
 
-    fun balance (B, T (R, T (R, a, x, b), y, c), z, d) =
-        T (R, T (B, a, x, b), y, T (B, c, z, d))
-      | balance (B, T (R, a, x, T (R, b, y, c)), z, d) = 
-        T (R, T (B, a, x, b), y, T (B, c, z, d))
-      | balance (B, a, x, T (R, T (R, b, y, c), z, d)) = 
-        T (R, T (B, a, x, b), y, T (B, c, z, d))
-      | balance (B, a, x, T (R, b, y, T (R, c, z, d))) = 
-        T (R, T (B, a, x, b), y, T (B, c, z, d))
-      | balance x = T x
+    fun balance (T (R,  ll,                   ly,  lr))                    y (T (R, rl, ry,  rr))                                        = T (R, (T (B, ll,  ly,  lr)),   y, (T (B, rl,   ry,  rr)))
+      | balance (T (R, (T (R, ll, lly, llr)), ly,  lr))                    y  r                                                          = T (R, (T (B, ll, lly, llr)),  ly, (T (B, lr,    y,   r)))
+      | balance (T (R,  ll,                   ly, (T (R, lrl, lry, lrr)))) y  r                                                          = T (R, (T (B, ll,  ly, lrl)), lry, (T (B, lrr,   y,   r)))
+      | balance  l                                                         y (T (R,  rl,                    ry, (T (R, rrl, rry, rrr)))) = T (R, (T (B,  l,   y,  rl)),  ry, (T (B, rrl, rry, rrr)))
+      | balance  l                                                         y (T (R, (T (R, rll, rly, rlr)), ry,  rr))                    = T (R, (T (B,  l,   y, rll)), rly, (T (B, rlr,  ry,  rr)))
+      | balance  l                                                         y  r = T (B, l, y, r)
 
-
-    fun balanceLeft (T (R, ll, ly, lr)) y r = T (R, T (B, ll, ly, lr), y, r)
-      | balanceLeft l y (T (B, rl, ry, rr)) = balance l y (T (R, rl, ry, rr))
-      | balanceLeft l y (T (R, (T (B, rll, rly, rlr)), ry, rr) = T (R, (T (B, l, rll)), rly, (balance rlr ry (sub1 rr)))
+    fun balanceLeft (T (R, ll, ly, lr)) y  r                                      = T (R, T (B, ll, ly, lr), y, r)
+      | balanceLeft  l                  y (T (B, rl, ry, rr))                     = balance l y (T (R, rl, ry, rr))
+      | balanceLeft  l                  y (T (R, (T (B, rll, rly, rlr)), ry, rr)) = T (R, (T (B, l, y, rll)), rly, (balance rlr ry (sub1 rr)))
 
     fun app E r = r
       | app l E = l
@@ -44,34 +40,32 @@ struct
       | app (T (B, ll, ly, lr)) (T (B, rl, ry, rr))  = 
         (case app lr rl of
            T (R, l, y, r) => T (R, (T (B, ll, ly, l)), y, (T (B, r, ry, rr)))
-         | x => ballanceLeft ll ly (T (B, x, ry rr))
+         | x => balanceLeft ll ly (T (B, x, ry, rr))
         )
       | app l (T (R, rl, ry, rr))  = T (R, (app l rl), ry, rr)
       | app (T (R, ll, ly, lr)) r  = T (R, ll, ly, (app lr r))
 
-    fun balanceRight l y (T (T, rl, ry, rr)) = T (R, l, y (T (B, rl, ry, rr)))
-      | balanceRight (T (B, ll, ly, lr)) y r = balance (T (R, ll, ly, lr)) y r
-      | balanceRight (T (R, ll, ly, (T (B, lrl, lry, lrr)))) y r = T (R, balance (sub1 ll) ly lrl, lry, T (B, lrr, y r))
+    fun balanceRight  l                                      y (T (R, rl, ry, rr)) = T (R, l, y, (T (B, rl, ry, rr)))
+      | balanceRight (T (B, ll, ly, lr))                     y  r                  = balance (T (R, ll, ly, lr)) y r
+      | balanceRight (T (R, ll, ly, (T (B, lrl, lry, lrr)))) y  r                  = T (R, balance (sub1 ll) ly lrl, lry, T (B, lrr, y, r))
 
     fun insert s x =
         let
             fun insert' E = T (R, E, x, E)
-              | insert' (s as T (c, l, y, r)) =
-                case Element.compare x y of
-                    LESS    => balancle (c, insert' l, y, r)
-                  | GREATER => balance (c, l, y, insert' r)
-                  | EQUAL   => s
+              | insert' (s as T (B, l, y, r)) =
+                (case Element.compare x y of
+                   LESS    => balance (insert' l) y  r
+                 | GREATER => balance l           y (insert' r)
+                 | EQUAL   => s)
+              | insert' (s as T (R, l, y, r)) = 
+                (case Element.compare x y of 
+                   LESS     => T (R, insert' l, y, r)
+                 | GREATER  => T (R, l,         y, insert' r)
+                 | EQUAL    => s)                  
             val T (_, l, x, r) = insert' s
         in
             T (B, l, x, r)
         end
-
-    fun member E _ = false
-      | member (T (_, l, y, r)) x =
-        case Element.compare x y of
-            LESS    => member l x
-          | GREATER => member r x
-          | EQUAL   => true
 
     fun delete s x = 
         let
@@ -92,6 +86,14 @@ struct
             T (_, l, y, r) => T (B, l, y, r)
           | _             =>  E
         end
+
+    fun member E _ = false
+      | member (T (_, l, y, r)) x =
+        case Element.compare x y of
+            LESS    => member l x
+          | GREATER => member r x
+          | EQUAL   => true
+
 
     val fromList = foldl (fn (x, s) => insert s x) empty
 
@@ -125,8 +127,10 @@ struct
               | NONE => find p r
 
     val union = foldl (fn (e, s) => insert s e)
+
     fun inter s = filter (member s)
-    val diff = foldl delete
+
+    val diff = foldl (fn (e, s) => delete s e)
 
     fun subset s = all (member s)
 
