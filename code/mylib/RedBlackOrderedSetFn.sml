@@ -166,7 +166,20 @@ struct
       | greatest (T (_, _, _, r)) = greatest r
 
     fun some E = raise Empty
-      | some (T (_, _, x, _)) = x
+      | some (T (_, _, y, _)) = y
 
-    val toString = die
+    (* use the toList and then use the utility fn to PreatyPrint list in a nice way *)
+    fun toString s = 
+        let 
+          fun toString' E = ""
+            | toString' (T (_, l, y, r)) = (toString' l) ^ " " ^ (Element.toString y) ^ " " ^ (toString' r)
+        in
+          "[" ^ (toString' s) ^ "]"
+        end
+
+    fun show E = "{}"
+      | show (T (R, l, y, r)) = "{" ^ (show l) ^ " | R" ^ (Element.toString y) ^ " | " ^ (show r) ^ "}"
+      | show (T (B, l, y, r)) = "{" ^ (show l) ^ " | B" ^ (Element.toString y) ^ " | " ^ (show r) ^ "}"
+
+
 end

@@ -53,6 +53,9 @@ sig
     (* Some element in the set. May raise Empty *)
     val some       : t -> element
 
-    (* Takes a printing function for element and a triple of left, right and delimitor *)
-    val toString   : (element -> string) -> string * string * string-> t -> string
+    (* A flat "visual string" that represents the OrderedSet *)
+    val toString   : t -> string
+
+                          (* A "visual string" that represents the OrderedSet in a fancy way  *)
+    val show       : t -> string
 end
