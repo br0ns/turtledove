@@ -168,18 +168,87 @@ struct
     fun some E = raise Empty
       | some (T (_, _, y, _)) = y
 
-    (* use the toList and then use the utility fn to PreatyPrint list in a nice way *)
+
     fun toString s = 
         let 
-          fun toString' E = ""
-            | toString' (T (_, l, y, r)) = (toString' l) ^ " " ^ (Element.toString y) ^ " " ^ (toString' r)
+          val elems = toList s
+          fun toString' (s::ss) = (Int.toString s) ^ (List.foldl (fn (a,b) => b ^ ", " ^ (Int.toString a)) "" ss)
+            | toString' [] = ""
         in
-          "[" ^ (toString' s) ^ "]"
+          "{" ^ (toString' s) ^ "}"
         end
+    
+    (* 
 
-    fun show E = "{}"
-      | show (T (R, l, y, r)) = "{" ^ (show l) ^ " | R" ^ (Element.toString y) ^ " | " ^ (show r) ^ "}"
-      | show (T (B, l, y, r)) = "{" ^ (show l) ^ " | B" ^ (Element.toString y) ^ " | " ^ (show r) ^ "}"
+      Currently shows the tree as this (when adding elements 0--10):
+
+               [B|3]
+     [B|1]                         [R|7]
+[B|0]     [B|2]          [B|5]               [B|9]
+                    [B|4]     [B|6]     [B|8]     [B|10]
 
 
+      Expanding to show the tree as (would be nice):
+
+       .-------[B|3]-----------------.
+  .--[B|1---.              .-------[R|7]-------.
+[B|0]     [B|2]       .--[B|5]--.         .--[B|9]--.
+                    [B|4]     [B|6]     [B|8]     [B|10]
+
+      Alternativelyt it would be easy to post edit the tree to look like this, by adding lines between, 
+      not adding the dog and finding start and end indexes of "---" to add / and \
+
+        -------[B|3]-----------------
+       /                             \
+   --[B|1---                -------[R|7]------- 
+  /         \              /                   \
+[B|0]     [B|2]        --[B|5]--           --[B|9]-- 
+                      /         \         /         \
+                    [B|4]     [B|6]     [B|8]     [B|10]
+     *)
+           
+    fun show E = "E"
+      | show t = 
+        let                      
+          fun genSpace 0 = ""
+            | genSpace n = " " ^ (genSpace (n-1))
+
+          fun colorToString c = case c of R => "R" | B => "B"
+                           
+          (* Invariant: We know that there is always a line if the node is not a
+             leaf (E). All T nodes has two leafs which generates empty lines at
+             minimum.  *)
+          fun show' E                preSpace []                       = (preSpace, [(genSpace preSpace) ^ ""])
+            | show' E                preSpace (thisLine :: linesBelow) = (preSpace, (thisLine ^ (genSpace (preSpace - (size thisLine))) ^ "") :: linesBelow)          
+            | show' (T (c, l, y, r)) preSpace []                       = 
+              let
+                val elem = "[" ^ (colorToString c) ^ "|" ^ (Element.toString y) ^ "]"
+                val elemLen = size elem
+
+                val (newPreSpaceLeft, newLinesLeft) = show' l preSpace []
+                val newPreSpace  = newPreSpaceLeft + elemLen
+
+                val (newPreSpaceRight, newLinesRight) = show' r newPreSpace newLinesLeft
+              in
+                (newPreSpaceRight, ((genSpace newPreSpaceLeft) ^ elem) :: newLinesRight)
+              end
+            | show' (T (c, l, y, r)) preSpace (thisLine :: linesBelow) =  
+              let
+                val elem = "[" ^ (colorToString c) ^ "|" ^ (Element.toString y) ^ "]"
+                val elemLen = size elem
+
+                val (newPreSpaceLeft, newLinesLeft) = show' l preSpace linesBelow
+                val newPreSpace = newPreSpaceLeft + elemLen
+
+                val (newPreSpaceRight, newLinesRight) = show' r newPreSpace newLinesLeft
+
+                val addSpace = newPreSpaceLeft - (size thisLine)
+              in
+                (newPreSpaceRight, (thisLine ^ (genSpace addSpace) ^ elem ) :: newLinesRight)
+              end
+
+          val lines = #2 (show' t 0 [])
+        in
+          List.foldl (fn (a, b) => b ^ a  ^ "\n") "" lines           
+        end
 end
