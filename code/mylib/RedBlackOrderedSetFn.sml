@@ -29,7 +29,7 @@ struct
     fun balanceLeft (T (R, ll, ly, lr)) y  r                                      = T (R, T (B, ll, ly, lr), y, r)
       | balanceLeft  l                  y (T (B, rl, ry, rr))                     = balance l y (T (R, rl, ry, rr))
       | balanceLeft  l                  y (T (R, (T (B, rll, rly, rlr)), ry, rr)) = T (R, (T (B, l, y, rll)), rly, (balance rlr ry (sub1 rr)))
-      | balanceLeft _ _ _ = die ()
+      | balanceLeft _ _ _ = die "Invariance violation"
 
     fun app E r = r
       | app l E = l
@@ -49,7 +49,7 @@ struct
     fun balanceRight  l                                      y (T (R, rl, ry, rr)) = T (R, l, y, (T (B, rl, ry, rr)))
       | balanceRight (T (B, ll, ly, lr))                     y  r                  = balance (T (R, ll, ly, lr)) y r
       | balanceRight (T (R, ll, ly, (T (B, lrl, lry, lrr)))) y  r                  = T (R, balance (sub1 ll) ly lrl, lry, T (B, lrr, y, r))
-      | balanceRight _ _ _ = die ()
+      | balanceRight _ _ _ = die "Invariance violation"
 
     fun insert s x =
         let
