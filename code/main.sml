@@ -8,60 +8,77 @@ val print = fn s => print (s ^ "\n")
 (* val (mlb, comments) = MLBParser.parse (hd (CommandLine.arguments ())) *)
 (* ;Report.print (MLBGrammar.showBasdecs mlb); *)
 
-fun sources path =
+val here = Path.new (OS.FileSys.getDir ())
+val mlbpath = Path.new' here (hd (CommandLine.arguments ()))
+
+;Benchmark.start ();
+val basdecs = MLBParser.fromFile mlbpath
+    handle MLBParser.Parse r => (Report.print r ; nil)
+         | Path.Path r => (Report.print r ; nil)
+;Benchmark.stop ();
+(* ;Benchmark.print (); *)
+
+(* ;Report.print (AstMLB.showBasdecs basdecs); *)
+
+(* Den ordnede mængde er ulideligt langsom. Der må være en fejl et sted *)
+
+(* structure Set = OrderedSetFn (struct *)
+(*                               type t = File.t *)
+(*                               fun compare p p' = String.compare (Path.toString p, Path.toString p') *)
+(*                               val toString = Path.toString *)
+(*                               end) *)
+fun sources ds =
     let
-      open MLBGrammar
+      open AstMLB
       open Set
-      val dir = Path.dir path
 
-      fun read f path =
-          if String.isPrefix "$" path then
-            empty
-          else
-            let
-              val path = Path.new' dir path
-            in
-              if
-                List.exists (fn f => f = Path.file path)
-                            ["MLB.lex.sml", "MLB.yacc.sig", "MLB.yacc.sml"]
-                orelse Path.file (Path.dir path) = "ml-yacc-lib" then
-                empty
-              else
-                f path
-            end
+      fun ignore file =
+          List.exists (fn f => f = Path.file file)
+                      ["MLB.lex.sml", "MLB.yacc.sig", "MLB.yacc.sml"]
+          orelse file = Path.new "$(SML_LIB)/basis/basis.mlb"
+          orelse file = Path.new "$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb"
+          orelse file = Path.new "$(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb"
 
-      fun basdecs ds = foldl (fn (s, a) => union s a) empty (List.map basdec ds)
+      val depth = ref 0
+      fun basdecs ds = List.foldl (fn (s, a) => union s a) empty (List.map basdec ds)
       and basdec d =
           case d of
             Basis bs => basbinds bs
           | Local (ds, ds') => union (basdecs ds) (basdecs ds')
-          | Include f => read sources f
-          | Source f => read singleton f
-          | Open _ => empty
+          | Include (f, ds) => if ignore f then
+                                 empty
+                               else
+                                 basdecs ds
+          | Source f => if ignore f then
+                          empty
+                        else
+                          singleton f
+          | Ann (_, ds) => basdecs ds
+          | _ => empty
       and basexp e =
           case e of
             Bas ds => basdecs ds
           | Let (ds, e) => union (basdecs ds) (basexp e)
           | Var _ => empty
-      and basbinds bs = foldl (fn (s, a) => union s a) empty (List.map basbind bs)
+      and basbinds bs = List.foldl (fn (s, a) => union s a) empty (List.map basbind bs)
       and basbind (_, e) = basexp e
     in
-      let
-        val (mlb, _) = MLBParser.parse (Path.path path)
-      in
+      if Path.file mlbpath = "Turtledove.mlb" then
         union
-        (if Path.file dir = "parsers" then
-           fromList [Path.new' dir "MLB.lex", Path.new' dir "MLB.yacc"]
-         else
-           empty)
-        (basdecs mlb)
-      end
+          (fromList [Path.new' here "parsers/MLB.lex",
+                     Path.new' here "parsers/MLB.yacc"])
+          (basdecs ds)
+      else
+        basdecs ds
     end
 
-val here = Path.new (OS.FileSys.getDir ())
-val mlbpath = Path.new' here (hd (CommandLine.arguments ()))
-val srcs = map (fn f => (f, Path.size f))
-               (Set.toList (sources mlbpath))
+;Benchmark.start ();
+val srcs = sources basdecs
+;Benchmark.stop ();
+(* ;Benchmark.print (); *)
+
+val srcs = map (fn f => (f, File.size f))
+               (Set.toList srcs)
 val srcs = ListSort.sort (fn (_, x) => fn (_, y) => Int.compare (x, y)) srcs
 
 val sz = foldl (fn ((_, s), a) => a + s) 0 srcs
@@ -72,7 +89,7 @@ val r = Report.++ (
                      Report.text (Int.toString s ^ " " ^ Path.path' here f)
                  ) srcs
             ),
-        Report.text (Int.toString sz)
+        Report.text (Int.toString (sz div 1000) ^ "KB in " ^ Int.toString (length srcs) ^ " files.")
         )
 
 ;Report.print r;

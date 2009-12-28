@@ -28,7 +28,7 @@ QuickSort.sml
 
 ListSet.sml
 (* ListOrderedSetFn.sml *)
-(* RedBlackOrderedSetFn.sml *)
+RedBlackOrderedSetFn.sml
 (* ListMultiset.sml *)
 (* ListMinHeap.sml *)
 (* ListMaxHeap.sml *)
@@ -49,8 +49,9 @@ TrieTreeFn.sml
 ListSort.sml
 Set.sml
 (* Map.sml *)
-(* OrderedSetFn.sml *)
+OrderedSetFn.sml
 OrderedMapFn.sml
+StringSet.sml
 Dictionary.sml
 HeapFn.sml
 IntMinHeap.sml

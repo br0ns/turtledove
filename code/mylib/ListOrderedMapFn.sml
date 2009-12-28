@@ -57,12 +57,12 @@ struct
           | EQUAL   => (k', f v') :: ys
           | LESS    => raise Domain
 
-    fun lookup nil _ = raise Domain
+    fun lookup nil _ = NONE
       | lookup ((k', v') :: ys) k =
         case compare k k' of
             GREATER => lookup ys k
-          | EQUAL   => v'
-          | LESS    => raise Domain
+          | EQUAL   => SOME v'
+          | LESS    => NONE
 
     fun inDomain nil _ = false
       | inDomain ((k', _) :: ys) k =

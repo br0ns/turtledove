@@ -22,7 +22,7 @@ sig
     (* May raise Domain *)
     val remove      : 'a t -> key -> 'a * 'a t
     val modify      : ('a -> 'a) -> 'a t -> key -> 'a t
-    val lookup      : 'a t -> key -> 'a
+    val lookup      : 'a t -> key -> 'a option
 
     val inDomain    : 'a t -> key -> bool
     val isEmpty     : 'a t -> bool

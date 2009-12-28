@@ -5,6 +5,9 @@ sig
     type 'a t
     eqtype node
 
+    (* No such node in tree *)
+    exception Node
+
     val root : node
 
     val create : 'a -> 'a t

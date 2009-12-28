@@ -29,6 +29,7 @@ struct
     fun balanceLeft (T (R, ll, ly, lr)) y  r                                      = T (R, T (B, ll, ly, lr), y, r)
       | balanceLeft  l                  y (T (B, rl, ry, rr))                     = balance l y (T (R, rl, ry, rr))
       | balanceLeft  l                  y (T (R, (T (B, rll, rly, rlr)), ry, rr)) = T (R, (T (B, l, y, rll)), rly, (balance rlr ry (sub1 rr)))
+      | balanceLeft _ _ _ = die ()
 
     fun app E r = r
       | app l E = l
@@ -48,6 +49,7 @@ struct
     fun balanceRight  l                                      y (T (R, rl, ry, rr)) = T (R, l, y, (T (B, rl, ry, rr)))
       | balanceRight (T (B, ll, ly, lr))                     y  r                  = balance (T (R, ll, ly, lr)) y r
       | balanceRight (T (R, ll, ly, (T (B, lrl, lry, lrr)))) y  r                  = T (R, balance (sub1 ll) ly lrl, lry, T (B, lrr, y, r))
+      | balanceRight _ _ _ = die ()
 
     fun insert s x =
         let
@@ -61,10 +63,11 @@ struct
                 (case Element.compare x y of 
                    LESS     => T (R, insert' l, y, r)
                  | GREATER  => T (R, l,         y, insert' r)
-                 | EQUAL    => s)                  
-            val T (_, l, x, r) = insert' s
+                 | EQUAL    => s)
         in
-            T (B, l, x, r)
+          case insert' s of
+            T (_, l, x, r) => T (B, l, x, r)
+          | _              => die ()
         end
 
     fun delete s x = 
@@ -99,6 +102,7 @@ struct
 
     fun foldl _ b E = b
       | foldl f b (T (_, l, x, r)) = foldl f (f (x, foldl f b l)) r
+    val fold = foldl
 
     fun foldr _ b E = b
       | foldr f b (T (_, l, x, r)) = foldr f (f (x, foldr f b r)) l
@@ -172,10 +176,10 @@ struct
     fun toString s = 
         let 
           val elems = toList s
-          fun toString' (s::ss) = (Int.toString s) ^ (List.foldl (fn (a,b) => b ^ ", " ^ (Int.toString a)) "" ss)
+          fun toString' (s::ss) = (Element.toString s) ^ (List.foldl (fn (a,b) => b ^ ", " ^ (Element.toString a)) "" ss)
             | toString' [] = ""
         in
-          "{" ^ (toString' s) ^ "}"
+          "{" ^ (toString' elems) ^ "}"
         end
     
     (* 
@@ -249,6 +253,6 @@ struct
 
           val lines = #2 (show' t 0 [])
         in
-          List.foldl (fn (a, b) => b ^ a  ^ "\n") "" lines           
+          List.foldl (fn (a, b) => b ^ a  ^ "\n") "" lines
         end
 end

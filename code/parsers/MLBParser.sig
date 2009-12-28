@@ -1,5 +1,5 @@
 signature MLBParser =
 sig
-    val fromFile : string -> Ast.MLB.basdecs
-    val fromText : string -> Ast.MLB.basdecs
+    val fromFile : File.t -> Ast.MLB.node Tree.t
+    (* val fromText : string -> Ast.MLB.node Tree.t *)
 end

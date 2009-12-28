@@ -99,12 +99,12 @@ struct
           | LESS    => T (modify f l k, y, r)
           | EQUAL   => T (l, (k', f v'), r)
 
-    fun lookup E _ = raise Domain
+    fun lookup E _ = NONE
       | lookup (T (l, y as (k', v'), r)) k =
         case Key.compare k k' of
             GREATER => lookup r k
           | LESS    => lookup l k
-          | EQUAL   => v'
+          | EQUAL   => SOME v'
 
     fun inDomain E _ = false
       | inDomain (T (l, y as (k', _), r)) k =

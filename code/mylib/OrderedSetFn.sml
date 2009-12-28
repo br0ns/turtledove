@@ -1,4 +1,4 @@
 (* Default OrderedSet implementation *)
 
 (* OrderedSetFn : Ordering -> OrderedSet *)
-functor OrderedSetFn (Ord : Ordering) = 
+functor OrderedSetFn (Ord : Ordered) = RedBlackOrderedSetFn (Ord)

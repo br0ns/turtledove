@@ -1,6 +1,6 @@
 functor SMLNJMapFn (Key : Ordered) :> OrderedMap where type key = Key.t =
 struct
-    fun die _ = raise Fail "SMLNJSplayMapFn: Unimplemented"
+    fun die _ = raise Fail "SMLNJMapFn: Unimplemented"
 
     structure Map = RedBlackMapFn
                         (struct
@@ -33,7 +33,7 @@ struct
         in
             Map.insert (m', k, f v)
         end
-    fun lookup m k = valOf (Map.find (m, k)) handle Option.Option => raise Domain
+    fun lookup m k = Map.find (m, k)
     val inDomain = die
     val isEmpty = die
     val size = die

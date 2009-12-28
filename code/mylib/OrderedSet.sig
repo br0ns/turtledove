@@ -37,6 +37,7 @@ sig
     val app        : (element -> unit) -> t -> unit
     val map        : (element -> element) -> t -> t
     val mapPartial : (element -> element option) -> t -> t
+    val fold       : (element * 'a -> 'a) -> 'a -> t -> 'a
     val foldl      : (element * 'a -> 'a) -> 'a -> t -> 'a
     val foldr      : (element * 'a -> 'a) -> 'a -> t -> 'a
 
@@ -56,6 +57,6 @@ sig
     (* A flat "visual string" that represents the OrderedSet *)
     val toString   : t -> string
 
-                          (* A "visual string" that represents the OrderedSet in a fancy way  *)
+    (* A "visual string" that represents the OrderedSet in a fancy way  *)
     val show       : t -> string
 end

@@ -256,15 +256,13 @@ fun textToRect float format maxw s =
           in
             ts :: lines (maxw - SMALL_INDENT) ts'
           end
-
-      val x = tokenize s
-      val x = case format of
-                Plain     => plain x
-              | Paragraph => paragraph x
-              | Indent    => indent x
-      val x = rect float format maxw x
     in
-      x
+      (rect float format maxw o
+       (case format of
+          Plain     => plain
+        | Paragraph => paragraph
+        | Indent    => indent) o
+       tokenize) s
     end
 end (* END textToRect *)
 
@@ -551,7 +549,11 @@ fun toStringWithMaxWidth maxw r =
       fun loop (minw, minh) r =
           case r of
             Rect {floath, floatv, contents} =>
-            resize (minw, minh) (floath, floatv) contents
+            (case contents of
+               (* Hack: resize cant handle the empty rect, so we do it here explicitly *)
+               nil => emptyRect (minw, minh)
+             | _   => resize (minw, minh) (floath, floatv) contents
+            )
           (* Look away! This code is ugly. But hey it works... Actually. *)
           | Row rs =>
             let

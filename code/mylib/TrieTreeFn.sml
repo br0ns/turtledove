@@ -5,6 +5,7 @@ struct
     type node = int list
     (* data * next_node * children *)
     datatype 'a t = T of 'a * int * 'a t Map.t
+    exception Node
 
     val root = nil
 
@@ -64,14 +65,19 @@ struct
       | delete _ _ = raise Domain
 
     fun lookup (T (v, _, _)) nil = v
-      | lookup (T (_, _, ts)) (n :: ns) = lookup (Map.lookup ts n) ns
+      | lookup (T (_, _, ts)) (n :: ns) =
+        case Map.lookup ts n of
+          NONE   => raise Node
+        | SOME t => lookup t ns
 
     fun children t ns =
         let
             fun children' (T (_, _, ts)) nil =
                 map (fn n => ns @ [n]) (Map.domain ts)
               | children' (T (_, _, ts)) (n :: ns) =
-                children' (Map.lookup ts n) ns
+                case Map.lookup ts n of
+                  NONE   => raise Node
+                | SOME t => children' t ns
         in
             children' t ns
         end
@@ -81,7 +87,10 @@ struct
       | parent t (n :: ns) = SOME (n :: valOf (parent t ns))
 
     fun sub t nil = t
-      | sub (T (_, _, ts)) (n :: ns) = sub (Map.lookup ts n) ns
+      | sub (T (_, _, ts)) (n :: ns) =
+        case Map.lookup ts n of
+          SOME t => sub t ns
+        | NONE => raise Node
 
     fun modify f (T (v, n', ts)) nil = T (f v, n', ts)
       | modify f (T (v, n', ts)) (n :: ns) =

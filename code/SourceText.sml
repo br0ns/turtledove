@@ -1,13 +1,13 @@
 structure SourceText :> SourceText =
 struct
     (* filename * (line lenght * line text) list *)
-    type t = string option * (int * string) list
+    type t = File.t option * (int * string) list
 
     fun die msg = Crash.impossible ("SourceText: " ^ msg)
 
     fun fromFile f =
         let
-            val is = TextIO.openIn f
+            val is = File.openIn f
             fun lines () =
                 case TextIO.inputLine is of
                     SOME l =>
@@ -18,7 +18,7 @@ struct
                     end
                   | NONE => nil
         in
-            (SOME f, lines ())
+            (SOME f, lines ()) before TextIO.closeIn is
         end
 
     fun fromString s =
@@ -34,8 +34,8 @@ struct
     fun reread (SOME f, st) = fromFile f
       | reread (NONE, _) = die "Can't reread SourceText constructed from string."
 
-    fun getFileName (SOME f, _) = f
-      | getFileName (NONE, _) = "<source text constructed from string>"
+    fun getFile (SOME f, _) = f
+      | getFile (NONE, _) = die "SourceText constructed from string."
 
     fun getSource (f, ls) pl pr =
         let
@@ -95,10 +95,10 @@ struct
         
     fun posToString st p =
         let
-            val f = getFileName st
+            val f = getFile st
             val (r, c) = posToRowCol st p
         in
-            f ^ ":" ^ Int.toString r ^ "." ^ Int.toString c
+            Path.toString f ^ ":" ^ Int.toString r ^ "." ^ Int.toString c
         end
 
     fun showPos st = Report.text o posToString st

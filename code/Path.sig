@@ -2,7 +2,7 @@ signature Path =
 sig
   eqtype t
 
-  exception Path
+  exception Path of Report.t
 
   (* Raises Path if the argument is a relative path. *)
   val new : string -> t
@@ -26,24 +26,5 @@ sig
   val readable : t -> bool
   val writable : t -> bool
 
-  (* val copy : {from : t, to : t} -> unit *)
-  (* val move : {from : t, to : t} -> unit *)
-  (* val create: t -> unit (\* make an empty file if file does not exists *\) *)
-  (* val remove : t -> unit *)
-
-  (* val temp : unit -> t *)
-
-  (* val contents : t -> string *)
-  val size : t -> int (* in bytes *)
-  val modtime : t -> Time.time
-
   val show : t -> Report.t
-
-  val openIn : t -> TextIO.instream
-  val openOut : t -> TextIO.outstream
-  val openAppend : t -> TextIO.outstream
-
-  (* val withIn : t -> (TextIO.instream -> 'a) -> 'a *)
-  (* val withOut : t -> (TextIO.outstream -> 'a) -> 'a *)
-  (* val withAppend : t -> (TextIO.outstream -> 'a) -> 'a *)
 end

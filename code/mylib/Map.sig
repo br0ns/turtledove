@@ -19,7 +19,7 @@ sig
     val remove      : (''a, 'b) t -> ''a -> 'b * (''a, 'b) t
     val delete      : (''a, 'b) t -> ''a -> (''a, 'b) t
     val modify      : ('b -> 'b) -> (''a, 'b) t -> ''a -> (''a, 'b) t
-    val lookup      : (''a, 'b) t -> ''a -> 'b
+    val lookup      : (''a, 'b) t -> ''a -> 'b option
 
     val inDomain    : (''a, 'b) t -> ''a -> bool
     val isEmpty     : (''a, 'b) t -> bool

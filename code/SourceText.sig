@@ -3,11 +3,11 @@ sig
     type t
 
     val fromString : string -> t 
-    val fromFile : string -> t
+    val fromFile : File.t -> t
     val reread : t -> t
 
     val getSource : t -> int -> int -> string
-    val getFileName : t -> string
+    val getFile : t -> Path.t
     val getSize : t -> int
 
     val patch : t -> int -> int -> string -> t
