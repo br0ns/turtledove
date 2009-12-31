@@ -102,6 +102,7 @@ struct
 
     fun foldl _ b E = b
       | foldl f b (T (_, l, x, r)) = foldl f (f (x, foldl f b l)) r
+
     val fold = foldl
 
     fun foldr _ b E = b
@@ -211,7 +212,7 @@ struct
                     [B|4]     [B|6]     [B|8]     [B|10]
      *)
            
-    fun show E = "E"
+    fun show E = Report.text ("E")
       | show t = 
         let                      
           fun genSpace 0 = ""
@@ -253,6 +254,6 @@ struct
 
           val lines = #2 (show' t 0 [])
         in
-          List.foldl (fn (a, b) => b ^ a  ^ "\n") "" lines
+          Report.text (List.foldl (fn (a, b) => b ^ a  ^ "\n") "" lines)
         end
 end

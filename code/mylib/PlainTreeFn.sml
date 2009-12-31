@@ -1,6 +1,6 @@
 (* Fully implemented - Yay *)
 
-functor TrieTreeFn (Map : OrderedMap where type key = int) :> Tree =
+functor PlainTreeFn (Map : OrderedMap where type key = int) :> Tree =
 struct
     type node = int list
     (* data * next_node * children *)
