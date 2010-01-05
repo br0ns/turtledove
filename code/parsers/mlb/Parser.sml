@@ -1,4 +1,4 @@
-structure MLBParser =
+structure Parser =
 struct
 structure MLBLrVals = MLBLrValsFun
                         (structure Token = LrParser.Token)

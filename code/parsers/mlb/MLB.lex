@@ -14,7 +14,7 @@ fun eof source =
         T.EOF (~1, ~1)
     else
         Source.lexError source
-                        (C.openedAt source)
+                        (C.start source)
                         "Unclosed comment"
 
 %%
@@ -72,7 +72,7 @@ hexDigit=[0-9a-fA-F];
 <INITIAL>{file} => ( T.FILE (yytext, yypos, yypos + size yytext) );
 
 <INITIAL>\"     => ( YYBEGIN S ;
-                     S.clear source ;
+                     S.new source yypos ;
                      continue ()
                    );
 <INITIAL>"(*"   => ( YYBEGIN C ;
@@ -102,11 +102,7 @@ hexDigit=[0-9a-fA-F];
                    );
 
 <S>\"           => ( YYBEGIN INITIAL ;
-                     let
-                         val s = S.get source
-                     in
-                         T.STRING (s, yypos - size s, yypos)
-                     end
+                     T.STRING (S.get source, S.start source, yypos)
                    );
 <S>\\a          => ( S.appendChar source #"\a"; continue () );
 <S>\\b          => ( S.appendChar source #"\b"; continue () );

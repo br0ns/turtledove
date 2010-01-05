@@ -2,11 +2,15 @@ exception LexError of Report.t
 
 structure Source :> Source =
 struct
-    type comments = (int * string) list
-    type t = (int ref * comments ref) * string ref * SourceText.t
+    type start_pos = int
+    type depth = int
+    type comment = start_pos * string
+    type t = {C: depth ref * comment list ref,
+              S: start_pos ref * string ref,
+              T: SourceText.t}
 
-    fun fromSourceText st = ((ref 0, ref nil), ref "", st)
-    fun lexError (_, _, st) pos msg =
+    fun fromSourceText st = {C = (ref 0, ref nil), S = (ref 0, ref ""), T = st}
+    fun lexError ({T = st, ...} : t) pos msg =
         let
             val r = SourceText.showPos st pos
             open Report
@@ -19,44 +23,42 @@ struct
                   indent r
                   )
         end
-    fun makeReader (_, _, st) = SourceText.makeReader st
-        
+    fun makeReader ({T = st, ...} : t) = SourceText.makeReader st
+
     structure Comments =
     struct
         type source = t
-        type t = comments
+        type t = comment list
         fun die s = Crash.impossible ("LexUtils.Comments: " ^ s)
 
-        fun clear ((d, cs), _, _) = (d := 0 ; cs := nil)
+        fun new ({C = (d, cs), ...} : source) p = (d := !d + 1 ; cs := (p, "") :: !cs)
 
-        fun new ((d, cs), _, _) p = (d := !d + 1 ; cs := (p, "") :: !cs)
+        fun inc ({C = (d, _), ...} : source) = d := !d + 1
 
-        fun inc ((d, _), _, _) = d := !d + 1
+        fun dec ({C = (d, _), ...} : source) = d := !d - 1
 
-        fun dec ((d, _), _, _) = d := !d - 1
-
-        fun append ((_, cs), _, _) s =
+        fun append ({C = (_, cs), ...} : source) s =
             case !cs of
                 (p, c) :: r => cs := (p, c ^ s) :: r
               | _ => die "append: No comments opened."
 
-        fun get ((_, cs), _, _) = rev (!cs)
+        fun get ({C = (_, cs), ...} : source) = rev (!cs)
 
-        fun openedAt ((_, cs), _, _) =
+        fun start ({C = (_, cs), ...} : source) =
             case !cs of
-                (p, _) :: _ => p
-              | _ => die "openedAt: No comments opened."
+              (p, _) :: _ => p
+            | _ => die "start: No comments opened."
 
-        fun depth ((d, _), _, _) = !d
+        fun depth ({C = (d, _), ...} : source) = !d
     end
 
     structure String =
     struct
         type source = t
         fun die s = Crash.impossible ("LexUtils.String: " ^ s)
-        fun clear (_, s, _) = s := ""
+        fun new ({S = (p, s), ...} : source) p' = (p := p' ; s := "")
 
-        fun append (_, s, _) cs = s := !s ^ cs
+        fun append ({S = (_, s), ...} : source) cs = s := !s ^ cs
         fun appendChar s = append s o str
 
         fun asControlChar s fail =
@@ -122,6 +124,7 @@ struct
         fun appendAsciiChar s c fail = appendChar s (asAsciiChar c fail)
         fun appendUnicodeChar s c fail = appendChar s (asUnicodeChar c fail)
 
-        fun get (_, s, _) = !s
+        fun get ({S = (_, s), ...} : source) = !s
+        fun start ({S = (p, _), ...} : source) = !p
     end
 end

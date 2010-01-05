@@ -19,7 +19,7 @@ fun eof source =
         T.EOF (~1, ~1)
     else
         Source.lexError source
-                        (C.openedAt source)
+                        (C.start source)
                         "Unclosed comment"
 
 end (* end of user routines *)
@@ -1140,7 +1140,7 @@ let fun continue() : Internal.result =
   13 => ( T.PRIM      (yypos, yypos + 4) )
 | 146 => let val yytext=yymktext() in  T.FILE (yytext, yypos, yypos + size yytext)  end
 | 148 => ( YYBEGIN S ;
-                     S.clear source ;
+                     S.new source yypos ;
                      continue ()
                    )
 | 15 => ( T.COMMA     (yypos, yypos + 1) )
@@ -1169,11 +1169,7 @@ let fun continue() : Internal.result =
                      continue ()
                     end
 | 165 => ( YYBEGIN INITIAL ;
-                     let
-                         val s = S.get source
-                     in
-                         T.STRING (s, yypos - size s, yypos)
-                     end
+                     T.STRING (S.get source, S.start source, yypos)
                    )
 | 168 => ( S.appendChar source #"\a"; continue () )
 | 17 => ( T.SEMICOLON (yypos, yypos + 1) )

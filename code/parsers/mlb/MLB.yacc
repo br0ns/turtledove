@@ -8,7 +8,7 @@ type comments = Source.Comments.t
 
 %term
       ID of string | COMMA | SEMICOLON | EOF
-    | AND | BAS | BASIS | END | EQUALOP | FUNCTOR | IN | LET 
+    | AND | BAS | BASIS | END | EQUALOP | FUNCTOR | IN | LET
     | LOCAL | OPEN | SIGNATURE | STRUCTURE
     | ANN | PRIM | FILE of string | STRING of string
 
