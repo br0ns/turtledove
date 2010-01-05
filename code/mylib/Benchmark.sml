@@ -30,5 +30,7 @@ struct
                  )
         end
 
-    val print = Report.print o show
+    fun print "" = Report.print (show ())
+      | print s = Report.print (Report.++ (Report.text s, Report.indent (show ())))
+    fun stopAndPrint s = (stop () ; print s)
 end

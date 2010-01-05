@@ -1,6 +1,6 @@
 (* Default Tree implementation *)
 
-structure Tree = TrieTreeFn (
+structure Tree = PlainTreeFn (
                  OrderedMapFn
                      (struct
                       type t = int

@@ -9,6 +9,6 @@ sig
 
     val show : unit -> Report.t
 
-    (* print = Report.print o show *)
-    val print : unit -> unit
+    val print : string -> unit
+    val stopAndPrint : string -> unit
 end

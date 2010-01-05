@@ -1,4 +1,62 @@
 val print = fn s => print (s ^ "\n")
+
+fun to (a, b) =
+    if a > b then
+      nil
+    else
+      LargeInt.fromInt a :: to (a + 1, b)
+infix to
+(* Set *)
+structure Set = RedBlackOrderedSetFn (
+                struct
+                type t = LargeInt.int
+                fun compare x y = LargeInt.compare (x, y)
+                val toString = LargeInt.toString
+                end)
+val s = Set.fromList (0 to 999999)
+;Benchmark.start();
+val n = Set.fold LargeInt.+ 0 s
+;Benchmark.stopAndPrint "";
+;print (LargeInt.toString n);
+
+(* ;foldl (fn (x, s) => *)
+(*            let *)
+(*              val s = Set.insert s x *)
+(*            in *)
+(*              Report.print (Set.show s) ; *)
+(*              s *)
+(*            end) Set.empty (0 to 20); *)
+
+(* It is somewhat surprising that these three implementations of fold are
+   exactly equally fast *)
+
+(* fun foldl _ b E = b *)
+(*   | foldl f b (T (_, l, x, r)) = foldl f (f (x, foldl f b l)) r *)
+
+(* fun foldl f b t = *)
+(*     let *)
+(*       val acc = ref b *)
+(*       fun loop E = () *)
+(*         | loop (T (_, l, x, r)) = *)
+(*           (loop l ; *)
+(*            acc := f (x, !acc) ; *)
+(*            loop r) *)
+(*     in *)
+(*       loop t ; *)
+(*       !acc *)
+(*     end *)
+
+(* fun foldl f b t = *)
+(*     let *)
+(*       fun loop E acc = acc *)
+(*         | loop (T (_, l, x, r)) acc = loop r (f (x, loop l acc)) *)
+(*     in *)
+(*       loop t b *)
+(*     end *)
+
+
+
+(* Tree test *)
 val i = ref 1
 
 fun insertfive t n =
@@ -27,10 +85,10 @@ fun loop 0 t _ = t
     in
         loop (n - 1) t' ns'
     end
-;Benchmark.start ();
-val t = loop 5 (Tree.create 0) [Tree.root]
-;Benchmark.stop ();
-;Benchmark.print ();
+(* ;Benchmark.start (); *)
+(* val t = loop 5 (Tree.create 0) [Tree.root] *)
+(* ;Benchmark.stop (); *)
+(* ;Benchmark.print ""; *)
 (* val _ = (print o Show.list Show.int o Tree.toList) t *)
 
 (* structure Tree = TrieTreeFn ( *)
@@ -55,7 +113,23 @@ fun loop 0 = nil
 ;Benchmark.start ();
 val t = Tree.join 0 (loop 8)
 ;Benchmark.stop ();
-;Benchmark.print ();
+;Benchmark.print "Using Tree";
+
+val i = ref 0
+datatype tree = T of int * tree list
+fun loop 0 = nil
+  | loop n =
+    [T ((i := !i + 1 ; !i), loop (n - 1))
+   , T ((i := !i + 1 ; !i), loop (n - 1))
+   , T ((i := !i + 1 ; !i), loop (n - 1))
+   , T ((i := !i + 1 ; !i), loop (n - 1))
+   , T ((i := !i + 1 ; !i), loop (n - 1))
+    ]
+
+;Benchmark.start ();
+val t = T (0, loop 8)
+;Benchmark.stop ();
+;Benchmark.print "Using ad hoc datatype";
 
 val i = ref 1
 

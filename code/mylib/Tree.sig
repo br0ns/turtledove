@@ -4,7 +4,12 @@ signature Tree =
 sig
     type 'a t
     eqtype node
-
+    structure Node : sig
+      eqtype t
+      val toString : t -> string
+      val fromString : string -> t
+    end where type t = node
+      
     (* No such node in tree *)
     exception Node
 

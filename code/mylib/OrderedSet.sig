@@ -3,13 +3,18 @@
 signature OrderedSet =
 sig
     eqtype element
-    eqtype t
+    type t
 
     val empty      : t
 
     val singleton  : element -> t
+
+    (* Does nothing if the element is already in the set *)
     val insert     : t -> element -> t
+
+    (* Does nothing if the element is not in the set *)
     val delete     : t -> element -> t
+
     val fromList   : element list -> t
 
     val union      : t -> t -> t
@@ -58,5 +63,5 @@ sig
     val toString   : t -> string
 
     (* A "visual string" that represents the OrderedSet in a fancy way  *)
-    val show       : t -> string
+    val show       : t -> Report.t
 end

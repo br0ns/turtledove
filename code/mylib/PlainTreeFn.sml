@@ -3,9 +3,21 @@
 functor PlainTreeFn (Map : OrderedMap where type key = int) :> Tree =
 struct
     type node = int list
+    exception Node
+
+    structure Node =
+    struct
+    type t = node
+    fun toString [n] = Int.toString n
+      | toString (n :: ns) = Int.toString n ^ "," ^ toString ns
+      | toString _ = ""
+    fun fromString s = map (valOf o Int.fromString)
+                           (String.tokens (fn c => c = #",") s)
+        handle Option.Option => raise Node
+    end
+
     (* data * next_node * children *)
     datatype 'a t = T of 'a * int * 'a t Map.t
-    exception Node
 
     val root = nil
 
@@ -57,7 +69,7 @@ struct
         in
             (!t', remove' t ns)
         end
-            
+
     fun delete (T (v, n', ts)) [n] =
         T (v, n', Map.delete ts n)
       | delete (T (v, n', ts)) (n :: ns) =
@@ -121,11 +133,12 @@ struct
         fun parent (_, p :: w) = SOME (p, w)
           | parent _ = NONE
     end
+
     fun join v ts =
         let
-            val (_, t) = insertTrees (create v) root ts
+          val (_, t) = insertTrees (create v) root ts
         in
-            t
+          t
         end
 
 end

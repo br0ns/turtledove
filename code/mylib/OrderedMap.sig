@@ -13,10 +13,10 @@ sig
     val insert      : 'a t -> key * 'a -> 'a t option
     val fromList    : (key * 'a) list -> 'a t
 
-    (* Inserts if key is not in the maps domain *)
+    (* Inserts or overwrites *)
     val update      : 'a t -> key * 'a -> 'a t
 
-    (* Does nothing if map is empty *)
+    (* Does nothing if the key is not in the maps domain *)
     val delete      : 'a t -> key -> 'a t
 
     (* May raise Domain *)

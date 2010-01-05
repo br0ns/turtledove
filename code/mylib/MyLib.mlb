@@ -27,12 +27,11 @@ Array.sig
 QuickSort.sml
 
 ListSet.sml
-(* ListOrderedSetFn.sml *)
+UnbalancedOrderedSetFn.sml
 RedBlackOrderedSetFn.sml
-(* ListMultiset.sml *)
-(* ListMinHeap.sml *)
-(* ListMaxHeap.sml *)
-(* RedBlackOrderedMap.sml *)
+TrieOrderedSetFn.sml
+
+(* RedBlackOrderedMapFn.sml *)
 
 (* ListMap.sml *)
 ListOrderedMapFn.sml
@@ -41,8 +40,7 @@ SMLNJMapFn.sml
 
 PairingHeapFn.sml
 
-(* MapTreeFn.sml *)
-TrieTreeFn.sml
+PlainTreeFn.sml
 
   (* Default implementations
    *)
