@@ -5,7 +5,7 @@
 \fixme{remember to introduce new relations with name.}
 \begin{eqnarray*}[rqcql:Tl]
   var & = & \ttt{[a-z]+} & Identifiers\\
-  con & = & \ttt{[A-Z][a-z]* | [0-9]+} & Constructors\\
+  con & = & \ttt{[A-Z][a-z]* | [0-9]} & Constructors\\
   num & = & \mathbb{Z}    & Natural numbers\\
   match & ::= & \epsilon                            & Empty match\\
   & & pat\texttt{.}exp\ \texttt{|}\ match               & Pattern -> expression\\
@@ -434,7 +434,6 @@ We can now define the elimination of unused patterns.
   \]
   and we write $m ~>e m'$.
 
-  \fixme{Decide upon a symbol for the reduction relation.}
 \end{definition}
 
 \begin{lemma}(Preservation)
