@@ -18,6 +18,10 @@ sig
   val openOut : t -> TextIO.outstream
   val openAppend : t -> TextIO.outstream
 
+  val exists : t -> bool
+  val readable : t -> bool
+  val writable : t -> bool
+
   (* val withIn : t -> (TextIO.instream -> 'a) -> 'a *)
   (* val withOut : t -> (TextIO.outstream -> 'a) -> 'a *)
   (* val withAppend : t -> (TextIO.outstream -> 'a) -> 'a *)

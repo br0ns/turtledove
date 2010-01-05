@@ -16,69 +16,90 @@ val basdecs = MLBParser.fromFile mlbpath
     handle MLBParser.Parse r => (Report.print r ; nil)
          | Path.Path r => (Report.print r ; nil)
 ;Benchmark.stop ();
-(* ;Benchmark.print (); *)
+;Benchmark.print "Parsing MLB file:";
 
 (* ;Report.print (AstMLB.showBasdecs basdecs); *)
 
-(* Den ordnede mængde er ulideligt langsom. Der må være en fejl et sted *)
+structure Set = OrderedSetFn (
+                struct
+                type t = Path.t
+                fun compare x y = String.compare (Path.path x, Path.path y)
+                val toString = Path.toString
+                end)
 
-(* structure Set = OrderedSetFn (struct *)
-(*                               type t = File.t *)
-(*                               fun compare p p' = String.compare (Path.toString p, Path.toString p') *)
-(*                               val toString = Path.toString *)
-(*                               end) *)
+(* structure Set = TrieOrderedSetFn ( *)
+(*                 OrderedMapFn( *)
+(*                 struct *)
+(*                 type t = char *)
+(*                 fun compare x y = Char.compare (x, y) *)
+(*                 val toString = Char.toString *)
+(*                 end)) *)
+
+(* structure Set = OrderedSetFn ( *)
+(*                 struct *)
+(*                 type t = char list *)
+(*                 fun compare x y = List.collate Char.compare (x, y) *)
+(*                 fun toString _ = "list" *)
+(*                 end) *)
+
+(* Its much faster to just build a huge list of files and then calling fromList
+   on that, than it is to incrementially build the set *)
 fun sources ds =
     let
-      open AstMLB
-      open Set
+      open AstMLB Set
 
+      val files = ref empty
       fun ignore file =
-          List.exists (fn f => f = Path.file file)
-                      ["MLB.lex.sml", "MLB.yacc.sig", "MLB.yacc.sml"]
-          orelse file = Path.new "$(SML_LIB)/basis/basis.mlb"
-          orelse file = Path.new "$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb"
-          orelse file = Path.new "$(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb"
+          String.isSuffix "MLB.lex.sml" (Path.path file) orelse
+          String.isSuffix "MLB.yacc.sig" (Path.path file) orelse
+          String.isSuffix "MLB.yacc.sml" (Path.path file) orelse
+          file = Path.new "$(SML_LIB)/basis/basis.mlb" orelse
+          file = Path.new "$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb" orelse
+          file = Path.new "$(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb" orelse
+          not (Path.sub (Path.dir mlbpath) file)
 
-      val depth = ref 0
-      fun basdecs ds = List.foldl (fn (s, a) => union s a) empty (List.map basdec ds)
+      fun basdecs ds = List.app basdec ds
       and basdec d =
           case d of
             Basis bs => basbinds bs
-          | Local (ds, ds') => union (basdecs ds) (basdecs ds')
+          | Local (ds, ds') => (basdecs ds ; basdecs ds')
           | Include (f, ds) => if ignore f then
-                                 empty
+                                 ()
                                else
                                  basdecs ds
           | Source f => if ignore f then
-                          empty
+                          ()
                         else
-                          singleton f
+                          (* files := insert (!files) (explode (Path.path f)) *)
+                          files := insert (!files) f
           | Ann (_, ds) => basdecs ds
-          | _ => empty
+          | _ => ()
       and basexp e =
           case e of
             Bas ds => basdecs ds
-          | Let (ds, e) => union (basdecs ds) (basexp e)
-          | Var _ => empty
-      and basbinds bs = List.foldl (fn (s, a) => union s a) empty (List.map basbind bs)
+          | Let (ds, e) => (basdecs ds ; basexp e)
+          | Var _ => ()
+      and basbinds bs = List.app basbind bs
       and basbind (_, e) = basexp e
     in
-      if Path.file mlbpath = "Turtledove.mlb" then
-        union
-          (fromList [Path.new' here "parsers/MLB.lex",
-                     Path.new' here "parsers/MLB.yacc"])
-          (basdecs ds)
-      else
-        basdecs ds
+      basdecs ds ;
+      toList (!files)
+      @
+      (if Path.file mlbpath = "Turtledove.mlb" then
+         [Path.new' here "parsers/mlb/MLB.lex",
+          Path.new' here "parsers/mlb/MLB.yacc",
+          Path.new' here "parsers/sml/SML.lex",
+          Path.new' here "parsers/sml/SML.yacc"]
+       else
+         nil)
     end
 
 ;Benchmark.start ();
 val srcs = sources basdecs
 ;Benchmark.stop ();
-(* ;Benchmark.print (); *)
+;Benchmark.print "Collecting source files:";
 
-val srcs = map (fn f => (f, File.size f))
-               (Set.toList srcs)
+val srcs = map (fn f => (f, File.size f)) srcs
 val srcs = ListSort.sort (fn (_, x) => fn (_, y) => Int.compare (x, y)) srcs
 
 val sz = foldl (fn ((_, s), a) => a + s) 0 srcs
@@ -86,7 +107,7 @@ val sz = foldl (fn ((_, s), a) => a + s) 0 srcs
 val r = Report.++ (
         Report.itemize
             (map (fn (f, s) =>
-                     Report.text (Int.toString s ^ " " ^ Path.path' here f)
+                     Report.text (Int.toString s ^ " " ^ Path.path' (Path.dir mlbpath) f)
                  ) srcs
             ),
         Report.text (Int.toString (sz div 1000) ^ "KB in " ^ Int.toString (length srcs) ^ " files.")

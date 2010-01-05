@@ -22,9 +22,9 @@ sig
   val base : t -> string
   val extension : t -> string option
 
-  val exists : t -> bool
-  val readable : t -> bool
-  val writable : t -> bool
+  (* Second argument is a subpath of first argument. *)
+  (* maybe rename to isPrefix *)
+  val sub : t -> t -> bool
 
   val show : t -> Report.t
 end

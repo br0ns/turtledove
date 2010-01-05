@@ -1,5 +1,5 @@
 
-(* NOT FINISHED *)
+(* NEARLY FINISHED *)
 
 structure Report :> Report =
 struct
@@ -309,7 +309,7 @@ local (* BEGIN toRects : string list -> int -> Inter.t -> t *)
                               "u", "v", "w", "x",
                               "y", "z"], n - 1) ^ "."
     local
-      fun toChars xs = 
+      fun toChars xs =
           map (fn x =>
                   case x of
                     1000 => #"M"
@@ -402,12 +402,12 @@ fun toRects bullets maxw r =
              *)
             Inter.Row (map (toRects bullets maxw) rs)
         end
-      | Col rs => 
+      | Col rs =>
         Inter.Col (map (toRects bullets maxw) rs)
       | Fill => Inter.Fill
       | SpaceH w => Inter.SpaceH w
       | SpaceV h => Inter.SpaceV h
-      | Indent {indentation, contents} => 
+      | Indent {indentation, contents} =>
         Inter.Indent {indentation = indentation,
                       contents = toRects bullets (maxw - indentation) contents
                      }
@@ -440,7 +440,7 @@ local (* BEGIN toStringWithMaxWidth : int -> t -> string *)
   open Inter
   val rectWidth = length o hd
   val rectHeight = length
-                   
+
   fun padLeft 0 ls = ls
     | padLeft n ls =
       let
@@ -545,7 +545,7 @@ local (* BEGIN toStringWithMaxWidth : int -> t -> string *)
 
 in
 fun toStringWithMaxWidth maxw r =
-    let            
+    let
       fun loop (minw, minh) r =
           case r of
             Rect {floath, floatv, contents} =>
@@ -725,7 +725,7 @@ val nl = SpaceV 1
 fun itemize rs = Itemize {bullet = NONE,
                           items = rs}
 
-fun itemize' b rs = Itemize {bullet = SOME b, 
+fun itemize' b rs = Itemize {bullet = SOME b,
                              items = rs}
 
 fun enumerate' s rs = Enumerate {style = s,

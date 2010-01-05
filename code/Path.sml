@@ -6,7 +6,6 @@
 structure Path :> Path =
 struct
 structure P = OS.Path
-structure FS = OS.FileSys
 
 (* Invariant: Values of type t represent absolute canonical paths *)
 type t = string
@@ -78,7 +77,7 @@ fun new' f f' =
       else
         new (P.concat (f, f'))
     end
-    
+
 fun path' f f' = P.mkCanonical (P.mkRelative {path = f', relativeTo = f})
 
 val file = P.file
@@ -86,9 +85,7 @@ val dir = P.dir
 val base = P.base
 val extension = P.ext
 
-fun exists f = FS.access (f, nil)
-fun readable f = FS.access (f, [FS.A_READ])
-fun writable f = FS.access (f, [FS.A_WRITE])
+val sub = String.isPrefix
 
 val show = Report.text
 end

@@ -1,6 +1,6 @@
 local
 $(SML_LIB)/basis/basis.mlb
-parsers/MLBParser.mlb
+parsers/Parsers.mlb
 Basic.mlb
 in
 

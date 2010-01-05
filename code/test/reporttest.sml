@@ -6,11 +6,11 @@ local
 in
 (* val _ = print (text "Hej verden" ++ indent (text "Haj sael") ++ text "Roger and over") *)
 (* val _ = print nl *)
-val _ = print (enumerate' EnumStyle.Roman
+val _ = print (enumerate' EnumStyle.Letter
                           [text "lorem ipsum",
                            text "dolor sit amet" ++
                            enumerate [
-                           text "punkt 1", 
+                           text "punkt 1",
                            text "punkt 2"
                            ],
                            text "Number 1",
@@ -26,6 +26,13 @@ val _ = print (enumeratenl' EnumStyle.Roman
                 text s1,
                 text s2])
 val _ = print (itemize nil)
+
+val _ = print (row [SpaceV 50,
+                    text' FloatH.Left FloatV.Top Format.Plain s1,
+                    text' FloatH.Right FloatV.Bottom Format.Plain s2
+                   ]
+              )
+
 (* val r = text "hej" *)
 (* val r' = text "Hello" ++ indent (text "world!") *)
 (* val _ = print r *)
