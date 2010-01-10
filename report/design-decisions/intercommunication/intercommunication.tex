@@ -1,50 +1,11 @@
-\documentclass[a4paper, oneside, final]{memoir}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage[british]{babel}
-
-\usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
-\usepackage[rounded]{syntax} % Part of the mdwtools package
-
-\let\fref\undefined
-\let\Fref\undefined
-\usepackage{fancyref
-}
-\usepackage{amsthm} % theorems
-
-\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
-%\usepackage[sc]{mathpazo}     % Palatino font
-\renewcommand{\rmdefault}{ugm} % Garamond
-%\usepackage[garamond]{mathdesign}
+\section*{Intercommunication}
 
 
-\theoremstyle{definition}
-\newtheorem{example}{Example}
-
-\newcommand*{\fancyrefexlabelprefix}{ex}
-\fancyrefaddcaptions{english}{
-  \newcommand*{\Frefexname}{Example}
-  \newcommand*{\frefexname}{\MakeLowercase{\Frefexname}}
-}
-\frefformat{vario}{\fancyrefexlabelprefix}{%
-  \frefexname\fancyrefdefaultspacing#1#3%
-}
-\Frefformat{vario}{\fancyrefexlabelprefix}{%
-  \Frefexname\fancyrefdefaultspacing#1#3%
-}
-
-
-\begin{document}
-
-
-\chapter*{Intercommunication}
-
-
-\section*{Protocol}
+\subsection*{Protocol}
 
 
 The communication protocol between the development environment and Turtledove is
-vary simple and versatile with almost no limitations. The protocol utilises JSON
+very simple and versatile with almost no limitations. The protocol utilises JSON
 (JavaScript Object Notation) \footnote{\url{http://www.json.org/}} for the data
 payload which makes it easy to serialise different types of values to and from
 the desired tools inside Turtledove.
@@ -61,10 +22,10 @@ Besides the data payload the protocol consists of a ``CallerID'' string and a
 
   As there is a possibility of Turtledove getting multi threaded, this is a good
   way of handling multiple request to Turtledove that may have different
-  response times (One request waiting for a new complete reparse of the project code
-  and another requesting a static lookup of some data).
+  response times (One request waiting for a new complete reparse of the project
+  code and another requesting a static lookup of some data).
 
-  If the development environment don't need the use of this string an empty
+  If the development environment doesn't need the use of this string an empty
   string can be passed to Turtledove.
 
   Some of the tools may report back when they are done doing something, without
@@ -87,117 +48,19 @@ Besides the data payload the protocol consists of a ``CallerID'' string and a
 \end{description}
 
 
-\begin{grammar}
-  <request> ::= \[[ "CallerID" "\\n" "DestinationID" "\\n" <JSON-value> "\\n\\n" \]]
-
-  <response> ::= \[[ "DestinationID" "\\n" "CallerID" "\\n" <JSON-value> "\\n\\n" \]]
-
-  <JSON-value> ::= \[[ 
-  \begin{stack}
-    <JSON-string> \\
-    <JSON-number> \\
-    <JSON-object> \\ 
-    <JSON-array> \\
-    "true" \\
-    "false" \\
-    "null"
-  \end{stack}
-  \]]   
-
-  <JSON-string> ::= \[[
-  "\""
-  \begin{stack}
-    \\
-    \fbox {
-      \begin{minipage}{1,6in}
-        \begin{center}
-          Any\ unicode\ char\ except\ '{\char 34}',\ '$\backslash$'\ 
-          and\ any\ control\ chars 
-        \end{center}
-      \end{minipage}
-    }
-    \\
-    "\\"
-    \begin{stack}
-      "\"" \\
-      "\\" \\
-      "/" \\
-      "b" \\
-      "f" \\
-      "n" \\
-      "r" \\
-      "t" \\
-      "u"
-    \end{stack}
-  \end{stack}
-  "\""
-  \]]
+\begin{nonfloatingfigure}
+  \begin{grammar}
+    <request> ::= \[[ "CallerID" "\\n" "DestinationID" "\\n" <JSON-value> "\\n\\n" \]]
+    
+    <response> ::= \[[ "DestinationID" "\\n" "CallerID" "\\n" <JSON-value> "\\n\\n" \]]
+  \end{grammar}
   
-  <JSON-object> ::= \[[
-  "{"
-    \begin{stack}
-      \\
-      
-      \begin{rep}
-        <JSON-string> ":" <JSON-value> \\
-        ","
-      \end{rep}
-    \end{stack}
-    "}"
-  \]]
+  \caption{Definition of the communication protocol between Turtledove (and its
+    tools) and the editor.}
+  \label{fig:intercom-protocol-definition}
 
-  <JSON-array> ::= \[[
-  "["
-  \begin{stack}
-    \\
-    \begin{rep}
-      <JSON-value> \\
-      ","
-    \end{rep}
-  \end{stack}
-  "]"
-  \]]
+\end{nonfloatingfigure}
 
-  <JSON-number> ::= \[[
-  \begin{stack}
-    \\
-    "-"
-  \end{stack}
-  \begin{stack}
-    "0" \\
-    1--9
-    \begin{rep}
-      \\
-      0--9
-    \end{rep}
-  \end{stack}
-  \begin{stack}
-    \\
-    "." 
-    \begin{rep}
-      \\
-      0--9
-    \end{rep}
-  \end{stack}
-  \begin{stack}
-    \\
-    \begin{stack}
-      e \\
-      E
-    \end{stack}
-    \begin{stack}
-      \\
-      "+" \\
-      "-" 
-    \end{stack}
-    \begin{rep}
-      \\
-      0--9
-    \end{rep}
-  \end{stack}
-  \]]
-  
-\end{grammar}
 
 It is important to remember that the resulting string sent to and from
 Turtledove must not contain any newlines except the ones that are mandatory by
@@ -206,8 +69,8 @@ whitespace between a pair of tokens, as it would then render it impossible to
 determine when the request/response is done.
 
 We have chosen the newline character as a separator of the fields as it
-makes it easy for debug pretty printing and since a newline character is the least
-likely character to be in a name/id.
+makes it easy for debug pretty printing and since a newline character must be
+escaped i a name/id (and besides it is unlikely to be used here anyway).
 
 The same argument applies to the decision of using double newline chars to mark
 the end of a request or response. 
@@ -226,17 +89,17 @@ the end of a request or response.
 \end{example}
 
 
-\section*{Useful commands}
+\subsection*{Useful commands}
 
  Below is a draft of which commands might be useful to implement in the final system. 
 
-\subsection*{Turtledove}
+\subsubsection*{Turtledove}
 
 \begin{description}
 \item[quit] This command closes down the server in a graceful way.
 \end{description}
 
-\subsection*{ProjectManager }
+\subsubsection*{ProjectManager }
 
 \begin{description}
 \item[OpenProject] Makes the project manager open a project. If the
@@ -252,7 +115,7 @@ the end of a request or response.
 \item[DeleteFile] Deletes a file contained in the project
 \item[ChangeFile] Add or delete content in a open file contained in the
   project. This command should be used when ever the user adds or deletes text
-  from any file contained in the project, so the project manager can an
+  from any file contained in the project, so the project manager can maintain an
   up to date version of the file, without having to reread the file again and
   thus also at some point do incremental parsing of the changes only.
 \end{description}
@@ -273,12 +136,8 @@ Gets the filename and position of the definition of the specified function
 Rename a function or identifier together with its definition and all its uses.
 
 
-\end{document}
-
-
-
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: t
 %%% reftex-fref-is-default: t
+%%% TeX-master: "../../report"
 %%% End: 
