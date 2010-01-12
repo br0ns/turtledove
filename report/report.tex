@@ -1,4 +1,4 @@
-\documentclass[a4paper, oneside, final]{memoir}
+\documentclass[a4paper, oneside, draft]{memoir}
 % Fixes "No room for a new \xxx" error by extending the default 256 fixed size
 % LaTeX arrays
 \usepackage{etex}
@@ -40,7 +40,8 @@
 \usepackage[format=hang]{caption,subfig}
 \usepackage{graphicx}
 \usepackage{stmaryrd}
-\usepackage{listings}
+\usepackage[final]{listings} % Make sure we show the listing even though we are
+                             % making a final report.
 \usepackage{ulem} % \sout - strike-through
 \usepackage{tikz}
 
@@ -235,9 +236,9 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %		Data til forside
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Turtledove: Tool assisted programming in SML, with special emphasis on semi-automatic rewriting to
-predefined standard forms.}
-\def\subtitle{\footnotesize{A joined Smartypants inc. and Morning Wood Productions venture.}}
+\title{Turtledove}
+\def\subtitle{\footnotesize{Tool assisted programming in SML, with special emphasis on semi-automatic rewriting to
+predefined standard forms.}}
 \author{Morten Brøns-Pedersen {\footnotesize{(mortenbp@gmail.com)}}\\  
 Jesper Reenberg \footnotesize{(jesper.reenberg@gmail.com)}}
 \def\suplementInfo{
@@ -260,8 +261,8 @@ Jesper Reenberg \footnotesize{(jesper.reenberg@gmail.com)}}
 
 \clearpage 
 \chapter*{Preface}
-This report is a 22.5 ECTS masters project at the Department of Computer Science
-at the University of Copenhagen (DIKU). The authors are Morten Brøns-Pedersen
+This report is a 22.5 ECTS masters project at the Department of Computer
+Science, University of Copenhagen (DIKU). The authors are Morten Brøns-Pedersen
 and Jesper Reenberg. The project is supervised by Jakob Grue Simonsen, assistant
 professor at DIKU.
 
@@ -282,6 +283,8 @@ professor at DIKU.
 \section{Reader expectations}
 
 \section{Structure outline}
+
+\input{term-rewriting/term-rewriting}
 
 
 \input{design-decisions/design-decisions}

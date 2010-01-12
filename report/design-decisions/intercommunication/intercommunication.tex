@@ -3,36 +3,57 @@
 
 \subsection*{Protocol}
 
+\fixme{Lav protocol til at være en JSON object med meta, dest og data. Beskriv
+  at meta kan være vilkårlig (json-value) men dest skal være en string og data
+  skal være en json-value. keep the two newlines}
+
 
 The communication protocol between the development environment and Turtledove is
 very simple and versatile with almost no limitations. The protocol utilises JSON
-(JavaScript Object Notation) \footnote{\url{http://www.json.org/}} for the data
-payload which makes it easy to serialise different types of values to and from
-the desired tools inside Turtledove.
+(JavaScript Object Notation) \footnote{\url{http://www.json.org/}} which makes
+it easy to serialise different types of values to and from the desired tools
+inside Turtledove. 
 
-Besides the data payload the protocol consists of a ``CallerID'' string and a
-``DestinationID'' string which is described below
+\begin{nonfloatingfigure}
+  \newcommand{\angleit}[1]{$\langle$\textnormal{\textit{#1}}$\rangle$}
+\begin{lstlisting}
+ (@\angleit{request}@) ::= "{ \"Meta\" : (@\angleit{JSON-value}@), \"Dest\" : (@\angleit{JSON-string}@),
+                \"Data\" : (@\angleit{JSON-value}@) } \n\n"
+
+(@\angleit{response}@) ::= "{ \"Dest\" : (@\angleit{JSON-string}@), \"Meta\" : (@\angleit{JSON-value}@),
+                \"Data\" : (@\angleit{JSON-value}@) } \n\n"
+\end{lstlisting}    
+  
+  \caption{Definition of the communication protocol between Turtledove (and its
+    tools) and the development evironment.}
+  \label{fig:intercom-protocol-def}
+\end{nonfloatingfigure}
+
+The protocol is defined (see \fref{fig:intercom-protocol-def}) as a JSON-object
+encoded string with two newlines at the end as the stop delimiter. The JSON
+object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination) and
+``Data'' (Data payload) which is described below.
 
 \begin{description}
-\item[CallerID] is a string specified by the development environment. This
-  string is not used in any way by Turtledove but is returned in the response
-  string. This string is intended for internal bookkeeping in the development
-  environment for example to distinguish which file/buffer and/or at which line
-  and column the response originated from.
+\item[Meta] is a JSON value specified by the development environment. This value
+  is not used in any way by Turtledove but is returned in the response. This
+  string is intended for internal bookkeeping in the development environment for
+  example to distinguish which file/buffer and/or at which line and column the
+  response originated from.
 
   As there is a possibility of Turtledove getting multi threaded, this is a good
   way of handling multiple request to Turtledove that may have different
   response times (One request waiting for a new complete reparse of the project
   code and another requesting a static lookup of some data).
 
-  If the development environment doesn't need the use of this string an empty
-  string can be passed to Turtledove.
+  If this feature is not needed by the development environment it can set this
+  field to the JSON value \texttt{null} but it is not a requirement.
 
   Some of the tools may report back when they are done doing something, without
-  the development environment has invoked it. In these cases an empty string
-  will be used as ``CallerID''.
+  the development environment has invoked it. In these cases the JSON value
+  \texttt{null} will be used.
 
-\item[DestinationID] is a string that needs to match a named destination in
+\item[Dest] is a non empty JSON string that needs to match a named destination in
   Turtledove. Examples of such a named destination, also including name of
   tools:
 
@@ -48,43 +69,29 @@ Besides the data payload the protocol consists of a ``CallerID'' string and a
 \end{description}
 
 
-\begin{nonfloatingfigure}
-  \begin{grammar}
-    <request> ::= \[[ "CallerID" "\\n" "DestinationID" "\\n" <JSON-value> "\\n\\n" \]]
-    
-    <response> ::= \[[ "DestinationID" "\\n" "CallerID" "\\n" <JSON-value> "\\n\\n" \]]
-  \end{grammar}
-  
-  \caption{Definition of the communication protocol between Turtledove (and its
-    tools) and the editor.}
-  \label{fig:intercom-protocol-definition}
-
-\end{nonfloatingfigure}
-
-
 It is important to remember that the resulting string sent to and from
-Turtledove must not contain any newlines except the ones that are mandatory by
-the protocol. This is a requirement even though the definition of JSON allows
-whitespace between a pair of tokens, as it would then render it impossible to
-determine when the request/response is done.
+Turtledove must not contain any double newlines except the ones that are defined by
+the protocol. This is a requirement, even though the definition of JSON allows
+whitespace between a pair of tokens, as it would then render it near to
+impossible to determine when the request/response is done without incrementally
+parsing the JSON encoded string as it is received.
 
-We have chosen the newline character as a separator of the fields as it
-makes it easy for debug pretty printing and since a newline character must be
-escaped i a name/id (and besides it is unlikely to be used here anyway).
+We have chosen the double newline character as the stop signal as it can't be used
+inside the structure of the JSON object and when present in a JSON string it
+must be escaped. 
 
-The same argument applies to the decision of using double newline chars to mark
-the end of a request or response. 
+This simple constraint of not having any double newlines inside the JSON encoded
+string should not restrain any practical usability of the JSON protocol.
 
 
 \paragraph{Examples}
 
-
-
 \begin{example} If a file needs to be added then the following string could be
-  sent to the ``Projectmanager'':
+  sent to the ``ProjectManager'':
 \begin{verbatim}
-"some_id \n ProjectManager \n {\"command\" : \"addfile\", 
-                                  \"file\" : \"myfoo.sml\"} \n\n"
+"{ \"Meta\" : null, \"Dest\" : \"ProjectManager\",
+   \"Data\" : { \"command\" : \"addfile\", 
+                \"file\" : \"myfoo.sml\"}} \n\n"
 \end{verbatim}
 \end{example}
 
@@ -121,19 +128,17 @@ the end of a request or response.
 \end{description}
 
 
-\paragraph{Get names in scope}
+\subsubsection*{Utils}
 
-Returns a list of identifiers visible from the current scope. This is particular
-handy for doing auto completion and 
+\begin{description}
+\item[GotoDef] Returns the filename and position of the definition of the
+  specified function
+\item[Rename] Rename a function or identifier together with its definition and
+  all its uses.
+\item[NamesInScope] Returns a list of identifiers visible from the current
+  scope. This is particular handy for doing auto completion and
+\end{description}
 
-
-\paragraph{Goto definition}
-
-Gets the filename and position of the definition of the specified function
-
-\paragraph{Rename}
-
-Rename a function or identifier together with its definition and all its uses.
 
 
 %%% Local Variables: 
