@@ -9,7 +9,8 @@ struct
     datatype t = E
                | T of color * t * element * t
 
-    fun die _ = raise Fail "Unimplemented"
+    fun die s = raise Fail s
+      | die _ = raise Fail "Unimplemented"
 
     val empty = E
 
@@ -67,7 +68,7 @@ struct
         in
           case insert' s of
             T (_, l, x, r) => T (B, l, x, r)
-          | _              => die ()
+          | _              => die "Impossible"
         end
 
     fun delete s x = 
@@ -142,10 +143,30 @@ struct
     fun isEmpty E = true
       | isEmpty _ = false
 
-    val compare = die
 
-    fun toList E = nil
-      | toList (T (_, l, x, r)) = toList l @ x :: toList r
+    fun compare E E = EQUAL
+      | compare (T _) E = GREATER
+      | compare E (T _) = LESS
+      | compare (T (_, l, x, r)) (T (_, l', x', r')) =
+        (* First compare the left part as this is always less than the node itself.
+            If equal then compare the node itself.
+              if equal then compare the right part as it is always greather than the node itself.
+
+           If any is not equal then return the order returned by Element.compare *)
+        case compare l l' of
+          EQUAL => (case Element.compare x x' of
+                      EQUAL => compare r r'
+                    | x => x)
+        | x => x
+
+
+    fun toList t = 
+        let
+          fun toList' E res = res
+            | toList' (T (_, l, x, r)) res =  toList' l ( x :: (toList' r res)) 
+        in
+          toList' t []
+        end
 
     fun equal s s' = toList s = toList s'
 
@@ -155,12 +176,28 @@ struct
     fun app _ E = ()
       | app f (T (_, l, x, r)) = (app f l ; f x ; app f r)
 
-    val map = die
-    val mapPartial = die
+    fun mapPartial f t =
+        let
+          (* the tree is balanced on insert so the ordering of calling insert dosn't matter *)
+          fun mapPartial' E res = res
+            | mapPartial' (T (_, l, x, r)) res =
+              let
+               val opt = f x
+              in
+                if isSome opt then
+                  mapPartial' l (mapPartial' r (insert res (valOf opt)))
+                else
+                  mapPartial' l (mapPartial' r res)
+              end
+        in
+          (* Start with an empty tree as the result *)
+          mapPartial' t (empty)
+        end
 
-    val split = die
-    val splitLeast = die
-    val splitGreatest = die
+    (* This is ugly, but it is easy and saves to copy almost the same code as in mapPartial. 
+       It only introduces a tiny overhead of "boxing" all values to SOME and then "de-boxing" 
+       them in mapPartial *)
+    fun map f t = mapPartial (fn x => SOME (f x)) t
 
     fun least E = raise Empty
       | least (T (_, E, x, _)) = x
@@ -169,6 +206,26 @@ struct
     fun greatest E = raise Empty
       | greatest (T (_, _, x, E)) = x
       | greatest (T (_, _, _, r)) = greatest r
+
+
+    fun splitLeast E = raise Empty
+      | splitLeast t = 
+        let
+          n = least t
+        in
+          (n, delete t n)
+        end
+
+    fun splitGreatest E = raise Empty
+      | splitGreatest t = 
+        let
+          n = greatest t
+        in
+          (n, delete t n)
+        end
+
+    val split = splitLeast
+
 
     fun some E = raise Empty
       | some (T (_, _, y, _)) = y
