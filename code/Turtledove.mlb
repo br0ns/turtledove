@@ -4,7 +4,7 @@ parsers/Parsers.mlb
 Basic.mlb
 in
 
-mylib/MyLib.mlb
+MyLib/MyLib.mlb
 (* parsers/MLBGrammar.sml *)
 main.sml
 
