@@ -1,58 +1,116 @@
 local
-$(SML_LIB)/basis/basis.mlb
-$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
-../Report.mlb
+  $(SML_LIB)/basis/basis.mlb
+  ../Report.mlb
 in
-Ordered.sig
-ListSort.sig
-Benchmark.sig Benchmark.sml
 
-  (* Signatures
-   *)
-Set.sig
-(* Multiset.sig *)
-Map.sig
-OrderedSet.sig
-(* OrderedMultiset.sig *)
-OrderedMap.sig
-Heap.sig
-Queue.sig
-Tree.sig
-Array.sig
-(* Graph.sig *)
-(* LabeledGraph.sig *)
 
-  (* Implementations
-   *)
-QuickSort.sml
 
-ListSet.sml
-UnbalancedOrderedSetFn.sml
-RedBlackOrderedSetFn.sml
-TrieOrderedSetFn.sml
+(*********************************
+ *                               *
+ *    DataStructue               *
+ *                               *
+ *********************************)
 
+(* The ordered signature that the ordered map and set relies on *)
+DataStructures/Ordered.sig
+
+
+(* Map *)
+DataStructures/Map/Map.sig
+
+(* DataStructures/Map/ListMap.sml *)
+
+
+(* Ordered Map *)
+DataStructures/OrderedMap/OrderedMap.sig
+
+DataStructures/OrderedMap/ListOrderedMapFn.sml
+DataStructures/OrderedMap/UnbalancedOrderedMapFn.sml
 (* RedBlackOrderedMapFn.sml *)
+(* OrderedMultiset.sig *)
 
-(* ListMap.sml *)
-ListOrderedMapFn.sml
-UnbalancedOrderedMapFn.sml
-SMLNJMapFn.sml
+DataStructures/OrderedMap/OrderedMapFn.sml (* Default implementation *)
 
-PairingHeapFn.sml
 
-PlainTreeFn.sml
+(* Ordered Set *)
+DataStructures/OrderedSet/OrderedSet.sig
 
-  (* Default implementations
-   *)
-ListSort.sml
-Set.sml
-(* Map.sml *)
-OrderedSetFn.sml
-OrderedMapFn.sml
-StringSet.sml
-Dictionary.sml
-HeapFn.sml
-IntMinHeap.sml
-IntMaxHeap.sml
-Tree.sml
+DataStructures/OrderedSet/UnbalancedOrderedSetFn.sml
+DataStructures/OrderedSet/TrieOrderedSetFn.sml
+DataStructures/OrderedSet/RedBlackOrderedSetFn.sml
+
+DataStructures/OrderedSet/OrderedSetFn.sml (* Default implementation *)
+
+
+(* Set *)
+DataStructures/Set/Set.sig
+
+DataStructures/Set/ListSet.sml
+DataStructures/Set/StringSet.sml
+
+DataStructures/Set/Set.sml (* Default implementation *)
+
+
+(* Multiset *)
+DataStructures/Multiset/Multiset.sig
+
+
+
+(* Heap *)
+DataStructures/Heap/Heap.sig
+
+DataStructures/Heap/PairingHeapFn.sml
+
+DataStructures/Heap/HeapFn.sml (* Default implementation *)
+
+DataStructures/Heap/IntMinHeap.sml (* specialised int HeapFn with sorting min to max *)
+DataStructures/Heap/IntMaxHeap.sml (* specialised int HeapFn with sorting max to min *)
+
+
+(* Queue *)
+DataStructures/Queue/Queue.sig
+
+
+(* Tree *)
+DataStructures/Tree/Tree.sig
+
+DataStructures/Tree/PlainTreeFn.sml
+
+
+(* Dictionary *)
+DataStructures/Dictionary/Dictionary.sml (* Specialised map with string keys *)
+
+
+(* Graph *)
+(* DataStructures/Graph/Graph.sig 
+
+   DataStructures/Graph/LabeledGraph.sig *)
+
+
+(*********************************
+ *                               *
+ *    Algorithm                  *
+ *                               *
+ *********************************)
+
+(* Sorting *)
+Algorithms/ListSort/ListSort.sig
+
+Algorithms/ListSort/QuickSortList.sml
+
+Algorithms/ListSort/ListSort.sml (* Default implementation *)
+
+
+
+(*********************************
+ *                               *
+ *    Benchmark                  *
+ *                               *
+ *********************************)
+
+
+Benchmark/Benchmark.sig 
+Benchmark/Benchmark.sml
+
+
 end

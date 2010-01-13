@@ -1,7 +1,5 @@
 signature Multiset =
 sig
-
-    eqtype 
     eqtype ''a multiset
 
     val empty : ''a multiset

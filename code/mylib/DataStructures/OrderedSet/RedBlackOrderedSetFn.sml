@@ -9,8 +9,8 @@ struct
     datatype t = E
                | T of color * t * element * t
 
-    fun die s = raise Fail s
-      | die _ = raise Fail "Unimplemented"
+    fun die "" = raise Fail "Unimplemented"
+      | die s = raise Fail s
 
     val empty = E
 
@@ -211,7 +211,7 @@ struct
     fun splitLeast E = raise Empty
       | splitLeast t = 
         let
-          n = least t
+          val n = least t
         in
           (n, delete t n)
         end
@@ -219,7 +219,7 @@ struct
     fun splitGreatest E = raise Empty
       | splitGreatest t = 
         let
-          n = greatest t
+          val n = greatest t
         in
           (n, delete t n)
         end
