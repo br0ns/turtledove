@@ -41,12 +41,13 @@ DataStructures/OrderedSet/RedBlackOrderedSetFn.sml
 
 DataStructures/OrderedSet/OrderedSetFn.sml (* Default implementation *)
 
+DataStructures/OrderedSet/StringOrderedSet.sml (* Default implementation using strings *)
+
 
 (* Set *)
 DataStructures/Set/Set.sig
 
 DataStructures/Set/ListSet.sml
-DataStructures/Set/StringSet.sml
 
 DataStructures/Set/Set.sml (* Default implementation *)
 
