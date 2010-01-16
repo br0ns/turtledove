@@ -1,3 +1,4 @@
+
 \documentclass[a4paper, oneside, draft]{memoir}
 % Fixes "No room for a new \xxx" error by extending the default 256 fixed size
 % LaTeX arrays
@@ -257,6 +258,7 @@ Jesper Reenberg \footnotesize{(jesper.reenberg@gmail.com)}}
 \thispagestyle{empty}
 
 \begin{abstract}
+
 \end{abstract}
 
 \clearpage 
@@ -274,43 +276,43 @@ professor at DIKU.
 
 \chapter{Introduction}
 
-\section{Problem statement}
-\label{sec:problem-statement}
-
-\section{Motivation}
-\label{sec:motivation}
-
-\section{Reader expectations}
+\input{miniml/chapters/introduction}
 
 \section{Structure outline}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{term-rewriting/term-rewriting}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{design-decisions/design-decisions}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{implementation/implementation}
 
 \chapter{...}
 ...
 
 
-\chapter{Evaluation}
-\label{chap:evaluation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{evaluation/evaluation}
 
-\chapter{Conclusions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{conclusions/conclusions}
+
 
 \bibliographystyle{bibliography/theseurl}
 \bibliography{bibliography/bibliography}
 
 \appendix
 
-\chapter{Figures}
-\section{Protocols}
-\label{sec:protocols}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{appendix/figures/figures}
 
-\input{appendix/figures/protocols/json}
 
 \chapter{...}
 
