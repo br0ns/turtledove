@@ -200,8 +200,9 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \mathlig{<|}{\lhd}
 \mathlig{|>}{\rhd}
 \mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
-\mathlig{~>e}{\stackrel{elim}{\leadsto}}
-\mathlig{~>g}{\stackrel{gen}{\leadsto}}
+% ~>e or ~>g conflicts with the \cite command for some reason.
+\mathlig{->e}{\stackrel{elim}{\leadsto}}
+\mathlig{->g}{\stackrel{gen}{\leadsto}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	    	     Forside
@@ -312,10 +313,6 @@ professor at DIKU.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{appendix/figures/figures}
-
-
-\chapter{...}
-
 
 
 \end{document}
