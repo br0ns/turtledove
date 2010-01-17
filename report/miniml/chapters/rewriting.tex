@@ -173,7 +173,7 @@ functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
   \end{eqnarray}
 \end{definition}
 
-\begin{definition}[Free variables of matches, $\FV_{match}$]\ \\ 
+\begin{definition}[Free variables of matches, $\FV_{match}$]\ \\
   Inductively defined:
   \begin{eqnarray}
     \FV_{match} (\epsilon) &=& \emptyset \\
@@ -358,6 +358,44 @@ If $e_1$ and $e_2$ are alpha equivalent expressions we write $e_1 ==a e_2$ which
 is a shorthand for $[] |- e_1 ==a e_2$. Similarly for pattern-expression pairs.
 \end{definition}
 
+\begin{example}
+\label{ex:alpha-equivalence1}
+
+We have
+\begin{eqnarray*}[c]
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  ==a
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (y, ys) . Cons(f y, g ys)
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+
+but not (as the free variables are not the same)
+\begin{eqnarray*}[c]
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \not ==a
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (y, ys) . Cons(h y, j ys)
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+\end{example}
+
 \section{Semantic equivalence}
 \label{sec:semantic-equivalence}
 We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
@@ -431,7 +469,7 @@ $<=$ and $<'$ in turn of those.
 \begin{lemma}[Total ordering]\label{lem:pat-total-orderings}
   The relation $<=$ is a total ordering, and $<$ is a strict total ordering on
   patterns.
-  
+
   Proof is given in \fref{sec:proof-total-orderings}
 \end{lemma}
 
@@ -476,6 +514,63 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
 \begin{proof}
   Immediately by inspection.
 \end{proof}
+
+\begin{example}
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (y, z)
+\end{lstlisting}
+    \end{eqnalign}
+    <
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, z)
+\end{lstlisting}
+    \end{eqnalign}
+    <
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Snoc (a, b)
+\end{lstlisting}
+    \end{eqnalign}
+    <
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+a
+\end{lstlisting}
+    \end{eqnalign}
+    <
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+b
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+\end{example}
+
+\begin{example}
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (y, Nil)
+\end{lstlisting}
+    \end{eqnalign}
+    <'
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, z)
+\end{lstlisting}
+    \end{eqnalign}
+    <'
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+b
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+Note: Keep in mind that the exact names of the variables are unimportant.
+\end{example}
 
 \section{Eliminating unused patterns}
 A function is simply a match. And a match is a list of pairs of patterns and
@@ -554,6 +649,46 @@ We can now define the elimination of unused patterns.
   Trivial (as if).
 \end{proof}
 
+\begin{example}
+  The first two patterns make a cover (assuming the only constructors are
+  \ttt{Cons} and \ttt{Nil}) so the last pattern is eliminated.
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+  Cons(x, xs) . Cons (x, xs)
+| Nil . Nil
+| x . x
+\end{lstlisting}
+    \end{eqnalign}
+    ->e
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+  Cons(x, xs) . Cons (x, xs)
+| Nil . Nil
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+
+  The second pattern in the example below is shadowed by the first pattern and is thus eliminated.
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+  Cons (x, y) . Cons (x, y)
+| Cons (Cons (x, y), z) . Cons (Cons (x, y), z)
+| Nil
+\end{lstlisting}
+    \end{eqnalign}
+    ->e
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+  Cons (x, y) . Cons (x, y)
+| Nil
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+
+\end{example}
+
 \section{Generalisiation}
 Sometimes patterns get unnecessary complex. If for example a pattern (or one of
 its subpatterns) is a constructor pattern whose subpatterns are all variables,
@@ -616,6 +751,25 @@ and \fref{eq:single-gen-2} holds when \fref{eq:single-gen-1} does not and
 \begin{proof}
   Straightforward induction proof.
 \end{proof}
+
+\begin{example}
+  This example shows a match with an unnecessary complex pattern that reverses
+  the components of a pair.
+
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Pair (Cons (x, xs), zs) . Pair (zs, Cons (x, xs))
+\end{lstlisting}
+    \end{eqnalign}
+    |>
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Pair (xs, zs) . Pair (zs, xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+\end{example}
 
 \subsection{Generalisation of matches}
 For the generalisation of a match $m$, we require $m$ to be in partially ordered
@@ -688,7 +842,7 @@ Four scenarios arise
   \ref{item:gen-scen-1}. And of course $m_1 < \ldots < m_k$.
 
   And we write $m ->g m'$.
-  
+
 \end{definition}
 
 \section{Normal form}
@@ -711,6 +865,55 @@ ordered form by repeated elimination.
 \begin{lemma}
   We expect the normal form to be unique (in some sense).
 \end{lemma}
+
+\begin{example}
+Consider
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
+    | addodd Nil . Nil
+    | addodd x . x
+\end{lstlisting}
+Assume that the constructor environment is $C = \{\mathtt{Cons}, \mathtt{Nil},
+\mathtt{Pair}\}$, and that there exists a function \texttt{+}.
+
+As the match is not in partially ordered form (due to the pattern \texttt{x})
+our only choice is to eliminate. Luckily we can, because the three first
+patterns forms a cover, so we can eliminate the fourth. We get
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
+    | addodd Nil . Nil
+\end{lstlisting}
+which is in partially ordered form. The second clause can be generalised to
+\texttt{x . x}. This means that the clause \texttt{Nil . Nil} should be moved
+up. We get
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Nil . Nil
+    | addodd x . x
+\end{lstlisting}
+Next we can generalise \texttt{Nil . Nil} to \texttt{x . x} which coincide with
+the third clause, so we remove it.
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd x . x
+\end{lstlisting}
+The first clause can be generalised to \texttt{
+  Cons (Cons (x, y), xs) . Cons (Cons (x, + y), addodd xs)
+} (by generalising the two \texttt{Pair} patterns), so we get
+\begin{lstlisting}
+      addodd Cons (Cons (x, y), xs) .
+               Cons (Cons (x, + y), addodd xs)
+    | addodd x . x
+\end{lstlisting}
+which cannot be generalised or eliminated upon. So it is a normal form.
+
+\end{example}
 
 
 % \section{Weak unification}
