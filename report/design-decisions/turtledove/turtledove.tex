@@ -14,31 +14,48 @@
 \label{sec:design-project-manager}
 
 
-The project manager is responsible for managing a project or a ``single
-file''-project. 
+The project manager is responsible for managing the project and all actions done
+to a project such as creating/deleting projects, adding/removing files from
+project, adding/removing sub projects, adding/removing dependencies to a
+project, etc.
 
-A ordinary project is defined in a MLB file (ML Basis file \cite{mlbasis}) with the extension
-.mlb. Each project file may contain references to other project files which will
-be considered as a sub project.  
+A ordinary project is defined in a MLB file (ML Basis file \cite{mlbasis}) with
+the extension .mlb. Each project file may contain references to other project
+files which will then be considered as sub projects.
 
 It is important to distinguish between the currently open project and its
 containing sub projects. For example when adding a new file to the project,
 should the file then be added to the currently open project or to one of the sub
-project.
+projects.
 
 
-A ``single file''-project is when trying to open a stand alone file, normally a
-.sml or .sig file, instead of a MLB file. As a stand alone file doesn't contain
-any references to the standard library among other things it needs to be handled
-specially before it can be compiled\footnote{because the environment for parsing
-  is defined through the standard library.}and thus also parsed.
+If the project manager tries to open a project from a file that doesn't have the
+.mlb extension it will assume the file is a stand alone SML file (normally files
+with .sml or .sig extensions). When this happens a ``single file'' project
+containing this one stand alone file is temporarily created. This is crucial as
+the SML Parser expects the basis library to be referenced\footnote{Of cause this
+  is only if you actually use any of the functionality from the basis library in
+  the stand alone file, however one excepts the basis library to be present at
+  all times.} so it can be parsed. However this is never done in the stand alone
+files and as such the following temporary project description is created
 
-\fixme{better footnote description}
+\fixme{Lame footnote?}
 
+\begin{example}[A ``single file'' project example]\
+\begin{lstlisting}
+local
+  (@\$@)(SML_LIB)/basis/basis.mlb
+in
+  ABSOLUTE_PATH_TO_STAND_ALONE_FILE
+end
+\end{lstlisting}
+\end{example}
 
-The ``single file''-projects are when a stand alone .sml file or .sig file is
-opened.
-
+The above temporary project description is never saved to a file, but passed
+directly to the MBL parser as a string and a internal state is set telling that
+this is a ``single file'' project as some functionality might not apply to these
+kind of projects, such as saving the project without an absolute path and name
+of the project.
 
 
 %%% Local Variables: 
