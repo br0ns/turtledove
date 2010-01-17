@@ -4,6 +4,8 @@
 *.out
 *.toc
 *.dvi
+*.bbl
+*.blg
 #*#
 .#*
 *auto*
