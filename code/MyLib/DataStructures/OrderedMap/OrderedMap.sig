@@ -93,6 +93,6 @@ sig
      * maps, always choosing the second map on elements that are in bot domains.
      *)
     val plus        : 'a t -> 'a t -> 'a t
-                                   
+
     val toString    : (key -> string) -> ('a -> string) -> 'a t -> string
 end

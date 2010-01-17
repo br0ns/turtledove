@@ -9,7 +9,7 @@ sig
       val toString : t -> string
       val fromString : string -> t
     end where type t = node
-      
+
     (* No such node in tree *)
     exception Node
 
@@ -51,4 +51,6 @@ sig
         val parent : 'a t -> 'a t option
     end where type 'a tree = 'a t
     val join : 'a -> 'a t list -> 'a t
+
+    val toString : ('a -> string) -> 'a t -> string
 end

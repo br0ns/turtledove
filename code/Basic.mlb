@@ -13,6 +13,8 @@ TextUtils.sig TextUtils.sml
 
 Report.mlb
 
+Benchmark.sig Benchmark.sml
+
 Show.sig Show.sml
 
 Path.sig Path.sml

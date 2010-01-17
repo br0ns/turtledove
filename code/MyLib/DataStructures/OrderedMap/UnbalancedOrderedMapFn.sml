@@ -18,14 +18,14 @@ struct
             (case insert r x of
                  SOME r' => SOME (T (l, y, r'))
                | NONE => NONE)
-          | LESS    => 
+          | LESS    =>
             (case insert l x of
                  SOME l' => SOME (T (l', y, r))
                | NONE => NONE)
           | EQUAL   => NONE
 
     fun update E x = singleton x
-      | update (t as T (l, y as (k', _), r)) (x as (k, _)) = 
+      | update (t as T (l, y as (k', _), r)) (x as (k, _)) =
         case Key.compare k k' of
             GREATER => T (l, y, update r x)
           | LESS    => T (update l x, y, r)

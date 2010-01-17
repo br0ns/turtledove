@@ -22,7 +22,7 @@ struct
             )
           | EQUAL   => NONE
           | LESS    => SOME ((k, v) :: (k', v') :: ys)
-                       
+
     fun remove nil _ = raise Domain
       | remove ((k', v') :: ys) k =
         case compare k k' of
@@ -135,6 +135,6 @@ struct
     val mergi = unimp
 
     val plus = unimp
-                 
+
     val toString = unimp
 end

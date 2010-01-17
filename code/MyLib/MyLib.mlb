@@ -1,6 +1,5 @@
 local
   $(SML_LIB)/basis/basis.mlb
-  ../Report.mlb
 in
 
 
@@ -30,6 +29,7 @@ DataStructures/OrderedMap/UnbalancedOrderedMapFn.sml
 (* OrderedMultiset.sig *)
 
 DataStructures/OrderedMap/OrderedMapFn.sml (* Default implementation *)
+DataStructures/OrderedMap/Dictionary.sml (* Specialised map with string keys *)
 
 
 (* Ordered Set *)
@@ -56,7 +56,6 @@ DataStructures/Set/Set.sml (* Default implementation *)
 DataStructures/Multiset/Multiset.sig
 
 
-
 (* Heap *)
 DataStructures/Heap/Heap.sig
 
@@ -78,12 +77,8 @@ DataStructures/Tree/Tree.sig
 DataStructures/Tree/PlainTreeFn.sml
 
 
-(* Dictionary *)
-DataStructures/Dictionary/Dictionary.sml (* Specialised map with string keys *)
-
-
 (* Graph *)
-(* DataStructures/Graph/Graph.sig 
+(* DataStructures/Graph/Graph.sig
 
    DataStructures/Graph/LabeledGraph.sig *)
 
@@ -100,18 +95,4 @@ Algorithms/ListSort/ListSort.sig
 Algorithms/ListSort/QuickSortList.sml
 
 Algorithms/ListSort/ListSort.sml (* Default implementation *)
-
-
-
-(*********************************
- *                               *
- *    Benchmark                  *
- *                               *
- *********************************)
-
-
-Benchmark/Benchmark.sig 
-Benchmark/Benchmark.sml
-
-
 end

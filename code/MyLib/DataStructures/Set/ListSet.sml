@@ -54,9 +54,13 @@ struct
 
     fun map f s = foldl (fn (y, ys) => insert ys (f y)) empty s
 
-    fun mapPartial f s = foldl (fn (y, ys) => case f y of
-                                                  SOME y => insert ys y
-                                                | NONE   => ys) empty s
+    fun mapPartial f s =
+        foldl (fn (y, ys) =>
+                  case f y of
+                    SOME y => insert ys y
+                  | NONE   => ys
+              )
+              empty s
 
     val fold = foldl
 
@@ -66,10 +70,9 @@ struct
     fun some (x :: _) = x
       | some _ = raise Empty
 
-    fun toString _ (l, r, _) nil = l ^ r
-      | toString pr (l, r, d) (h :: t) =
-        l ^
-        foldl (fn (x, a) => a ^ d ^ pr x) (pr h) t ^
-        r
-        
+    fun toString _ nil = "{}"
+      | toString pr (h :: t) =
+        "{" ^
+        foldl (fn (x, a) => a ^ ", " ^ pr x) (pr h) t ^
+        "}"
 end

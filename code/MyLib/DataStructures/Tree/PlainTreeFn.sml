@@ -140,4 +140,6 @@ struct
         in
           t
         end
+
+    fun toString pr t = "[Tree with " ^ Int.toString (size t) ^ " nodes]"
 end

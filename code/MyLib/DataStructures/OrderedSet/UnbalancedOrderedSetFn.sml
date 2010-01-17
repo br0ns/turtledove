@@ -30,7 +30,7 @@ fun splitLeast E = raise Empty
 
 fun splitGreatest E = raise Empty
   | splitGreatest (T (l, x, E)) = (x, l)
-  | splitGreatest (T (l, x, r)) = 
+  | splitGreatest (T (l, x, r)) =
     let
       val (y, r') = splitLeast r
     in
@@ -94,5 +94,4 @@ val least = die
 val greatest = die
 val some = die
 val toString = die
-val show = die
 end

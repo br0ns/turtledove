@@ -61,5 +61,4 @@ val least = die
 val greatest = die
 val some = die
 val toString = die
-val show = die
 end

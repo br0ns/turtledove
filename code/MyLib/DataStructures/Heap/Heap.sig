@@ -6,7 +6,7 @@ sig
     type 'a t
 
     val empty      : 'a t
-    val isEmpty    : 'a t -> bool                            
+    val isEmpty    : 'a t -> bool
     val insert : 'a t -> key * 'a -> 'a t
 
     (* Deletes the element the sorts as the smallest element given the ordering of the key*)

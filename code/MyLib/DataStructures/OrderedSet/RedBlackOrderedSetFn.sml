@@ -34,12 +34,12 @@ struct
 
     fun app E r = r
       | app l E = l
-      | app (T (R, ll, ly, lr)) (T (R, rl, ry, rr)) = 
+      | app (T (R, ll, ly, lr)) (T (R, rl, ry, rr)) =
         (case app lr rl of
            T (R, l, y, r) => T (R, (T (R, ll, ly, l)), y, (T (R, r, ry, rr)))
          | x => T (R, ll, ly, (T (R, x, ry, rr)))
         )
-      | app (T (B, ll, ly, lr)) (T (B, rl, ry, rr))  = 
+      | app (T (B, ll, ly, lr)) (T (B, rl, ry, rr))  =
         (case app lr rl of
            T (R, l, y, r) => T (R, (T (B, ll, ly, l)), y, (T (B, r, ry, rr)))
          | x => balanceLeft ll ly (T (B, x, ry, rr))
@@ -60,8 +60,8 @@ struct
                    LESS    => balance (insert' l) y  r
                  | GREATER => balance l           y (insert' r)
                  | EQUAL   => s)
-              | insert' (s as T (R, l, y, r)) = 
-                (case Element.compare x y of 
+              | insert' (s as T (R, l, y, r)) =
+                (case Element.compare x y of
                    LESS     => T (R, insert' l, y, r)
                  | GREATER  => T (R, l,         y, insert' r)
                  | EQUAL    => s)
@@ -71,7 +71,7 @@ struct
           | _              => die "Impossible"
         end
 
-    fun delete s x = 
+    fun delete s x =
         let
           fun delete' E = E
             | delete' (T (_, l, y, r)) =
@@ -79,7 +79,7 @@ struct
                 LESS => delFromLeft l y r
               | GREATER => delFromRight l y r
               | EQUAL => app l r
-              
+
           and delFromLeft (l as T (B, _, _, _)) y r = balanceLeft (delete' l) y r
             | delFromLeft l y r = T (R, (delete' l), y, r)
 
@@ -112,7 +112,7 @@ struct
     fun partition p = foldl (fn (x, (s, s')) =>
                                 if p x then
                                     (insert s x, s')
-                                else 
+                                else
                                     (s, insert s' x)
                             ) (empty, empty)
     fun filter p = foldl (fn (x, s) => if p x then insert s x else s) empty
@@ -160,15 +160,20 @@ struct
         | x => x
 
 
-    fun toList t = 
+    fun toList t =
         let
           fun toList' E res = res
-            | toList' (T (_, l, x, r)) res =  toList' l ( x :: (toList' r res)) 
+            | toList' (T (_, l, x, r)) res =  toList' l ( x :: (toList' r res))
         in
           toList' t []
         end
 
-    fun equal s s' = toList s = toList s'
+    fun equal E E = true
+      | equal (T (_, l, x, r)) (T (_, l', y, r')) =
+        (case Element.compare x y of
+           EQUAL => equal l l' andalso equal r r'
+         | _ => false)
+      | equal _ _ = false
 
     fun card E = 0
       | card (T (_, l, _, r)) = 1 + card l + card r
@@ -179,25 +184,21 @@ struct
     fun mapPartial f t =
         let
           (* the tree is balanced on insert so the ordering of calling insert dosn't matter *)
-          fun mapPartial' E res = res
-            | mapPartial' (T (_, l, x, r)) res =
-              let
-               val opt = f x
-              in
-                if isSome opt then
-                  mapPartial' l (mapPartial' r (insert res (valOf opt)))
-                else
-                  mapPartial' l (mapPartial' r res)
-              end
+          fun loop E res = res
+            | loop (T (_, l, x, r)) res =
+              (loop l o loop r)
+                (case f x of
+                   SOME x' => insert res x'
+                 | NONE    => res)
         in
           (* Start with an empty tree as the result *)
-          mapPartial' t (empty)
+          loop t empty
         end
 
-    (* This is ugly, but it is easy and saves to copy almost the same code as in mapPartial. 
-       It only introduces a tiny overhead of "boxing" all values to SOME and then "de-boxing" 
+    (* This is ugly, but it is easy and saves to copy almost the same code as in mapPartial.
+       It only introduces a tiny overhead of "boxing" all values to SOME and then "de-boxing"
        them in mapPartial *)
-    fun map f t = mapPartial (fn x => SOME (f x)) t
+    fun map f = mapPartial (SOME o f)
 
     fun least E = raise Empty
       | least (T (_, E, x, _)) = x
@@ -209,7 +210,7 @@ struct
 
 
     fun splitLeast E = raise Empty
-      | splitLeast t = 
+      | splitLeast t =
         let
           val n = least t
         in
@@ -217,7 +218,7 @@ struct
         end
 
     fun splitGreatest E = raise Empty
-      | splitGreatest t = 
+      | splitGreatest t =
         let
           val n = greatest t
         in
@@ -231,16 +232,16 @@ struct
       | some (T (_, _, y, _)) = y
 
 
-    fun toString s = 
-        let 
+    fun toString p s =
+        let
           val elems = toList s
-          fun toString' (s::ss) = (Element.toString s) ^ (List.foldl (fn (a,b) => b ^ ", " ^ (Element.toString a)) "" ss)
+          fun toString' (s::ss) = (p s) ^ (List.foldl (fn (a,b) => b ^ ", " ^ (p a)) "" ss)
             | toString' [] = ""
         in
           "{" ^ (toString' elems) ^ "}"
         end
-    
-    (* 
+
+    (*
 
       Currently shows the tree as this (when adding elements 0--10):
 
@@ -257,60 +258,60 @@ struct
 [B|0]     [B|2]       .--[B|5]--.         .--[B|9]--.
                     [B|4]     [B|6]     [B|8]     [B|10]
 
-      Alternativelyt it would be easy to post edit the tree to look like this, by adding lines between, 
+      Alternativelyt it would be easy to post edit the tree to look like this, by adding lines between,
       not adding the dog and finding start and end indexes of "---" to add / and \
 
         -------[B|3]-----------------
        /                             \
-   --[B|1---                -------[R|7]------- 
+   --[B|1---                -------[R|7]-------
   /         \              /                   \
-[B|0]     [B|2]        --[B|5]--           --[B|9]-- 
+[B|0]     [B|2]        --[B|5]--           --[B|9]--
                       /         \         /         \
                     [B|4]     [B|6]     [B|8]     [B|10]
      *)
-           
-    fun show E = Report.text ("E")
-      | show t = 
-        let                      
-          fun genSpace 0 = ""
-            | genSpace n = " " ^ (genSpace (n-1))
 
-          fun colorToString c = case c of R => "R" | B => "B"
-                           
-          (* Invariant: We know that there is always a line if the node is not a
-             leaf (E). All T nodes has two leafs which generates empty lines at
-             minimum.  *)
-          fun show' E                preSpace []                       = (preSpace, [(genSpace preSpace) ^ ""])
-            | show' E                preSpace (thisLine :: linesBelow) = (preSpace, (thisLine ^ (genSpace (preSpace - (size thisLine))) ^ "") :: linesBelow)          
-            | show' (T (c, l, y, r)) preSpace []                       = 
-              let
-                val elem = "[" ^ (colorToString c) ^ "|" ^ (Element.toString y) ^ "]"
-                val elemLen = size elem
+    (* fun show E = "E" *)
+    (*   | show t = *)
+    (*     let *)
+    (*       fun genSpace 0 = "" *)
+    (*         | genSpace n = " " ^ (genSpace (n-1)) *)
 
-                val (newPreSpaceLeft, newLinesLeft) = show' l preSpace []
-                val newPreSpace  = newPreSpaceLeft + elemLen
+    (*       fun colorToString c = case c of R => "R" | B => "B" *)
 
-                val (newPreSpaceRight, newLinesRight) = show' r newPreSpace newLinesLeft
-              in
-                (newPreSpaceRight, ((genSpace newPreSpaceLeft) ^ elem) :: newLinesRight)
-              end
-            | show' (T (c, l, y, r)) preSpace (thisLine :: linesBelow) =  
-              let
-                val elem = "[" ^ (colorToString c) ^ "|" ^ (Element.toString y) ^ "]"
-                val elemLen = size elem
+    (*       (\* Invariant: We know that there is always a line if the node is not a *)
+    (*          leaf (E). All T nodes has two leafs which generates empty lines at *)
+    (*          minimum.  *\) *)
+    (*       fun show' E                preSpace []                       = (preSpace, [(genSpace preSpace) ^ ""]) *)
+    (*         | show' E                preSpace (thisLine :: linesBelow) = (preSpace, (thisLine ^ (genSpace (preSpace - (size thisLine))) ^ "") :: linesBelow) *)
+    (*         | show' (T (c, l, y, r)) preSpace []                       = *)
+    (*           let *)
+    (*             val elem = "[" ^ (colorToString c) ^ "|" ^ (Element.toString y) ^ "]" *)
+    (*             val elemLen = size elem *)
 
-                val (newPreSpaceLeft, newLinesLeft) = show' l preSpace linesBelow
-                val newPreSpace = newPreSpaceLeft + elemLen
+    (*             val (newPreSpaceLeft, newLinesLeft) = show' l preSpace [] *)
+    (*             val newPreSpace  = newPreSpaceLeft + elemLen *)
 
-                val (newPreSpaceRight, newLinesRight) = show' r newPreSpace newLinesLeft
+    (*             val (newPreSpaceRight, newLinesRight) = show' r newPreSpace newLinesLeft *)
+    (*           in *)
+    (*             (newPreSpaceRight, ((genSpace newPreSpaceLeft) ^ elem) :: newLinesRight) *)
+    (*           end *)
+    (*         | show' (T (c, l, y, r)) preSpace (thisLine :: linesBelow) = *)
+    (*           let *)
+    (*             val elem = "[" ^ (colorToString c) ^ "|" ^ (Element.toString y) ^ "]" *)
+    (*             val elemLen = size elem *)
 
-                val addSpace = newPreSpaceLeft - (size thisLine)
-              in
-                (newPreSpaceRight, (thisLine ^ (genSpace addSpace) ^ elem ) :: newLinesRight)
-              end
+    (*             val (newPreSpaceLeft, newLinesLeft) = show' l preSpace linesBelow *)
+    (*             val newPreSpace = newPreSpaceLeft + elemLen *)
 
-          val lines = #2 (show' t 0 [])
-        in
-          Report.text (List.foldl (fn (a, b) => b ^ a  ^ "\n") "" lines)
-        end
+    (*             val (newPreSpaceRight, newLinesRight) = show' r newPreSpace newLinesLeft *)
+
+    (*             val addSpace = newPreSpaceLeft - (size thisLine) *)
+    (*           in *)
+    (*             (newPreSpaceRight, (thisLine ^ (genSpace addSpace) ^ elem ) :: newLinesRight) *)
+    (*           end *)
+
+    (*       val lines = #2 (show' t 0 []) *)
+    (*     in *)
+    (*       List.foldl (fn (a, b) => b ^ a ^ "\n") "" lines *)
+    (*     end *)
 end

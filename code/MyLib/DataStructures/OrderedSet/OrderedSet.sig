@@ -46,9 +46,9 @@ sig
     val foldl      : (element * 'a -> 'a) -> 'a -> t -> 'a
     val foldr      : (element * 'a -> 'a) -> 'a -> t -> 'a
 
-    (* Splits/removes one element from the list and returns the element and the new list as a tuple *)                                                        
+    (* Splits/removes one element from the list and returns the element and the new list as a tuple *)
     val split      : t -> element * t
-    (* As split but takes the least/smalest element *)                          
+    (* As split but takes the least/smalest element *)
     val splitLeast : t -> element * t
     (* As split but takes the greatest element *)
     val splitGreatest : t -> element * t
@@ -63,8 +63,5 @@ sig
     val some       : t -> element
 
     (* A flat "visual string" that represents the OrderedSet *)
-    val toString   : t -> string
-
-    (* A "visual string" that represents the OrderedSet in a fancy way  *)
-    val show       : t -> Report.t
+    val toString   : (element -> string) -> t -> string
 end
