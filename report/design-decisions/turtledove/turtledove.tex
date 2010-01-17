@@ -3,6 +3,41 @@
 \label{sec:design-turtledove}
 
 
+\subsection{MLB parser}
+\label{sec:design-mlb-parser}
+
+\subsection{SML Parser}
+\label{sec:design-sml-parser}
+
+
+\subsection{Project manager}
+\label{sec:design-project-manager}
+
+
+The project manager is responsible for managing a project or a ``single
+file''-project. 
+
+A ordinary project is defined in a MLB file (ML Basis file \cite{mlbasis}) with the extension
+.mlb. Each project file may contain references to other project files which will
+be considered as a sub project.  
+
+It is important to distinguish between the currently open project and its
+containing sub projects. For example when adding a new file to the project,
+should the file then be added to the currently open project or to one of the sub
+project.
+
+
+A ``single file''-project is when trying to open a stand alone file, normally a
+.sml or .sig file, instead of a MLB file. As a stand alone file doesn't contain
+any references to the standard library among other things it needs to be handled
+specially before it can be compiled\footnote{because the environment for parsing
+  is defined through the standard library.}and thus also parsed.
+
+\fixme{better footnote description}
+
+
+The ``single file''-projects are when a stand alone .sml file or .sig file is
+opened.
 
 
 
