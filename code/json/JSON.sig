@@ -20,7 +20,7 @@ sig
        one *)
     val readMany : string -> t list
 
-    (* Writes an SML representation of a JSON value (JSON.t) to a string. *) 
+    (* Writes an SML representation of a JSON value (JSON.t) to a string. *)
     val write : t -> string
 
     (* Writes a list of JSON values (JSON.t) to a string seperated by newlines *)

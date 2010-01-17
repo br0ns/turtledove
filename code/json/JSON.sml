@@ -18,7 +18,7 @@ struct
         else
             c :: cs
       | skipWhitespace _ = nil
-            
+
     (* Invariant: All read functions skip trailing whitespace *)
     fun rValue (cs as c :: _) =
         if c = #"{" then
@@ -198,7 +198,7 @@ struct
     fun readMany s =
         let
             fun loop nil = nil
-              | loop cs = 
+              | loop cs =
                 let
                     val (v, cs) = rValue cs
                 in

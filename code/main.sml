@@ -1,3 +1,5 @@
+fun f 1 = 1
+
 val print = fn s => print (s ^ "\n")
 
 (* ;print "[Yeah baby!]"; *)
