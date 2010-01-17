@@ -85,8 +85,9 @@ sig
   val paragraph : string -> t
   val indent : t -> t
   val ++ : t * t -> t
-
   val @@ : t * t -> t
+  val || : t * t -> t
+
   val itemize : t list -> t
   val itemize' : string -> t list -> t
   val itemizenl : t list -> t

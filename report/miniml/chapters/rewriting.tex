@@ -22,7 +22,7 @@
   & & con \texttt{:} \overline{num}                           & Constructor of arity $num$\\
   & & \epsilon                             & Empty program\\
   & & dec_1 \texttt{;} dec_2
-\end{eqnarray*} 
+\end{eqnarray*}
 
 No pattern may contain a given variable more than once.
 
@@ -56,7 +56,7 @@ patterns), substitution (in expressions) and alpha equivalence (of expressions).
 
 \paragraph{Note.}
 \begin{enumerate}
-\item 
+\item
 If $f : A -> B$ and $g : A -> B$ are arbitrary mappings then
 \begin{eqnarray*}[rlqTl]
   (g ++ f)(x) &= f(x) & if $x \in \Dom(f)$\\
@@ -68,13 +68,29 @@ and
 \]
 
 \item
-We write $p \subseteq p'$ to mean that $p$ is a subpattern of $p'$. More
+We write $p \sqsubseteq p'$ to mean that $p$ is a subpattern of $p'$. More
 precisely this is the case if $p = p'$ or if $p' = c \ttt{(} p_1 \ttt{,} \ldots
 \ttt{,} p_n \ttt{)}$ and $p \subseteq p_i$ for some $i \in \{1, \ldots, n\}$.
 
 In particular we have\footnote{See \fref{sec:free-variables}
-  for the definition of $\FV_{pat}$.} $x \subseteq p$ exactly when $x \in
+  for the definition of $\FV_{pat}$.} $x \sqsubseteq p$ exactly when $x \in
 \FV_{pat}(p)$. The relation is obviously reflexive.
+
+\begin{example}
+  \label{ex:suppattern1}
+  Recall that lowercase identifiers are variables, and uppercase ones are
+  constructors. Variables as subpatterns:
+  \begin{eqnarray*}
+    \ttt{x} \sqsubseteq \ttt{A(x,y)} \qquad
+    \ttt{y} \sqsubseteq \ttt{A(x,y)} \qquad
+    \ttt{z} \not \sqsubseteq \ttt{A(x,y)}
+  \end{eqnarray*}
+  Patterns as subpatterns:
+  \begin{eqnarray*}
+    \ttt{A(x,y)} \sqsubseteq \ttt{B(A(x,y),z)} \qquad
+    \ttt{A(x,y)} \not \sqsubseteq \ttt{A(A(a,b),c)} \qquad
+  \end{eqnarray*}
+\end{example}
 
 \item
 The syntactic category $pat$ is a proper subset of $exp$. Let $\kappa : pat ->
@@ -118,6 +134,24 @@ interest. Equivalence of patterns is defined by $==_\pi$, \emph{only} when $\pi$
 is not fixed.
 \end{definition}
 
+\begin{example}
+  \label{ex:pattern-equiv1}
+  We have
+  \begin{eqnarray*}
+    \ttt{A(x,y)} &==_{\pi}& \ttt{A(f,g)}\\
+    \ttt{A(f,g)} &==_{\pi'}& \ttt{A(x,y)}
+  \end{eqnarray*}
+  with
+  \begin{eqnarray*}
+    \pi &=& [x\mapsto f, y \mapsto g] \\
+    \pi' &=& [f \mapsto x, g \mapsto y]
+  \end{eqnarray*}
+  but not
+  \begin{eqnarray*}
+    \ttt{A(x,y)} &\not ==& \ttt{B(h,j)} \\
+    \ttt{1} &\not ==& \ttt{2}
+  \end{eqnarray*}
+\end{example}
 
 \fixme{Show equivalence relation: reflexive, symmetric and transitive.}
 \fixme{maybe: show $p_1 ==_\pi p_2$ iff $p_2 ==_{\pi^{-1}} p_1$.}
@@ -157,6 +191,36 @@ functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
   \end{eqnarray}
 \end{definition}
 
+\begin{example}
+\label{ex:free-variables1}
+\begin{eqnarray*}[c]
+  \FV_{exp} \left(
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\ttt{f}, \ttt{g} \} \\
+%
+  \FV_{match} \left(
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, Nil) . Cons(x, y)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\ttt{y}\} \\
+%
+  \FV_{pat} \left(
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\ttt{x}, \ttt{xs}\} \\
+\end{eqnarray*}
+\end{example}
+
 \subsection{Substitution}
 We define substitution in expressions. An expression can be substituted for any
 (sub)expression of an expressions, not just variables.
@@ -190,6 +254,57 @@ Note that in \fref[plain]{eq:subst-sub} we require $e_1$ and $e_3$ to be exactly
 equal, not just alpha equivalent.
 \end{definition}
 
+\begin{example}
+\label{ex:substituation1}
+We have
+\begin{eqnarray*}[c]
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+  | y . x
+\end{lstlisting}
+  \end{eqnalign}
+\right) \left[ \ttt{z}/\ttt{x} \right] \quad = \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+  | y . z
+\end{lstlisting}
+  \end{eqnalign} \\
+%
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . Cons (1, x)
+\end{lstlisting}
+  \end{eqnalign}
+\right) \left[ \ttt{z}/\ttt{Cons (1, x)} \right] \quad = \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . z
+\end{lstlisting}
+  \end{eqnalign} \\
+\end{eqnarray*}
+
+but not
+
+\begin{eqnarray*}
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+\end{lstlisting}
+  \end{eqnalign}
+\right) [ \ttt{z}/\ttt{x} ] \quad \neq \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun z . z
+\end{lstlisting}
+  \end{eqnalign}
+\end{eqnarray*}
+\end{example}
+
 \subsection{Alpha equivalence}
 \label{sec:alpha-equivalence}
 
@@ -205,7 +320,7 @@ use the symbol $==a$ for both relations.
     \sigma |- \fun p^1_1 \texttt{.} e^1_1 \texttt{|} \ldots \texttt{|} p^1_n
     \texttt{.} e^1_n &==a& \fun p^2_1 \texttt{.} e^2_1 \texttt{|} \ldots \texttt{|} p^2_n
     \texttt{.} e^2_n \label{eq:alpha-match} \\
-    \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a& 
+    \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a&
     c\ttt{(}e^2_1 \ttt{,} \ldots \ttt{,} e^2_n \ttt{)} \label{eq:alpha-con}
   \end{eqnarray}
 where \fref{eq:alpha-var} holds
@@ -377,26 +492,15 @@ This can happen for two reasons.
 \end{enumerate}
 
 \subsection{Cover}\label{sec:cover}
-We define a cover to be a set of patterns such that at least one of them matches
-any given value.
+We define a cover to be a set of patterns such that for every input at least one
+of the patterns will match that input. And we write
 
 \begin{definition}[Cover]\label{def:cover}
-  Let $P = \{p_1, \ldots, p_n \}$, and $C = \{c_1, \ldots, c_n\}$ be the constructors
-  defined in the current environment. Then
+  Let $P = \{p_1, \ldots, p_n \}$ be a set af patterns. Then
   \[
   \Cov(P)
   \]
-  if
-  \[
-  x \in \{p_1, \ldots, p_n \} \lor (\forall c \in C : \Cov(P_1) \land
-  \ldots \Cov(P_m))
-  \]
-  where
-  \begin{eqnarray*}
-    P_1 &=& \{p'_1 \mid c \texttt{(} p'_1 \texttt{,} \ldots \texttt{,} p'_m \texttt{)} \in P\}\\
-    &\vdots&\\
-    P_m &=& \{p'_m \mid c \texttt{(} p'_1 \texttt{,} \ldots \texttt{,} p'_m \texttt{)} \in P\}
-  \end{eqnarray*}
+  if $P$ is a cover.
 \end{definition}
 
 Any pattern following patterns that taken together are a cover is unused because

@@ -9,7 +9,7 @@ Benchmark.sig Benchmark.sml
 
   (* Signatures
    *)
-Set.sig
+Set/Set.sig
 (* Multiset.sig *)
 Map.sig
 OrderedSet.sig

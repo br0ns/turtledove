@@ -492,7 +492,7 @@ topdecnode:
 (*---------------------------------------------------*)
 
 strdecs : strdecsnode
-                ( join (wrap Strdec_seq
+                ( join (wrap Strdecs
                              strdecsnodeleft
                              strdecsnoderight
                        )
@@ -528,69 +528,131 @@ strdecnode:
 
 strbinds : strid sigconst EQUALOP strbinds'
            ( let
-              val (strid', strbinds) = strbinds'
+              val (strexp, strbinds) = strbinds'
             in
               (join (wrap Strbind
                           stridleft
-                          (right strid')
+                          (right strexp)
                     )
-                    [strid, strid', sigconst]
+                    [strid, strexp, sigconst]
               ) :: strbinds
             end
 
-strbinds' : strexp1 strbinds'1    (augment1 (strexp1, strbinds'1))
-          | strexp2 strbinds'2    ((strexp2,strbinds'2))
+strbinds' : strexp1 strbinds'1
+            ( let
+               val (strexp, sigcon, sigexp) = strexp1
+               val (wherespecs, strbinds) = strbinds'1
+               val sigexp' =
+                   case wherespecs of
+                     nil => sigexp
+                   |     =>
+                         let
+                           val leftmost = left (List.hd wherespecs)
+                           val rightmost = right (List.last wherespecs)
+                         in
+                           join (wrap Sigexp_Where
+                                      (left sigexp)
+                                      rightmost
+                                )
+                                [sigexp,
+                                 join (wrap Wherespecs leftmost rightmost)
+                                      wherespecs
+                                ]
+                         end
+             in
+               (join (wrap Strexp_Con strexp1left (right sigexp'))
+                     [strexp,
+                      join (wrap (Sigcon sigcon)
+                                 (left sigexp')
+                                 (right sigexp')
+                           )
+                           [sigexp]
+                     ],
+                strbinds)
+             end)
+          | strexp2 strbinds'2
+            ( (strexp2, strbinds'2) )
 
-strbinds'1 : strbinds'2                   (([], strbinds'2left, strbinds'2))
-           | WHERE wherespec strbinds'1'  (cons1 (wherespec,strbinds'1'))
+strbinds'1 : strbinds'2
+               ( (nil, strbinds'2) )
+           | WHERE wherespec strbinds'1'
+             ( let
+                val (wherespecs, strbinds) = strbinds'1'
+              in
+                (wherespec :: wherespecs, strbinds)
+              end )
 
-strbinds'1' : strbinds'1                 (strbinds'1)
-            | AND wherespec strbinds'1'  (cons1 (wherespec,strbinds'1'))
+strbinds'1' : strbinds'1
+                ( strbinds'1 )
+            | AND wherespec strbinds'1'
+              ( let
+                 val (wherespecs, strbinds) = strbinds'1
+               in
+                 (wherespec :: wherespecs, strbinds)
+               end
 
-strbinds'2 :               ([])
-           | AND strbinds  (strbinds)
+strbinds'2 :     ( nil )
+           | AND strbinds
+                 ( strbinds )
 
-strexp : strexpnode (Strexp.makeRegion' (strexpnode,
-                                        strexpnodeleft, strexpnoderight))
+strexp : strexpnode
+           ( strexpnode )
 
 strexpnode
   : strexp1
-    (let
-        val (strexp, sigconst, sigexp) = strexp1
-     in
-        Strexp.Constrained (strexp, sigconst sigexp)
-     end)
+      (let
+         val (strexp, sigcon, sigexp) = strexp1
+       in
+         join (wrap Strexp_Con strexp1left strexp1right)
+              [strexp, join (wrap (Sigcon sigcon) (left sigexp) (right sigexp))
+                            [sigexp]
+              ]
+       end)
   | strexp1 wherespecs
-    (let
-        val (strexp,sigconst,sigexp) = strexp1
-     in
-        Strexp.Constrained
-        (strexp,
-         sigconst (Sigexp.wheree
-                   (sigexp, wherespecs,
-                    Region.extendRight (Sigexp.region sigexp,
-                                        wherespecsright))))
-     end)
+      (let
+         val (strexp, sigcon, sigexp) = strexp1
+       in
+         join (wrap Strexp_Con strexp1left strexp1right)
+              [strexp,
+               join (wrap (Sigcon sigcon) (left sigexp) wherespecsright)
+                    [join (wrap Sigexp_Where (left sigexp) wherespecsright)
+                          [sigexp, wherespecs]
+                    ]
+              ]
+       end)
   | strexp2node
-    (strexp2node)
+      (strexp2node)
 
-strexp1 : strexp COLON sigexp'    ((strexp,SigConst.Transparent,sigexp'))
-        | strexp COLONGT sigexp'  ((strexp,SigConst.Opaque,sigexp'))
+strexp1
+  : strexp COLON sigexp'
+           ((strexp, Sigcon.Transparent, sigexp'))
+  | strexp COLONGT sigexp'
+           ((strexp, Sigcon.Opaque, sigexp'))
 
-strexp2 : strexp2node (Strexp.makeRegion'
-                       (strexp2node, strexp2nodeleft, strexp2noderight))
+strexp2
+  : strexp2node
+      (let
+         val (node, children) = strexp2node
+       in
+         join (wrap node strexp2nodeleft strexp2noderight)
+              children
+       end)
 
 strexp2node
-        : longid                     (Strexp.Var (Longstrid.fromSymbols longid))
-        | STRUCT strdecs END         (Strexp.Struct strdecs)
-        | longid arg_fct
-          (Strexp.App (Fctid.fromSymbol (ensureNonqualified longid), arg_fct))
-        | LET strdecs IN strexp END  (Strexp.Let (strdecs,strexp))
+  : longid
+      ((longid, nil))
+  | STRUCT strdecs END
+      ((Strexp_Struct, [strdecs]))
+  | longid arg_fct
+      ((Strexp_Fun, [longid, arg_fct]))
+  | LET strdecs IN strexp END
+      ((Strexp_Let, [strdecs, strexp]))
 
-arg_fct : LPAREN strexp RPAREN   (strexp)
-        | LPAREN strdecs RPAREN  (Strexp.makeRegion'
-                                  (Strexp.Struct strdecs,
-                                   strdecsleft, strdecsright))
+arg_fct
+  : LPAREN strexp RPAREN
+      (strexp)
+  | LPAREN strdecs RPAREN
+      (strdecs)
 
 (*---------------------------------------------------*)
 (*                    Signatures                     *)
@@ -598,136 +660,337 @@ arg_fct : LPAREN strexp RPAREN   (strexp)
 
 sigexp
   : sigexp'
-    (sigexp')
+      (sigexp')
   | sigexp' wherespecs
-    (Sigexp.wheree (sigexp', wherespecs, reg (sigexp'left, wherespecsright)))
+      (join (wrap Sigexp_Where sigexp'left wherespecsright)
+            [sigexp', wherespecs]
+      )
 
-wherespecs : wherespecs' (Vector.fromList wherespecs')
+wherespecs
+  : wherespecs'
+      (join (wrap Wherespecs wherespecs'left wherespecs'right)
+            [wherespecs']
+      )
 
 wherespecs'
-  : WHERE wherespec              ([wherespec])
-  | WHERE wherespec wherespecs'  (wherespec :: wherespecs')
-  | WHERE wherespec andspecs     (wherespec :: andspecs)
+  : WHERE wherespec
+      ([wherespec])
+  | WHERE wherespec wherespecs'
+      (wherespec :: wherespecs')
+  | WHERE wherespec andspecs
+      (wherespec :: andspecs)
 
 andspecs
-  : AND wherespec              ([wherespec])
-  | AND wherespec andspecs     (wherespec :: andspecs)
-  | AND wherespec wherespecs'  (wherespec :: wherespecs')
+  : AND wherespec
+      ([wherespec])
+  | AND wherespec andspecs
+      (wherespec :: andspecs)
+  | AND wherespec wherespecs'
+      (wherespec :: wherespecs')
 
-sigbinds: sigid EQUALOP sigexp' sigbinds'  (augment (sigid, sigexp', sigbinds'))
+sigbinds: sigid EQUALOP sigexp' sigbinds'
+      (let
+         val (wherespecs, sigbinds) = sigbinds'
+         val sigexp =
+             case wherespecs of
+               nil => sigexp'
+             | _   =>
+               let
+                 val leftmost = left (List.hd wherespecs)
+                 val rightmost = right (List.last wherespecs)
+               in
+                 join (wrap Sigexp_Where (left sigexp') rightmost)
+                      [sigexp',
+                       join (wrap Wherespecs leftmost rightmost)
+                            wherespecs
+                      ]
+               end
+       in
+         join (wrap Sigbind sigidleft (right sigexp))
+              [sigid, sigexp]
+       end
 
-sigexp' : sigexp'node (Sigexp.makeRegion' (sigexp'node,
-                                          sigexp'nodeleft,
-                                          sigexp'noderight))
+sigexp'
+  : sigexp'node
+      (sigexp'node)
 
-sigexp'node : sigid                      (Sigexp.Var sigid)
-            | SIG specs END              (Sigexp.Spec specs)
+sigexp'node
+  : sigid
+      (sigid)
+  | SIG specs END
+      (join (wrap Sigexp_Spec SIGleft ENDright)
+            specs
+      )
 
-sigbinds':                             (([], defaultPos, []))
-         | AND sigbinds                (([], defaultPos, sigbinds))
-         | WHERE wherespec sigbinds''  (cons1 (wherespec,sigbinds''))
+sigbinds' :
+      ((nil, nil))
+  | AND sigbinds
+      ((nil, sigbinds))
+  | WHERE wherespec sigbinds''
+      (let
+         val (wherespecs, sigbinds) = sigbinds''
+       in
+         (wherespec :: wherespecs, sigbinds)
+       end)
 
-sigbinds'' : sigbinds'                 (sigbinds')
-           | AND wherespec sigbinds''  (cons1 (wherespec,sigbinds''))
+sigbinds''
+  : sigbinds'
+      (sigbinds')
+  | AND wherespec sigbinds''
+      (let
+         val (wherespecs, sigbinds) = sigbinds''
+       in
+         (wherespec :: wherespecs, sigbinds)
+       end)
 
-wherespec  : TYPE tyvars longtycon EQUALOP ty  ({tyvars = tyvars,
-                                                 longtycon = longtycon,
-                                                 ty = ty})
+wherespec
+  : TYPE tyvars longtycon EQUALOP ty
+      (join (wrap Wherespec TYPEleft tyright)
+            [tyvars, longtycon, ty]
+      )
 
-sigconst :                 (SigConst.None)
-         | COLON sigexp    (SigConst.Transparent sigexp)
-         | COLONGT sigexp  (SigConst.Opaque sigexp)
+sigconst :
+      (join (wrap (Sigcon Sigcon.None) dummypos dummypos) nil)
+  | COLON sigexp
+      (join (wrap (sigcon Sigcon.Transparent) sigexpleft sigexpright)
+            [sigexp]
+      )
+  | COLONGT sigexp
+      (join (wrap (sigcon Sigcon.Opaque) sigexpleft sigexpright)
+            [sigexp]
+      )
 
-specs  :                   (Spec.makeRegion (Spec.Empty, Region.bogus))
-       | SEMICOLON specs   (specs)
-       | spec specs        (Spec.seq (spec, specs))
+specs :
+      (nil)
+  | SEMICOLON specs
+      (specs)
+  | spec specs
+      (spec :: specs)
 
-spec : specnode (Spec.makeRegion' (specnode, specnodeleft, specnoderight))
+spec
+  : specnode
+      (let
+         val (node, children) = specnode
+       in
+         join (wrap node specnodeleft specnoderight)
+              children
+       end)
 
-specnode : VAL valdescs         (Spec.Val (Vector.fromList valdescs))
-         | TYPE typdescs        (Spec.Type (Vector.fromList typdescs))
-         | TYPE typBind         (Spec.TypeDefs typBind)
-         | EQTYPE typdescs      (Spec.Eqtype (Vector.fromList typdescs))
-         | DATATYPE datatypeRhsNoWithtype (Spec.Datatype datatypeRhsNoWithtype)
-         | EXCEPTION exndescs   (Spec.Exception (Vector.fromList exndescs))
-         | STRUCTURE strdescs   (Spec.Structure (Vector.fromList strdescs))
-         | INCLUDE sigexp       (Spec.IncludeSigexp sigexp)
-         | INCLUDE sigid sigids (* p. 59 *)
-           (Spec.IncludeSigids (Vector.fromList (sigid :: sigids)) )
-         | sharespec
-           (Spec.Sharing {spec = Spec.makeRegion' (Spec.Empty,
-                                                   sharespecleft,
-                                                   sharespecright),
-                          equations = (Vector.new1
-                                       (Equation.makeRegion' (sharespec,
-                                                              sharespecleft,
-                                                              sharespecright)))})
+specnode
+  : VAL valdescs
+      ((Spec_Val, valdescs))
+  | TYPE typdescs
+      ((Spec_Type, typdescs))
+  | TYPE typBind
+      ((Spec_Typedef, typBind))
+  | EQTYPE typdescs
+      ((Spec_EqType, typdescs))
+  | DATATYPE datatypeRhsNoWithtype
+      ((Spec_Datatype, nil))
+  | EXCEPTION exndescs
+      ((Spec_Exception, exndescs))
+  | STRUCTURE strdescs
+      ((Spec_Structure, strdescs))
+  | INCLUDE sigexp
+      ((Spec_Include, [sigexp]))
+  | INCLUDE sigid sigids (* p. 59 *)
+      ((Spec_IncludeSigids, sigid :: sigids))
+  | sharespec
+      (sharespec)
 
-sharespec : SHARING TYPE longtyconeqns (Equation.Type longtyconeqns)
-          | SHARING longstrideqns      (Equation.Structure longstrideqns)
+sharespec
+  : SHARING TYPE longtyconeqns
+      ((Spec_Sharing, longtyconeqns))
+  | SHARING longstrideqns
+      ((Spec_SharingStructure, longstrideqns))
 
-longstrideqns : longstrid EQUALOP longstrid ([longstrid1,longstrid2])
-              | longstrid EQUALOP longstrideqns (longstrid :: longstrideqns)
+longstrideqns
+  : longstrid EQUALOP longstrid
+      ([longstrid1, longstrid2])
+  | longstrid EQUALOP longstrideqns
+      (longstrid :: longstrideqns)
 
-longtyconeqns : longtycon EQUALOP longtycon ([longtycon1,longtycon2])
-              | longtycon EQUALOP longtyconeqns (longtycon :: longtyconeqns)
+longtyconeqns
+  : longtycon EQUALOP longtycon
+      ([longtycon1, longtycon2])
+  | longtycon EQUALOP longtyconeqns
+      (longtycon :: longtyconeqns)
 
-strdescs : strid COLON sigexp' strdescs'  (augment (strid, sigexp', strdescs'))
+strdescs
+  : strid COLON sigexp' strdescs'
+      (let
+         val (wherespecs, strdescs) = strdescs'
+         val sigexp =
+             case wherespecs of
+               nil => sigexp'
+             | _   =>
+               let
+                 val leftmost = left (List.hd wherespecs)
+                 val rightmost = right (List.last wherespecs)
+               in
+                 join (wrap Sigexp_Where (left sigexp') rightmost)
+                      [sigexp',
+                       join (wrap Wherespecs leftmost rightmost)
+                            wherespecs
+                      ]
+               end
+       in
+         join (wrap Strdesc stridleft (right sigexp))
+              [strid, sigexp]
+       end)
 
-strdescs' :                             (([], defaultPos, []))
-          | AND strdescs                (([], defaultPos, strdescs))
-          | WHERE wherespec strdescs''  (cons1 (wherespec, strdescs''))
+strdescs' :
+      ((nil, nil))
+  | AND strdescs
+      ((nil, strdescs))
+  | WHERE wherespec strdescs''
+      (let
+         val (wherespec, strdescs) = strdescs''
+       in
+         (wherespec :: wherespecs, strdescs)
+       end)
 
-strdescs'' : strdescs'                 (strdescs')
-           | AND wherespec strdescs''  (cons1 (wherespec, strdescs''))
+strdescs''
+  : strdescs'
+      (strdescs')
+  | AND wherespec strdescs''
+      (let
+         val (wherespec, strdescs) = strdescs''
+       in
+         (wherespec :: wherespecs, strdescs)
+       end)
 
-typdescs : typdesc               ([typdesc])
-         | typdesc AND typdescs  (typdesc :: typdescs)
+typdescs
+  : typdesc
+      ([typdesc])
+  | typdesc AND typdescs
+      (typdesc :: typdescs)
 
-typdesc : tyvars tycon ({tyvars = tyvars,
-                         tycon = tycon})
+typdesc
+  : tyvars tycon
+      (join (wrap Tydesc tyvarsleft tyconright)
+            [tyvars, tycon]
+      )
 
-valdescs : valdesc                ([valdesc])
-         | valdesc AND valdescs   (valdesc :: valdescs)
+valdescs
+  : valdesc
+      ([valdesc])
+  | valdesc AND valdescs
+      (valdesc :: valdescs)
 
-valdesc : var COLON ty  (Con.ensureSpecify (Vid.toCon (Vid.fromVar var))
-                         ; (var, ty))
+valdesc
+  : var COLON ty
+      (join (wrap Valdesc varleft tyright)
+            [var, ty]
+      )
 
-exndescs : exndesc                ([exndesc])
-         | exndesc AND exndescs   (exndesc :: exndescs)
+exndescs
+  : exndesc
+      ([exndesc])
+  | exndesc AND exndescs
+      (exndesc :: exndescs)
 
-exndesc : con tyOpt  (Con.ensureSpecify con; (con, tyOpt))
+exndesc
+  : con tyOpt
+      (join (wrap Exndesc conleft tyOptright)
+            [con,
+             join (wrap MaybeTy dummypos dummypos)
+                  (case tyOpt of
+                     SOME ty => [ty]
+                   | NONE    => []
+                  )
+            ]
+      )
 
-tyOpt :         (NONE)
-      | OF ty   (SOME ty)
+tyOpt :
+      (NONE)
+  | OF ty
+      (SOME ty)
 
 (*---------------------------------------------------*)
 (*                     Functors                      *)
 (*---------------------------------------------------*)
 
-funbinds : fctid LPAREN fctarg RPAREN sigconst EQUALOP funbinds'
-           (let val (strexp,funbinds) = funbinds'
-            in {name = fctid,
-                arg = FctArg.makeRegion' (fctarg, fctargleft, fctargright),
-                result = sigconst,
-                body = strexp}
-               :: funbinds
-            end)
+funbinds
+  : fctid LPAREN fctarg RPAREN sigconst EQUALOP funbinds'
+      (let
+         val (strexp, funbinds) = funbinds'
+       in
+         (join (wrap Funbind fctidleft (right strexp))
+               [fctid, fctarg, strexp, sigconst]
+         ) :: funbinds
+       end)
 
-funbinds' : strexp1 funbinds'1  (augment1 (strexp1, funbinds'1))
-          | strexp2 funbinds'2  ((strexp2, funbinds'2))
+funbinds'
+  : strexp1 funbinds'1
+      (let
+         val (strexp, sigcon, sigexp) = strexp1
+         val (wherespecs, funbinds) = funbinds'1
+         val sigexp' =
+             case wherespecs of
+               nil => sigexp
+             |     =>
+                   let
+                     val leftmost = left (List.hd wherespecs)
+                     val rightmost = right (List.last wherespecs)
+                   in
+                     join (wrap Sigexp_Where
+                                (left sigexp)
+                                rightmost
+                          )
+                          [sigexp,
+                           join (wrap Wherespecs leftmost rightmost)
+                                wherespecs
+                          ]
+                   end
+       in
+         (join (wrap Strexp_Con strexp1left (right sigexp'))
+               [strexp,
+                join (wrap (Sigcon sigcon)
+                           (left sigexp')
+                           (right sigexp')
+                     )
+                     [sigexp]
+               ],
+          funbinds)
+       end
+  | strexp2 funbinds'2
+      ((strexp2, funbinds'2))
 
-funbinds'1 : funbinds'2                   ([], funbinds'2left, funbinds'2)
-           | WHERE wherespec funbinds'1'  (cons1 (wherespec,funbinds'1'))
+funbinds'1
+  : funbinds'2
+      ((nil, funbinds'2))
+  | WHERE wherespec funbinds'1'
+      (let
+         val (wherespecs, funbinds) = funbinds'1'
+       in
+         (wherespec :: wherespecs, funbinds)
+       end)
 
-funbinds'2 :               ([])
-           | AND funbinds  (funbinds)
+funbinds'2 :
+      (nil)
+  | AND funbinds
+      (funbinds)
 
-funbinds'1' : funbinds'1                 (funbinds'1)
-            | AND wherespec funbinds'1'  (cons1 (wherespec,funbinds'1'))
+funbinds'1'
+  : funbinds'1
+      (funbinds'1)
+  | AND wherespec funbinds'1'
+      (let
+         val (wherespecs, funbinds) = funbinds'1'
+       in
+         (wherespec :: wherespecs, funbinds)
+       end)
 
-fctarg : strid COLON sigexp  (FctArg.Structure (strid, sigexp))
-       | specs               (FctArg.Spec specs)
+fctarg
+  : strid COLON sigexp
+      (join (wrap Funarg_Structure stridleft sigexpright)
+            [strid, sigexp]
+      )
+  | specs
+      (join (wrap Funarg_Spec specsleft specsright)
+            specs
+      )
 
 (*---------------------------------------------------*)
 (*                   Declarations                    *)
@@ -740,7 +1003,7 @@ decs :                  (Dec.makeRegion' (Dec.SeqDec (Vector.new0 ()),
 
 dec : decnode (Dec.makeRegion' (decnode, decnodeleft, decnoderight))
 
-decnode : decnolocal              (decnolocal) 
+decnode : decnolocal              (decnolocal)
         | LOCAL decs IN decs END  (Dec.Local (decs1,decs2))
 
 decnolocal

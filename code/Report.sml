@@ -196,21 +196,18 @@ local (* BEGIN textToRect : FloatH.t -> Format.t -> int -> string -> rect *)
               spaces (spc div 2) @ l @ spaces ((spc + 1) div 2)
             end
         fun stripSpace nil = nil
+          (* Don't strip spaces if theres only one line *)
+          | stripSpace [l] = [l]
           | stripSpace (l :: ls) =
             let
               fun loop [l] =
-                  (* Last line. Preserve final space if text floats to the right *)
-                  (case float of
-                     Right => [stripLeft l]
-                   | _     => [strip l]
-                  )
+                  (* Last line. Preserve final space *)
+                  [stripLeft l]
                 | loop (l :: ls) = strip l :: loop ls
                 | loop _ = nil
             in
               (* Give first line special treatment as well *)
-              (case float of
-                 FloatH.Left => stripRight l
-               | _           => strip l) :: loop ls
+              stripRight l :: loop ls
             end
 
         fun indent (l :: ls) =
@@ -564,7 +561,7 @@ fun toStringWithMaxWidth maxw r =
                         ) (0, 0) rs
               val fills = foldl (fn (Fill, a) => a + 1
                                   | (_, a)    => a) 0 rs
-              val fillspace = minw - width r
+              val fillspace = Int.max (minw - width r, 0)
               val (filleach, fillexcess) =
                   if fills > 0 then
                     (fillspace div fills, fillspace mod fills)
@@ -719,6 +716,18 @@ fun @@ (Col rs, Col rs') = Col (append rs rs')
       [r] => r
     | rs  => Col rs
 end
+
+fun || rss =
+    let
+      val strip = List.filter (fn x => x <> Fill)
+    in
+      Row ((case rss of
+              (Row rs, Row rs') => strip rs @ strip rs'
+            | (Row rs, r') => strip rs @ [r']
+            | (r, Row rs') => r :: strip rs'
+            | (r, r') => [r, r']
+           ) @ [Fill])
+    end
 
 val nl = SpaceV 1
 
