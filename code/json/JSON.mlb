@@ -1,6 +1,6 @@
 local
 $(SML_LIB)/basis/basis.mlb
-../mylib/MyLib.mlb
+../MyLib/MyLib.mlb
 ../Basic.mlb
 in
 

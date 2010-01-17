@@ -241,7 +241,7 @@ b
   Keeping in mind that the exact names of the variables are unimportant.
 \end{example}
 
-\begin{example}[Elimination, $~>e$]
+\begin{example}[Elimination, $->e$]
   The first two patterns make a cover so the last pattern is eliminated.
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
@@ -251,7 +251,7 @@ b
 | x . x
 \end{lstlisting}
     \end{eqnalign}
-    ~>e
+    ->e
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
   Cons(x, xs) . Cons (x, xs)
@@ -269,7 +269,7 @@ b
 | Nil
 \end{lstlisting}
     \end{eqnalign}
-    ~>e
+    ->e
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
   Cons (x, y) . Cons (x, y)
@@ -300,7 +300,7 @@ Pair (xs, zs) . Pair (zs, xs)
 \end{example}
 
 
-\begin{example}[Reduction relation, $~>g$]
+\begin{example}[Reduction relation, $->g$]
 Consider
 \begin{lstlisting}
       addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .

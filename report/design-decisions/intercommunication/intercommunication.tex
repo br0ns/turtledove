@@ -1,77 +1,54 @@
-\documentclass[a4paper, oneside, final]{memoir}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage[british]{babel}
-
-\usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
-\usepackage[rounded]{syntax} % Part of the mdwtools package
-
-\let\fref\undefined
-\let\Fref\undefined
-\usepackage{fancyref
-}
-\usepackage{amsthm} % theorems
-
-\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
-%\usepackage[sc]{mathpazo}     % Palatino font
-\renewcommand{\rmdefault}{ugm} % Garamond
-%\usepackage[garamond]{mathdesign}
+\section{Intercommunication}
 
 
-\theoremstyle{definition}
-\newtheorem{example}{Example}
-
-\newcommand*{\fancyrefexlabelprefix}{ex}
-\fancyrefaddcaptions{english}{
-  \newcommand*{\Frefexname}{Example}
-  \newcommand*{\frefexname}{\MakeLowercase{\Frefexname}}
-}
-\frefformat{vario}{\fancyrefexlabelprefix}{%
-  \frefexname\fancyrefdefaultspacing#1#3%
-}
-\Frefformat{vario}{\fancyrefexlabelprefix}{%
-  \Frefexname\fancyrefdefaultspacing#1#3%
-}
-
-
-\begin{document}
-
-
-\chapter*{Intercommunication}
-
-
-\section*{Protocol}
-
+\subsection*{Protocol}
 
 The communication protocol between the development environment and Turtledove is
-vary simple and versatile with almost no limitations. The protocol utilises JSON
-(JavaScript Object Notation) \footnote{\url{http://www.json.org/}} for the data
-payload which makes it easy to serialise different types of values to and from
-the desired tools inside Turtledove.
+very simple and versatile with almost no limitations. The protocol utilises JSON
+(JavaScript Object Notation) \footnote{\url{http://www.json.org/}} which makes
+it easy to serialise different types of values to and from the desired tools
+inside Turtledove. 
 
-Besides the data payload the protocol consists of a ``CallerID'' string and a
-``DestinationID'' string which is described below
+\begin{nonfloatingfigure}
+  \newcommand{\angleit}[1]{$\langle$\textnormal{\textit{#1}}$\rangle$}
+\begin{lstlisting}
+ (@\angleit{request}@) ::= "{ \"Meta\" : (@\angleit{JSON-value}@), \"Dest\" : (@\angleit{JSON-string}@),
+                \"Data\" : (@\angleit{JSON-value}@) } \n\n"
+
+(@\angleit{response}@) ::= "{ \"Dest\" : (@\angleit{JSON-string}@), \"Meta\" : (@\angleit{JSON-value}@),
+                \"Data\" : (@\angleit{JSON-value}@) } \n\n"
+\end{lstlisting}    
+  
+  \caption{Definition of the communication protocol between Turtledove (and its
+    tools) and the development evironment.}
+  \label{fig:intercom-protocol-def}
+\end{nonfloatingfigure}
+
+The protocol is defined (see \fref{fig:intercom-protocol-def}) as a JSON-object
+encoded string with two newlines at the end as the stop delimiter. The JSON
+object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination) and
+``Data'' (Data payload) which is described below.
 
 \begin{description}
-\item[CallerID] is a string specified by the development environment. This
-  string is not used in any way by Turtledove but is returned in the response
-  string. This string is intended for internal bookkeeping in the development
-  environment for example to distinguish which file/buffer and/or at which line
-  and column the response originated from.
+\item[Meta] is a JSON value specified by the development environment. This value
+  is not used in any way by Turtledove but is returned in the response. This
+  string is intended for internal bookkeeping in the development environment for
+  example to distinguish which file/buffer and/or at which line and column the
+  response originated from.
 
   As there is a possibility of Turtledove getting multi threaded, this is a good
   way of handling multiple request to Turtledove that may have different
-  response times (One request waiting for a new complete reparse of the project code
-  and another requesting a static lookup of some data).
+  response times (One request waiting for a new complete reparse of the project
+  code and another requesting a static lookup of some data).
 
-  If the development environment don't need the use of this string an empty
-  string can be passed to Turtledove.
+  If this feature is not needed by the development environment it can set this
+  field to the JSON value \texttt{null} but it is not a requirement.
 
   Some of the tools may report back when they are done doing something, without
-  the development environment has invoked it. In these cases an empty string
-  will be used as ``CallerID''.
+  the development environment has invoked it. In these cases the JSON value
+  \texttt{null} will be used.
 
-\item[DestinationID] is a string that needs to match a named destination in
+\item[Dest] is a non empty JSON string that needs to match a named destination in
   Turtledove. Examples of such a named destination, also including name of
   tools:
 
@@ -87,156 +64,44 @@ Besides the data payload the protocol consists of a ``CallerID'' string and a
 \end{description}
 
 
-\begin{grammar}
-  <request> ::= \[[ "CallerID" "\\n" "DestinationID" "\\n" <JSON-value> "\\n\\n" \]]
-
-  <response> ::= \[[ "DestinationID" "\\n" "CallerID" "\\n" <JSON-value> "\\n\\n" \]]
-
-  <JSON-value> ::= \[[ 
-  \begin{stack}
-    <JSON-string> \\
-    <JSON-number> \\
-    <JSON-object> \\ 
-    <JSON-array> \\
-    "true" \\
-    "false" \\
-    "null"
-  \end{stack}
-  \]]   
-
-  <JSON-string> ::= \[[
-  "\""
-  \begin{stack}
-    \\
-    \fbox {
-      \begin{minipage}{1,6in}
-        \begin{center}
-          Any\ unicode\ char\ except\ '{\char 34}',\ '$\backslash$'\ 
-          and\ any\ control\ chars 
-        \end{center}
-      \end{minipage}
-    }
-    \\
-    "\\"
-    \begin{stack}
-      "\"" \\
-      "\\" \\
-      "/" \\
-      "b" \\
-      "f" \\
-      "n" \\
-      "r" \\
-      "t" \\
-      "u"
-    \end{stack}
-  \end{stack}
-  "\""
-  \]]
-  
-  <JSON-object> ::= \[[
-  "{"
-    \begin{stack}
-      \\
-      
-      \begin{rep}
-        <JSON-string> ":" <JSON-value> \\
-        ","
-      \end{rep}
-    \end{stack}
-    "}"
-  \]]
-
-  <JSON-array> ::= \[[
-  "["
-  \begin{stack}
-    \\
-    \begin{rep}
-      <JSON-value> \\
-      ","
-    \end{rep}
-  \end{stack}
-  "]"
-  \]]
-
-  <JSON-number> ::= \[[
-  \begin{stack}
-    \\
-    "-"
-  \end{stack}
-  \begin{stack}
-    "0" \\
-    1--9
-    \begin{rep}
-      \\
-      0--9
-    \end{rep}
-  \end{stack}
-  \begin{stack}
-    \\
-    "." 
-    \begin{rep}
-      \\
-      0--9
-    \end{rep}
-  \end{stack}
-  \begin{stack}
-    \\
-    \begin{stack}
-      e \\
-      E
-    \end{stack}
-    \begin{stack}
-      \\
-      "+" \\
-      "-" 
-    \end{stack}
-    \begin{rep}
-      \\
-      0--9
-    \end{rep}
-  \end{stack}
-  \]]
-  
-\end{grammar}
-
 It is important to remember that the resulting string sent to and from
-Turtledove must not contain any newlines except the ones that are mandatory by
-the protocol. This is a requirement even though the definition of JSON allows
-whitespace between a pair of tokens, as it would then render it impossible to
-determine when the request/response is done.
+Turtledove must not contain any double newlines except the ones that are defined by
+the protocol. This is a requirement, even though the definition of JSON allows
+whitespace between a pair of tokens, as it would then render it near to
+impossible to determine when the request/response is done without incrementally
+parsing the JSON encoded string as it is received.
 
-We have chosen the newline character as a separator of the fields as it
-makes it easy for debug pretty printing and since a newline character is the least
-likely character to be in a name/id.
+We have chosen the double newline character as the stop signal as it can't be used
+inside the structure of the JSON object and when present in a JSON string it
+must be escaped. 
 
-The same argument applies to the decision of using double newline chars to mark
-the end of a request or response. 
+This simple constraint of not having any double newlines inside the JSON encoded
+string should not restrain any practical usability of the JSON protocol.
 
 
 \paragraph{Examples}
 
-
-
 \begin{example} If a file needs to be added then the following string could be
-  sent to the ``Projectmanager'':
+  sent to the ``ProjectManager'':
 \begin{verbatim}
-"some_id \n ProjectManager \n {\"command\" : \"addfile\", 
-                                  \"file\" : \"myfoo.sml\"} \n\n"
+"{ \"Meta\" : null, \"Dest\" : \"ProjectManager\",
+   \"Data\" : { \"command\" : \"addfile\", 
+                \"file\" : \"myfoo.sml\"}} \n\n"
 \end{verbatim}
 \end{example}
 
 
-\section*{Useful commands}
+\subsection*{Useful commands}
 
  Below is a draft of which commands might be useful to implement in the final system. 
 
-\subsection*{Turtledove}
+\subsubsection*{Turtledove}
 
 \begin{description}
 \item[quit] This command closes down the server in a graceful way.
 \end{description}
 
-\subsection*{ProjectManager }
+\subsubsection*{ProjectManager }
 
 \begin{description}
 \item[OpenProject] Makes the project manager open a project. If the
@@ -252,33 +117,27 @@ the end of a request or response.
 \item[DeleteFile] Deletes a file contained in the project
 \item[ChangeFile] Add or delete content in a open file contained in the
   project. This command should be used when ever the user adds or deletes text
-  from any file contained in the project, so the project manager can an
+  from any file contained in the project, so the project manager can maintain an
   up to date version of the file, without having to reread the file again and
   thus also at some point do incremental parsing of the changes only.
 \end{description}
 
 
-\paragraph{Get names in scope}
+\subsubsection*{Utils}
 
-Returns a list of identifiers visible from the current scope. This is particular
-handy for doing auto completion and 
-
-
-\paragraph{Goto definition}
-
-Gets the filename and position of the definition of the specified function
-
-\paragraph{Rename}
-
-Rename a function or identifier together with its definition and all its uses.
-
-
-\end{document}
+\begin{description}
+\item[GotoDef] Returns the filename and position of the definition of the
+  specified function
+\item[Rename] Rename a function or identifier together with its definition and
+  all its uses.
+\item[NamesInScope] Returns a list of identifiers visible from the current
+  scope. This is particular handy for doing auto completion and
+\end{description}
 
 
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: t
 %%% reftex-fref-is-default: t
+%%% TeX-master: "../../report"
 %%% End: 

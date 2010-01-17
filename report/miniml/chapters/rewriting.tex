@@ -519,9 +519,9 @@ it is shadowed.
 \end{definition}
 
 We can now define the elimination of unused patterns.
-\begin{definition}[Elimination, $~>e$]
+\begin{definition}[Elimination, $->e$]
 \label{def:shadowed-patterns-1}
-  We define a reduction relation $~>e$ that expresses the
+  We define a reduction relation $->e$ that expresses the
   elimination of exactly one pattern from a match.
 
   Let
@@ -536,7 +536,7 @@ We can now define the elimination of unused patterns.
   p_{j-1}\texttt{.}e_{j-1} \texttt{|} p_{j+1}\texttt{.}e_{j+1} \texttt{|}
   \ldots \texttt{|} p_n\texttt{.}e_n,
   \]
-  and we write $m ~>e m'$.
+  and we write $m ->e m'$.
 
 \end{definition}
 
@@ -546,7 +546,7 @@ We can now define the elimination of unused patterns.
 
   That is
   \[
-  m ~>e m' ==> \fun m \sim \fun m'
+  m ->e m' ==> \fun m \sim \fun m'
   \]
 \end{lemma}
 
@@ -658,9 +658,9 @@ Four scenarios arise
   generalised. \label{item:gen-scen-4}
 \end{enumerate}
 
-\begin{definition}[Generalisation, $~>g$]
+\begin{definition}[Generalisation, $->g$]
 \label{def:gener-match}
-  We define a reduction relation $~>g$ that expresses the
+  We define a reduction relation $->g$ that expresses the
   generalisation of exactly one pattern from a match.
 
   Let
@@ -687,13 +687,13 @@ Four scenarios arise
   is put in parentheses because is should be deleted in the case of scenario
   \ref{item:gen-scen-1}. And of course $m_1 < \ldots < m_k$.
 
-  And we write $m ~>g m'$.
+  And we write $m ->g m'$.
   
 \end{definition}
 
 \section{Normal form}
 We say that the function $\fun m$ is a normal form if there does not exist an
-$m'$ such that $m ~>e m'$ or $m ~>g m'$.
+$m'$ such that $m ->e m'$ or $m ->g m'$.
 
 \subsection{Reducing to normal form}
 Consider a function $\fun m$. It can be converted to a normal form by repeatedly

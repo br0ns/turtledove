@@ -1,0 +1,125 @@
+\subsection{JSON}
+\label{sec:protocol-json}
+
+
+\begin{nonfloatingfigure}
+
+
+  \begin{grammar}
+    <JSON-value> ::= \[[
+    \begin{stack}
+      <JSON-string> \\
+      <JSON-number> \\
+      <JSON-object> \\
+      <JSON-array> \\
+      "true" \\
+      "false" \\
+      "null"
+    \end{stack}
+    \]]
+
+    <JSON-string> ::= \[[
+    "\""
+    \begin{stack}
+      \\
+      \fbox {
+        \begin{minipage}{1,6in}
+          \begin{center}
+            Any\ unicode\ char\ except\ '{\char 34}',\ '$\backslash$'\
+            and\ any\ control\ chars
+          \end{center}
+        \end{minipage}
+      }
+      \\
+      "\\"
+      \begin{stack}
+        "\"" \\
+        "\\" \\
+        "/" \\
+        "b" \\
+        "f" \\
+        "n" \\
+        "r" \\
+        "t" \\
+        "u"
+      \end{stack}
+    \end{stack}
+    "\""
+    \]]
+
+    <JSON-object> ::= \[[
+    "{"
+      \begin{stack}
+        \\
+
+        \begin{rep}
+          <JSON-string> ":" <JSON-value> \\
+          ","
+        \end{rep}
+      \end{stack}
+      "}"
+    \]]
+
+    <JSON-array> ::= \[[
+    "["
+    \begin{stack}
+      \\
+      \begin{rep}
+        <JSON-value> \\
+        ","
+      \end{rep}
+    \end{stack}
+    "]"
+    \]]
+
+    <JSON-number> ::= \[[
+    \begin{stack}
+      \\
+      "-"
+    \end{stack}
+    \begin{stack}
+      "0" \\
+      1--9
+      \begin{rep}
+        \\
+        0--9
+      \end{rep}
+    \end{stack}
+    \begin{stack}
+      \\
+      "."
+      \begin{rep}
+        \\
+        0--9
+      \end{rep}
+    \end{stack}
+    \begin{stack}
+      \\
+      \begin{stack}
+        e \\
+        E
+      \end{stack}
+      \begin{stack}
+        \\
+        "+" \\
+        "-"
+      \end{stack}
+      \begin{rep}
+        \\
+        0--9
+      \end{rep}
+    \end{stack}
+    \]]
+
+  \end{grammar}
+
+
+  \caption{Definition of JSON as described 10th of January 2010 at \url{www.json.org}  }
+\end{nonfloatingfigure}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../../../report"
+%%% reftex-fref-is-default: t
+%%% End: 

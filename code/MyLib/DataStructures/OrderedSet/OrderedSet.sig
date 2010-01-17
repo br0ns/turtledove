@@ -46,15 +46,18 @@ sig
     val foldl      : (element * 'a -> 'a) -> 'a -> t -> 'a
     val foldr      : (element * 'a -> 'a) -> 'a -> t -> 'a
 
+    (* Splits/removes one element from the list and returns the element and the new list as a tuple *)                                                        
     val split      : t -> element * t
+    (* As split but takes the least/smalest element *)                          
     val splitLeast : t -> element * t
+    (* As split but takes the greatest element *)
     val splitGreatest : t -> element * t
 
-    val least      : t -> element
     (* Least element in the set. May raise Empty *)
+    val least      : t -> element
 
-    val greatest   : t -> element
     (* Greatest element in the set. May raise Empty *)
+    val greatest   : t -> element
 
     (* Some element in the set. May raise Empty *)
     val some       : t -> element

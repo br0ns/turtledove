@@ -165,8 +165,9 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \mathlig{<|}{\lhd}
 \mathlig{|>}{\rhd}
 \mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
-\mathlig{~>e}{\stackrel{elim}{\leadsto}}
-\mathlig{~>g}{\stackrel{gen}{\leadsto}}
+% ~>e or ~>g conflicts with the \cite command for some reason.
+\mathlig{->e}{\stackrel{elim}{\leadsto}}
+\mathlig{->g}{\stackrel{gen}{\leadsto}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	    	     Forside
@@ -186,7 +187,7 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
   \end{center}%
   \vfill
 \begin{minipage}{80pt}
-\includegraphics*[scale=0.75]{imgs/nat-logo}
+\includegraphics*[scale=0.75]{../imgs/nat-logo}
 \end{minipage}
 \begin{minipage}{300pt}
   \begin{flushleft}
@@ -195,7 +196,7 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 
   \end{flushleft}
 \end{minipage}
-\cleardoublepage % lave 1 ekstre side blank efter
+\cleardoublepage 
   \clearpage % Terminates the page here. Everything else vil be placed on next page.
 }
 \makeatother % closing mode for reading @ signed variables
@@ -203,7 +204,7 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 %		Data til forside
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Term rewriting in a subset of SML}
-\def\subtitle{\footnotesize{A joined Smartypants inc. and Morning Wood Productions venture.}}
+\def\subtitle{\footnotesize{}}
 \author{Morten Brøns-Pedersen {\footnotesize{(mortenbp@gmail.com)}}\\
 Jesper Reenberg \footnotesize{(jesper.reenberg@gmail.com)}}
 \def\suplementInfo{
