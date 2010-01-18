@@ -10,6 +10,7 @@ it easy to serialise different types of values to and from the desired tools
 inside Turtledove. 
 
 \begin{nonfloatingfigure}
+{ % so the \angleit command doesn't contaminate the whole environment.
   \newcommand{\angleit}[1]{$\langle$\textnormal{\textit{#1}}$\rangle$}
 \begin{lstlisting}
  (@\angleit{request}@) ::= "{ \"Meta\" : (@\angleit{JSON-value}@), \"Dest\" : (@\angleit{JSON-string}@),
@@ -18,6 +19,7 @@ inside Turtledove.
 (@\angleit{response}@) ::= "{ \"Dest\" : (@\angleit{JSON-string}@), \"Meta\" : (@\angleit{JSON-value}@),
                 \"Data\" : (@\angleit{JSON-value}@) } \n\n"
 \end{lstlisting}    
+}
   
   \caption{Definition of the communication protocol between Turtledove (and its
     tools) and the development evironment.}
