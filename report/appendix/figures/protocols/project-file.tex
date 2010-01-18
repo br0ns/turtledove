@@ -1,0 +1,196 @@
+\subsection{Project file}
+\label{sec:protocol-project-file}
+
+{\huge IDE 1}
+
+
+%\grammarparsep % amount of space between productions
+\grammarindent9em % the indent. Needs to be wider if productions get bigger.
+\begin{grammar}
+<Strings-Array> ::= "[" <String-Repeat>  "]"
+              \alt "[" "]"
+
+<String-Repeat> ::= <JSON-String> "," <String-Repeat>
+    \alt <JSON-String>
+
+<Project-File> ::= "{" \\
+  "  " "\"ProjectName\"" ":" <JSON-String> "," \\
+  "  " "\"Properties\"" ":" <JSON-Object> "," \\
+  "  " "\"ProjectValue\"" ":" <Value> \\
+  "}"
+
+<Value> ::= "{" \\
+  "  " "\"Exposes\"" ":" <Strings-Array> "," \\
+  "  " "\"Depends\"" ":" <Depends-Array> "," \\
+  "  " "\"Nodes\"" ":" <Nodes-Array> \\
+  "}"
+
+<Depends-Array> ::= "[" <Depend-Repeat> "]"
+                \alt "[" "]"
+
+<Depend-Repeat> ::= <Depend> "," <Depend-Repeat>
+                \alt <Depend>
+
+<Depend> ::= "{" \\
+  "  " "\"Name\"" ":" <JSON-String> "," \\
+  "  " "\"Depends\"" ":" <Strings-Array> "," \\
+  "}"
+
+<Nodes-Array> ::= "[" <Node-Repeat> "]"
+                \alt "[" "]"
+
+<Node-Repeat> ::= <Node> "," <Node-Repeat>
+             \alt <Node>
+
+<Node> ::= <String-Array>
+      \alt <Node-Groups-Array>
+
+<Node-Groups-Array> ::= "[" <Node-Group-Repeat> "]"
+                   \alt "[" "]"
+
+<Node-Group-Repeat> ::= <Node-Group> "," <Node-Group-Repeat>
+                   \alt <Node-Group>
+
+<Node-Group> ::= "{" \\
+  "  " "\"Name\"" ":" <JSON-String> "," \\
+  "  " "\"Value\"" ":" <Value> "," \\
+  "}"
+\end{grammar}
+
+\newpage
+
+{\huge IDE 2}
+
+
+%\grammarparsep % amount of space between productions
+\grammarindent9em % the indent. Needs to be wider if productions get bigger.
+\begin{grammar}
+
+<Strings-Array> ::= \[[
+    "["
+    \begin{stack}
+      \\
+      \begin{rep}
+        <JSON-String> \\
+        ","
+      \end{rep}
+    \end{stack}
+    "]"
+    \]]
+
+<Project-File> ::= "{" \\
+  "  " "\"ProjectName\"" ":" <JSON-String> "," \\
+  "  " "\"Properties\"" ":" <JSON-Object> "," \\
+  "  " "\"ProjectValue\"" ":" <Value> \\
+  "}"
+
+<Value> ::= "{" \\
+  "  " "\"Exposes\"" ":" <Strings-Array> "," \\
+  "  " "\"Depends\"" ":" <Depends-Array> "," \\
+  "  " "\"Nodes\"" ":" <Nodes-Array> \\
+  "}"
+
+<Depends-Array> ::= \[[
+    "["
+    \begin{stack}
+      \\
+      \begin{rep}
+        <Depend> \\
+        ","
+      \end{rep}
+    \end{stack}
+    "]"
+    \]]
+
+<Depend> ::= "{" \\
+  "  " "\"Name\"" ":" <JSON-String> "," \\
+  "  " "\"Depends\"" ":" <Strings-Array> "," \\
+  "}"
+
+<Nodes-Array> ::= \[[
+    "["
+    \begin{stack}
+      \\
+      \begin{rep}
+        <Node> \\
+        ","
+      \end{rep}
+    \end{stack}
+    "]"
+    \]]
+
+<Node> ::= <String-Array>
+      \alt <Node-Groups-Array>
+
+<Node-Groups-Array> ::= \[[
+    "["
+    \begin{stack}
+      \\
+      \begin{rep}
+        <Node-Group> \\
+        ","
+      \end{rep}
+    \end{stack}
+    "]"
+    \]]
+
+<Node-Group> ::= "{" \\
+  "  " "\"Name\"" ":" <JSON-String> "," \\
+  "  " "\"Value\"" ":" <Value> "," \\
+  "}"
+\end{grammar}
+
+\subsubsection{Examples}
+
+\begin{example}\ 
+
+  Project file with three individual files (x.sml, y.sml and z.sml) and two
+  groupings (A and B) where y.sml depends on z.sml, z.sml on x.sml and group A
+  on group B.
+
+  This examples demonstrates how the \textit{<Nodes>} field can be both a string
+  list of filenames and it can be a object list of Node-Groups
+
+\begin{lstlisting}
+{
+  "ProjectName"   : "FooBar",
+  "Properties"    : { "version" : "0.0 alfa" },
+  "ProjectValue" :
+  {
+    "Exposes" : ["A"],
+    "Depends" : [ { "Name": "A", "Depends" : ["B"] } ],
+    "Nodes"   : 		
+    [
+      {
+        "Name"  : "A",
+        "Value" :
+        {
+          "Exposes" : ["x.sml"]
+          "Depends" : []
+          "Nodes"   : ["x.sml"]
+        }
+      },
+      {
+        "Name"  : "B",
+        "Value" :
+        {
+          "Exposes" : ["y.sml", "z.sml"]
+          "Depends" : 
+          [ 
+            { "Name" : "y.sml", "Depends" : ["z.sml"]},
+            { "Name" : "z.sml", "Depends" : ["x.sml"]} 
+          ]
+          "Nodes"   : ["y.sml", "z.sml"]
+        }
+      }
+    ]
+}
+\end{lstlisting}
+
+\end{example}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../../../report"
+%%% End: 
