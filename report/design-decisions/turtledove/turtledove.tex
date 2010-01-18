@@ -13,6 +13,13 @@
 \subsection{Project manager}
 \label{sec:design-project-manager}
 
+\fixme{Below is not valid anymore as there has been introduced an actual project
+  file, and MLB files are now not actually save but parsed as text to the MLB parser.}
+
+\fixme{Brug dette: To ease parsing and writing the project file we have chosen that it should used
+JSON as its format.}
+
+\fixme{The protocol is described in \fref{sec:protocol-project-file}}
 
 The project manager is responsible for managing the project and all actions done
 to a project such as creating/deleting projects, adding/removing files from
@@ -57,6 +64,16 @@ this is a ``single file'' project as some functionality might not apply to these
 kind of projects, such as saving the project without an absolute path and name
 of the project.
 
+
+\subsubsection{Managing a project}
+
+
+\begin{itemize}
+\item project filer er managed, så man skal ikke manuelt rette i dem, da de
+  bliver genskrevet af project manageren (forhåbentlig via noget pretty print)
+
+\item Hver fil eller sub project har en liste 
+\end{itemize}
 
 %%% Local Variables: 
 %%% mode: latex
