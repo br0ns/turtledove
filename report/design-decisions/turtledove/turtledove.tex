@@ -14,41 +14,320 @@
 \label{sec:design-project-manager}
 
 \fixme{Below is not valid anymore as there has been introduced an actual project
-  file, and MLB files are now not actually save but parsed as text to the MLB parser.}
+  file, and MLB files are now not actually save but parsed as text to the MLB
+  parser.}
 
-\fixme{Brug dette: To ease parsing and writing the project file we have chosen that it should used
-JSON as its format.}
-
-\fixme{The protocol is described in \fref{sec:protocol-project-file}}
+\fixme{Brug dette: To ease parsing and writing the project file we have chosen
+  that it should used JSON as its format.}
 
 The project manager is responsible for managing the project and all actions done
 to a project such as creating/deleting projects, adding/removing files from
-project, adding/removing sub projects, adding/removing dependencies to a
-project, etc.
+project, adding/removing groups, adding/removing dependencies to groups or
+files, etc.
 
-A ordinary project is defined in a MLB file (ML Basis file \cite{mlbasis}) with
-the extension .mlb. Each project file may contain references to other project
-files which will then be considered as sub projects.
+There is essentially two types of project, that the manager needs to
+handle.
 
-It is important to distinguish between the currently open project and its
-containing sub projects. For example when adding a new file to the project,
-should the file then be added to the currently open project or to one of the sub
-projects.
+\begin{description}
+\item[Ordinary projects] A ordinary project is defined by a project file (see
+  \fref{sec:protocol-project-file}), normally with the extension \texttt{.turt}.
+
+  The project contains some meta information which the editor can read and set
+  and a \synt{Value-Object} (see \fref[plain]{fig:protocol-project-file}) which
+  contains the following three fields
+
+  \begin{description}
+  \item[Exposes] This is a \synt{String-Array} of group or file names from
+    the nodes array.
+
+  \item[Depends] This is \synt{Depends-Array} of \synt{Depend-Object}'s that
+    files or group names from this object depends on.
+
+    Each \synt{Depend-Object} has the following two fields
+
+    \begin{description}
+    \item[Name] This is the group or file name this depend constraint applies
+      to. This must be a group or file name that is defined in the nodes array. 
+
+    \item[Depends] This is a \synt{String-Array} of any group or file name
+      defined in the project. 
+    \end{description}
+
+  \item[Nodes] Either
+    \begin{description}
+      \item[\synt{String-Array}] Array of stand alone filenames
+
+      \item[\synt{Node-Groups-Array}] Array of \synt{Node-Group-Object}'s
+        (grouping objects) that contains two fields 
+
+        \begin{description}
+        \item[Name] The name of this grouping.
+
+        \item[Value] A \synt{Value-Object} that contains further groupings or
+          stand alone files by creating a recursive data structure of the above
+          explained.
+        \end{description}
+    \end{description}
+  \end{description}
+
+  All filenames can either be relative to the project file location or absolute
+  paths.
 
 
-If the project manager tries to open a project from a file that doesn't have the
-.mlb extension it will assume the file is a stand alone SML file (normally files
-with .sml or .sig extensions). When this happens a ``single file'' project
-containing this one stand alone file is temporarily created. This is crucial as
-the SML Parser expects the basis library to be referenced\footnote{Of cause this
-  is only if you actually use any of the functionality from the basis library in
-  the stand alone file, however one excepts the basis library to be present at
-  all times.} so it can be parsed. However this is never done in the stand alone
-files and as such the following temporary project description is created
+  \begin{example}[Sample project file for a project named ``Turtledove'']\ 
+    \label{ex:Sample-project-file-turtledove}
 
-\fixme{Lame footnote?}
+    The \texttt{Turtledove} project contains the following groupings
 
-\begin{example}[A ``single file'' project example]\
+    \begin{itemize}
+    \item Group \texttt{A} which
+      \begin{itemize}
+      \item Contains the file \texttt{x.sml}.
+      \item Exposes the file \texttt{x.sml}.
+      \item Doesn't depend on anything.
+      \end{itemize}
+
+    \item Group \texttt{B} which
+      \begin{itemize}
+      \item Contains the files \texttt{y.sml} and \texttt{z.sml}.
+      \item Exposes the file \texttt{z.sml}.
+      \item Has dependencies
+        \begin{itemize}
+        \item \texttt{y.sml} depends on \texttt{x.sml}.
+        \item \texttt{z.sml} depends on \texttt{y.sml}.
+        \end{itemize}
+      \end{itemize}
+
+    \item Group \texttt{C} which
+      \begin{itemize}
+      \item Contains the files \texttt{n.sml} and \texttt{m.sml}.
+      \item Exposes the files \texttt{n.sml} and \texttt{m.sml}.
+      \item Doesn't depend on anything.
+      \end{itemize}
+    \end{itemize}
+
+    and files \texttt{u.sml} and \texttt{j.sml}. The project exposes the group
+    \texttt{C} and file \texttt{j.sml}. And it has dependencies: \texttt{C}
+    depends on \texttt{B}, \texttt{j.sml} depends on \texttt{u.sml} and
+    \texttt{j.sml} depends on \texttt{B}.
+    
+    
+    This would result in the following project file
+
+    \begin{lstlisting}
+{
+  "Properties" : { },
+  "ProjectNode" :
+  {
+    "Name"  : "Turtledove",
+    "Value" : 
+    {
+       "Exposes" : [ "B", "j.sml" ],
+       "Depends" : 
+       [
+         { "Name" : "C", "Depends" : [ "B" ] },
+         { "Name" : "j.sml" , "Depends" : [ "u.sml", "B" ] }
+       ],
+       "Nodes" :
+       [
+         {
+           "Name" : "A",
+           "Value" :
+           {
+             "Exposes" : [ "x.sml" ],
+             "Depends" : [ ],
+             "Nodes" : [ "x.sml" ]
+           }          
+         },
+         {
+           "Name" : "B",
+           "Value" :
+           {
+             "Exposes" : [ "z.sml" ],
+             "Depends" :
+             [
+               { "Name" : "y.sml" , "Depends" : [ "x.sml" ] },
+               { "Name" : "z.sml", "Depends" : [ "y.sml" ] }
+             ],
+             "Nodes" : [ "y.sml", "z.sml" ]
+           }          
+         },
+         {
+           "Name" : "C",
+           "Value" :
+           {
+             "Exposes" : [ "n.sml", "m.sml" ],
+             "Depends" : [ ],
+             "Nodes" : [ "n.sml", "m.sml" ]
+           }          
+         },
+         ["u.sml" , "j.sml"]
+       ]
+    }
+  }
+}    
+    \end{lstlisting}
+
+  \end{example}
+
+  When the project needs to be parsed, a resulting MLB description of the
+  project is generated. As files are parsed in the order they are listed in the
+  MLB description it is important to sort out the order given the defined by the
+  individual dependencies. This is done in two steps
+
+  \begin{itemize}
+  \item Create a DAG (Directed Acyclic Graph) with each filename as a node and
+    each dependency as an edge from the file to all the files it depends on.
+
+    However before the edges are added to the DAG, any group dependencies needs
+    to be expanded. This include the following two steps
+
+    \begin{enumerate}
+    \item \label{item:expand-group-dependency1} Expand all dependencies to a group.
+    \item \label{item:expand-group-dependency2} Expand all dependencies from a group.
+    \end{enumerate}
+    
+    Expanding the group dependency \texttt{\{"Name" : "C", "Depends" : [ "B" ]\}}
+    from the project file in \fref[plain]{ex:Sample-project-file-turtledove}, would
+    result in the following list by applying the above step
+    \ref{item:expand-group-dependency1}
+
+\begin{lstlisting}
+  C depends on y.sml
+  C depends on z.sml
+\end{lstlisting}
+
+  and by applying step \ref{item:expand-group-dependency2} we get the following
+  4 edges
+
+  \begin{lstlisting}
+  n.sml depends on y.sml
+  m.sml depends on y.sml
+  n.sml depends on z.sml
+  m.sml depends on z.sml
+  \end{lstlisting}
+
+  which needs to be added to the DAG as representing that dependency constraint.
+
+  \item Typology sort the DAG to get an ordered list of nodes. 
+  \end{itemize}
+
+  The order of this resulting list represents the order of how the files should
+  be listed in the final MLB description. However each file and group needs to
+  be translated into its equivalent MLB description, which can be done in two
+  ways for both files and groupings depending whether they have dependencies or
+  not.
+
+  Translating some of the files and groups from the project file in
+  \fref[plain]{ex:Sample-project-file-turtledove} resulting in
+
+  \begin{description}
+
+  \item[Translation of files] 
+
+    \begin{description}
+
+    \item[No dependencies] 
+      
+      The file \texttt{x.sml} from group \texttt{A} translates to 
+
+\begin{lstlisting}
+basis x = bas x.sml end      
+\end{lstlisting}
+
+      where \texttt{x.sml} is the absolute path of the filename, and \texttt{x}
+      is the basis name of \texttt{x.sml} which is defined as \textit{the filename without its
+        extension and suffixed with an incrementing number}.
+
+
+    \item[With dependencies] 
+
+      The file \texttt{y.sml} from group \texttt{B} that depends on file
+      \texttt{x.sml} from group \texttt{A} translates to
+
+\begin{lstlisting}
+basis y = bas let open x in y.sml end end
+\end{lstlisting}
+
+      where \texttt{y} is the basis name of \texttt{y.sml} and \texttt{x} is the
+      basis name of \texttt{x.sml} from the previous example.
+
+      If there had been dependencies on multiple files their basis names would
+      just have been listed after \texttt{x}, for example \texttt{... open x g h
+        in ...}.
+
+    \end{description}
+
+  \item[Translation of groupings] 
+
+    As files always belong to a group (the project itself is the top group and
+    must always be defined), they are the ones that are responsible for exposing
+    files or groups that are contained within itself.
+
+    \begin{description}
+    \item[No dependencies] 
+
+      The group \texttt{A} exposes file \texttt{x.sml} so it translates to the
+      below
+
+\begin{lstlisting}
+basis A = bas open x end
+\end{lstlisting}
+
+      no matter how many files or groupings it contains. Here \texttt{x} is the
+      basis name of \texttt{x.sml} defined above and \texttt{A} is the basis
+      name for the group defined as \textit{the name of the group suffixed with
+        an incrementing number}
+
+    \item[With dependencies] 
+      The group \texttt{B} exposes multiple files, depends on a group and a file
+      so it translates to the following
+
+\begin{lstlisting}
+basis B = bas let open A u in open y z end end
+\end{lstlisting}
+
+      where \texttt{B}, \texttt{A}, \texttt{u}, \texttt{y} and \texttt{z} are
+      basis names of their respective grouping or file.
+    \end{description}
+
+
+  \item[Translation of the outermost grouping] 
+
+    The actual project definition, which is the outer most grouping, needs to be
+    handled a bid special as every file or group translation is encapsulated in
+    a MLB basis declaration and is thus not accessible outside the basis
+    declaration unless opened. 
+
+    So for the project to be able to expose anything to the environment trying
+    to use this project we need to open it without encapsulating it in a basis
+    declaration and it needs to be done as the last thing in the MLB
+    description.
+
+    The project group \texttt{Turtledove} exposes the group \texttt{B} and the
+    file \texttt{j.sml} so it would translate to
+
+\begin{lstlisting}
+open B j
+\end{lstlisting}
+
+    where \texttt{B} and \texttt{j} are basis names of their respective grouping
+    or file.
+
+  \end{description}
+
+
+
+\item[``Single file'' projects] These types of projects doesn't have any project
+  file, a stand alone SML code file has been opened. However as Turtledove
+  expects to get a MLB compliant description of the project, one still needs to
+  be supplied.
+
+  As ``single file'' projects only contain one file it is very easy to reference
+  this file in a generic MLB compliant template that includes the basis library
+  as the only thing
+
+  \begin{example}[Generic MLB compliant template for ``single file'' projects.]\
 \begin{lstlisting}
 local
   (@\$@)(SML_LIB)/basis/basis.mlb
@@ -56,13 +335,62 @@ in
   ABSOLUTE_PATH_TO_STAND_ALONE_FILE
 end
 \end{lstlisting}
-\end{example}
+  \end{example}
 
-The above temporary project description is never saved to a file, but passed
-directly to the MBL parser as a string and a internal state is set telling that
-this is a ``single file'' project as some functionality might not apply to these
-kind of projects, such as saving the project without an absolute path and name
-of the project.
+  It is important that the basis library is included here as stand alone files
+  may expect this environment to be available, and since the SML parser only
+  supply the environment that has generated by parsing files up until now.
+  
+\end{description}
+
+When the project manager tries to open a project, it always tries to open it as
+a ordinary project. As project files are JSON encoded and are defined to contain
+a specialised \synt{JSON-Object}, the first character, except any trailing
+whitespace, must be a ``\{'' else this is not a valid project file and it then
+defaults to open the file as a ``single file'' project.
+
+No action will be taken from the project manager if the file opened as a
+``single file'' project is not valid SML code. In this case the SML parser will
+try to parse the file and fail with some error message.
+
+The ``single file'' project is an important feature of Turtledove for multiple
+reasons
+
+\begin{itemize}
+\item Novice programmers of functional languages normally don't learn about or
+  create their own signatures and structures, so a MLB description will not be
+  necessary to compile the program.
+
+\item Students following a course teaching functional programming normally newer
+  create multiple files for one assignment, and thus the hassle of setting up an
+  full fledge project definition for each coding session will get tedious.
+
+  \begin{itemize}
+  \item When signatures and structures are taught as part of a class they are
+    normally created inside the same file and thus the above still holds 
+  \end{itemize}
+\end{itemize}
+ 
+And thus this will properly bee the most used of the two types of projects.
+
+Regardless of what type of project that has been opened, the resulting MLB
+description is never directly saved to a file. The MLB parser accepts its input
+as a string and thus the description is transfered this way as the MLB
+description are likely to change when any properties of the project change.
+
+However some functionality might be lost when opening a ``single file''
+project. This includes
+
+\begin{description}
+\item[Adding/removing files and groups] As dependency might get
+a problem when having two files and spending time setting up dependencies
+could just as well be used to create a project containing the dependencies since
+these files are then likely to be used in conjunction at a later time.
+
+
+\item[Getting/setting dependencies] When only one file are ever contained in the
+  project, no dependencies can ever happen.
+\end{description}
 
 
 \subsubsection{Managing a project}
@@ -73,6 +401,10 @@ of the project.
   bliver genskrevet af project manageren (forhåbentlig via noget pretty print)
 
 \item Hver fil eller sub project har en liste 
+
+\item why not autodetect dependencies. This can in some cases not be determined
+  if the user writes two modules with the same name but different meaning. It is
+  harder to do and doesn't offer the same possibilities to the user.
 \end{itemize}
 
 %%% Local Variables: 
