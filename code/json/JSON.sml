@@ -247,6 +247,8 @@ struct
         type json = t
         type 'a t = (json -> 'a) * ('a -> json)
 
+        exception Match
+
         fun make {toJSON, fromJSON} = (fromJSON, toJSON)
 
         fun object (f, t) =
