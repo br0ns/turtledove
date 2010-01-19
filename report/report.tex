@@ -30,6 +30,7 @@
 
 \usepackage[rounded]{syntax} % Part of the mdwtools package
 
+
 \usepackage{mdwtab}
 \usepackage{mathenv}
 \usepackage{amsfonts}
@@ -174,6 +175,12 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 }
 \Frefformat{vario}{\fancyrefexlabelprefix}{%
   \Frefexname\fancyrefdefaultspacing#1#3%
+}
+\frefformat{plain}{\fancyrefexlabelprefix}{%
+  \frefexname\fancyrefdefaultspacing#1%
+}
+\Frefformat{plain}{\fancyrefexlabelprefix}{%
+  \Frefexname\fancyrefdefaultspacing#1%
 }
 
 \newcommand{\ttt}[1]{\texttt{#1}}
