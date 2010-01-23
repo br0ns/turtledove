@@ -231,7 +231,6 @@ struct
     fun some E = raise Empty
       | some (T (_, _, y, _)) = y
 
-
     fun toString p s =
         let
           val elems = toList s
