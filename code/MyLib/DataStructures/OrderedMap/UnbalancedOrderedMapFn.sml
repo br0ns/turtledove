@@ -29,7 +29,7 @@ struct
         case Key.compare k k' of
             GREATER => T (l, y, update r x)
           | LESS    => T (update l x, y, r)
-          | EQUAL   => t
+          | EQUAL   => T (l, x ,r)
 
     fun fromList xs = foldl (fn (x, t) => update t x) empty xs
 
@@ -170,5 +170,14 @@ struct
     val merge = die
     val mergi = die
     val plus = die
-    val toString = die
+
+    fun toString keyToString valueToString t =
+        let
+          fun toString' E = ""
+            | toString' (T (l, (k, v), r)) = 
+              (toString' l) ^ (keyToString k) ^ ": " ^ (valueToString v) ^ "\n" ^ (toString' r)
+        in
+          toString' t
+        end
+        
 end
