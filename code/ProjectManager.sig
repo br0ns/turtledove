@@ -18,42 +18,55 @@ sig
 
   val getFileNames : t -> StringOrderedSet.t
 
-  (* filename, parrent group name, project, resulting project  *)
-  val addFile : string -> string -> t -> t
+  (* project, parrent group name, filename, resulting project  *)
+  val addFile : t -> string -> string -> t
 
-  (* filename, parrent group name, project, resulting project  *)
-  val removeFile : string -> string -> t -> t
+  (* project, parrent group name, filename, resulting project  *)
+  val removeFile : t -> string -> string -> t
 
-  (* filename, old parrent group name, new parrent group name, 
-     project, resulting project *) 
-  val moveFile : string -> string -> string -> t -> t
+  (* project, old parrent group name, new parrent group name, filename,
+     resulting project *)
+  val moveFile : t -> string -> string -> string ->  t
+
+  (* project, parrent group name, old filename, new filename,
+     resulting project *)
+  val renameFile: t -> string -> string -> string -> t
 
 
+  val getProjectGroupName : t -> string
 
   val getGroupNames : t -> StringOrderedSet.t
 
-  (* group name, add to group, project, resulting project *)
-  val addGroup : string -> string -> t -> t
+  (* project, parrent group name, new group name, resulting project *)
+  val addGroup : t -> string -> string -> t
 
-  (* group name, parrent group name, main project, resulting main project *)
-  val removeGroup : string -> string -> t -> t
+  (* main project, parrent group name, group name, resulting main project *)
+  val removeGroup : t -> string -> string -> t
+etPrope
+  (* project, old parent group name, new parrent group name, group name,
+     resulting project *)
+  val moveGroup : t -> string -> string -> string -> t
 
-  (* group name, old parrent group name, new parrent group name,
-     project, resulting project *)
-  val moveGroup : string -> string -> string -> t -> t
+  (* project, parent group name, old group name, new group name,
+     resulting project *)
+  val renameGroup : t -> string -> string -> string -> t
 
 
-
-  (* main project, dictionary with project name as key and StringOrderedSet of
+  (* project, dictionary with project name as key and StringOrderedSet of
      dependencys as values *)
-  val getDependencys: t -> StringOrderedSet.t Dictionary.t
+  val getDependencies: t -> StringOrderedSet.t Dictionary.t
 
-  (* dependency from, dependency to, main project, resulting main project *)
-  val addDependency : string -> string -> t -> t
+  (* project, dependency from, dependency to, resulting main project *)
+  val addDependency : t -> string -> string -> t
 
+  (* project, dependency from, dependency to, resulting main project *)
+  val removeDependency : t -> string -> string -> t
+
+
+  (* if property exists, then overwrite it *)
+  val setProperty : t -> (string * JSON.t) -> t
 
   val getProperties : t -> JSON.t Dictionary.t
-  val setProperty : t -> (string * JSON.t) -> t
 
 
   val toString : t -> string

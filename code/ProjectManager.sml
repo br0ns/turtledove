@@ -9,24 +9,26 @@ fun die "" = unimp ""
   | die s = raise Fail ("ProjectManager: " ^ s)
 
 
+structure Generate =
+struct 
+
+  val emptyValueStr = "{ \"Exposes\": [], \"Nodes\": [] }"
+  val emptyValue = JSON.read emptyValueStr
+  
+  fun emptyGroupStr name = "{\"Name\": \"" ^ name ^ "\", \"Value\": " ^ emptyValueStr  ^ "}"
+  val emptyGroup = JSON.read o emptyGroupStr
+
+  fun emptyProjectStr name = "{ \"Properties\" : { }, \"ProjectNode\" : " ^ (emptyGroupStr name)   ^ "}"
+  val emptyProject = JSON.read o emptyProjectStr
+                        
+end
+
+
 fun init name projectPath = 
     let
       val path = Path.new projectPath
-      val project = JSON.read (
-"{" ^
-" \"Properties\" : { }," ^
-" \"ProjectNode\" : " ^
-"  {" ^
-"   \"Name\"  : \"" ^ name  ^ "\"," ^
-"   \"Value\" : " ^
-"    {" ^
-"     \"Exposes\" : [ ]," ^
-"     \"Depends\" : [ ]," ^
-"     \"Nodes\" : [ ]" ^
-"    }" ^
-"  }" ^
-"}")
-                    (* openOut creates the file it it dosn't exist *)
+      val project = Generate.emptyProject name
+      (* openOut creates the file it it dosn't exist *)
       val fs = File.openOut path
     in
       (
@@ -51,65 +53,143 @@ fun openProject projectPath =
       )
     end;
     
-fun saveProject {path = path, project = project} = 
+fun saveProject ({path, project, ...}: t) = 
     let
       val fs = File.openOut path
     in      
       TextIO.output (fs, (JSON.write project)) before TextIO.closeOut fs
     end;
 
-fun getFieldFromProjectObject (JSON.Object dict) field = valOf (Dictionary.lookup dict field)
-  | getFieldFromProjectObject x _ = die ("Expected a JSON Object as toplevel Project description, but got: " ^ JSON.write x)
+(* 
+ * Helper functions to get fields out of the various JSON Objects that makes out a project.
+ * As the project is validated when opened we know for sure that the dictionary contains the 
+ * required fields we lookup.
+ *)
+fun getFieldFromJSONObject (JSON.Object dict) field = valOf (Dictionary.lookup dict field)
+  | getFieldFromJSONObject x _ = die ("Expected a JSON Object to lookup in, but got: " ^ JSON.write x)
 
-fun getFieldFromNodeObject (JSON.Object dict) field = valOf (Dictionary.lookup dict field)
-  | getFieldFromNodeObject x _ = die ("Expected a JSON Object as 'Node' field, but got: " ^ JSON.write x)
+(* 
+ * The maning convention "...FromXxx" could be argued to be stupid, but it somehow forces
+ * one to think twice when using the function, that the passed JSON.Object is actually a 
+ * "Value-Object" or "Node-Object". As there is no type safety in the different types of 
+ * JSON.Object's abd the lookup would else failse miserably since getFieldFromJSONObject 
+ * blindly assumes that field exists by doing "valOf"
+ *)
 
-and getFieldFromValueObject (JSON.Object dict) field = valOf (Dictionary.lookup dict field)
-  | getFieldFromValueObject x _  = die ("Expected a JSON Object as 'Value' field, but got: " ^ JSON.write x)
+fun getPropertiesFromProject  project  = getFieldFromJSONObject project "Properties";
+fun getDependenciesFromProject project = getFieldFromJSONObject project "Dependencies";
+fun getProjectNodeFromProject project  = getFieldFromJSONObject project "ProjectNode";
+
+fun getNameFromNode  node = getFieldFromJSONObject node "Name";
+fun getDependsFromNode  node = getFieldFromJSONObject node "Depends";
+fun getValueFromNode node = getFieldFromJSONObject node "Value";              
+
+fun getExposesFromValue value = getFieldFromJSONObject value "Exposes";
+fun getNodesFromValue   value = getFieldFromJSONObject value "Nodes";
 
 
-    (* This assumes that the project is well formattet *)
-  fun getFileNames {path = path, project = project}  = 
+
+
+fun updateProjectInRecord {path, project} newProject = {path = path, project=newProject}
+
+fun updateDict dict key value = Dictionary.update dict (key, value)
+
+
+(* 
+ * Rekursive function that loops the parseNode function through each element in the
+ * JSON.Array. The parseNode function just need to return the possibly updated res 
+ * variable back when done parsing that single node.
+ *
+ * The parseJSONArray function is responsible for handling if the node is a unexpected JSON type
+ *)
+
+(* Replace this with the new JSON.map *)
+  fun parseJSONArray (JSON.Array lst) parseFun res =
       let
-        fun parseNodes (JSON.Array lst) res = 
-            let
-              fun parseNodes' ((node as JSON.Object _) :: xs) res = parseNodes' xs (parseNode node res)
-                | parseNodes' ((JSON.String s) :: xs) res = parseNodes' xs (StringOrderedSet.insert res s)
-                | parseNodes' ((JSON.Array lst) :: xs) res = 
-                  let
-                    fun parseFiles ((JSON.String s) :: xs) res = parseFiles xs (StringOrderedSet.insert res s)
-                      | parseFiles [] res = res
-                      | parseFiles (x :: xs) _ = die ("The list of filenames may only contain JSON String, but contained this element: " ^ JSON.write x)
-                  in
-                    parseNodes' xs (parseFiles lst res)
-                  end
-                | parseNodes' [] res = res
-                | parseNodes' (x::xs) _ = die ("This is not a valid Node: " ^ JSON.write x)
-            in
-              parseNodes' lst res
-            end
-          | parseNodes x _= die ("Expected a JSON Array as 'Nodes' field, but got:" ^ JSON.write x)
-
-        fun getValueFromNode node = getFieldFromNodeObject node "Value"                
-        val projectNode = getFieldFromProjectObject project "ProjectNode"
-
-        fun                           
+        fun parseJSONArray' (n :: ns) res = parseJSONArray' ns (parseFun n res)
+          | parseJSONArray' [] res = res
       in
-        parseNode () StringOrderedSet.empty
-      end;
+        parseJSONArray' lst res
+      end
+    | parseJSONArray x _ _= die ("Expected a JSON Array, but got:" ^ JSON.write x)          
 
+
+       
+  fun getFileNames ({project, ...}: t)  = 
+      let
+        fun parseFiles (JSON.String s) res = StringOrderedSet.insert res s
+          | parseFiles x _ = die ("The list of filenames may only contain JSON String, but contained this element: " ^ JSON.write x)
+                             
+        fun parseNode (node as JSON.Object _) res = parseJSONArray ((getNodesFromValue o getValueFromNode) node) parseNode res
+          | parseNode (JSON.String s) res = StringOrderedSet.insert res s
+          | parseNode (files as JSON.Array _) res = parseJSONArray files parseFiles res
+          | parseNode x _ = die ("This is not a valid Node: " ^ JSON.write x)         
+      in
+        parseJSONArray ((getNodesFromValue o getValueFromNode o getProjectNodeFromProject) project ) parseNode StringOrderedSet.empty
+      end;
+      
   val addFile = unimp;
 
   val removeFile = unimp;
 
   val moveFile = unimp;
 
+  val renameFile = unimp;
+
+  fun getProjectGroupName ({project, ...}: t) = JSON.stringOf (getNameFromNode (getProjectNodeFromProject project))
+
+(* There might be a problem here. The structure of which groups belong to who is lost *)
+  fun getGroupNames ({project, ...}: t) = 
+      let
+        fun parseNode (node as JSON.Object _) res =
+            let          
+              (* The returned field is a JSON.String so writ it to a ordinary string *)              
+              val name = JSON.stringOf (getNameFromNode node)
+            in
+              parseJSONArray ((getNodesFromValue o getValueFromNode) node) parseNode (StringOrderedSet.insert res name)
+            end
+          (* As group names are only located in the JSON Objects we skip anything else*)
+          | parseNode _  res = res
+      in
+        parseNode (getProjectNodeFromProject project) StringOrderedSet.empty
+      end;
 
 
-  val getGroupNames = unimp;
 
+  fun addGroup ({project, ...}: t) inGroup newGroup = 
+      let
+        fun addGroupToNode node =
+            let
+              val dict = JSON.objectOf node
+              val name = getNameFromNode node
+              val value = getValueFromNode node
+              val nodes = getNodesFromValue value
+            in
+              if name = inGroup then
+                let 
+                  val newGroup = Generate.emptyGroup newGroup
+                  val newNodes = JSON.cons(newGroup, nodes)
+                  val newValue = updateDict value "Nodes" newNodes
+                  val newNode = updateDict node "Value" newValue
+                in (* break the mapping *)
+                  (true, newNode )
+                end
+              else (* Look in this groups nodes to se if it is a subgroup and break if so. *)
+                let
+                  val (added, newNodes) = JSON.mapUntil addGroupToNode nodes
+                  val newValue = updateDict value "Nodes" newNodes
+                  val newNode = updateDict node "Value" newValue
+                in
+                  (added, newNode)
+                end
+            end
 
-  val addGroup = unimp;
+        val projectNode = getProjectNodeFromProject project
+        val (_, newProjectNode) = addGroupToNode projectNode
+        val newProject = JSON.Object (updateDict (JSON.objectOf project) "ProjectNode" newDependencies)
+      in
+        updateProjectInRecord r newProject
+      end
 
 
   val removeGroup = unimp;
@@ -117,13 +197,94 @@ and getFieldFromValueObject (JSON.Object dict) field = valOf (Dictionary.lookup 
 
   val moveGroup = unimp;
 
+  val renameGroup = unimp;
 
-  val getDependencys = unimp;
+  fun getDependencies ({project, ...}: t) =
+      let
+        fun parseDependency (node as JSON.Object dict) res =
+            let
+              fun parseDepend (JSON.String s) res = StringOrderedSet.insert res s
+                | parseDepend x _ = die ("Expected a JSON String as 'Depends' constraint, but got: " ^ JSON.write x)
 
-  val addDependency = unimp;
+              val nameStr = JSON.stringOf (getNameFromNode node)
+              val depends = getDependsFromNode node
+              val dep = Dictionary.lookup res nameStr
+            in
+              if isSome dep then
+                Dictionary.update res (nameStr, parseJSONArray depends parseDepend (valOf dep))
+              else
+                Dictionary.update res (nameStr, parseJSONArray depends parseDepend StringOrderedSet.empty)
+            end
+          | parseDependency x _ = die ("Expected a JSON Object as dependency to lookup in, but got: " ^ JSON.write x)
+      in
+        parseJSONArray (getDependenciesFromProject project) parseDependency Dictionary.empty
+      end;
 
-  val getProperties = unimp;
+  fun addDependency (r as {project, ...}: t) depFrom depTo =
+      let  
+        fun parseDependency (node as JSON.Object dict) (true, res) = (true, node :: res)
+          | parseDependency (node as JSON.Object dict) (match, res) =
+            let
+              val name = JSON.stringOf (getNameFromNode node)
+            in
+              if (name = depFrom) then (* match, update the depends with the depTo *)
+                let
+                  val depends = getDependsFromNode node
+                  val newDepends = JSON.Array( JSON.String depTo :: (JSON.arrayOf depends))
+                  val newDependency = JSON.Object (updateDict dict "Depends"  newDepends)
+                in
+                  (true, (JSON.Object (updateDict dict "Depends" newDepends)) :: res)
+                end                 
+              else (* no match, keep going *)
+                 (match, node :: res)
+            end
+          | parseDependency x _ = die ("Expected a JSON Object as dependency to lookup in, but got: " ^ JSON.write x)
+  
+        val dependencies = getDependenciesFromProject project
+        val (match, newDependenciesLst) = parseJSONArray dependencies parseDependency (false, [])
+        val newDependencies = JSON.Array
+                                  (if match then (* match, we have update the list *)
+                                      (rev newDependenciesLst )
+                                   else (* No match, insert the dependency *)
+                                      (JSON.read ("{\"Name\" : \"" ^ depFrom ^ "\", \"Depends\" : [ \"" ^ depTo ^ "\" ]}")) :: (rev newDependenciesLst))
+                                                            
+        val newProject = JSON.Object (updateDict (JSON.objectOf project) "Dependencies" newDependencies)
+      in
+        updateProjectInRecord r newProject
+      end
+
+  fun removeDependency (r as {project, ...}: t) depFrom depTo =
+      let
+        fun parseDependency (node as JSON.Object dict) res =
+            let
+              val name = JSON.stringOf (getNameFromNode node)
+            in
+              if (name = depFrom) then (* match, remove the objec *)
+                let
+                  val depends = getDependsFromNode node
+                  val newDepends = JSON.Array (List.filter (fn s => (JSON.stringOf s) <> depTo) (JSON.arrayOf depends))
+                  val newDependency = JSON.Object (updateDict dict "Depends"  newDepends)                
+                in
+                  (JSON.Object (updateDict dict "Depends" newDepends)) :: res
+                end
+              else (* no match, keep going *)
+                node :: res
+            end
+          | parseDependency x _ = die ("Expected a JSON Object as dependency to lookup in, but got: " ^ JSON.write x)
+        
+        val dependencies = getDependenciesFromProject project
+        val newDependenciesLst = parseJSONArray dependencies parseDependency []
+        val newDependencies = JSON.Array (rev newDependenciesLst)
+
+        val newProject = JSON.Object (updateDict (JSON.objectOf project) "Dependencies" newDependencies)
+      in
+        updateProjectInRecord r newProject
+      end
+
   val setProperty = unimp;
+
+  fun getProperties ({project, ...}: t) = JSON.objectOf (getPropertiesFromProject project)  
+
 
   fun toString {path=path, project = project} =
       "project file: " ^ Path.path path ^ "\n" ^
