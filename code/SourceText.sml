@@ -30,7 +30,7 @@ struct
                        end
                    ) (String.fields (fn c => c = #"\n") s)
         )
-        
+
     fun reread (SOME f, st) = fromFile f
       | reread (NONE, _) = die "Can't reread SourceText constructed from string."
 
@@ -47,7 +47,7 @@ struct
                 else
                     take ((n + s - pl, String.extract (l, pl - n, NONE)) :: ls) pl
             and take nil _ = die "Right position after end of file in getSource."
-              | take ((s, l) :: ls) n = 
+              | take ((s, l) :: ls) n =
                 if pr > n + s then
                     (* pr lies after end of this line *)
                     l :: take ls (n + s)
@@ -90,9 +90,9 @@ struct
                     loop ls (l + 1) (p - n)
               | loop _ _ _ = die "Position outside file."
         in
-            loop ls 0 p
+            loop ls 1 p
         end
-        
+
     fun posToString st p =
         let
             val f = getFile st

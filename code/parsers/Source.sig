@@ -2,7 +2,7 @@ signature Source =
 sig
     type t
     val fromSourceText : SourceText.t -> t
-    val lexError : t -> int -> string -> 'a
+    val error : t -> int -> string -> 'a
     val makeReader : t -> int -> string
 
     structure Comments : sig

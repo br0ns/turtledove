@@ -18,7 +18,7 @@ fun eof source =
     if C.depth source = 0 then
         T.EOF (~1, ~1)
     else
-        Source.lexError source
+        Source.error source
                         (C.start source)
                         "Unclosed comment"
 
@@ -1148,7 +1148,7 @@ let fun continue() : Internal.result =
                      C.new source yypos ;
                      continue ()
                    )
-| 153 => ( Source.lexError source yypos "Illegal token" ;
+| 153 => ( Source.error source yypos "Illegal token" ;
                      continue ()
                    )
 | 156 => ( C.inc source ;
@@ -1183,31 +1183,31 @@ let fun continue() : Internal.result =
 | 19 => ( T.EQUALOP   (yypos, yypos + 1) )
 | 192 => ( S.appendChar source #"\""; continue () )
 | 196 => let val yytext=yymktext() in  S.appendControlChar source yytext
-                                         (Source.lexError source yypos) ;
+                                         (Source.error source yypos) ;
                      continue ()
                     end
 | 2 => ( continue () )
 | 201 => let val yytext=yymktext() in  S.appendAsciiChar source yytext
-                                       (Source.lexError source yypos) ;
+                                       (Source.error source yypos) ;
                      continue ()
                     end
 | 208 => let val yytext=yymktext() in  S.appendUnicodeChar source yytext
-                                         (Source.lexError source yypos) ;
+                                         (Source.error source yypos) ;
                      continue ()
                     end
 | 214 => ( YYBEGIN F ; continue () )
 | 220 => ( YYBEGIN F ; continue () )
-| 222 => ( Source.lexError source yypos "Illegal string escape" ;
+| 222 => ( Source.error source yypos "Illegal string escape" ;
                      continue ()
                    )
-| 227 => ( Source.lexError source yypos "Unclosed string" ;
+| 227 => ( Source.error source yypos "Unclosed string" ;
                      continue ()
                    )
 | 23 => ( T.ANN       (yypos, yypos + 3) )
 | 230 => let val yytext=yymktext() in  S.append source yytext ;
                      continue ()
                     end
-| 232 => ( Source.lexError source (yypos + 1) "Illegal character in string" ;
+| 232 => ( Source.error source (yypos + 1) "Illegal character in string" ;
                      continue ()
                    )
 | 237 => ( continue () )
@@ -1215,7 +1215,7 @@ let fun continue() : Internal.result =
 | 242 => ( YYBEGIN S ;
                      continue ()
                    )
-| 244 => ( Source.lexError source yypos "Unclosed string" ;
+| 244 => ( Source.error source yypos "Unclosed string" ;
                      continue ()
                    )
 | 27 => ( T.AND       (yypos, yypos + 3) )

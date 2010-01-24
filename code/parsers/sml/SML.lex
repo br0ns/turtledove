@@ -13,7 +13,7 @@ fun eof source =
     if C.depth source = 0 then
         T.EOF (~1, ~1)
     else
-        Source.lexError source
+        Source.error source
                         (C.start source)
                         "Unclosed comment"
 
@@ -141,7 +141,7 @@ hexnum={hexDigit}+;
                      C.new source yypos ;
                      continue ()
                    );
-<INITIAL>.      => ( Source.lexError source yypos "Illegal token" ;
+<INITIAL>.      => ( Source.error source yypos "Illegal token" ;
                      continue ()
                    );
 
@@ -177,31 +177,31 @@ hexnum={hexDigit}+;
 <S>\\\"         => ( S.appendChar source #"\\"; continue () );
 <S>\\\\         => ( S.appendChar source #"\""; continue () );
 <S>\\\^.        => ( S.appendControlChar source yytext
-                                         (Source.lexError source yypos) ;
+                                         (Source.error source yypos) ;
                      continue ()
                    );
 <S>\\[0-9]{3}   => ( S.appendAsciiChar source yytext
-                                       (Source.lexError source yypos) ;
+                                       (Source.error source yypos) ;
                      continue ()
                    );
 <S>\\u{hexDigit}{4}
                 => ( S.appendUnicodeChar source yytext
-                                         (Source.lexError source yypos) ;
+                                         (Source.error source yypos) ;
                      continue ()
                    );
 <S>\\{nrws}     => ( YYBEGIN F ; continue () );
 <S>\\{eol}      => ( YYBEGIN F ; continue () );
-<S>\\           => ( Source.lexError source yypos "Illegal string escape" ;
+<S>\\           => ( Source.error source yypos "Illegal string escape" ;
                      continue ()
                    );
-<S>{eol}        => ( Source.lexError source yypos "Unclosed string" ;
+<S>{eol}        => ( Source.error source yypos "Unclosed string" ;
                      continue ()
                    );
 <S>" "|[\033-\126]
                 => ( S.append source yytext ;
                      continue ()
                    );
-<S>.            => ( Source.lexError source (yypos + 1) "Illegal character in string" ;
+<S>.            => ( Source.error source (yypos + 1) "Illegal character in string" ;
                      continue ()
                    );
 
@@ -210,7 +210,7 @@ hexnum={hexDigit}+;
 <F>\\           => ( YYBEGIN S ;
                      continue ()
                    );
-<F>.            => ( Source.lexError source yypos "Unclosed string" ;
+<F>.            => ( Source.error source yypos "Unclosed string" ;
                      continue ()
                    );
 
@@ -220,7 +220,7 @@ hexnum={hexDigit}+;
                        val p = S.start source
                      in
                        if size s <> 1 then
-                         Source.lexError source p "Character string not of length 1"
+                         Source.error source p "Character string not of length 1"
                        else
                          T.CHAR (s, p, yypos)
                      end
@@ -236,28 +236,28 @@ hexnum={hexDigit}+;
 <CH>\\\"        => ( S.appendChar source #"\\"; continue () );
 <CH>\\\\        => ( S.appendChar source #"\""; continue () );
 <CH>\\\^.       => ( S.appendControlChar source yytext
-                                         (Source.lexError source yypos) ;
+                                         (Source.error source yypos) ;
                      continue ()
                    );
 <CH>\\[0-9]{3}  => ( S.appendAsciiChar source yytext
-                                       (Source.lexError source yypos) ;
+                                       (Source.error source yypos) ;
                      continue ()
                    );
 <CH>\\u{hexDigit}{4}
                 => ( S.appendUnicodeChar source yytext
-                                         (Source.lexError source yypos) ;
+                                         (Source.error source yypos) ;
                      continue ()
                    );
-<CH>\\          => ( Source.lexError source yypos "Illegal string escape" ;
+<CH>\\          => ( Source.error source yypos "Illegal string escape" ;
                      continue ()
                    );
-<CH>{eol}       => ( Source.lexError source yypos "Unclosed string" ;
+<CH>{eol}       => ( Source.error source yypos "Unclosed string" ;
                      continue ()
                    );
 <CH>" "|[\033-\126]
                 => ( S.append source yytext ;
                      continue ()
                    );
-<CH>.           => ( Source.lexError source (yypos + 1) "Illegal character in string" ;
+<CH>.           => ( Source.error source (yypos + 1) "Illegal character in string" ;
                      continue ()
                    );

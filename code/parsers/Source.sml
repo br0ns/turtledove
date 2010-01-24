@@ -10,14 +10,14 @@ struct
               T: SourceText.t}
 
     fun fromSourceText st = {C = (ref 0, ref nil), S = (ref 0, ref ""), T = st}
-    fun lexError ({T = st, ...} : t) pos msg =
+    fun error ({T = st, ...} : t) pos msg =
         let
             val r = SourceText.showPos st pos
             open Report
             infix ++
         in
             raise LexError (
-                  text "Lexical error:" ++
+                  text "Error:" ++
                   indent (text msg) ++
                   text "at" ++
                   indent r

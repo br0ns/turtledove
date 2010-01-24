@@ -13,7 +13,7 @@ fun eof source =
     if C.depth source = 0 then
         T.EOF (~1, ~1)
     else
-        Source.lexError source
+        Source.error source
                         (C.start source)
                         "Unclosed comment"
 
@@ -45,7 +45,7 @@ hexDigit=[0-9a-fA-F];
 %%
 <INITIAL>{ws}   => ( continue () );
 <INITIAL>{eol}  => ( continue () );
-<INITIAL>"_prim" 
+<INITIAL>"_prim"
                 => ( T.PRIM      (yypos, yypos + 4) );
 <INITIAL>","    => ( T.COMMA     (yypos, yypos + 1) );
 <INITIAL>";"    => ( T.SEMICOLON (yypos, yypos + 1) );
@@ -53,19 +53,19 @@ hexDigit=[0-9a-fA-F];
 <INITIAL>"ann"  => ( T.ANN       (yypos, yypos + 3) );
 <INITIAL>"and"  => ( T.AND       (yypos, yypos + 3) );
 <INITIAL>"bas"  => ( T.BAS       (yypos, yypos + 3) );
-<INITIAL>"basis" 
+<INITIAL>"basis"
                 => ( T.BASIS     (yypos, yypos + 5) );
 <INITIAL>"end"  => ( T.END       (yypos, yypos + 3) );
-<INITIAL>"functor" 
+<INITIAL>"functor"
                 => ( T.FUNCTOR   (yypos, yypos + 7) );
 <INITIAL>"in"   => ( T.IN        (yypos, yypos + 2) );
 <INITIAL>"let"  => ( T.LET       (yypos, yypos + 3) );
-<INITIAL>"local" 
+<INITIAL>"local"
                 => ( T.LOCAL     (yypos, yypos + 5) );
 <INITIAL>"open" => ( T.OPEN      (yypos, yypos + 4) );
-<INITIAL>"signature" 
+<INITIAL>"signature"
                 => ( T.SIGNATURE (yypos, yypos + 9) );
-<INITIAL>"structure" 
+<INITIAL>"structure"
                 => ( T.STRUCTURE (yypos, yypos + 9) );
 
 <INITIAL>{id}   => ( T.ID (yytext, yypos, yypos + size yytext) );
@@ -79,7 +79,7 @@ hexDigit=[0-9a-fA-F];
                      C.new source yypos ;
                      continue ()
                    );
-<INITIAL>.      => ( Source.lexError source yypos "Illegal token" ;
+<INITIAL>.      => ( Source.error source yypos "Illegal token" ;
                      continue ()
                    );
 
@@ -114,31 +114,31 @@ hexDigit=[0-9a-fA-F];
 <S>\\\"         => ( S.appendChar source #"\\"; continue () );
 <S>\\\\         => ( S.appendChar source #"\""; continue () );
 <S>\\\^.        => ( S.appendControlChar source yytext
-                                         (Source.lexError source yypos) ;
+                                         (Source.error source yypos) ;
                      continue ()
                    );
 <S>\\[0-9]{3}   => ( S.appendAsciiChar source yytext
-                                       (Source.lexError source yypos) ;
+                                       (Source.error source yypos) ;
                      continue ()
                    );
-<S>\\u{hexDigit}{4} 
+<S>\\u{hexDigit}{4}
                 => ( S.appendUnicodeChar source yytext
-                                         (Source.lexError source yypos) ;
+                                         (Source.error source yypos) ;
                      continue ()
                    );
 <S>\\{nrws}     => ( YYBEGIN F ; continue () );
 <S>\\{eol}      => ( YYBEGIN F ; continue () );
-<S>\\           => ( Source.lexError source yypos "Illegal string escape" ;
+<S>\\           => ( Source.error source yypos "Illegal string escape" ;
                      continue ()
                    );
-<S>{eol}        => ( Source.lexError source yypos "Unclosed string" ;
+<S>{eol}        => ( Source.error source yypos "Unclosed string" ;
                      continue ()
                    );
-<S>" "|[\033-\126]  
+<S>" "|[\033-\126]
                 => ( S.append source yytext ;
                      continue ()
                    );
-<S>.            => ( Source.lexError source (yypos + 1) "Illegal character in string" ;
+<S>.            => ( Source.error source (yypos + 1) "Illegal character in string" ;
                      continue ()
                    );
 
@@ -147,6 +147,6 @@ hexDigit=[0-9a-fA-F];
 <F>\\           => ( YYBEGIN S ;
                      continue ()
                    );
-<F>.            => ( Source.lexError source yypos "Unclosed string" ;
+<F>.            => ( Source.error source yypos "Unclosed string" ;
                      continue ()
                    );
