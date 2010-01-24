@@ -21,15 +21,14 @@ open ast_mlb
 structure MLBParser = Parser
 end
 
-basis ast_sml = bas end
+basis ast_sml = bas sml/Grammar.sml end
 
 local
-(* sml/Grammar.sml *)
-(* sml/SML.yacc.sig sml/SML.yacc.sml *)
-(* sml/SML.lex.sml *)
+open ast_sml
+sml/SML.yacc.sig sml/SML.yacc.sml
+sml/SML.lex.sml
 (* sml/Infixing.sig sml/Infixing.sml *)
 
-open ast_sml
 sml/Parser.sml
 in
 open ast_sml

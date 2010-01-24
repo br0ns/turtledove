@@ -106,7 +106,7 @@ fctbinds'' :              (nil)
 sigbinds : sigid EQUALOP sigbinds'
                 (let
                    val (sigid', sigbinds) = sigbinds'
-                 in 
+                 in
                    (sigid, sigid') :: sigbinds
                  end)
          | sigid sigbinds''

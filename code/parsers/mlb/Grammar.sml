@@ -18,7 +18,7 @@ type fctbind = fctid * fctid
 type strbinds = strbind list
 type sigbinds = sigbind list
 type fctbinds = fctbind list
-                
+
 datatype basexp = Bas of basdecs
                 | Let of basdecs * basexp
                 | Var of basid

@@ -8,7 +8,7 @@ structure MLBParser = JoinWithArg
                         (structure ParserData = MLBLrVals.ParserData
 structure Lex = MLBLex
 structure LrParser = LrParser)
-                      
+
 structure X = MLBGrammar
 structure Y = AstMLB
 
@@ -52,7 +52,7 @@ fun fromFile file =
               val ((ds, comments), _) =
                   MLBParser.parse (Constants.PARSE_LOOKAHEAD,
                                    MLBParser.makeLexer reader source,
-                                fn (s, l, r) => Source.lexError source l s,
+                                fn (s, l, r) => Source.error source l s,
                                    source)
 
               fun basdecs ds = map basdec ds
@@ -88,10 +88,10 @@ fun fromFile file =
                   | X.Var id => Y.Var id
               and basbinds bs = map basbind bs
               and basbind (id, e) = (id, basexp e)
-                                    
+
               val ds = basdecs ds
             in
-              parsed := Map.update (!parsed) (file, ds) ; 
+              parsed := Map.update (!parsed) (file, ds) ;
               ds
             end
             handle LexError r => fail r

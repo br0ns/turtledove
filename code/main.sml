@@ -1,5 +1,3 @@
-fun f 1 = 1
-
 val print = fn s => print (s ^ "\n")
 
 (* ;print "[Yeah baby!]"; *)
@@ -55,6 +53,9 @@ fun sources ds =
           String.isSuffix "MLB.lex.sml" (Path.path file) orelse
           String.isSuffix "MLB.yacc.sig" (Path.path file) orelse
           String.isSuffix "MLB.yacc.sml" (Path.path file) orelse
+          String.isSuffix "SML.lex.sml" (Path.path file) orelse
+          String.isSuffix "SML.yacc.sig" (Path.path file) orelse
+          String.isSuffix "SML.yacc.sml" (Path.path file) orelse
           file = Path.new "$(SML_LIB)/basis/basis.mlb" orelse
           file = Path.new "$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb" orelse
           file = Path.new "$(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb" orelse
@@ -116,3 +117,30 @@ val r = Report.++ (
         )
 
 ;Report.print r;
+
+
+;Benchmark.start ();
+val _ = SMLParser.fromFile (Path.new' here "parsers/sml/SML.yacc.sml")
+    handle SMLParser.Parse r => (Report.print r ; raise Fail "[Foobar]")
+;Benchmark.stopAndPrint "Parsing parsers/sml/SML.yacc.sml:";
+
+;Benchmark.start ();
+val report = SMLParser.fromFile (Path.new' here "Report.sml")
+    handle SMLParser.Parse r => (Report.print r ; raise Fail "[Foobar]")
+;Benchmark.stopAndPrint "Parsing Report.sml:";
+
+local
+  open Tree.Walk SMLGrammar
+  structure Set = StringOrderedSet
+  val unwrap = Wrap.unwrap
+  fun loop (w, s) =
+      foldl loop (case unwrap (this w) of
+                    Exp_Var i => (Set.insert s o Ident.toString o unwrap) i
+                  | _ => s)
+            (children w)
+  val ids = loop (init report, Set.empty)
+in
+val _ = print (Set.toString String.toString ids)
+val _ = print (Int.toString (Set.card ids))
+val _ = print (Int.toString (Tree.size report))
+end

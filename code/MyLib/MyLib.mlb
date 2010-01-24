@@ -76,6 +76,8 @@ DataStructures/Tree/Tree.sig
 
 DataStructures/Tree/PlainTreeFn.sml
 
+DataStructures/Tree/Tree.sml (* Default implementation *)
+
 
 (* Graph *)
 (* DataStructures/Graph/Graph.sig
