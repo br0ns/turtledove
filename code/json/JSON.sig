@@ -48,7 +48,7 @@ sig
         val json : json t
     end where type json = t
 
-    (* Takes an 'a converter and a JSON string and returns the value represented
+    (* Takes an 'a converter and a JSON string and returns the value represented<
        by that string. *)
     val from : 'a Converter.t -> string -> 'a
 
@@ -61,5 +61,22 @@ sig
     (* Writes multiple values using a converter. The values are seperated by
        newlines. *)
     val toMany : 'a Converter.t -> 'a list -> string
+
+
+    val objectOf : t -> t Dictionary.t
+    val arrayOf : t -> t list
+    val stringOf : t -> string
+    val numberOf : t -> real
+    val boolOf : t -> bool
+
+    val cons : t * t -> t
+
+    val map : (t -> t) -> t -> t
+
+    (* The mapped function returns a boolean value indicating wheter to break
+       (true) or continue (false) the map on the rest of the list *)
+    val mapUntil : (t -> bool * t) -> t -> bool * t
+
+    val filter : (t -> bool) -> t -> t 
 
 end
