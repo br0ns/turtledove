@@ -5,8 +5,7 @@ type t = {path: Path.t, project : JSON.t}
 
 fun unimp _ = raise Fail "ProjectManager: Unimplemented"
 
-fun die "" = unimp ""
-  | die s = raise Fail ("ProjectManager: " ^ s)
+fun die s = raise Fail ("ProjectManager: " ^ s)
 
 
 structure Generate =
@@ -32,7 +31,7 @@ fun init name projectPath =
       val fs = File.openOut path
     in
       (
-       TextIO.output (fs, (JSON.write project));
+       TextIO.output (fs, (JSON.show project));
        TextIO.closeOut fs;
        {path = path, project =  project}
       )
@@ -57,7 +56,7 @@ fun saveProject ({path, project, ...}: t) =
     let
       val fs = File.openOut path
     in      
-      TextIO.output (fs, (JSON.write project)) before TextIO.closeOut fs
+      TextIO.output (fs, (JSON.show project)) before TextIO.closeOut fs
     end;
 
 (* 
@@ -88,11 +87,10 @@ fun getExposesFromValue value = getFieldFromJSONObject value "Exposes";
 fun getNodesFromValue   value = getFieldFromJSONObject value "Nodes";
 
 
-
-
 fun updateProjectInRecord {path, project} newProject = {path = path, project=newProject}
 
 fun updateDict dict key value = Dictionary.update dict (key, value)
+fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf obj) (key, value))
 
 
 (* 
@@ -114,7 +112,39 @@ fun updateDict dict key value = Dictionary.update dict (key, value)
     | parseJSONArray x _ _= die ("Expected a JSON Array, but got:" ^ JSON.write x)          
 
 
-       
+  fun applyToParrentGroupNodes applyToNodesFun parrentGroupStr (node as JSON.Object _) =
+      let
+        val nameStr = JSON.stringOf (getNameFromNode node)                       
+                      
+        val value = getValueFromNode node
+        val nodes = getNodesFromValue value
+
+        val (modified, newNodes) =
+            (if nameStr = parrentGroupStr then        
+               let
+                 val (modified, newNodes) = applyToNodesFun nodes
+               in
+                 if modified then
+                   (modified, newNodes)
+                 else
+                   die ("Parrent group ("^parrentGroupStr^") was found, but the 'apply' function didn't modify any of the nodes")
+               end
+             else (* this is not the parent group, check child groups. *)
+               JSON.mapUntil (applyToParrentGroupNodes applyToNodesFun parrentGroupStr) nodes)
+      in
+        if modified then
+          let
+            val newValue = updateObject value "Nodes" newNodes
+            val newNode = updateObject node "Value" newValue
+          in (* modified true *)
+            (modified, newNode)
+          end
+        else (* modified false *)
+          (modified, node)
+      end
+    | applyToParrentGroupNodes _ _ x = (false, x)
+      
+ 
   fun getFileNames ({project, ...}: t)  = 
       let
         fun parseFiles (JSON.String s) res = StringOrderedSet.insert res s
@@ -128,13 +158,53 @@ fun updateDict dict key value = Dictionary.update dict (key, value)
         parseJSONArray ((getNodesFromValue o getValueFromNode o getProjectNodeFromProject) project ) parseNode StringOrderedSet.empty
       end;
       
-  val addFile = unimp;
+  fun addFile (r as {project, ...}: t) parrentGroupStr filenameStr = 
+      let
+        fun addFileToNodes nodes = (true, JSON.cons(JSON.String filenameStr, nodes))
+              
 
-  val removeFile = unimp;
+        val projectNode = getProjectNodeFromProject project
+        val (modified, newProjectNode) = applyToParrentGroupNodes addFileToNodes parrentGroupStr projectNode
+      in
+        if modified then 
+          updateProjectInRecord r (updateObject project "ProjectNode" newProjectNode)
+        else
+          die ("The file: '" ^ filenameStr ^  "' doesn't exist. The new file was not added")
+      end
 
-  val moveFile = unimp;
+  fun removeFile (r as {project, ...}: t) parrentGroupStr filenameStr  =
+      let
 
-  val renameFile = unimp;
+        fun isFileToBeRemoved (JSON.String s) = s = filenameStr
+          | isFileToBeRemoved x = false
+
+        val projectNode = getProjectNodeFromProject project
+        val (modified, newProjectNode) = applyToParrentGroupNodes (JSON.filterUntil isFileToBeRemoved) parrentGroupStr projectNode
+      in
+        if modified then 
+          updateProjectInRecord r (updateObject project "ProjectNode" newProjectNode)
+        else
+          die ("The file: '" ^ filenameStr ^  "' doesn't exist. The file was not removed")
+      end
+
+  fun renameFile (r as {project, ...}: t) parrentGroupStr oldFilenameStr newFilenameStr =
+      let              
+        fun locateFileToRename (str as JSON.String s) = 
+            if s = oldFilenameStr then
+              (true, JSON.String newFilenameStr)
+            else
+              (false, str)
+          | locateFileToRename x = (false, x)
+        
+        val projectNode = getProjectNodeFromProject project
+        val (modified, newProjectNode) = applyToParrentGroupNodes (JSON.mapUntil locateFileToRename) parrentGroupStr projectNode
+      in
+        if modified then 
+          updateProjectInRecord r (updateObject project "ProjectNode" newProjectNode)
+        else
+          die ("The file: '" ^ oldFilenameStr ^  "' doesn't exist. The file was not renamed")
+      end
+
 
   fun getProjectGroupName ({project, ...}: t) = JSON.stringOf (getNameFromNode (getProjectNodeFromProject project))
 
@@ -155,50 +225,63 @@ fun updateDict dict key value = Dictionary.update dict (key, value)
       end;
 
 
-
-  fun addGroup ({project, ...}: t) inGroup newGroup = 
+  fun addGroup (r as {project, ...}: t) parrentGroupStr newGroupStr = 
       let
-        fun addGroupToNode node =
+        fun addGroupToNodes nodes =
             let
-              val dict = JSON.objectOf node
-              val name = getNameFromNode node
-              val value = getValueFromNode node
-              val nodes = getNodesFromValue value
+              val newGroup = Generate.emptyGroup newGroupStr
+              val newNodes = JSON.cons(newGroup, nodes)
             in
-              if name = inGroup then
-                let 
-                  val newGroup = Generate.emptyGroup newGroup
-                  val newNodes = JSON.cons(newGroup, nodes)
-                  val newValue = updateDict value "Nodes" newNodes
-                  val newNode = updateDict node "Value" newValue
-                in (* break the mapping *)
-                  (true, newNode )
-                end
-              else (* Look in this groups nodes to se if it is a subgroup and break if so. *)
-                let
-                  val (added, newNodes) = JSON.mapUntil addGroupToNode nodes
-                  val newValue = updateDict value "Nodes" newNodes
-                  val newNode = updateDict node "Value" newValue
-                in
-                  (added, newNode)
-                end
+              (true, newNodes)
             end
-
+            
         val projectNode = getProjectNodeFromProject project
-        val (_, newProjectNode) = addGroupToNode projectNode
-        val newProject = JSON.Object (updateDict (JSON.objectOf project) "ProjectNode" newDependencies)
+        val (modified, newProjectNode) = applyToParrentGroupNodes addGroupToNodes parrentGroupStr projectNode
       in
-        updateProjectInRecord r newProject
+        if modified then 
+          updateProjectInRecord r (updateObject project "ProjectNode" newProjectNode)
+        else
+          die ("The group: '" ^ newGroupStr ^  "' doesn't exist. The new group was not added")
       end
 
 
-  val removeGroup = unimp;
+  fun removeGroup (r as {project, ...}: t) parrentGroupStr removeGroup = 
+      let
+        
+        fun isGroupToBeRemoved (node as JSON.Object _) = (JSON.stringOf (getNameFromNode node)) = removeGroup                                      
+          | isGroupToBeRemoved x = false
+                                      
+        val projectNode = getProjectNodeFromProject project
+        val (modified, newProjectNode) = applyToParrentGroupNodes (JSON.filterUntil isGroupToBeRemoved) parrentGroupStr projectNode
+      in
+        if modified then 
+          updateProjectInRecord r (updateObject project "ProjectNode" newProjectNode)
+        else
+          die ("The group: '" ^ removeGroup ^  "' doesn't exist. The group was not removed")
+      end     
 
+  fun renameGroup (r as {project, ...}: t) parrentGroupStr oldGroupStr newGroupStr =
+      let
+        fun locateNodeToRename (node as JSON.Object dict) =
+            let
+              val nameStr = JSON.stringOf (getNameFromNode node)
+            in
+              if nameStr = oldGroupStr then
+                (true, JSON.Object  (updateDict dict "Name" (JSON.String newGroupStr)))
+              else
+                (false, node)               
+            end  
+          | locateNodeToRename x = (false, x)
 
-  val moveGroup = unimp;
-
-  val renameGroup = unimp;
-
+        val projectNode = getProjectNodeFromProject project
+        val (modified, newProjectNode) = applyToParrentGroupNodes (JSON.mapUntil locateNodeToRename) parrentGroupStr projectNode
+      in
+        if modified then 
+          updateProjectInRecord r (updateObject project "ProjectNode" newProjectNode)
+        else
+          die ("The group: '" ^ oldGroupStr  ^  "' doesn't exist. The new group was not renamed")        
+      end
+      
   fun getDependencies ({project, ...}: t) =
       let
         fun parseDependency (node as JSON.Object dict) res =
@@ -288,7 +371,7 @@ fun updateDict dict key value = Dictionary.update dict (key, value)
 
   fun toString {path=path, project = project} =
       "project file: " ^ Path.path path ^ "\n" ^
-      "Project:\n " ^ JSON.write project;
+      "Project: \n" ^ JSON.show project;
 
         
   val show = unimp;

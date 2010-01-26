@@ -24,10 +24,6 @@ sig
   (* project, parrent group name, filename, resulting project  *)
   val removeFile : t -> string -> string -> t
 
-  (* project, old parrent group name, new parrent group name, filename,
-     resulting project *)
-  val moveFile : t -> string -> string -> string ->  t
-
   (* project, parrent group name, old filename, new filename,
      resulting project *)
   val renameFile: t -> string -> string -> string -> t
@@ -42,10 +38,6 @@ sig
 
   (* main project, parrent group name, group name, resulting main project *)
   val removeGroup : t -> string -> string -> t
-etPrope
-  (* project, old parent group name, new parrent group name, group name,
-     resulting project *)
-  val moveGroup : t -> string -> string -> string -> t
 
   (* project, parent group name, old group name, new group name,
      resulting project *)
