@@ -78,5 +78,8 @@ sig
     val mapUntil : (t -> bool * t) -> t -> bool * t
 
     val filter : (t -> bool) -> t -> t 
+    val filterUntil : (t -> bool) -> t -> (bool * t)
 
+    (* Preatty print the JSON code. Usefull for debug or writing the json to a file *)
+    val show : t -> string
 end

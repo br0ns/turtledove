@@ -233,6 +233,7 @@ struct
             Real.toString n
       | write (Bool b) = Bool.toString b
       | write Null = "null"
+
     fun writeMany nil = ""
       | writeMany [v] = write v
       | writeMany (v :: vs) = write v ^ "\n" ^ writeMany vs
@@ -338,9 +339,77 @@ struct
         end           
       | mapUntil _ x = die ("Expected a JSON Array, but got:" ^ write x)
 
+
     fun filter f (Array lst) = Array (List.filter f lst)
       | filter _ x = die ("Expected a JSON Array, but got:" ^ write x)
 
+    fun filterUntil p (Array lst) = 
+        let
+          fun filterUntil' (x :: xs) =
+              if p x then
+                (true, xs)
+              else
+                let
+                  val (modified, xs') = filterUntil' xs
+                in
+                  (modified, x :: xs')
+                end
+            | filterUntil' [] = (false, [])
+
+          val (modified, lst') = filterUntil' lst
+        in
+          (modified, Array lst')
+        end
+      | filterUntil _ x = die ("Expected a JSON Array, but got:" ^ write x)
+
+    fun show x =
+        let      
+          open Report infix ++ @@ ||
+
+          fun loop f [j] = f j
+            | loop f (j :: js) = f j @@ (text ", ") ++ loop f js
+            | loop f nil = text ("")
+
+          fun loopOneline f [j] = f j
+            | loopOneline f (j :: js) = f j @@ (text ", ") @@ loop f js
+            | loopOneline f nil = text ("")
+
+          fun isStringArray ((String _) :: xs) = isStringArray xs
+            | isStringArray [] =  true
+            | isStringArray x = false
+                           
+          fun show' (Object d) =
+              let                    
+                fun wPair (k, v as Array l) = 
+                    if isStringArray l then 
+                      (text ("\"" ^ k ^ "\" : ")) @@ (show' v) (* one line *)
+                    else
+                      (text ("\"" ^ k ^ "\" : ")) ++ (show' v) (* new line *)                    
+                  | wPair (k, v as Object _) = (text ("\"" ^ k ^ "\" : ")) ++ (show' v) (* new line *)  
+                  | wPair (k, v)             = (text ("\"" ^ k ^ "\" : ")) @@ (show' v) (* one line *)
+              in
+                (text "{") ++ (indent (loop wPair (Dictionary.toList d))) ++ (text "}")
+              end
+
+            | show' (Array l)  = 
+              if isStringArray l then (* string array, print on one line *)
+                (text "[ ") @@ (loopOneline show' l) @@ (text " ]")
+              else
+                (text "[") ++ (indent (loop show' l)) ++ (text "]")
+
+            | show' (String s) = text ("\"" ^ s ^ "\"")
+           
+            | show' (Number n) =
+              if n < 0.0 then
+                text ("-" ^ Real.toString (~n))
+              else
+                text (Real.toString n)
+            | show' (Bool b) = text (Bool.toString b)
+           
+            | show' Null = text "null"
+        in
+          toString (show' x)
+        end        
 end;
 
 
