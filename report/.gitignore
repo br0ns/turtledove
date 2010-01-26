@@ -6,6 +6,8 @@
 *.dvi
 *.bbl
 *.blg
+_region*
+*/_region*
 #*#
 .#*
 *auto*
