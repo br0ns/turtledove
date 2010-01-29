@@ -60,7 +60,8 @@ sig
 
   val getProperties : t -> JSON.t Dictionary.t
 
-
+  val listFilesAndGroups : t -> string
+  val projectToString : t -> string
   val toString : t -> string
   val show : t -> Report.t
 
