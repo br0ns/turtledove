@@ -1,0 +1,47 @@
+{
+  "Properties" : { },
+  "Dependencies" : 
+  [
+    { "Name" : "C", "Depends" : [ "B" ] },
+    { "Name" : "j.sml" , "Depends" : [ "u.sml", "B" ] },
+    { "Name" : "y.sml" , "Depends" : [ "x.sml" ] },
+    { "Name" : "z.sml", "Depends" : [ "y.sml" ] }
+  ],
+  "ProjectNode" :
+  {
+    "Name"  : "Turtledove",
+    "Value" : 
+    {
+       "Exposes" : [ "B", "j.sml" ],
+       "Nodes" :
+       [
+         {
+           "Name" : "A",
+           "Value" :
+           {
+             "Exposes" : [ "x.sml" ],
+             "Nodes" : [ "x.sml" ]
+           }          
+         },
+         {
+           "Name" : "B",
+           "Value" :
+           {
+             "Exposes" : [ "z.sml" ],
+             "Nodes" : [ "y.sml", "z.sml" ]
+           }          
+         },
+         {
+           "Name" : "C",
+           "Value" :
+           {
+             "Exposes" : [ "n.sml", "m.sml" ],
+             "Nodes" : [ "n.sml", "m.sml" ]
+           }          
+         },
+         "u.sml",
+         "j.sml"
+       ]
+    }
+  }
+}    
