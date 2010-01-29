@@ -339,6 +339,10 @@ struct
         end           
       | mapUntil _ x = die ("Expected a JSON Array, but got:" ^ write x)
 
+    fun foldl f b (Array lst) = List.foldl f b lst
+      | foldl _ _ x = die ("Expected a JSON Array, but got:" ^ write x)
+
+    val fold = foldl
 
     fun filter f (Array lst) = Array (List.filter f lst)
       | filter _ x = die ("Expected a JSON Array, but got:" ^ write x)
@@ -360,7 +364,11 @@ struct
         in
           (modified, Array lst')
         end
-      | filterUntil _ x = die ("Expected a JSON Array, but got:" ^ write x)
+      | filterUntil _ x = die ("Expected a JSON Array, but got:" ^ write x)                        
+
+
+    fun exists existsFun (Array lst) = List.exists existsFun lst
+      | exists _ x = die ("Expected a JSON Array, but got:" ^ write x)
 
     fun show x =
         let      

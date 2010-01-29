@@ -77,8 +77,13 @@ sig
        (true) or continue (false) the map on the rest of the list *)
     val mapUntil : (t -> bool * t) -> t -> bool * t
 
+    val foldl: (t * 'b -> 'b) -> 'b -> t -> 'b
+    val fold : (t * 'b -> 'b) -> 'b -> t -> 'b
+
     val filter : (t -> bool) -> t -> t 
     val filterUntil : (t -> bool) -> t -> (bool * t)
+
+    val exists : (t -> bool) -> t -> bool
 
     (* Preatty print the JSON code. Usefull for debug or writing the json to a file *)
     val show : t -> string
