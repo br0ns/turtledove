@@ -5,9 +5,9 @@ sig
        
   (* project name, project path  *)     
   val init : string -> string -> t
-                                 
+     
 
-
+                            
   (* open a project at the specified path *)
   val openProject : string -> t
   
@@ -29,14 +29,15 @@ sig
   val renameFile: t -> string -> string -> string -> t
 
 
-  val getProjectGroupName : t -> string
+
+  val getProjectGroupNameStr : t -> string
 
   val getGroupNames : t -> StringOrderedSet.t
 
   (* project, parrent group name, new group name, resulting project *)
   val addGroup : t -> string -> string -> t
 
-  (* main project, parrent group name, group name, resulting main project *)
+  (* main project, parrent group name, group name, resulting project *)
   val removeGroup : t -> string -> string -> t
 
   (* project, parent group name, old group name, new group name,
@@ -48,17 +49,32 @@ sig
      dependencys as values *)
   val getDependencies: t -> StringOrderedSet.t Dictionary.t
 
-  (* project, dependency from, dependency to, resulting main project *)
+  (* project, dependency from, dependency to, resulting project *)
   val addDependency : t -> string -> string -> t
 
-  (* project, dependency from, dependency to, resulting main project *)
+  (* project, dependency from, dependency to, resulting project *)
   val removeDependency : t -> string -> string -> t
+
+
+
+  val getExposes : t -> StringOrderedSet.t Dictionary.t
+                                                  
+  (* project, parrent group that exposes this file/group, group/file that are to
+  be exposed, resulting project *)
+  val addExpose : t -> string -> string -> t
+
+  (* project, parrent group that exposes this file/group, group/file that are to
+  be un-exposed, resulting project *)
+  val removeExpose : t -> string -> string -> t
+
 
 
   (* if property exists, then overwrite it *)
   val setProperty : t -> (string * JSON.t) -> t
 
   val getProperties : t -> JSON.t Dictionary.t
+
+
 
   val listFilesAndGroups : t -> string
   val projectToString : t -> string

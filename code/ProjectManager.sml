@@ -107,7 +107,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
      the nodes on that parrent group. *)
   fun applyToParrentGroupNodes applyToNodesFun parrentGroupStr (node as JSON.Object _) =
       let
-        val nameStr = JSON.stringOf (getNameFromNode node)                       
+        val nameStr = JSON.stringOf (getNameFromNode node)
                       
         val value = getValueFromNode node
         val nodes = getNodesFromValue value
@@ -199,7 +199,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
       end
 
 
-  fun getProjectGroupName ({project, ...}: t) = JSON.stringOf (getNameFromNode (getProjectNodeFromProject project))
+  fun getProjectGroupNameStr ({project, ...}: t) = JSON.stringOf (getNameFromNode (getProjectNodeFromProject project))
 
 (* There might be a problem here. The structure of which groups belong to who is lost *)
   fun getGroupNames ({project, ...}: t) = 
@@ -304,17 +304,28 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
 
   fun addDependency (r as {project, ...}: t) depFrom depTo =
       let
-
-        
-
         val files = getFileNames r
         val groups = getGroupNames r
+                     
+        (* Make sure that the depFrom is a valid group or file in the project *)
+        val _ = not (StringOrderedSet.member files depFrom orelse StringOrderedSet.member groups depFrom)
+                andalso die ("The dependency from ('"^ depFrom ^"') is not a valid file or group in the project")
 
-        val _ = (StringOrderedSet.member files depFrom orelse StringOrderedSet.member groups depFrom)
-                andalso
-                (StringOrderedSet.member files depTo orelse StringOrderedSet.member groups depTo)
-                andalso die ("The dependency from '"^ depFrom ^"' to '"^ depTo ^"' is already in the dependency list")
+        (* Make sure that the depTo is a valid group or file in the project *)
+        val _ = not (StringOrderedSet.member files depTo orelse StringOrderedSet.member groups depTo)
+                andalso die ("The dependency to ('"^ depTo ^"') is not a valid file or group in the project")
 
+        (* Make sure the new dependency is not from the project group as this
+           makes no sence or to the project group as this would create cyclic
+           dependencies. *)
+        val _ = 
+            let 
+              val projectGroupNameStr = getProjectGroupNameStr r
+            in
+              (projectGroupNameStr = depFrom andalso die ("It is not allowed to make dependencies from the project group")) orelse
+              (projectGroupNameStr = depTo andalso die ("It is not allowed to make dependencies to the project group"))
+            end            
+                               
         fun insertDepend dependsLst =
             let
               (* If the depTo exists in the list then die, else add it to the list.  *)
@@ -383,6 +394,93 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
       in
         updateProjectInRecord r newProject
       end
+
+
+  fun getExposes (r as {project, ...}: t) = 
+      let
+        (* res is a stringorderedset of group- and filenames *)
+        fun extractExposes (JSON.String s, res) = StringOrderedSet.insert res s
+          | extractExposes (x, res) = die ("Expected a JSON String as the group- or filename to be exposed, but got: " ^ JSON.write x)
+
+        (* res is dictionary of groupname and stringorderedset of exposed group- and filenames *)
+        fun extractExposesFromNode ((node as JSON.Object _), res) = 
+            let
+              val nameStr = JSON.stringOf (getNameFromNode node)
+              val value = getValueFromNode node
+              val nodes = getNodesFromValue value
+              val exposes = getExposesFromValue value
+
+              (* As it is not allowed to have multiple groups with same name, we
+              can blindly insert/update the list of exposed group- and filenames for
+              each group we find *)
+              val res' = Dictionary.update res (nameStr, JSON.fold extractExposes StringOrderedSet.empty exposes)
+            in
+              (* get all the exposes from the sub groups contained in this group before returning the resulting dictionary *)
+              JSON.fold extractExposesFromNode res' nodes
+            end
+          | extractExposesFromNode (_, res) = res (* Only groups contain expose information , ignore anything else *)
+                                                                            
+        val projectNode = getProjectNodeFromProject project
+      in
+        extractExposesFromNode (projectNode, Dictionary.empty)
+      end
+
+  fun addExpose (r as {project, ...}: t) parrentGroupStr exposeStr =
+      let
+
+        val exposes = getExposes r
+        val parrentGroupExposes = Dictionary.lookup exposes parrentGroupStr
+        val _ = isSome parrentGroupExposes andalso
+                StringOrderedSet.member (valOf parrentGroupExposes) exposeStr andalso
+                die ("The group- or filename '"^ exposeStr ^"' is already exposed in the group '"^ parrentGroupStr ^"'.")
+
+        fun addExposeToNode node =
+            let
+              val value = getValueFromNode node
+              val newExposes = JSON.cons(JSON.String exposeStr, getExposesFromValue value)
+              val newValue = updateObject value "Exposes" newExposes
+              val newNode = updateObject node "Value" newValue
+            in
+              (true, newNode)
+            end
+            
+        fun locateNodeToAddExpose (node as JSON.Object _) =
+            let
+              val nameStr = JSON.stringOf (getNameFromNode node)
+            in
+              if nameStr = parrentGroupStr then (* this is the parrent group, add the expose *) 
+                addExposeToNode node
+              else (* seach the sub groups for a matching parrent group *)
+                let
+                  val value = getValueFromNode node
+                  val nodes = getNodesFromValue value
+                              
+                  val (modified, newNodes) = JSON.mapUntil locateNodeToAddExpose nodes
+                in
+                  if modified then
+                    let
+                      val newValue = updateObject value "Nodes" newNodes
+                      val newNode = updateObject node "Value" newValue
+                    in
+                      (modified, newNode)
+                    end
+                  else
+                    (false, node)
+                end 
+            end              
+          | locateNodeToAddExpose x = (false, x) (* only groups contain expose information, ignore anything else *)
+
+        val (modified, newProjectNode) = locateNodeToAddExpose (getProjectNodeFromProject project)
+
+        val newProject = if modified then
+                           updateObject project "ProjectNode" newProjectNode
+                         else
+                           die ("The Group '"^ parrentGroupStr ^"' was not found")
+      in
+        updateProjectInRecord r newProject
+      end
+
+  val removeExpose = unimp;
 
   val setProperty = unimp;
 
