@@ -73,7 +73,7 @@ fun action t =
 
 and projectGroupName t = 
     (print "The projects name is:";
-     print (ProjectManager.getProjectGroupName t);
+     print (ProjectManager.getProjectGroupNameStr t);
      print "\n\n";
      action t)
 
