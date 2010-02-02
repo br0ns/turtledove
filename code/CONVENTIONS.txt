@@ -1,3 +1,9 @@
+TODOS
+Start en kommentar med whitespace efterfulgt at 'TODO'.
+
+
+
+
 Signatur og Struktur navne skrives i CammelCase med stort begyndelsesbogstav.
 Type erklæringer er lower case med bundstreger
 Funktorer slutter altid på "Fn" og skrives som Signaturer og Strukturer.

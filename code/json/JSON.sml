@@ -292,50 +292,55 @@ struct
             )
     end
 
-    fun objectOf (Object dict) = dict
-      | objectOf x = die ("This is not a JSON.Object: " ^ write x)
-                     
-    fun arrayOf (Array lst) = lst
-      | arrayOf x = die ("This is not a JSON.Array: " ^ write x)
+    local
+      fun fail kind json = raise Parse (Report.text ("This is not a JSON." ^ kind ^ ": " ^ write json))
+    in
+    fun dictionaryOf (Object dict) = dict
+      | dictionaryOf x = fail "Object" x
+
+    fun listOf (Array lst) = lst
+      | listOf x = fail "Array" x
 
     fun stringOf (String s) = s
-      | stringOf x = die ("This is not a JSON.String: " ^ write x)
+      | stringOf x = fail "String" x
 
-    fun numberOf (Number n) = n
-      | numberOf x = die ("This is not a JSON.Number: " ^ write x)
+    fun realOf (Number n) = n
+      | realOf x = fail "Number" x
 
     fun boolOf (Bool n) = n
-      | boolOf x = die ("This is not a JSON.Bool: " ^ write x)
+      | boolOf x = fail "Bool" x
+    end
 
-
-    fun cons (t1, Array lst) = Array (t1 :: lst)
-      | cons _ = die "Unimplementet"
-
+    fun ++ (Array l, Array r) = Array (l @ r)
+      | ++ (Object l, Object r) = Object (Dictionary.plus l r)
+      | ++ (Array l, r) = Array (l @ [r])
+      | ++ (l, Array r) = Array (l :: r)
+      | ++ (l, r) = Array [l, r]
 
     fun map f (Array lst) = Array (List.map f lst)
       | map _ x = die ("Expected a JSON Array, but got:" ^ write x)
 
-    fun mapUntil f (Array lst) = 
+    fun mapUntil f (Array lst) =
         let
           fun mapUntil' (x :: xs)  =
-              let 
+              let
                 val (break', x') = f x
               in
                 if break' then
                   (break', x' :: xs)
                 else
-                  let 
+                  let
                     val (break'', xs') = mapUntil' xs
                   in
                     (break'', x' :: xs')
                   end
-              end    
+              end
             | mapUntil' [] = (false, [])
 
           val (break, lst') = mapUntil' lst
         in
           (break, Array lst')
-        end           
+        end
       | mapUntil _ x = die ("Expected a JSON Array, but got:" ^ write x)
 
     fun filter f (Array lst) = Array (List.filter f lst)

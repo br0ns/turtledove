@@ -62,14 +62,13 @@ sig
        newlines. *)
     val toMany : 'a Converter.t -> 'a list -> string
 
-
-    val objectOf : t -> t Dictionary.t
-    val arrayOf : t -> t list
+    val dictionaryOf : t -> t Dictionary.t
+    val listOf : t -> t list
     val stringOf : t -> string
-    val numberOf : t -> real
+    val realOf : t -> real
     val boolOf : t -> bool
 
-    val cons : t * t -> t
+    val ++ : t * t -> t
 
     val map : (t -> t) -> t -> t
 
@@ -77,6 +76,6 @@ sig
        (true) or continue (false) the map on the rest of the list *)
     val mapUntil : (t -> bool * t) -> t -> bool * t
 
-    val filter : (t -> bool) -> t -> t 
+    val filter : (t -> bool) -> t -> t
 
 end

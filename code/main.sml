@@ -20,6 +20,7 @@ val basdecs = MLBParser.fromFile mlbpath
 
 (* ;Report.print (AstMLB.showBasdecs basdecs); *)
 
+local
 structure Set = OrderedSetFn (
                 struct
                 type t = Path.t
@@ -41,7 +42,7 @@ structure Set = OrderedSetFn (
 (*                 fun compare x y = List.collate Char.compare (x, y) *)
 (*                 fun toString _ = "list" *)
 (*                 end) *)
-
+in
 (* Its much faster to just build a huge list of files and then calling fromList
    on that, than it is to incrementially build the set *)
 fun sources ds =
@@ -96,6 +97,7 @@ fun sources ds =
        else
          nil)
     end
+end
 
 ;Benchmark.start ();
 val srcs = sources basdecs
@@ -144,3 +146,9 @@ val _ = print (Set.toString String.toString ids)
 val _ = print (Int.toString (Set.card ids))
 val _ = print (Int.toString (Tree.size report))
 end
+
+val ast = SMLParser.fromFile (Path.new' here "dummy.sml")
+val _ = (Report.print o SMLGrammar.show) ast
+val (ast, _) = Infixing.resolve (ast, Dictionary.empty)
+val _ = (Report.print o SMLGrammar.show) ast
+

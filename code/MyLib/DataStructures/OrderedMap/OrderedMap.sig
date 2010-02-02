@@ -69,7 +69,7 @@ sig
     val foldri      : ((key * 'a) * 'b) -> 'b -> 'a t -> 'b
 
     val union       : ('a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
-    val unioni      : (key -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t 
+    val unioni      : (key -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
     (* return a map whose domain is the union of the domains of the two input
      * maps, using the supplied function to define the map on elements that
      * are in both domains.

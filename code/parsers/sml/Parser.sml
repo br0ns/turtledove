@@ -11,13 +11,13 @@ structure LrParser = LrParser)
 
 exception Parse of Report.t
 
-fun fromFile file =
+fun fromSourceText st =
     let
+      val file = SourceText.getFile st
       fun context r = Report.++ (r, Report.text ("while parsing " ^ Path.path file))
       fun fail r = raise Parse (context r)
     in
       let
-        val st = SourceText.fromFile file
         val source = Source.fromSourceText st
         val reader = Source.makeReader source
 
@@ -41,4 +41,6 @@ fun fromFile file =
                | IO.Io {name, ...} =>
                  fail (Report.text ("Failed to read file: " ^ name))
     end
+
+val fromFile = fromSourceText o SourceText.fromFile
 end

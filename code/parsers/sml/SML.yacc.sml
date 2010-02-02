@@ -12,15 +12,17 @@ open SMLGrammar
 type comments = Source.Comments.t
 val dummypos = ~1
 
-exception ParseError of int * string
-
 val join = Tree.join
-fun root t = Tree.lookup t Tree.root
 
 val wrap = Wrap.wrap
-val left = Wrap.left o root
-val right = Wrap.right o root
+val left = Wrap.left o Tree.this
+val right = Wrap.right o Tree.this
 val unwrap = Wrap.unwrap
+
+val node = Wrap.unwrap o Tree.this
+val children = Tree.children
+
+exception ParseError of int * string
 
 fun error p s = raise ParseError (p, s)
 fun die s = Crash.impossible s
@@ -28,8 +30,8 @@ fun die s = Crash.impossible s
 val opify = Wrap.modify Ident.opify
 
 fun getField t =
-    case unwrap (root t) of
-      Label field => field
+    case node t of
+      Label_Plain field => field
     | Label_Short field => field
     | _ => die "getField"
 
@@ -3591,7 +3593,7 @@ apats as apats1) = apats1 ()
  val  (constraint as constraint1) = constraint1 ()
  val  (exp as exp1) = exp1 ()
  in (
-join (wrap Clause apatsleft expright)
+join (wrap FlatClause apatsleft expright)
             [join (wrap Pats apatsleft apatsright) apats, constraint, exp]
 )
 end)
@@ -3899,7 +3901,7 @@ end
 |  ( 180, ( ( _, ( MlyValue.repl repl1, repl1left, repl1right)) :: 
 rest671)) => let val  result = MlyValue.datatypeRhsnode (fn _ => let
  val  (repl as repl1) = repl1 ()
- in ((Replication repl, nil))
+ in ((Dec_Replication repl, nil))
 end)
  in ( LrTable.NT 24, ( result, repl1left, repl1right), rest671)
 end
@@ -3915,7 +3917,7 @@ end
 |  ( 182, ( ( _, ( MlyValue.repl repl1, repl1left, repl1right)) :: 
 rest671)) => let val  result = MlyValue.datatypeRhsnodeNoWithtype (fn
  _ => let val  (repl as repl1) = repl1 ()
- in ((Replication repl, nil))
+ in ((Spec_Replication repl, nil))
 end)
  in ( LrTable.NT 25, ( result, repl1left, repl1right), rest671)
 end
@@ -4071,7 +4073,7 @@ end
 rest671)) => let val  result = MlyValue.elabel (fn _ => let val  (
 field as field1) = field1 ()
  val  (exp as exp1) = exp1 ()
- in (join (wrap (Label field) fieldleft expright) [exp])
+ in (join (wrap (Label_Plain field) fieldleft expright) [exp])
 end)
  in ( LrTable.NT 38, ( result, field1left, exp1right), rest671)
 end
@@ -4529,19 +4531,15 @@ MlyValue.pat pat1, (patleft as pat1left), _)) :: rest671)) => let val
  result = MlyValue.patnode (fn _ => let val  pat1 = pat1 ()
  val  pat2 = pat2 ()
  in (
-let
-         open Tree.Walk
-         val w = init pat1
-       in
-         case (unwrap (this w), map (unwrap o this) (children w)) of
-           (Pat_FlatApp, [Pat_Var i]) =>
-           (Pat_Layered i, [pat2])
-         | _ =>
-           Source.error
-             source
-             patleft
-             "Left side of layered pattern must be an identifier."
-       end
+case (node pat1, map node (children pat1)) of
+         (Pat_FlatApp, [Pat_Var i]) =>
+         (Pat_Layered i, [pat2])
+       | _ =>
+         Source.error
+           source
+           patleft
+           "Left side of layered pattern must be an identifier."
+      
 )
 end)
  in ( LrTable.NT 80, ( result, pat1left, pat2right), rest671)
@@ -4631,7 +4629,12 @@ end
 |  ( 261, ( ( _, ( _, _, RPAREN1right)) :: ( _, ( MlyValue.pats pats1,
  _, _)) :: ( _, ( _, LPAREN1left, _)) :: rest671)) => let val  result
  = MlyValue.apatnode (fn _ => let val  (pats as pats1) = pats1 ()
- in ((Pat_Tuple, pats))
+ in (
+(case pats of
+         [pat] => Pat_Par
+       | _     => Pat_Tuple
+      , pats)
+)
 end)
  in ( LrTable.NT 3, ( result, LPAREN1left, RPAREN1right), rest671)
 end
@@ -4733,7 +4736,7 @@ end
 rest671)) => let val  result = MlyValue.patitem (fn _ => let val  (
 field as field1) = field1 ()
  val  (pat as pat1) = pat1 ()
- in (join (wrap (Label field) fieldleft patright) [pat])
+ in (join (wrap (Label_Plain field) fieldleft patright) [pat])
 end)
  in ( LrTable.NT 78, ( result, field1left, pat1right), rest671)
 end
@@ -4891,7 +4894,7 @@ end
 rest671)) => let val  result = MlyValue.tlabel (fn _ => let val  (
 field as field1) = field1 ()
  val  (ty as ty1) = ty1 ()
- in (join (wrap (Label field) fieldleft tyright) [ty])
+ in (join (wrap (Label_Plain field) fieldleft tyright) [ty])
 end)
  in ( LrTable.NT 122, ( result, field1left, ty1right), rest671)
 end
@@ -4956,7 +4959,7 @@ end
 |  ( 296, ( ( _, ( MlyValue.id id1, id1left, id1right)) :: rest671))
  => let val  result = MlyValue.constOrBool (fn _ => let val  id1 = id1
  ()
- in (die "constOrBool")
+ in (SCon.String "Dummy")
 end)
  in ( LrTable.NT 19, ( result, id1left, id1right), rest671)
 end
