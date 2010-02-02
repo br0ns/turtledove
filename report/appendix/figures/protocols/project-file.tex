@@ -21,14 +21,13 @@
     \]]
 
 <Project-File-Object> ::= "{" \\
-  "  " "\"ProjectName\"" ":" <JSON-String> "," \\
   "  " "\"Properties\"" ":" <JSON-Object> "," \\
-  "  " "\"ProjectValue\"" ":" <Value-Object> \\
+  "  " "\"Dependencies\"" ":" <Depends-Array> "," \\
+  "  " "\"ProjectNode\"" ":" <Node-Group-Object> \\
   "}"
 
 <Value-Object> ::= "{" \\
   "  " "\"Exposes\"" ":" <Strings-Array> "," \\
-  "  " "\"Depends\"" ":" <Depends-Array> "," \\
   "  " "\"Nodes\"" ":" <Nodes-Array> \\
   "}"
 
@@ -46,22 +45,18 @@
 
 <Depend-Object> ::= "{" \\
   "  " "\"Name\"" ":" <JSON-String> "," \\
-  "  " "\"Depends\"" ":" <Strings-Array> "," \\
+  "  " "\"Depends\"" ":" <Strings-Array> \\
   "}"
 
 <Nodes-Array> ::= \[[
-    \begin{stack}
-      <String-Array> \\
-      <Node-Groups-Array>
-    \end{stack}
-    \]]
-
-<Node-Groups-Array> ::= \[[
     "["
     \begin{stack}
       \\
       \begin{rep}
-        <Node-Group-Object> \\
+        \begin{stack}
+          <JSON-String> \\
+          <Node-Group-Object>
+        \end{stack} \\
         ","
       \end{rep}
     \end{stack}
@@ -89,86 +84,21 @@ Remove ``Projectname'' as this then will be defined as the outer most node
 
 \subsubsection{Examples}
 
-\begin{example}\ 
-
-  Project file with three individual files (x.sml, y.sml and z.sml) and two
-  groupings (A and B) where y.sml depends on z.sml, z.sml on x.sml and group A
-  on group B.
-
-  This examples demonstrates how the \textit{<Nodes>} field can be both a string
-  list of filenames and it can be a object list of Node-Groups
-
-...
-
-"ProjectNode" :
-{
-        "Name"  : "FooBar",
-        "Value" :
-        {
-          "Exposes" : [ "A" ]
-          "Depends" : [ { "Name": "A", "Depends" : ["B"] } ],
-          "Nodes"   : 
-          [
-      {
-        "Name"  : "A",
-        "Value" :
-        {
-          "Exposes" : ["x.sml"]
-          "Depends" : []
-          "Nodes"   : ["x.sml"]
-        }
-      },
-      {
-        "Name"  : "B",
-        "Value" :
-        {
-          "Exposes" : ["y.sml", "z.sml"]
-          "Depends" : 
-          [ 
-            { "Name" : "y.sml", "Depends" : ["z.sml"]},
-            { "Name" : "z.sml", "Depends" : ["x.sml"]} 
-          ]
-          "Nodes"   : ["y.sml", "z.sml"]
-        }
-      }          
-          ]
-        }
-},
-
-
+\begin{example}[Empty project file for project ``Foo'']\ 
 \begin{lstlisting}
 {
-  "ProjectName"   : "FooBar",
-  "Properties"    : { "version" : "0.0 alfa" },
-  "ProjectValue" :
+  "Properties"   : { },
+  "Dependencies" : [ ]
+  "ProjectNode"  :
   {
-    "Exposes" : ["A"],
-    "Depends" : [ { "Name": "A", "Depends" : ["B"] } ],
-    "Nodes"   : 		
-    [
-      {
-        "Name"  : "A",
-        "Value" :
-        {
-          "Exposes" : ["x.sml"]
-          "Depends" : []
-          "Nodes"   : ["x.sml"]
-        }
-      },
-      {
-        "Name"  : "B",
-        "Value" :
-        {
-          "Exposes" : ["y.sml", "z.sml"]
-          "Depends" : 
-          [ 
-            { "Name" : "y.sml", "Depends" : ["z.sml"]},
-            { "Name" : "z.sml", "Depends" : ["x.sml"]} 
-          ]
-          "Nodes"   : ["y.sml", "z.sml"]
-        }
-      }
-    ]
+    "Name" : "Foo",
+    "Nodes":
+    {
+      "Exposes" : [ ],
+      "Depends" : [ ],
+      "Nodes"   : [ ]
+    }
+  }
 }
 \end{lstlisting}
 

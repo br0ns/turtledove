@@ -32,6 +32,14 @@ struct
       | leftmost (NONE :: r) = leftmost r
 
     fun rightmost lst = leftmost (rev lst)
+
+    fun pairOneFromEach lst1 lst2 =
+        let
+          fun pairOneFromEach' (x :: xs) lst2 res = pairOneFromEach' xs lst2 (List.foldl (fn (a,b) => (x,a) :: b) res lst2)
+            | pairOneFromEach' [] _ res = res
+        in
+          pairOneFromEach' lst1 lst2 []
+        end
 end
 
 local open Utils in

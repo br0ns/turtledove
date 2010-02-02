@@ -91,10 +91,15 @@ DataStructures/Tree/Tree.sml (* Default implementation *)
  *                               *
  *********************************)
 
-(* Sorting *)
+(* ListSort *)
 Algorithms/ListSort/ListSort.sig
 
 Algorithms/ListSort/QuickSortList.sml
 
 Algorithms/ListSort/ListSort.sml (* Default implementation *)
+
+Algorithms/TopologicalSort/TopologicalSort.sig
+
+Algorithms/TopologicalSort/TopologicalSort.sml 
+
 end

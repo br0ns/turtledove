@@ -1,0 +1,13 @@
+local
+  $(SML_LIB)/basis/basis.mlb
+  ../../Basic.mlb
+  ../../MyLib/MyLib.mlb
+  ../../json/JSON.mlb
+in
+
+  ../../ProjectManager.sig 
+  ../../ProjectManager.sml 
+
+  test.sml
+
+end
