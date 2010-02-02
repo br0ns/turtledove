@@ -11,8 +11,8 @@ For this algorithm, edges point in the opposite direction. There is an edge from
 x to y if job x depends on job y (in other words, if job y must be completed
 before job x can be started).
 
-L ← Empty list that will contain the sorted nodes
-S ← Set of all nodes
+L : Empty list that will contain the sorted nodes
+S : Set of all nodes
 
 function visit(node n)
     if n has not been visited yet then
@@ -78,32 +78,71 @@ fun locateNode node nodes =
 fun sort nodes edges = 
     let
       
-      val revEdges = reverseEdges edges                    
-                          
-      fun visitNodesInEdges [] visitedNodes edges sortedLst = ([], sortedLst)
-        | visitNodesInEdges nodes visitedNodes [] sortedLst = (nodes, sortedLst)
-        | visitNodesInEdges nodes visitedNodes ((edgeFrom, edgeTo) :: es) sortedLst = 
+      val revEdges = (*reverseEdges*) edges 
+                        
+      fun dieIfCycle visitedNodes edgeTo =
+          (* report if we have an edge to a node that has already been visited. *)
+          List.exists (fn x => x = edgeTo) visitedNodes 
+          andalso die ("A cycle was found:" ^ (List.foldl (fn (a,"") => a | (a,b) => b ^ " -> " ^ a) ""  (edgeTo :: visitedNodes))) 
+                  
+      fun visitNodesInEdges [] visitedNodes ((edgeFrom, edgeTo) :: es) sortedLst = 
+          (dieIfCycle visitedNodes edgeTo; 
+           print "No more nodes to visit.\n";
+           ([], sortedLst))
+        | visitNodesInEdges nodes visitedNodes [] sortedLst = 
+          (print "No more edges from this node\n"; 
+           (nodes, sortedLst))
+        | visitNodesInEdges nodes visitedNodes (edgesFromNode as ((edgeFrom, edgeTo) :: es)) sortedLst = 
           let
-            (* report if we have an edge to a node that has already been visited. *)
-            val _ = List.exists (fn x => x = edgeTo) visitedNodes andalso die ("A cycle was found:" ^ (List.foldl (fn (a,"") => a | (a,b) => b ^ " -> " ^ a) ""  (edgeTo :: visitedNodes)))
+            val _ = (print "Visited nodes: ";
+                     List.app (fn x => print (x ^ " ")) visitedNodes;
+                     print "\n")          
+
+            val _ = dieIfCycle visitedNodes edgeTo
+                    
             val nodes' = locateNode edgeTo nodes
+
           in
             if isSome nodes' then (* the node was found and thus has not been visited before *)
               let
-                val (newNodes, sortedLst') = visit (valOf nodes') visitedNodes sortedLst
+
+                val _ = (print "Nodes': ";
+                         List.app (fn x => print (x ^ " ")) (valOf nodes');
+                         print "\n";
+                         print ("Following dependency to " ^ edgeTo ^ "\n"))
+
+                val (newNodes, sortedLst') = visit' (valOf nodes') visitedNodes sortedLst
+
+                val _ = (print "Finished following dependency. Remaining dependencys are:\n";
+                         List.app (fn (a,b) => print (a ^ " -> " ^ b ^ "\n")) es)                        
+
               in
                 visitNodesInEdges newNodes visitedNodes es sortedLst'
               end
-            else (* the node was not found, and thus it has been visited before so stop *)
-              visitNodesInEdges nodes visitedNodes es sortedLst
+            else (* the node was not found, and thus it has been visited before so stop following this path. *)
+              (print "Could not find the node refered to in the depTo. Must have been visited already\n";
+               visitNodesInEdges nodes visitedNodes es sortedLst)
           end                    
                                                               
-      and visit (nodes as (n :: ns)) visitedNodes sortedLst =
+      and visit' (nodes as (n :: ns)) visitedNodes sortedLst =
           let
             val edgesFromNode = getEdgesFromNode n revEdges
-            val (nodes', sortedLst') = visitNodesInEdges ns (n :: visitedNodes) edgesFromNode sortedLst            
+
+            val _ = (print ("Node: " ^ n ^ "\n");
+                     print "Edges from this node: \n";
+                     List.app (fn (a,b) => print (a ^ " -> " ^ b ^ "\n")) edgesFromNode)
+
+            val (nodes', sortedLst') = visitNodesInEdges ns (n :: visitedNodes) edgesFromNode sortedLst
           in          
-            visit nodes' (n :: visitedNodes) (n :: sortedLst')
+            (nodes', (n :: sortedLst'))
+          end
+        | visit' [] _ sortedLst = ([], sortedLst)
+
+      and visit (nodes as (n :: ns)) visitedNodes sortedLst =
+          let
+            val (nodes', sortedLst') = visit' nodes visitedNodes sortedLst
+          in
+            visit nodes' visitedNodes sortedLst'
           end
         | visit [] _ sortedLst = ([], sortedLst)
 
@@ -112,5 +151,4 @@ fun sort nodes edges =
     in
       sortedLst
     end
-
 end
