@@ -3,18 +3,25 @@ sig
 
   type t
        
+  structure MLB :
+            sig              
+
+              val description : t -> string                                    
+                                     
+            end
+       
   (* project name, project path  *)     
   val init : string -> string -> t
      
-
                             
   (* open a project at the specified path *)
   val openProject : string -> t
   
-  (* save the currently open project *)
+  (* save the currently open project. Returns the path *)
   val saveProject : t -> unit
-
-                      
+                         
+  (* Returns the path of the project *)
+  val getProjectPath : t -> string                  
 
   val getFileNames : t -> StringOrderedSet.t
 

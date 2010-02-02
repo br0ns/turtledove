@@ -68,6 +68,8 @@ fun saveProject ({path, project, ...}: t) =
       TextIO.output (fs, (JSON.show project)) before TextIO.closeOut fs
     end;
 
+fun getProjectPath ({path, ...}: t) = Path.toString path
+
 (* 
  * Helper functions to get fields out of the various JSON Objects that makes out a project.
  * As the project is validated when opened we know for sure that the dictionary contains the 
@@ -136,16 +138,44 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
           (modified, node)
       end
     | applyToParrentGroupNodes _ _ x = (false, x)
-      
- 
-  fun getFileNames ({project, ...}: t)  = 
-      let                            
+
+  fun locateParrentGroup parrentGroupStr node =
+      let       
+        exception NotFound
+
+        fun isNodeNamed node nameStr = (JSON.stringOf (getNameFromNode node)) = nameStr
+                                       
+        fun locateParrentGroupInNode node =
+            if isNodeNamed node parrentGroupStr then
+              node     
+            else
+               locateParrentGroupInNodes (JSON.arrayOf ((getNodesFromValue o getValueFromNode) node))
+              
+              
+        and locateParrentGroupInNodes ((x as JSON.Object _) :: xs) = (locateParrentGroupInNode x
+                                                                      handle NotFound => locateParrentGroupInNodes xs  )            
+          | locateParrentGroupInNodes (_ :: xs) = locateParrentGroupInNodes xs 
+          | locateParrentGroupInNodes [] = raise NotFound
+                                                 
+      in
+        locateParrentGroupInNode node handle NotFound => die ("The group '" ^ parrentGroupStr ^ "' was not found")
+      end
+
+  fun getProjectGroupNameStr ({project, ...}: t) = JSON.stringOf (getNameFromNode (getProjectNodeFromProject project))
+
+
+  fun getFileNamesInGroup (r as {project, ...}: t) parrentGroupStr =
+      let       
+        val node = locateParrentGroup parrentGroupStr (getProjectNodeFromProject project)
+
        fun extractFiles ((node as JSON.Object _), res) = JSON.fold extractFiles res ((getNodesFromValue o getValueFromNode) node)
          | extractFiles ((JSON.String s), res) = StringOrderedSet.insert res s
          | extractFiles (x,res) = die ("Only JSON.Object and JSON.String are allowed in the 'Nodes' list: " ^ JSON.write x)
       in
-        extractFiles ((getProjectNodeFromProject project ), StringOrderedSet.empty)
-      end;
+        extractFiles (node, StringOrderedSet.empty)     
+      end          
+ 
+  fun getFileNames (r as {project, ...}: t)  = getFileNamesInGroup r (getProjectGroupNameStr r)                                   
 
       
   fun addFile (r as {project, ...}: t) parrentGroupStr filenameStr = 
@@ -180,6 +210,8 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
           die ("The file: '" ^ filenameStr ^  "' doesn't exist. The file was not removed")
       end
 
+  (* TODO: also rename depends and expose information *)
+  (* TODO: Check whether the new name introduces conclics (The new name is already used by a file or group elsewere in the project) *)
   fun renameFile (r as {project, ...}: t) parrentGroupStr oldFilenameStr newFilenameStr =
       let              
         fun locateFileToRename (str as JSON.String s) = 
@@ -197,9 +229,6 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
         else
           die ("The file: '" ^ oldFilenameStr ^  "' doesn't exist. The file was not renamed")
       end
-
-
-  fun getProjectGroupNameStr ({project, ...}: t) = JSON.stringOf (getNameFromNode (getProjectNodeFromProject project))
 
 (* There might be a problem here. The structure of which groups belong to who is lost *)
   fun getGroupNames ({project, ...}: t) = 
@@ -257,6 +286,8 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
           die ("The group: '" ^ removeGroup ^  "' doesn't exist. The group was not removed")
       end     
 
+  (* TODO: Also rename depends and expose information *)
+  (* TODO: Check whether the new name introduces conclics (The new name is already used by a file or group elsewere in the project) *)
   fun renameGroup (r as {project, ...}: t) parrentGroupStr oldGroupStr newGroupStr =
       let
         fun locateNodeToRename (node as JSON.Object dict) =
@@ -480,7 +511,61 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
         updateProjectInRecord r newProject
       end
 
-  val removeExpose = unimp;
+  (* TODO: validate that the expose to be removed is in the list of exposed ..  *)
+  fun removeExpose (r as {project, ...}: t) parrentGroupStr exposeStr = 
+      let
+        fun removeExposeFromNode node =
+            let
+              val value = getValueFromNode node
+              val (modified, newExposes) = JSON.filterUntil (fn x => (JSON.stringOf x) = exposeStr) (getExposesFromValue value)
+            in
+              if modified then
+                let
+                  val newValue = updateObject value "Exposes" newExposes
+                  val newNode = updateObject node "Value" newValue
+                in
+                  (true, newNode)
+                end
+              else
+                die ("The group- or filename to remove ('" ^ exposeStr ^ "') was not found.")
+            end
+            
+        fun locateNodeToAddExpose (node as JSON.Object _) =
+            let
+              val nameStr = JSON.stringOf (getNameFromNode node)
+            in
+              if nameStr = parrentGroupStr then (* this is the parrent group, add the expose *) 
+                removeExposeFromNode node
+              else (* seach the sub groups for a matching parrent group *)
+                let
+                  val value = getValueFromNode node
+                  val nodes = getNodesFromValue value
+                              
+                  val (modified, newNodes) = JSON.mapUntil locateNodeToAddExpose nodes
+                in
+                  if modified then
+                    let
+                      val newValue = updateObject value "Nodes" newNodes
+                      val newNode = updateObject node "Value" newValue
+                    in
+                      (modified, newNode)
+                    end
+                  else
+                    (false, node)
+                end 
+            end              
+          | locateNodeToAddExpose x = (false, x) (* only groups contain expose information, ignore anything else *)
+
+        val (modified, newProjectNode) = locateNodeToAddExpose (getProjectNodeFromProject project)
+
+        val newProject = if modified then
+                           updateObject project "ProjectNode" newProjectNode
+                         else
+                           die ("The Group '"^ parrentGroupStr ^"' was not found")
+      in
+        updateProjectInRecord r newProject      
+      end
+
 
   val setProperty = unimp;
 
@@ -489,17 +574,28 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
   fun listFilesAndGroups (r as {project, ...}: t)  =
       let
 
+        fun exposesToString indent node = 
+            let
+              val exposes = (getExposesFromValue o getValueFromNode) node
+            in
+              if List.length (JSON.arrayOf exposes) > 0 then
+                (JSON.fold (fn (a,b) => b ^ indent ^ "|= '" ^ (JSON.stringOf a) ^ "'\n") (indent ^ "|  This group expose the following:\n") exposes)
+                ^ indent ^ "| \n"
+              else
+                ""
+            end                  
+
         (* pretty print group names with indent for each sub group *)
         fun listFilesAndGroups' indent ((node as JSON.Object _), res) = 
             let
               val nameStr = JSON.stringOf (getNameFromNode node)    
               val nodes = (getNodesFromValue o getValueFromNode) node
                           
-              val res' = res ^ (indent ^ "G: '" ^ nameStr ^ "'\n")
+              val res' = res ^ (indent ^ "|- G: '" ^ nameStr ^ "'\n" ^ (exposesToString ("   " ^ indent) node))
             in
               JSON.fold (listFilesAndGroups' ("   " ^ indent)) res' nodes
             end
-          | listFilesAndGroups' indent ((JSON.String s), res) = res ^ (indent ^ "F: '" ^ s ^ "'\n")
+          | listFilesAndGroups' indent ((JSON.String s), res) = res ^ (indent ^ "|- F: '" ^ s ^ "'\n")
           | listFilesAndGroups' _ (x,res) = res (* ignore anything else *)
 
         val projectNode = getProjectNodeFromProject project
@@ -509,7 +605,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
       in
         "Labels: (G)roup, (F)ile\n" ^
         "-------------------------------\n" ^
-        (JSON.fold (listFilesAndGroups' "|- ") ("G: '" ^ projectNameStr ^ "'\n") projectNodes) ^
+        (JSON.fold (listFilesAndGroups' "") ("G: '" ^ projectNameStr ^ "'\n" ^ (exposesToString "" projectNode)) projectNodes) ^
         "\n"
       end
 
@@ -522,5 +618,62 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
         
   val show = unimp;
 
+
+  structure MLB =
+  struct
+
+  fun sortFiles (r as {project, ...}: t) files groups dependencies =
+      let
+
+        fun isGroup nameStr = StringOrderedSet.member groups nameStr
+                              
+        fun expandGroupInDepend (dependStr, res) = 
+              (* if this depend is in the list of groups, then it must be a group (obviously) *)
+              if isGroup dependStr then
+                let
+                  (* StringOrderedSet of filenames contained in this group *)
+                  val files = getFileNamesInGroup r dependStr
+                in
+                  (StringOrderedSet.toList files) @ res
+                end
+              else
+                dependStr :: res            
+                                                              
+        (* expand any reference to a group with alle the filenames below that group  *)
+        fun expandGroupToFiles (dependency as (depFrom, depends), res) = 
+            let
+              (* expand this dependency if the dependency is from a group *)
+              val newDepFromsLst = expandGroupInDepend(depFrom, [])
+
+              (* expand any groups in the depends list. *)
+              val newDependsLst = List.foldl expandGroupInDepend [] (StringOrderedSet.toList depends)
+            in
+              (Utils.pairOneFromEach newDepFromsLst newDependsLst) @ res
+            end
+
+        val expandedFileDependenciesPairLst = List.foldl expandGroupToFiles [] (Dictionary.toList dependencies )
+
+        val _ = (print "The expanded file dependencies are:\n";
+                 List.app (fn (a,b) => print (a ^ " => " ^ b ^ "\n") ) expandedFileDependenciesPairLst;
+                 print "\n\n")
+
+        val orderedFilenames = TopologicalSort.sort (StringOrderedSet.toList files) expandedFileDependenciesPairLst
+
+        val _ = (print "The topologically sorted list of filenames are:\n";
+                 List.app (fn x => print (x ^ "\n")) orderedFilenames)
+      in
+        ""
+      end
+
+  fun description (r as {project, ...}: t) =
+      let
+        val files = getFileNames r
+        val groups = getGroupNames r
+        val dependencies = getDependencies r
+      in
+        sortFiles r files groups dependencies
+      end
+
+  end
 
 end

@@ -3,7 +3,8 @@ exception Quit;
 exception Reloop of ProjectManager.t
 
 val info = "\nFollowing are valid actions: \n"
-         ^ "q   : Quit.\n"         
+         ^ "q   : Quit.\n" 
+         ^ "save: Saves the project.\n"
          ^ "pgn : Print the project group name.\n"
          ^ "ls  : Print the project in a structured list.\n"
          ^ "\n"
@@ -20,8 +21,12 @@ val info = "\nFollowing are valid actions: \n"
          ^ "lsd : List all dependencies in the project.\n"
          ^ "add : Add a dependency to the project.\n"
          ^ "rmd : remove a dependency from the project.\n"
+         ^ "\n"
+         ^ "lse : List all group- and filenames that are exposed.\n"
+         ^ "ade : Add a group- or filename to be exposed.\n"
+         ^ "rme : Remove a group- or filename from the list of exposed.\n"
 
-fun input() = 
+fun input () = 
     let
       val line = valOf (TextIO.inputLine TextIO.stdIn)
     in
@@ -33,17 +38,14 @@ fun printParrentGroups t = (print "\nPossible Groups and Files: \n";
                             print "\n")
 
 fun printStringOrderedSet set = print (StringOrderedSet.toString (String.toString) set)
+
+fun printDictionary dict = print (Dictionary.toString (String.toString) (StringOrderedSet.toString (String.toString)) dict);
                            
 fun printDependencies t =
-    let
-      val dependencies = ProjectManager.getDependencies t
-    in
-      (print "Project contains the following dependencies: \n";
-       print (Dictionary.toString (String.toString) (StringOrderedSet.toString (String.toString)) dependencies);
-       print "\n")
-
-    end
-                           
+    (print "Project contains the following dependencies: \n";
+     printDictionary (ProjectManager.getDependencies t);
+     print "\n")
+    
 fun action t = 
     let
       val line = (print "Action: ";
@@ -51,6 +53,7 @@ fun action t =
     in
       (case line of 
          "q" => raise Quit
+       | "Save" => saveProject t
        | "pgn" => projectGroupName t
        | "ls" => ls t
 
@@ -68,8 +71,22 @@ fun action t =
        | "add" => addDependency t
        | "rmd" => removeDependency t
 
+       | "lse" => lsExposes t
+       | "ade" => addExpose t
+       | "rme" => removeExpose t
+
+       | "description" => (ProjectManager.MLB.description t;
+                           action t)
+
        | x => (print info; action t)) 
     end
+
+and saveProject t =
+    (print "Saving project...\n";
+     ProjectManager.saveProject t;
+     print "Save at: ";
+     print (ProjectManager.getProjectPath t);
+     action t)
 
 and projectGroupName t = 
     (print "The projects name is:";
@@ -183,7 +200,8 @@ and addDependency t =
 
 and removeDependency t = 
     let
-      val _ = printDependencies t
+      val _ = (printParrentGroups t;
+               printDependencies t)
 
       val depFrom = (print "Dependency from: ";
                      input())
@@ -192,6 +210,44 @@ and removeDependency t =
                    input())               
     in
       ProjectManager.removeDependency t depFrom depTo
+    end
+    
+and lsExposes t = (print "Groups Expose the following\n";
+                   printDictionary (ProjectManager.getExposes t);
+                   print "\n\n";
+                   action t)
+                  
+
+and addExpose t =
+    let
+      val _ = (printParrentGroups t;
+               printDictionary (ProjectManager.getExposes t);
+               print "\n")
+
+      val expose = 
+          (print "Group- or filename to expose: ";
+           input())
+
+      val group = (print "Expose in group: ";
+                   input())
+    in
+      ProjectManager.addExpose t group expose
+    end
+
+and removeExpose t =
+    let
+      val _ = (printParrentGroups t;
+               printDictionary (ProjectManager.getExposes t);
+               print "\n")
+
+      val expose = 
+          (print "Group- or filename to un-expose: ";
+           input())
+
+      val group = (print "Remove from group: ";
+                   input())
+    in
+      ProjectManager.removeExpose t group expose
     end
 
 fun loop () =
@@ -212,19 +268,21 @@ fun loop () =
                      print "\n\n==============================================\n")                     
           in
             loop' t'
-          end
-          
-      val projectName = (print "name of new project: ";
-                         input())
-      val t = (print "Creating new project... \n";
-               ProjectManager.init projectName (OS.FileSys.tmpName ()))
-              
-      val _ = print (ProjectManager.projectToString t)
+          end                                       
               
       fun loop'' t = loop' t handle Reloop t' => loop'' t'
     in
-      ( print "For help type '?'\n";
-        loop'' t)
+      ( print "For help type '?'\n\n";
+        print "Current possibilities are:\n";
+        print "init : Initialises a new project.\n";
+        print "open : Opens a new project from file.\n";
+        loop'' (print "Action: ";
+                case input() of
+                  "init" => (print "Name of new project: ";
+                             ProjectManager.init (input()) (OS.FileSys.tmpName ()))
+                | "open" => (print "Path of projectfile to open: ";
+                             ProjectManager.openProject (input ()))
+                | x => raise Fail "Not a valid action! Quitting...." ))
     end
     handle Quit => print "Quitting.\n"
 
