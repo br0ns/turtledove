@@ -622,10 +622,9 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
   structure MLB =
   struct
 
-  fun sortFiles (r as {project, ...}: t) files groups dependencies =
+  fun sortFilesAndGroups (r as {project, path=projectPath, ...}: t) filesLst groupsLst dependenciesLst exposesLst =
       let
-
-        fun isGroup nameStr = StringOrderedSet.member groups nameStr
+        fun isGroup nameStr = List.exists (fn x => x = nameStr) groupsLst
                               
         fun expandGroupInDepend (dependStr, res) = 
               (* if this depend is in the list of groups, then it must be a group (obviously) *)
@@ -637,7 +636,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
                   (StringOrderedSet.toList files) @ res
                 end
               else
-                dependStr :: res            
+                dependStr :: res
                                                               
         (* expand any reference to a group with alle the filenames below that group  *)
         fun expandGroupToFiles (dependency as (depFrom, depends), res) = 
@@ -651,27 +650,144 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
               (Utils.pairOneFromEach newDepFromsLst newDependsLst) @ res
             end
 
-        val expandedFileDependenciesPairLst = List.foldl expandGroupToFiles [] (Dictionary.toList dependencies )
+        fun getGroupToGroupDependencies (dependency as (depFrom, depends), res) = 
+              if isGroup depFrom then (* only look at dependencies from groups  *)
+                let
+                  val newDependsLst = List.filter isGroup (StringOrderedSet.toList depends)
+                in
+                  (Utils.pairOneFromEach [depFrom] newDependsLst) @ res
+                end
+              else (* remove the dependency *)
+                res
+
+        val projectNameStr = getProjectGroupNameStr r
+
+        val expandedFileDependenciesPairLst = List.foldl expandGroupToFiles [] dependenciesLst
+                                              
+        val groupToGroupDependenciesPairLst = List.foldl getGroupToGroupDependencies [] dependenciesLst
 
         val _ = (print "The expanded file dependencies are:\n";
-                 List.app (fn (a,b) => print (a ^ " => " ^ b ^ "\n") ) expandedFileDependenciesPairLst;
+                 List.app (fn (a,b) => print (a ^ " => " ^ b ^ "\n")) expandedFileDependenciesPairLst;
                  print "\n\n")
 
-        val orderedFilenames = TopologicalSort.sort (StringOrderedSet.toList files) expandedFileDependenciesPairLst
+        val _ = (print "The group to group dependencies are:\n";
+                 List.app (fn (a,b) => print (a ^ " => " ^ b ^ "\n")) groupToGroupDependenciesPairLst;
+                 print "\n\n")
 
-        val _ = (print "The topologically sorted list of filenames are:\n";
-                 List.app (fn x => print (x ^ "\n")) orderedFilenames)
+
+        (* TODO: Make a small improvement. In the resulting topologically sorted
+                 list, only include files that are actually used in the project.
+
+                 For example, dont include files that dont have dependencies to
+                 them and are not exposed by a group.
+         *)
+
+
+        val sortedFilenames = TopologicalSort.sort filesLst expandedFileDependenciesPairLst
+        val sortedGroupnames = TopologicalSort.sort (List.filter (fn x => x <> projectNameStr) groupsLst) groupToGroupDependenciesPairLst 
+
+        val _ = (print "\n\n\n\n\n\n";
+                 print "The topologically sorted list of filenames are:\n";
+                 List.app (fn x => print (x ^ "\n")) sortedFilenames;
+                 print "\n\n";
+                 print "The topologically sorted list of groupsnames are:\n";
+                 List.app (fn x => print (x ^ "\n")) sortedGroupnames)
+      in
+        (* Calls rev, as the sorted file/groups are with elements depending on
+           other elements first. Does this this comment even make sence? Anyway
+           the two lists are in the wrong order of what the rest of the code
+           expects.*)
+        (rev sortedFilenames, expandedFileDependenciesPairLst, rev sortedGroupnames, groupToGroupDependenciesPairLst)
+      end
+
+  (* TODO: Translate filenames to absolute paths if they are not already. *)
+  fun translateFiles sortedFiles fileToFileDepsLst =
+      let
+        fun translateFiles' (file :: files) num translatedFiles filesToBasisMapping =
+            let
+              (* if file is a relative path, it returns the absolute path of projectPath^file. *)
+              val absFilePath = OS.Path.mkAbsolute(file, projectPath)
+              val basisName = (OS.Path.file absFilePath) ^ (Int.toString num)
+
+              (* Update the mapping from original filename to the generated basisname *)
+              val filesToBasisMapping' = Dictionary.update filesToBasisMapping (file, basisName)
+                              
+              (* Collect the dependencies from this file *)
+              val filteredDepsLst = List.filter (fn (depFrom, depTo) => depFrom = file) fileToFileDepsLst
+
+              (* Generate a list of files this file depends on *)
+              val thisFileDepsOnLst = List.foldl (fn ((depFrom, depTo), b) => depTo :: b) [] filteredDepsLst
+
+              (* Translate the deps to their previously generated basisnames.
+                 Since the list of files is topologically sorted the dependency
+                 should already have been translated and thus put into the
+                 mapping dictionary. So we can blindly do a valOf the result *)
+              val thisFileDepsOnBasisLst = List.map (fn depTo => valOf (Dictionary.lookup filesToBasisMapping depTo)) thisFileDepsOnLst
+
+              val fileDescription = if (List.length thisFileDepsOnBasisLst) > 0 then
+                                      ("basis " ^ basisName ^ " = bas let open "
+                                       ^ List.fold (fn (basisName, b) => basisName ^ " " ^ b) "" thisFileDepsOnBasisLst
+                                       ^ " in "
+                                       ^ absFilePath
+                                       ^ " end end")                                
+                                    else
+                                      ("basis " ^ basisName ^ " = bas "
+                                       ^ absFilePath
+                                       ^ " end")
+            in
+              translateFiles' files (num+1)  (fileDescription :: translatedFiles) filesToBasisMapping
+            end
+            (* the translated files have ben reversed while looping throught
+            them, so reverse them agian *)
+          | translateFiles' [] num translatedFiles filesToBasisMapping  = (num, rev translatedFiles, filesToBasisMapping)
+      in
+        translateFiles' sortedFiles 0 [] Dictionary.empty
+      end
+
+  fun translateGroups () = ""
+                           
+  fun translateProjectGroup () =
+      let
+        val projectNameStr = getProjectGroupNameStr r
+
+        (* A group always have a exposes element, so this list contains an entry
+           for each group else the project is not valid and would not have been
+           loaded.*)
+        val (_, exposes) = valOf (List.find (fn (group, exposes) => group = projectNameStr))
+
+        val _ = not StringOrderedSet.card > 0
+                      andalso                 die ("The project group doesn't expose anything.")
       in
         ""
       end
 
+  fun mlbDescription content  =
+          "local\n"
+        ^ "  $(SML_LIB)/basis/basis.mlb\n"
+        ^ "in\n\n"
+        ^ content
+        ^ "\nend"
+      
   fun description (r as {project, ...}: t) =
       let
-        val files = getFileNames r
-        val groups = getGroupNames r
-        val dependencies = getDependencies r
+        (* list of (depFrom, StringOrderedSet of depends)  *)
+        val dependenciesLst = Dictionary.toList (getDependencies r)
+        (* list of (group, StringOrderedSet of exposes) *)
+        val exposesLst = Dictionary.toList (getExposes r)
+
+        val filesLst = StringOrderedSet.toList (getFileNames r)
+        val groupsLst = StringOrderedSet.toList (getGroupNames r)
+
+        val (sortedFiles, fileToFileDepsLst, sortedGroups, groupToGroupDepsLst) = sortFilesAndGroups r filesLst groupsLst dependenciesLst exposesLst
+
+        val (num, translatedFiles, filesToBasisMapping) = translateFiles sortedFiles fileToFileDepsLst
+
+
+        val content = List.foldl (fn (a,b) => b ^ a ^ "\n") "" translatedFiles
+(*        val content = List.foldl (fn (a,b) => b ^ a ^ "\n") content translatedGroups *)
+                                                                                  
       in
-        sortFiles r files groups dependencies
+        mlbDescription content
       end
 
   end
