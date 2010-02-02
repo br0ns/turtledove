@@ -138,7 +138,7 @@ hexnum={hexDigit}+;
                    );
 
 <INITIAL>"(*"   => ( YYBEGIN C ;
-                     C.new source yypos ;
+                     C.new source (yypos + 2) ;
                      continue ()
                    );
 <INITIAL>.      => ( Source.error source yypos "Illegal token" ;

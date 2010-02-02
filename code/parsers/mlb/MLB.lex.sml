@@ -1145,7 +1145,7 @@ let fun continue() : Internal.result =
                    )
 | 15 => ( T.COMMA     (yypos, yypos + 1) )
 | 151 => ( YYBEGIN C ;
-                     C.new source yypos ;
+                     C.new source (yypos + 2) ;
                      continue ()
                    )
 | 153 => ( Source.error source yypos "Illegal token" ;

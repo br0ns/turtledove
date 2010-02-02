@@ -128,7 +128,7 @@ struct
         let
             fun loop ((n, _) :: ls) l p =
                 if n > p then
-                    (l, p)
+                    {row = l, column = p}
                 else
                     loop ls (l + 1) (p - n)
               | loop _ _ _ = die "Position outside file."
@@ -139,7 +139,7 @@ struct
     fun posToString st p =
         let
             val f = getFile st
-            val (r, c) = posToRowCol st p
+            val {row = r, column = c} = posToRowCol st p
         in
             Path.toString f ^ ":" ^ Int.toString r ^ "." ^ Int.toString c
         end

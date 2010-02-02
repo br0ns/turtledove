@@ -1,6 +1,7 @@
 signature TopologicalSort =
 sig
 
-  val ''a sort : ''a list -> (''a * ''a) list -> ''a list
+  (* TODO: val sort : ''a list -> (''a * ''a) list -> ''a list *)
+  val sort : string list -> (string * string) list -> string list
 
 end
