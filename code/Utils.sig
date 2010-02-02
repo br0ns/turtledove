@@ -14,4 +14,6 @@ sig
 
     val leftmost  : 'a option list -> 'a option
     val rightmost : 'a option list -> 'a option
+
+    val pairOneFromEach : 'a list -> 'b list -> ('a * 'b) list
 end
