@@ -197,6 +197,7 @@ dependencies. This is done in two steps
 \begin{itemize}
 \item Create a DAG (Directed Acyclic Graph) with each filename as a node and
   each dependency as an edge from the file to all the files it depends on.
+
   
   However before the edges are added to the DAG, any group dependencies needs to
   be expanded. This include the following two steps
@@ -237,9 +238,9 @@ The order of this resulting list represents the order of how files should be
 listed in the final MLB description. 
 
 
-This also needs to be for all the groupings. The only difference is they way
-dependencies needs to be handled. Only dependencies from and to groups needs to
-be added to the DAG, without expanding them to their containing files.
+This also needs to be done for all the groupings. As with the files, groups are
+added as nodes to the DAG and the dependencies from and to groups are added as
+edges without expanding them to their containing files.
 
 The resulting ordered list of groups represent the order of how groups should be
 listed in the final MLB description.
