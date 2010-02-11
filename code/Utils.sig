@@ -9,6 +9,11 @@ sig
 
     val ^* : ('a -> 'a) * int -> 'a -> 'a
 
+    val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
+    val uncurry : ('a -> 'b -> 'c) -> 'a * 'b -> 'c
+
+    val to : int * int -> int list
+
     val inc : int ref -> int
     val dec : int ref -> int
 

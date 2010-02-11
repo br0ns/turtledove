@@ -3,7 +3,7 @@ struct
 
 fun die s = raise Fail ("TopologicalSort: " ^ s);
 
-(* 
+(*
 
 The topological sorting is based on "depth-first search", and is the one described in Cormen et al,
 
@@ -64,9 +64,9 @@ fun locateNode node nodes =
     in
       locateNode' nodes []
     end
-    
 
-(* 
+
+(*
  * In this implementation of visit, we mark nodes a visited by removing them
  * from the list of total nodes, as the recursive calls stops if it reaches a
  * node that has already been visited.
@@ -75,31 +75,30 @@ fun locateNode node nodes =
  * cycles.
  *)
 
-fun sort nodes edges = 
+fun sort nodes edges =
     let
-      
-      val revEdges = (*reverseEdges*) edges 
-                        
+      val revEdges = (*reverseEdges*) edges
+
       fun dieIfCycle visitedNodes edgeTo =
           (* report if we have an edge to a node that has already been visited. *)
-          List.exists (fn x => x = edgeTo) visitedNodes 
-          andalso die ("A cycle was found:" ^ (List.foldl (fn (a,"") => a | (a,b) => b ^ " -> " ^ a) ""  (edgeTo :: visitedNodes))) 
-                  
-      fun visitNodesInEdges [] visitedNodes ((edgeFrom, edgeTo) :: es) sortedLst = 
-          (dieIfCycle visitedNodes edgeTo; 
+          List.exists (fn x => x = edgeTo) visitedNodes
+          andalso die ("A cycle was found:" ^ (List.foldl (fn (a,"") => a | (a,b) => b ^ " -> " ^ a) ""  (edgeTo :: visitedNodes)))
+
+      fun visitNodesInEdges [] visitedNodes ((edgeFrom, edgeTo) :: es) sortedLst =
+          (dieIfCycle visitedNodes edgeTo;
            print "No more nodes to visit.\n";
            ([], sortedLst))
-        | visitNodesInEdges nodes visitedNodes [] sortedLst = 
-          (print "No more edges from this node\n"; 
+        | visitNodesInEdges nodes visitedNodes [] sortedLst =
+          (print "No more edges from this node\n";
            (nodes, sortedLst))
-        | visitNodesInEdges nodes visitedNodes (edgesFromNode as ((edgeFrom, edgeTo) :: es)) sortedLst = 
+        | visitNodesInEdges nodes visitedNodes (edgesFromNode as ((edgeFrom, edgeTo) :: es)) sortedLst =
           let
             val _ = (print "Visited nodes: ";
                      List.app (fn x => print (x ^ " ")) visitedNodes;
-                     print "\n")          
+                     print "\n")
 
             val _ = dieIfCycle visitedNodes edgeTo
-                    
+
             val nodes' = locateNode edgeTo nodes
 
           in
@@ -114,7 +113,7 @@ fun sort nodes edges =
                 val (newNodes, sortedLst') = visit' (valOf nodes') visitedNodes sortedLst
 
                 val _ = (print "Finished following dependency. Remaining dependencys are:\n";
-                         List.app (fn (a,b) => print (a ^ " -> " ^ b ^ "\n")) es)                        
+                         List.app (fn (a,b) => print (a ^ " -> " ^ b ^ "\n")) es)
 
               in
                 visitNodesInEdges newNodes visitedNodes es sortedLst'
@@ -122,8 +121,8 @@ fun sort nodes edges =
             else (* the node was not found, and thus it has been visited before so stop following this path. *)
               (print "Could not find the node refered to in the depTo. Must have been visited already\n";
                visitNodesInEdges nodes visitedNodes es sortedLst)
-          end                    
-                                                              
+          end
+
       and visit' (nodes as (n :: ns)) visitedNodes sortedLst =
           let
             val edgesFromNode = getEdgesFromNode n revEdges
@@ -133,7 +132,7 @@ fun sort nodes edges =
                      List.app (fn (a,b) => print (a ^ " -> " ^ b ^ "\n")) edgesFromNode)
 
             val (nodes', sortedLst') = visitNodesInEdges ns (n :: visitedNodes) edgesFromNode sortedLst
-          in          
+          in
             (nodes', (n :: sortedLst'))
           end
         | visit' [] _ sortedLst = ([], sortedLst)
@@ -147,7 +146,7 @@ fun sort nodes edges =
         | visit [] _ sortedLst = ([], sortedLst)
 
       val (_, sortedLst) = visit nodes [] []
-                                 
+
     in
       sortedLst
     end

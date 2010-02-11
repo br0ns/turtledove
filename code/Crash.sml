@@ -19,7 +19,9 @@ struct
              ()) ;
         raise Crash
     )
-            
+
+    fun die s s' = impossible (s ^ ": " ^ s')
+
     fun unimplemented msg = (
         (if Flags.get "Debug.Unimplemented" then
              print ("\n!! Not implemented:\n!! " ^ msg ^ "\n")
@@ -27,7 +29,7 @@ struct
              ()) ;
         raise Crash
     )
-                            
+
     fun debug msg =
         if Flags.get "Debug" then
             print ("-- " ^ msg ^ "\n")

@@ -5070,7 +5070,7 @@ let fun continue() : Internal.result =
                      continue ()
                    )
 | 448 => ( YYBEGIN C ;
-                     C.new source yypos ;
+                     C.new source (yypos + 2) ;
                      continue ()
                    )
 | 450 => ( Source.error source yypos "Illegal token" ;

@@ -2,15 +2,17 @@ open SMLGrammar
 type comments = Source.Comments.t
 val dummypos = ~1
 
-exception ParseError of int * string
-
 val join = Tree.join
-fun root t = Tree.lookup t Tree.root
 
 val wrap = Wrap.wrap
-val left = Wrap.left o root
-val right = Wrap.right o root
+val left = Wrap.left o Tree.this
+val right = Wrap.right o Tree.this
 val unwrap = Wrap.unwrap
+
+val node = Wrap.unwrap o Tree.this
+val children = Tree.children
+
+exception ParseError of int * string
 
 fun error p s = raise ParseError (p, s)
 fun die s = Crash.impossible s
@@ -18,8 +20,8 @@ fun die s = Crash.impossible s
 val opify = Wrap.modify Ident.opify
 
 fun getField t =
-    case unwrap (root t) of
-      Label field => field
+    case node t of
+      Label_Plain field => field
     | Label_Short field => field
     | _ => die "getField"
 
@@ -1006,7 +1008,7 @@ clauses
 (* tree *)
 clause
   : apats constraint EQUALOP exp
-      (join (wrap Clause apatsleft expright)
+      (join (wrap FlatClause apatsleft expright)
             [join (wrap Pats apatsleft apatsright) apats, constraint, exp])
 
 (* tree list *)
@@ -1153,14 +1155,14 @@ datatypeRhsNoWithtype
 (* t * tree list *)
 datatypeRhsnode
   : repl
-      ((Replication repl, nil))
+      ((Dec_Replication repl, nil))
   | datBind
       ((Dec_Datatype, datBind))
 
 (* t * tree list *)
 datatypeRhsnodeNoWithtype
   : repl
-      ((Replication repl, nil))
+      ((Spec_Replication repl, nil))
   | datBindNoWithtype
       ((Spec_Datatype, datBindNoWithtype))
 
@@ -1235,7 +1237,7 @@ rule
 (* tree *)
 elabel
   : field EQUALOP exp
-      (join (wrap (Label field) fieldleft expright) [exp])
+      (join (wrap (Label_Plain field) fieldleft expright) [exp])
 
 (* tree list *)
 elabels
@@ -1393,19 +1395,15 @@ pat
 (* t * tree list *)
 patnode
   : pat AS pat
-      (let
-         open Tree.Walk
-         val w = init pat1
-       in
-         case (unwrap (this w), map (unwrap o this) (children w)) of
-           (Pat_FlatApp, [Pat_Var i]) =>
-           (Pat_Layered i, [pat2])
-         | _ =>
-           Source.error
-             source
-             patleft
-             "Left side of layered pattern must be an identifier."
-       end)
+      (case (node pat1, map node (children pat1)) of
+         (Pat_FlatApp, [Pat_Var i]) =>
+         (Pat_Layered i, [pat2])
+       | _ =>
+         Source.error
+           source
+           patleft
+           "Left side of layered pattern must be an identifier."
+      )
   | pat COLON ty
       ((Pat_Typed, [pat, ty]))
   | apats
@@ -1445,7 +1443,10 @@ apatnode
   | WILD
       ((Pat_Wild, nil))
   | LPAREN pats RPAREN
-      ((Pat_Tuple, pats))
+      ((case pats of
+         [pat] => Pat_Par
+       | _     => Pat_Tuple
+      , pats))
   | LBRACKET pats RBRACKET
       ((Pat_List, pats))
   | LBRACE RBRACE
@@ -1494,7 +1495,7 @@ patitems
 (* tree *)
 patitem
   : field EQUALOP pat
-      (join (wrap (Label field) fieldleft patright) [pat])
+      (join (wrap (Label_Plain field) fieldleft patright) [pat])
   | vidNoEqual constraint opaspat
       (join (wrap (Label_Short vidNoEqual) vidNoEqualleft opaspatright)
             [constraint, opaspat]
@@ -1566,7 +1567,7 @@ ty'node
 (* tree *)
 tlabel
   : field COLON ty
-      (join (wrap (Label field) fieldleft tyright) [ty])
+      (join (wrap (Label_Plain field) fieldleft tyright) [ty])
 
 (* tree list *)
 tlabels
@@ -1598,7 +1599,7 @@ constOrBool
   : const
       (const)
   | id
-      (die "constOrBool")
+      (SCon.String "Dummy")
 
 (* SCon.t *)
 const

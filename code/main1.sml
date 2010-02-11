@@ -1,12 +1,6 @@
 val print = fn s => print (s ^ "\n")
 
-(* ;print "[Yeah baby!]"; *)
-
-(* val file = SourceText.fromFile "SourceText.sml" *)
-(* ;print (SourceText.getSource file 40 522); *)
-
-(* val (mlb, comments) = MLBParser.parse (hd (CommandLine.arguments ())) *)
-(* ;Report.print (MLBGrammar.showBasdecs mlb); *)
+;print "[Yeah baby!]";
 
 val here = Path.new (OS.FileSys.getDir ())
 val mlbpath = Path.new' here (hd (CommandLine.arguments ()))
@@ -20,8 +14,7 @@ val basdecs = MLBParser.fromFile mlbpath
 
 (* ;Report.print (AstMLB.showBasdecs basdecs); *)
 
-local
-structure Set = OrderedSetFn (
+structure Map = OrderedMapFn (
                 struct
                 type t = Path.t
                 fun compare x y = String.compare (Path.path x, Path.path y)
@@ -42,12 +35,12 @@ structure Set = OrderedSetFn (
 (*                 fun compare x y = List.collate Char.compare (x, y) *)
 (*                 fun toString _ = "list" *)
 (*                 end) *)
-in
+
 (* Its much faster to just build a huge list of files and then calling fromList
    on that, than it is to incrementially build the set *)
-fun sources ds =
+fun parse ds =
     let
-      open AstMLB Set
+      open AstMLB Map
 
       val files = ref empty
       fun ignore file =
@@ -71,11 +64,16 @@ fun sources ds =
                                  ()
                                else
                                  basdecs ds
-          | Source f => if ignore f then
-                          ()
-                        else
-                          (* files := insert (!files) (explode (Path.path f)) *)
-                          files := insert (!files) f
+          | Source f =>
+            if ignore f then
+              ()
+            else
+              (* files := insert (!files) (explode (Path.path f)) *)
+              (* files := insert (!files) f *)
+              (case lookup (!files) f of
+                 SOME ast => ()
+               | NONE => files := update (!files) (f, SMLParser.fromFile f)
+              )
           | Ann (_, ds) => basdecs ds
           | _ => ()
       and basexp e =
@@ -86,69 +84,18 @@ fun sources ds =
       and basbinds bs = List.app basbind bs
       and basbind (_, e) = basexp e
     in
-      basdecs ds ;
-      toList (!files)
-      @
-      (if Path.file mlbpath = "Turtledove.mlb" then
-         [Path.new' here "parsers/mlb/MLB.lex",
-          Path.new' here "parsers/mlb/MLB.yacc",
-          Path.new' here "parsers/sml/SML.lex",
-          Path.new' here "parsers/sml/SML.yacc"]
-       else
-         nil)
+      basdecs ds ; !files
     end
-end
 
 ;Benchmark.start ();
-val srcs = sources basdecs
+val asts = parse basdecs
 ;Benchmark.stop ();
-;Benchmark.print "Collecting source files:";
-
-val srcs = map (fn f => (f, File.size f)) srcs
-val srcs = ListSort.sort (fn (_, x) => fn (_, y) => Int.compare (x, y)) srcs
-
-val sz = foldl (fn ((_, s), a) => a + s) 0 srcs
-
-val r = Report.++ (
-        Report.itemize
-            (map (fn (f, s) =>
-                     Report.text (Int.toString s ^ " " ^ Path.path' (Path.dir mlbpath) f)
-                 ) srcs
-            ),
-        Report.text (Int.toString (sz div 1000) ^ "KB in " ^ Int.toString (length srcs) ^ " files.")
-        )
-
-;Report.print r;
-
+;Benchmark.print "Parsing source files:";
 
 ;Benchmark.start ();
-val _ = SMLParser.fromFile (Path.new' here "parsers/sml/SML.yacc.sml")
-    handle SMLParser.Parse r => (Report.print r ; raise Fail "[Foobar]")
-;Benchmark.stopAndPrint "Parsing parsers/sml/SML.yacc.sml:";
+val _ = Map.map (fn ast => Infixing.resolve (ast, Dictionary.empty)) asts
+;Benchmark.stop ();
+;Benchmark.print "Resolving infixes:";
 
-;Benchmark.start ();
-val report = SMLParser.fromFile (Path.new' here "Report.sml")
-    handle SMLParser.Parse r => (Report.print r ; raise Fail "[Foobar]")
-;Benchmark.stopAndPrint "Parsing Report.sml:";
 
-local
-  open Tree.Walk SMLGrammar
-  structure Set = StringOrderedSet
-  val unwrap = Wrap.unwrap
-  fun loop (w, s) =
-      foldl loop (case unwrap (this w) of
-                    Exp_Var i => (Set.insert s o Ident.toString o unwrap) i
-                  | _ => s)
-            (children w)
-  val ids = loop (init report, Set.empty)
-in
-val _ = print (Set.toString String.toString ids)
-val _ = print (Int.toString (Set.card ids))
-val _ = print (Int.toString (Tree.size report))
-end
-
-val ast = SMLParser.fromFile (Path.new' here "dummy.sml")
-val _ = (Report.print o SMLGrammar.show) ast
-val (ast, _) = Infixing.resolve (ast, Dictionary.empty)
-val _ = (Report.print o SMLGrammar.show) ast
 

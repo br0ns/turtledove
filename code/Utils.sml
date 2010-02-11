@@ -15,6 +15,15 @@ struct
     fun f ^* 0 = id
       | f ^* n = f o (f ^* (n - 1))
 
+    fun curry f x y = f (x, y)
+    fun uncurry f (x, y) = f x y
+
+    fun to (a, b) =
+        if a <= b then
+          a :: to (a + 1, b)
+        else
+          nil
+
     fun inc x = (x := !x + 1 ; !x)
     fun dec x = (x := !x - 1 ; !x)
 
@@ -31,4 +40,14 @@ struct
         in
           pairOneFromEach' lst1 lst2 []
         end
+end
+
+local open Utils in
+val id = id
+val ^* = ^*
+val curry = curry
+val uncurry = uncurry
+val to = to
+
+infix ^* to
 end

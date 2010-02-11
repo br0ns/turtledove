@@ -155,7 +155,8 @@ struct
     val findi = die
     val app = die
     val appi = die
-    val map = die
+    fun map _ E = E
+      | map f (T (l, (k, v), r)) = T (map f l, (k, f v), map f r)
     val mapi = die
     val mapPartial = die
     val mapPartiali = die
@@ -169,15 +170,15 @@ struct
     val interi = die
     val merge = die
     val mergi = die
-    val plus = die
+    fun plus a b = List.foldl (fn (x, m) => update m x) a (toList b)
 
     fun toString keyToString valueToString t =
         let
           fun toString' E = ""
-            | toString' (T (l, (k, v), r)) = 
+            | toString' (T (l, (k, v), r)) =
               (toString' l) ^ (keyToString k) ^ ": " ^ (valueToString v) ^ "\n" ^ (toString' r)
         in
           toString' t
         end
-        
+
 end

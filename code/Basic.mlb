@@ -3,6 +3,8 @@ $(SML_LIB)/basis/basis.mlb
 MyLib/MyLib.mlb
 in
 
+Error.sig Error.sml
+
 Constants.sml
 Flags.sig FlagsFn.sml Flags.sml
 Crash.sig Crash.sml

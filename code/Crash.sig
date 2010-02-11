@@ -11,6 +11,10 @@ sig
     (* For things that "can't" happen *)
     val impossible : string -> 'a
 
+    (* Create a 'die' function (a function that prepends a string to its
+       argument and calls impossible *)
+    val die : string -> string -> 'a
+
     val unimplemented : string -> 'a
 
     (* Doesn't throw Crash, just prints to StdOut *)
