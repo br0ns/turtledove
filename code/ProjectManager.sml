@@ -1,3 +1,7 @@
+(* TODO: Implement "Single file" mode. Remember no actions are allowed when
+         opened this waya. *)
+
+
 structure ProjectManager :> ProjectManager =
 struct
 
@@ -177,7 +181,9 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
  
   fun getFileNames (r as {project, ...}: t)  = getFileNamesInGroup r (getProjectGroupNameStr r)                                   
 
-      
+  (* TODO: Right now we validate if the file is already in the project. But we
+     don't validate properly if the new file or the compared file from the
+     porject is relative and the other is absolute (or visa versa). *)
   fun addFile (r as {project, ...}: t) parrentGroupStr filenameStr = 
       let
         val files = getFileNames r
