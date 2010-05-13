@@ -12,6 +12,10 @@ struct
     fun pair showa showb (a, b) = "(" ^ showa a ^ ", " ^ showb b ^ ")"
     fun triple showa showb showc (a, b, c)  = "(" ^ showa a ^ ", " ^ showb b ^ ", " ^ showc c ^ ")"
 
+    fun quadruple showa showb showc showd (a, b, c, d) =
+        "(" ^ showa a ^ ", " ^ showb b ^ ", " ^
+        showc c ^ ", " ^ showd d ^ ")"
+
     fun list show xr =
         let
             fun list' nil = ""

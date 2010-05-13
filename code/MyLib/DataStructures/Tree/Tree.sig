@@ -27,8 +27,6 @@ sig
     val size : 'a t -> int
     val height : 'a t -> int
 
-    val toString : ('a -> string) -> 'a t -> string
-
     structure Monolith : sig
       eqtype node
       type 'a t

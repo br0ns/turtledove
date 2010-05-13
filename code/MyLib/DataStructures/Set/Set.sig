@@ -42,7 +42,4 @@ sig
 
     (* May raise Empty *)
     val some       : ''a t -> ''a
-
-    (* Takes a printing function for ''a and a triple of left, right and delimitor *)
-    val toString   : (''a -> string) -> ''a t -> string
 end

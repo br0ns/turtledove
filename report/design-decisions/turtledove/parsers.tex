@@ -1,0 +1,109 @@
+One of the most basic capabilities of Turtledove is to parse a project. A
+project is described by one or more ML Basis files and consists of a collection
+of source files containing SML code. Thus we need to be able to parse these two
+kinds of data.
+
+We use ML-Lex and ML-Yacc for that task. At the time of writing those tools are
+really the only option there is when working in Standard ML, apart from writing
+the parsers from scratch. The shortcomings of ML-Lex and ML-Yacc is more than
+paid for in that we can let us inspire by existing parsers that use those
+tools. The MLKit and MLTon compilers contains parsers for both MLB and SML and
+SML/NJ contains a SML parser all written using ML-Lex and ML-Yacc.
+
+We have chosen to mimic the parsers found in MLTon. That is we have copied the
+rules of the lexer and the productions of the grammar with very minor
+exceptions. The code for each rule and production is our own though.
+\\[1em]
+
+A major part of a parser is to decide upon a way to represent the data one is
+parsing. In this regard we take an unorthodox approach to representing SML.
+\\[1em]
+
+The structure of the data one wishes to parse is often described by a BNF
+grammar. That is also the case for MLB and SML. In any case a LALR(1) grammar
+has to be produced for ML-Yacc.
+
+The most common way to represent parsed data is to define a set of mutually
+recursive datatypes; one for each category of the BNF (or nonterminal of the
+LALR(1) grammar). This approach has several benefits:
+
+\begin{enumerate}
+\item It is easy to design the representation. It can be written directly of the
+      BNF. Another side effect of this is that the representation is already
+      documented.
+\item The type system ensures that it is only possible to represent data with a
+      structure defined by the BNF. Other invariants like a particular variable
+      naming scheme for example can naturally not be ensured by the type
+      system. However some type safety is better than none.
+\item \ldots
+\item \ldots
+\item Profit!
+\end{enumerate}
+
+However the type safety offered is also a limitation; where ever one wants to
+walk through the representation one needs to define a set of mutually recursive
+functions, one for each datatype. This represents a significant overhead, when
+working with the parsed data. Oftentimes one is only interested in a small
+selection of tokens when working through a syntax tree. Consider for example the
+task of collecting the names of all defined functions in a SML program.
+
+Another limitation is that ``wrapper constructors'' are often needed. It happens
+when a rule of a category is just the name of another category. In other words,
+one category is a subset of the other. Take for example the grammar
+\begin{quote}
+\textit{a} ::= \underline{A} | \textit{b}\\
+\textit{b} ::= \underline{B} | \underline{C}
+\end{quote}
+If we didn't have the type system values of \textit{b} would also be values of
+\textit{a}. But we do have a type system and we model values as mutually
+recursive datatypes. This means that the type of values of \textit{a} and the
+type of values of \textit{b} are distinct, and so we need a \textit{a}
+constructor to hold \textit{b} values. A representation could be
+\begin{quote}
+\begin{verbatim}
+datatype a = a_A
+           | a_b
+     and b = b_B
+           | b_C
+\end{verbatim}
+\end{quote}
+
+When we work with more complex grammars, as the one for SML, wrapping values for
+the sake of the type system gets quite obtrusive.
+
+From the work with ...\fixme{Reference til Twist bachproj}, the authors know SML
+modelled by mutually recursive datatypes is difficult to work with.
+
+
+\subsubsection{Payload}
+
+
+\subsubsection{Representing MLB}
+Lets first review the BNF grammar for ML Basis files.
+\begin{quote}
+\begin{verbatim}
+foobar ::= foo
+         | bar
+\end{verbatim}
+\end{quote}
+
+We take the common approach of mutually recursive datatypes for representing
+MLB. There are two reasons for this.
+\begin{enumerate}
+\item The BNF is quite small. There are only two categories, namely
+      \texttt{basdec} and \texttt{basexp}. But one will probably also want to
+      define functions for handling lists of \texttt{basdec}s and lists of
+      bindings (pairs of identifiers and \texttt{basexp}s). So four mutually
+      recursive functions need to be defined for each operation on an MLB
+      representation. This number is acceptable.
+\item Turtledove will not need to manipulate MLB. Since we write a project
+      manager that use its on representation of projects, and generate MLB from
+      that we only ever need to read MLB files.
+\end{enumerate}
+
+\subsubsection{Representing SML}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../../report"
+%%% End: 

@@ -1,4 +1,4 @@
-structure Parser =
+structure Parser :> Parser =
 struct
 structure MLBLrVals = MLBLrValsFun
                         (structure Token = LrParser.Token)
@@ -9,8 +9,8 @@ structure MLBParser = JoinWithArg
 structure Lex = MLBLex
 structure LrParser = LrParser)
 
-structure X = MLBGrammar
-structure Y = AstMLB
+structure X = Grammar
+structure Y = MLBGrammar
 
 structure Ord =
 struct
@@ -71,7 +71,11 @@ fun fromFile file =
                         if Set.member seen file then
                           fail' ("Recursive MLB file: " ^ Path.path file)
                         else
-                          Y.Include (file, loop (file, Set.insert seen file))
+                          let
+                            val {basdecs, comments} = loop (file, Set.insert seen file)
+                          in
+                            Y.Include {file = file, basdecs = basdecs, comments = comments}
+                          end
                       else
                         fail' ("Unknown file type: " ^ Path.path file)
                     end
@@ -90,9 +94,10 @@ fun fromFile file =
               and basbind (id, e) = (id, basexp e)
 
               val ds = basdecs ds
+              val this = {basdecs = ds, comments = comments}
             in
-              parsed := Map.update (!parsed) (file, ds) ;
-              ds
+              parsed := Map.update (!parsed) (file, this) ;
+              this
             end
             handle LexError r => fail r
                  | Path.Path r => fail r

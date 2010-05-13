@@ -26,6 +26,4 @@ sig
     val peeki      : 'a t -> key * 'a
     val toList     : 'a t -> 'a list
     val toListi    : 'a t -> (key * 'a) list
-
-    val toString   : (key -> string) -> ('a -> string) -> 'a t -> string
 end

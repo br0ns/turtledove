@@ -1,9 +1,8 @@
 local
 $(SML_LIB)/basis/basis.mlb
-MyLib.mlb
-../../Show.sig ../../Show.sml
-../Report.mlb
-../../Benchmark.sig ../../Benchmark.sml
+../MyLib.mlb
 in
-test.sml
+
+Pretty.sml
+
 end

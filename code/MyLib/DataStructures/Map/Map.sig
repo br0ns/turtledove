@@ -56,7 +56,7 @@ sig
      * are in both domains.
      *)
     val union       : ('b -> 'b -> 'b) -> (''a, 'b) t -> (''a, 'b) t -> (''a, 'b) t
-    val unioni      : ('a -> 'b -> 'b -> 'b) -> (''a, 'b) t -> (''a, 'b) t -> (''a, 'b) t 
+    val unioni      : ('a -> 'b -> 'b -> 'b) -> (''a, 'b) t -> (''a, 'b) t -> (''a, 'b) t
 
     (* return a map whose domain is the intersection of the domains of the
      * two input maps, using the supplied function to define the range.
@@ -76,6 +76,4 @@ sig
      * maps, always choosing the second map on elements that are in bot domains.
      *)
     val plus        : (''a, 'b) t -> (''a, 'b) t -> (''a, 'b) t
-
-    val toString    : (''a -> string) -> ('b -> string) -> (''a, 'b) t -> string
 end

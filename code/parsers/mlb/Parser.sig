@@ -1,5 +1,6 @@
-signature MLBParser =
+signature Parser =
 sig
-    val fromFile : File.t -> Ast.MLB.node Tree.t
-    (* val fromText : string -> Ast.MLB.node Tree.t *)
+  exception Parse of Report.t
+  val fromFile : File.t -> {basdecs : File.t MLBGrammar.basdecs, comments : Source.Comments.t}
+(* val fromText : string -> Ast.MLB.node Tree.t *)
 end

@@ -3,23 +3,17 @@ $(SML_LIB)/basis/basis.mlb
 MyLib/MyLib.mlb
 in
 
-Error.sig Error.sml
-
 Constants.sml
 Flags.sig FlagsFn.sml Flags.sml
 Crash.sig Crash.sml
-Utils.sig Utils.sml
 UniqId.sig UniqId.sml
 
-TextUtils.sig TextUtils.sml
-
 Report.mlb
-
-Benchmark.sig Benchmark.sml
-
-Show.sig Show.sml
 
 Path.sig Path.sml
 File.sig File.sml
 SourceText.sig SourceText.sml
+
+Error.sig Error.sml
+
 end

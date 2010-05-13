@@ -1,105 +1,154 @@
 local
   $(SML_LIB)/basis/basis.mlb
+
+  (* Used by List.shuffle - rewrite to use mlton *)
+  $(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
 in
 
+(***
+ * Extensions to the standard library
+ *)
+
+Extensions/List.sig Extensions/List.sml
+Extensions/TextIO.sig Extensions/TextIO.sml
+Extensions/General.sig Extensions/General.sml
+Extensions/Math.sig Extensions/Math.sml
+Extensions/String.sig Extensions/String.sml
 
 
-(*********************************
- *                               *
- *    DataStructue               *
- *                               *
- *********************************)
+(***
+ * Other
+ *)
 
-(* The ordered signature that the ordered map and set relies on *)
+Other/Lazy.sig Other/Lazy.sml
+Other/Benchmark.sig Other/Benchmark.sml
+Other/Show.sig Other/Show.sml
+Other/Either.sig Other/Either.sml
+Other/Pair.sig Other/Pair.sml
+
+Other/Pretty.sig Other/Pretty.sml
+Other/Layout.sig Other/Layout.sml
+
+
+(***
+ * DATA STRUCTURES
+ *)
+
+(* Has a type t and a curried function compare *)
 DataStructures/Ordered.sig
 
 
-(* Map *)
+(*
+ * Map
+ *)
 DataStructures/Map/Map.sig
-
 (* DataStructures/Map/ListMap.sml *)
 
 
-(* Ordered Map *)
+(*
+ * Ordered Map
+ *)
 DataStructures/OrderedMap/OrderedMap.sig
 
 DataStructures/OrderedMap/ListOrderedMapFn.sml
 DataStructures/OrderedMap/UnbalancedOrderedMapFn.sml
-(* RedBlackOrderedMapFn.sml *)
-(* OrderedMultiset.sig *)
+(* DataStructures/OrderedMap/RedBlackOrderedMapFn.sml *)
 
-DataStructures/OrderedMap/OrderedMapFn.sml (* Default implementation *)
-DataStructures/OrderedMap/Dictionary.sml (* Specialised map with string keys *)
+(* Default implementations *)
+DataStructures/OrderedMap/OrderedMapFn.sml
+DataStructures/OrderedMap/Dictionary.sml (* string keys *)
+DataStructures/OrderedMap/IntMap.sml (* int keys *)
+DataStructures/OrderedMap/CharMap.sml (* char keys *)
 
 
-(* Ordered Set *)
+(*
+ * Ordered Set
+ *)
 DataStructures/OrderedSet/OrderedSet.sig
 
 DataStructures/OrderedSet/UnbalancedOrderedSetFn.sml
+(* Given an ordered map the TrieOrderedSetFn returns an ordered set on lists of
+   the keys type *)
 DataStructures/OrderedSet/TrieOrderedSetFn.sml
 DataStructures/OrderedSet/RedBlackOrderedSetFn.sml
 
+(* Default implementations *)
 DataStructures/OrderedSet/OrderedSetFn.sml (* Default implementation *)
+DataStructures/OrderedSet/StringSet.sml
+DataStructures/OrderedSet/IntSet.sml
+DataStructures/OrderedSet/CharSet.sml
 
-DataStructures/OrderedSet/StringOrderedSet.sml (* Default implementation using strings *)
 
-
-(* Set *)
+(*
+ * Set
+ *)
 DataStructures/Set/Set.sig
 
 DataStructures/Set/ListSet.sml
 
-DataStructures/Set/Set.sml (* Default implementation *)
+(* Default implementation *)
+DataStructures/Set/Set.sml
 
 
-(* Multiset *)
+(*
+ * Multiset
+ *)
 DataStructures/Multiset/Multiset.sig
 
 
-(* Heap *)
+(*
+ * Heap
+ *)
 DataStructures/Heap/Heap.sig
 
 DataStructures/Heap/PairingHeapFn.sml
 
-DataStructures/Heap/HeapFn.sml (* Default implementation *)
+(* Default implementations *)
+DataStructures/Heap/HeapFn.sml
+DataStructures/Heap/IntMinHeap.sml
+DataStructures/Heap/IntMaxHeap.sml
 
-DataStructures/Heap/IntMinHeap.sml (* specialised int HeapFn with sorting min to max *)
-DataStructures/Heap/IntMaxHeap.sml (* specialised int HeapFn with sorting max to min *)
 
-
-(* Queue *)
+(*
+ * Queue
+ *)
 DataStructures/Queue/Queue.sig
+DataStructures/Queue/Deque.sig
 
 
-(* Tree *)
+(*
+ * Tree
+ *)
 DataStructures/Tree/Tree.sig
 
 DataStructures/Tree/PlainTreeFn.sml
 
-DataStructures/Tree/Tree.sml (* Default implementation *)
+(* Default implementation *)
+DataStructures/Tree/Tree.sml
 
 
-(* Graph *)
+(*
+ * Graph
+ *)
 (* DataStructures/Graph/Graph.sig
-
    DataStructures/Graph/LabeledGraph.sig *)
 
 
-(*********************************
- *                               *
- *    Algorithm                  *
- *                               *
- *********************************)
+(***
+ * Algorithms
+ *)
 
-(* ListSort *)
+(* Sort should go away - moved to extensions *)
 Algorithms/ListSort/ListSort.sig
-
 Algorithms/ListSort/QuickSortList.sml
-
 Algorithms/ListSort/ListSort.sml (* Default implementation *)
-
 Algorithms/TopologicalSort/TopologicalSort.sig
+Algorithms/TopologicalSort/TopologicalSort.sml
 
-Algorithms/TopologicalSort/TopologicalSort.sml 
+
+(***
+ * Top Level declarations
+ *)
+TopLevel.sml
 
 end

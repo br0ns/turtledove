@@ -160,7 +160,9 @@ struct
     val mapi = die
     val mapPartial = die
     val mapPartiali = die
-    val foldl = die
+    fun foldl _ b E = b
+      | foldl f b (T (l, (_, v), r)) =
+        foldl f (foldl f (f (v, b)) l) r
     val foldli = die
     val foldr = die
     val foldri = die

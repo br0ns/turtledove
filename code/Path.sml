@@ -33,11 +33,11 @@ fun expandVars f =
             val (var, cs) = readVar cs
             val var = implode var
           in
-            if StringOrderedSet.member seen var then
+            if StringSet.member seen var then
               raise Path (Report.text ("Recursive path variable: " ^ var))
             else
               case Dictionary.lookup vars var of
-                SOME path => read (explode path, StringOrderedSet.insert seen var) @
+                SOME path => read (explode path, StringSet.insert seen var) @
                              read (cs, seen)
               | NONE => raise Path (Report.text ("Unknown path variable: " ^ var))
           end
@@ -52,7 +52,7 @@ fun expandVars f =
           end
         | readVar _ = (nil, nil)
     in
-      implode (read (explode f, StringOrderedSet.empty))
+      implode (read (explode f, StringSet.empty))
     end
 
 fun path f = f

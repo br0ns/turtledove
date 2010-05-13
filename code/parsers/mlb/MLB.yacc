@@ -1,4 +1,4 @@
-open MLBGrammar
+open Grammar
 
 type comments = Source.Comments.t
 

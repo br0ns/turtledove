@@ -1,0 +1,61 @@
+fun f nil = nil
+  | f (x :: xs) = g x :: f x
+
+--map-->
+
+val f = map (fn x => g x)
+
+--simp-->
+
+val f = map g
+
+
+Group map:
+  Rule map:
+    ...
+  ->
+    simp (...)
+
+  Rule simp:
+    fn x => g x
+  ->
+    g
+
+
+fn x = g x +
+
+Group Simp:
+  Rule fn:
+    fn x => g x
+  ->
+    g
+
+  Rule trueorelse:
+    true orelse x
+  ->
+    x
+
+  Rule falseorelse:
+    false orelse _
+  ->
+    false
+
+  Rule if:
+    if x then true else false
+  ->
+    x
+
+  Rule eqtrue:
+    x = true
+  ->
+    x
+
+  Rule eqfalse:
+    x = false
+  ->
+    not x
+
+  Rule noteq:
+    not (x = y)
+  ->
+    x <> y

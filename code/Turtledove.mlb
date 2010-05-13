@@ -3,6 +3,7 @@ parsers/Parsers.mlb
 Basic.mlb
 
 MyLib/MyLib.mlb
+json/JSON.mlb
 
 InfixStackFn.sml
 Infixing.sml

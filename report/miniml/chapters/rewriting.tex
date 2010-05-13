@@ -515,6 +515,12 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
   Immediately by inspection.
 \end{proof}
 
+\begin{lemma}[]\label{lem:more-specific-confused}
+  If $p_1 <' p_2$ and $p_2 || p_3$, then $p_1 || p_3$.
+
+  Proof is given in \fref{sec:proof-partial-orderings}
+\end{lemma}
+
 \begin{example}
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
@@ -588,15 +594,7 @@ This can happen for two reasons.
 
 \subsection{Cover}\label{sec:cover}
 We define a cover to be a set of patterns such that for every input at least one
-of the patterns will match that input. And we write
-
-\begin{definition}[Cover]\label{def:cover}
-  Let $P = \{p_1, \ldots, p_n \}$ be a set af patterns. Then
-  \[
-  \Cov(P)
-  \]
-  if $P$ is a cover.
-\end{definition}
+of the patterns will match that input. And we write $Cov(P)$ if $P$ is a cover.
 
 Any pattern following patterns that taken together are a cover is unused because
 of reason \ref{item:unused-reason-1}.
@@ -788,20 +786,20 @@ p_i$ the first part of the match $p_1 \texttt{.} e_1 \texttt{|} \ldots
 \texttt{|} p'_i \texttt{.} e'_i$ must still be partially ordered. So we consider
 the patterns $p_j$ for $j > i$.
 
-% Note that by \fref{lem:unique-rel} we know that either $p_i <' p_j$ or $p_i ||
-% p_j$.
+Note that by \fref{lem:unique-rel} we know that either $p_i <' p_j$ or $p_i ||
+p_j$.
 
 Four scenarios arise
 \begin{enumerate}
 \item $p'_i$ and $p_j$ are equivalent. The pattern was generalised to one that
   already existed. Now the only hope is that $e'_i$ and $e_j$ merge. By this we
-  mean $(p'_i, e'_i) ==a (p_j, e_j)$ (\fref{def:alpha-equivalence-patexp}).
+  mean $(p'_i, e'_i) ==a (p_j, e_j)$ (\Fref{def:alpha-equivalence-patexp}).
 
   If this is the case then either one of $p'_i \texttt{.} e'_i$ or $p_j
   \texttt{.} e_j$ shall be removed. \label{item:gen-scen-1}
-\item $p'_i$ relates to $p_j$ in the same way that $p_i$ does. So if $p_i <'
-  p_j$, then $p'_i <' p_j$ and if $p_i || p_j$ then $p'_i || p_j$. In this case
-  nothing must be done. \label{item:gen-scen-2}
+\item $p'_i$ relates to $p_j$ in the same way that $p_i$ does. So $p_i <' p_j
+  \Rightarrow p'_i <' p_j$ and $p_i || p_j \Rightarrow p'_i || p_j$. In this
+  case nothing must be done. \label{item:gen-scen-2}
 \item $p_i || p_j$ and $p'_i >' p_j$. So now $p'_i$ ``steals'' $p_j$s input. But
   because $p_i$ and $p_j$ were confused we know that $p_j$ will not steal any
   input originally intended for $p_i$. So we move $p_j$ and its body up, in the
@@ -825,23 +823,48 @@ Four scenarios arise
   \end{eqnarray*}
   and assume that a generalisation as described above can be done. Then the
   resulting match is
-  \begin{eqnarray}
+  \begin{eqnarray*}[rclqqqTl]
     m' &=& p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_{i-1} \texttt{.}
-    e_{i-1} \label{eq:gen-1}\\
+    e_{i-1} & (Untouched)\label{eq:gen-1}\\
     &\texttt{|}& p_{m_1} \texttt{.} e_{m_1} \texttt{|} \ldots \texttt{|} p_{m_k}
-    \texttt{.} e_{m_k} \label{eq:gen-2}\\
-    (&\texttt{|}& p'_i \texttt{.} e'_i \ ) \label{eq:gen-3}\\
+    \texttt{.} e_{m_k} & (Case \ref{item:gen-scen-3})\label{eq:gen-2}\\
+    (&\texttt{|}& p'_i \texttt{.} e'_i \ ) & (Perhaps case \ref{item:gen-scen-1})\label{eq:gen-3}\\
     &\texttt{|}& p_{s_1} \texttt{.} e_{s_1} \texttt{|} \ldots \texttt{|} p_{s_l}
-    \texttt{.} e_{s_l} \label{eq:gen-4}
-  \end{eqnarray}
+    \texttt{.} e_{s_l} & (Case \ref{item:gen-scen-2})\label{eq:gen-4}
+  \end{eqnarray*}
 
-  Where (\ref{eq:gen-1}) is the part up until $p_i$, (\ref{eq:gen-2}) are the
-  patterns that get moved in scenario \ref{item:gen-scen-3} and (\ref{eq:gen-4})
-  are the ones that stay (scenario \ref{item:gen-scen-2}). Line (\ref{eq:gen-3})
-  is put in parentheses because is should be deleted in the case of scenario
-  \ref{item:gen-scen-1}. And of course $m_1 < \ldots < m_k$.
+  Where $m_1 < \ldots < m_k$ and $s_1 < \ldots < s_l$.
+
+  The third line is put in parentheses because it should be deleted in the case
+  of scenario \ref{item:gen-scen-1}.
 
   And we write $m ->g m'$.
+
+  \begin{lemma}
+    If $m ->g m'$ then $m'$ is in partially ordered form.
+  \end{lemma}
+  \begin{proof}
+    Assume
+    \begin{eqnarray*}[rqTcql]
+      m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
+      \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
+      e'_i).
+    \end{eqnarray*}
+
+    Since every $p_j <' p'_i$ for $j > i$ is moved in front of $p'_i$ the only
+    thing that can break the partial ordering of $m'$ is if $p_j <' p_k$ for
+    $i < j < k$ and $p_k$ moves, but $p_j$ does not. For this to happen $p_j$
+    must fall into scenario \ref{item:gen-scen-2} and $p_k$ must fall into
+    scenario \ref{item:gen-scen-3}.
+
+    Either $p'_i <' p_j$ or $p'_i || p_j$. In the first case we have by
+    transitivity that $p'_i <' p_k$, so $p_k$ can not fall into category
+    \ref{item:gen-scen-3}, which is a contradiction.
+
+    In the latter case we have by assumption that $p'_i || p_j$ and $p_k <'
+    p'_i$. But then we get by lemma \fref{lem:more-specific-confused} that $p_k
+    || p_j$, which is a contradiction.
+  \end{proof}
 
 \end{definition}
 
@@ -869,50 +892,53 @@ ordered form by repeated elimination.
 \begin{example}
 Consider
 \begin{lstlisting}
-      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
-    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
-    | addodd Nil . Nil
-    | addodd x . x
+      f (A (A (a, b), c)) . A (c, A (a, b))
+    | f (A (a, b))        . A (b, a)
+    | f B                 . B
+    | f x                 . x
+    | f (A (a, A (b, c))  . A (A (c, b), a)
 \end{lstlisting}
-Assume that the constructor environment is $C = \{\mathtt{Cons}, \mathtt{Nil},
-\mathtt{Pair}\}$, and that there exists a function \texttt{+}.
+Assume that the only constructors are \texttt{A} and \texttt{B}.
 
-As the match is not in partially ordered form (due to the pattern \texttt{x})
-our only choice is to eliminate. Luckily we can, because the three first
-patterns forms a cover, so we can eliminate the fourth. We get
-\begin{lstlisting}
-      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
-    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
-    | addodd Nil . Nil
-\end{lstlisting}
-which is in partially ordered form. The second clause can be generalised to
-\texttt{x . x}. This means that the clause \texttt{Nil . Nil} should be moved
-up. We get
-\begin{lstlisting}
-      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
-    | addodd Nil . Nil
-    | addodd x . x
-\end{lstlisting}
-Next we can generalise \texttt{Nil . Nil} to \texttt{x . x} which coincide with
-the third clause, so we remove it.
-\begin{lstlisting}
-      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
-    | addodd x . x
-\end{lstlisting}
-The first clause can be generalised to \texttt{
-  Cons (Cons (x, y), xs) . Cons (Cons (x, + y), addodd xs)
-} (by generalising the two \texttt{Pair} patterns), so we get
-\begin{lstlisting}
-      addodd Cons (Cons (x, y), xs) .
-               Cons (Cons (x, + y), addodd xs)
-    | addodd x . x
-\end{lstlisting}
-which cannot be generalised or eliminated upon. So it is a normal form.
+As the match is not in partially ordered form (due to the last pattern being
+more specific than the pattern \texttt{x}) our only choice is to
+eliminate. Luckily we can, because the four (three actually) first patterns
+forms a cover. With the last clause eliminated we have
 
+\begin{lstlisting}
+      f (A (A (a, b), c)) . A (c, A (a, b))
+    | f (A (a, b))        . A (b, a)
+    | f B                 . B
+    | f x                 . x
+\end{lstlisting}
+
+From here we can choose to eliminate or generalise. We generalise. It is the
+case that
+\[
+(\texttt{A (A (a, b), c)}, \texttt{A (c, A (a, b))}) |> (\texttt{A (x, y)},
+\texttt{A (y, x)})
+\]
+
+We arrive at scenario \ref{item:gen-scen-1} since $\texttt{A (a, b)} ==
+\texttt{A (x, y)}$. So we must have $(\texttt{A (a, b)}, \texttt{A (b, a)}) ==a
+(\texttt{A (x, y)}, \texttt{A (y, x)})$, which is the case. So the first clause
+can be deleted. We now have
+
+\begin{lstlisting}
+      f (A (a, b)) . A (b, a)
+    | f B          . B
+    | f x          . x
+\end{lstlisting}
+
+Since the two first patterns form a cover the last clause can be eliminated. We
+end up with
+
+\begin{lstlisting}
+      f (A (a, b)) . A (b, a)
+    | f B          . B
+\end{lstlisting}
+
+which cannot be generalised or eliminated further, so it is a normal form.
 \end{example}
 
 

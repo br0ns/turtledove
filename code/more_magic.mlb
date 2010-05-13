@@ -1,0 +1,10 @@
+local
+$(SML_LIB)/basis/basis.mlb
+parsers/Parsers.mlb
+Basic.mlb
+in
+
+MyLib/MyLib.mlb
+more_magic.sml
+
+end

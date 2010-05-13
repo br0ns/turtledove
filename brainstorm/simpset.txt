@@ -1,0 +1,69 @@
+"" ^ S --> S
+
+S ^ "" --> S
+
+N + 0 --> N
+
+0 + N --> N
+
+0 * N --> N ; 0
+
+N * 0 --> N ; 0
+
+1 * N --> N
+
+N * 1 --> N
+
+L @ [] --> L
+
+[] @ L --> L
+
+map F [] --> []
+
+foldl F B [] --> F ; B
+
+foldl f B [] --> B
+
+foldl (fn x => X) B [] --> B
+
+foldl (f o g) B [] --> B
+
+osv...
+
+if clean(F):
+  foldl F B [] --> B
+
+where clean(F) if
+F = f
+F = (fn x => X)
+F = (G o H)  and  clean(G)  and clean(H)
+osv...
+
+if clean(N):
+  N * 0 --> 0
+  0 * N --> 0
+
+foldr F B [] --> F ; B
+
+foldr f B [] --> B
+
+List.all F [] --> true
+
+List.exists F [] --> false
+
+true orelse B --> true
+
+false orelse B --> B
+
+true andalso B --> B
+
+false andalso B --> false
+
+if B then true else false --> B
+
+if B then false else true --> not B
+
+if B then T else false --> B andalso T
+
+if B then true else T --> B orelse T
+

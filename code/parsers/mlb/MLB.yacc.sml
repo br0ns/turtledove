@@ -8,7 +8,7 @@ structure ParserData=
 struct
 structure Header = 
 struct
-open MLBGrammar
+open Grammar
 
 type comments = Source.Comments.t
 
@@ -528,7 +528,7 @@ sigid1) = sigid1 ()
  in (
 let
                    val (sigid', sigbinds) = sigbinds'
-                 in 
+                 in
                    (sigid, sigid') :: sigbinds
                  end
 )

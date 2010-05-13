@@ -57,6 +57,7 @@ sig
     val find        : ('a -> bool) -> 'a t -> key * 'a
     val findi       : (key * 'a -> bool) -> 'a t -> key * 'a
 
+    (* These go from least to greatest *)
     val app         : ('a -> unit) -> 'a t -> unit
     val appi        : (key * 'a -> unit) -> 'a t -> unit
     val map         : ('a -> 'b) -> 'a t -> 'b t
@@ -65,6 +66,7 @@ sig
     val mapPartiali : (key * 'a -> 'b option) -> 'a t -> 'b t
     val foldl       : ('a * 'b -> 'b) -> 'b -> 'a t -> 'b
     val foldli      : ((key * 'a) * 'b) -> 'b -> 'a t -> 'b
+
     val foldr       : ('a * 'b -> 'b) -> 'b -> 'a t -> 'b
     val foldri      : ((key * 'a) * 'b) -> 'b -> 'a t -> 'b
 
@@ -93,6 +95,4 @@ sig
      * maps, always choosing the second map on elements that are in bot domains.
      *)
     val plus        : 'a t -> 'a t -> 'a t
-
-    val toString    : (key -> string) -> ('a -> string) -> 'a t -> string
 end
