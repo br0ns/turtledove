@@ -68,6 +68,7 @@ sig
                                                   
   (* project, parrent group that exposes this file/group, group/file that are to
   be exposed, resulting project *)
+  (* TODO: Since a particular group or file can only exist at one place the group name is not needed here. In other words: val addExpose : t -> string -> t *)
   val addExpose : t -> string -> string -> t
 
   (* project, parrent group that exposes this file/group, group/file that are to

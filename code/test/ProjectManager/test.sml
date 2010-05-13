@@ -7,6 +7,7 @@ val info = "\nFollowing are valid actions: \n"
          ^ "save: Saves the project.\n"
          ^ "pgn : Print the project group name.\n"
          ^ "ls  : Print the project in a structured list.\n"
+         ^ "mlb : Print the resulting MLB Description of the project.\n"
          ^ "\n"
          ^ "lsf : List all files in the project.\n"
          ^ "adf : Add new file to project.\n"
@@ -53,7 +54,7 @@ fun action t =
     in
       (case line of 
          "q" => raise Quit
-       | "Save" => saveProject t
+       | "save" => saveProject t
        | "pgn" => projectGroupName t
        | "ls" => ls t
 
@@ -75,9 +76,10 @@ fun action t =
        | "ade" => addExpose t
        | "rme" => removeExpose t
 
-       | "description" => (ProjectManager.MLB.description t;
-                           action t)
-
+       | "mlb" => (print (ProjectManager.MLB.description t);
+                   print "\n";
+                   action t)
+                  
        | x => (print info; action t)) 
     end
 

@@ -1,3 +1,7 @@
+(* TODO: Implement "Single file" mode. Remember no actions are allowed when
+         opened this waya. *)
+
+
 structure ProjectManager :> ProjectManager =
 struct
 
@@ -101,7 +105,7 @@ fun getNodesFromValue   value = getFieldFromJSONObject value "Nodes";
 fun updateProjectInRecord {path, project} newProject = {path = path, project=newProject}
 
 fun updateDict dict key value = Dictionary.update dict (key, value)
-fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf obj) (key, value))
+fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionaryOf obj) (key, value))
 
 
   (* Searches through a group and it subgroups untill it findes a groups with
@@ -149,7 +153,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
             if isNodeNamed node parrentGroupStr then
               node     
             else
-               locateParrentGroupInNodes (JSON.arrayOf ((getNodesFromValue o getValueFromNode) node))
+               locateParrentGroupInNodes (JSON.listOf ((getNodesFromValue o getValueFromNode) node))
               
               
         and locateParrentGroupInNodes ((x as JSON.Object _) :: xs) = (locateParrentGroupInNode x
@@ -177,13 +181,15 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
  
   fun getFileNames (r as {project, ...}: t)  = getFileNamesInGroup r (getProjectGroupNameStr r)                                   
 
-      
+  (* TODO: Right now we validate if the file is already in the project. But we
+     don't validate properly if the new file or the compared file from the
+     porject is relative and the other is absolute (or visa versa). *)
   fun addFile (r as {project, ...}: t) parrentGroupStr filenameStr = 
       let
         val files = getFileNames r
         val _ = StringOrderedSet.member files filenameStr andalso die ("The file: '" ^ filenameStr ^  "' is already present in this project")
 
-        fun addFileToNodes nodes = (true, JSON.cons(JSON.String filenameStr, nodes))
+        fun addFileToNodes nodes = (true, JSON.++(JSON.String filenameStr, nodes))
               
 
         val projectNode = getProjectNodeFromProject project
@@ -256,7 +262,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
         fun addGroupToNodes nodes =
             let
               val newGroup = Generate.emptyGroup newGroupStr
-              val newNodes = JSON.cons(newGroup, nodes)
+              val newNodes = JSON.++(newGroup, nodes)
             in
               (true, newNodes)
             end
@@ -362,7 +368,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
               (* If the depTo exists in the list then die, else add it to the list.  *)
               val _ = (JSON.exists (fn x => (JSON.stringOf x) = depTo) dependsLst) andalso die ("The depends list already contains a dependency to '" ^ depTo )
             in
-              JSON.cons(JSON.String depTo, dependsLst)
+              JSON.++(JSON.String depTo, dependsLst)
             end
 
         fun locateDependency (node as JSON.Object _) =
@@ -385,7 +391,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
         val newDependencies = (if modified then (* match, we have update the list *)
                                  newDependencies
                                else (* No match, insert the new dependency *)
-                                 JSON.cons((Generate.dependency depFrom depTo), newDependencies))
+                                 JSON.++((Generate.dependency depFrom depTo), newDependencies))
                                  
                                  
         val newProject = updateObject project "Dependencies" newDependencies
@@ -468,7 +474,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
         fun addExposeToNode node =
             let
               val value = getValueFromNode node
-              val newExposes = JSON.cons(JSON.String exposeStr, getExposesFromValue value)
+              val newExposes = JSON.++(JSON.String exposeStr, getExposesFromValue value)
               val newValue = updateObject value "Exposes" newExposes
               val newNode = updateObject node "Value" newValue
             in
@@ -569,7 +575,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
 
   val setProperty = unimp;
 
-  fun getProperties ({project, ...}: t) = JSON.objectOf (getPropertiesFromProject project)  
+  fun getProperties ({project, ...}: t) = JSON.dictionaryOf (getPropertiesFromProject project)  
 
   fun listFilesAndGroups (r as {project, ...}: t)  =
       let
@@ -578,7 +584,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
             let
               val exposes = (getExposesFromValue o getValueFromNode) node
             in
-              if List.length (JSON.arrayOf exposes) > 0 then
+              if List.length (JSON.listOf exposes) > 0 then
                 (JSON.fold (fn (a,b) => b ^ indent ^ "|= '" ^ (JSON.stringOf a) ^ "'\n") (indent ^ "|  This group expose the following:\n") exposes)
                 ^ indent ^ "| \n"
               else
@@ -622,7 +628,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
   structure MLB =
   struct
 
-  fun sortFilesAndGroups (r as {project, path=projectPath, ...}: t) filesLst groupsLst dependenciesLst exposesLst =
+  fun sortFilesAndGroups (r as {project, ...}: t) filesLst groupsLst dependenciesLst exposesLst =
       let
         fun isGroup nameStr = List.exists (fn x => x = nameStr) groupsLst
                               
@@ -691,7 +697,8 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
                  List.app (fn x => print (x ^ "\n")) sortedFilenames;
                  print "\n\n";
                  print "The topologically sorted list of groupsnames are:\n";
-                 List.app (fn x => print (x ^ "\n")) sortedGroupnames)
+                 List.app (fn x => print (x ^ "\n")) sortedGroupnames;
+                 print "\n\n")
       in
         (* Calls rev, as the sorted file/groups are with elements depending on
            other elements first. Does this this comment even make sence? Anyway
@@ -701,13 +708,13 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
       end
 
   (* TODO: Translate filenames to absolute paths if they are not already. *)
-  fun translateFiles sortedFiles fileToFileDepsLst =
+  fun translateFiles (r as {project, ...}: t) sortedFiles fileToFileDepsLst =
       let
         fun translateFiles' (file :: files) num translatedFiles filesToBasisMapping =
             let
               (* if file is a relative path, it returns the absolute path of projectPath^file. *)
-              val absFilePath = OS.Path.mkAbsolute(file, projectPath)
-              val basisName = (OS.Path.file absFilePath) ^ (Int.toString num)
+              val absFilePath = OS.Path.mkAbsolute {path=file, relativeTo=(OS.Path.dir (getProjectPath r))}
+              val basisName = String.translate (fn #"." => "_" | s => Char.toString s ) ((OS.Path.file absFilePath) ^ "_" ^ (Int.toString num))
 
               (* Update the mapping from original filename to the generated basisname *)
               val filesToBasisMapping' = Dictionary.update filesToBasisMapping (file, basisName)
@@ -718,6 +725,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
               (* Generate a list of files this file depends on *)
               val thisFileDepsOnLst = List.foldl (fn ((depFrom, depTo), b) => depTo :: b) [] filteredDepsLst
 
+
               (* Translate the deps to their previously generated basisnames.
                  Since the list of files is topologically sorted the dependency
                  should already have been translated and thus put into the
@@ -725,8 +733,8 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
               val thisFileDepsOnBasisLst = List.map (fn depTo => valOf (Dictionary.lookup filesToBasisMapping depTo)) thisFileDepsOnLst
 
               val fileDescription = if (List.length thisFileDepsOnBasisLst) > 0 then
-                                      ("basis " ^ basisName ^ " = bas let open "
-                                       ^ List.fold (fn (basisName, b) => basisName ^ " " ^ b) "" thisFileDepsOnBasisLst
+                                      ("basis " ^ basisName ^ " = bas let "
+                                       ^ List.foldl (fn (basisName, b) => b ^ " " ^ basisName) "open" thisFileDepsOnBasisLst
                                        ^ " in "
                                        ^ absFilePath
                                        ^ " end end")                                
@@ -735,7 +743,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
                                        ^ absFilePath
                                        ^ " end")
             in
-              translateFiles' files (num+1)  (fileDescription :: translatedFiles) filesToBasisMapping
+              translateFiles' files (num+1)  (fileDescription :: translatedFiles) filesToBasisMapping'
             end
             (* the translated files have ben reversed while looping throught
             them, so reverse them agian *)
@@ -744,22 +752,63 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
         translateFiles' sortedFiles 0 [] Dictionary.empty
       end
 
-  fun translateGroups () = ""
-                           
-  fun translateProjectGroup () =
+  fun translateGroups sortedGroups groupToGroupDepsLst exposesLst basisMapping num =
       let
-        val projectNameStr = getProjectGroupNameStr r
+        fun translateGroups' (group :: groups) num translatedGroups basisMapping =
+            let
+              val basisName = group ^ "_" ^ (Int.toString num)
 
-        (* A group always have a exposes element, so this list contains an entry
-           for each group else the project is not valid and would not have been
-           loaded.*)
-        val (_, exposes) = valOf (List.find (fn (group, exposes) => group = projectNameStr))
+              val basisMapping' = Dictionary.update basisMapping (group, basisName)
 
-        val _ = not StringOrderedSet.card > 0
-                      andalso                 die ("The project group doesn't expose anything.")
+              val filteredDepsLst = List.filter (fn (depFrom, depTo) => depFrom = group) groupToGroupDepsLst
+
+              val thisGroupDepsOnLst = List.foldl (fn ((depFrom, depTo), b) => depTo :: b) [] filteredDepsLst
+                                       
+              (* A group always have a exposes element, so this list contains an entry
+                for each group else the project is not valid and would not have been
+                loaded. This list might be empty.*)
+              val (_, thisGroupExposes) = valOf (List.find (fn (gp, exposes) => gp = group) exposesLst)
+
+              (* If something is exposed it is also always defined and by the
+              topology sort we know that it has already been placed in the *)
+              val thisGroupExposesBasisLst = List.map (fn expose => valOf (Dictionary.lookup basisMapping expose)) (StringOrderedSet.toList thisGroupExposes)
+
+              val dependsStr = List.foldl (fn (a,b) => b ^ " " ^ a) "open" thisGroupDepsOnLst
+              val exposesStr = List.foldl (fn (a,b) => b ^ " " ^ a) "open" thisGroupExposesBasisLst
+
+              (* TODO: There might be a problem if the group don't expose anything.*)
+                               
+              val groupDescription = if (List.length thisGroupDepsOnLst) > 0 then
+                                       "basis " ^ basisName ^ " = bas "
+                                       ^ "let " ^ dependsStr  ^ " in "
+                                       ^ exposesStr ^ " end end"
+                                     else
+                                       "basis " ^ basisName ^ " = bas " ^ exposesStr ^ " end"                                      
+            in
+              translateGroups' groups (num+1) (groupDescription :: translatedGroups) basisMapping'
+            end
+          (* the translated groups have ben reversed while looping throught
+             them, so reverse them agian *)
+          | translateGroups' [] num translatedGroups basisMapping  = (num, rev translatedGroups, basisMapping)
       in
-        ""
+        translateGroups' sortedGroups num [] basisMapping 
       end
+
+
+                       
+  fun translateProjectGroup (r as {project, ...}: t) exposesLst basisMapping  =
+      let
+        val projectGroupStr = getProjectGroupNameStr r
+
+        (* Again, every group has an , possibly empty, list of exposes *)
+        val (_, exposes) = valOf (List.find (fn (group, _) => group = projectGroupStr) exposesLst)
+
+        val exposesBasisLst = List.map (fn expose => valOf (Dictionary.lookup basisMapping expose)) (StringOrderedSet.toList exposes)
+                              
+      in
+        List.foldl (fn (a,b) => b ^ " " ^ a) "open" exposesBasisLst
+      end
+
 
   fun mlbDescription content  =
           "local\n"
@@ -780,12 +829,14 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.objectOf o
 
         val (sortedFiles, fileToFileDepsLst, sortedGroups, groupToGroupDepsLst) = sortFilesAndGroups r filesLst groupsLst dependenciesLst exposesLst
 
-        val (num, translatedFiles, filesToBasisMapping) = translateFiles sortedFiles fileToFileDepsLst
+        val (num, translatedFiles, filesToBasisMapping) = translateFiles r sortedFiles fileToFileDepsLst
 
+        val (num, translatedGroups, basisMapping) = translateGroups sortedGroups groupToGroupDepsLst exposesLst filesToBasisMapping num                                                                        
 
-        val content = List.foldl (fn (a,b) => b ^ a ^ "\n") "" translatedFiles
-(*        val content = List.foldl (fn (a,b) => b ^ a ^ "\n") content translatedGroups *)
-                                                                                  
+        val content = (List.foldl (fn (a,b) => b ^ "  " ^ a ^ "\n") "" translatedFiles)
+                      ^ (List.foldl (fn (a,b) => b ^ "  " ^ a ^ "\n") ""  translatedGroups)
+                      ^ "\n  "  
+                      ^ (translateProjectGroup r exposesLst basisMapping)                                                                                        
       in
         mlbDescription content
       end
