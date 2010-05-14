@@ -106,6 +106,9 @@ fun str s =
     let
       datatype bullet = Text of string
                       | Numbered of string * int * string
+(* TODO: We could really use a parser combinator library here. The code below
+ * could be a starting point. Also review Parsec and the parser on JLouis' blog.
+ *)
       fun bullet s =
           let
             fun or nil ss = NONE
