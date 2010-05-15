@@ -6,6 +6,9 @@ signature Layout =
 sig
   include Pretty
 
+  val println : int option -> t -> unit
+
+
   val chr : char -> t
   val int : int -> t
   val real : real -> t
@@ -18,11 +21,35 @@ sig
   (* Nothing if the output fits, new line and indent if it doesn't. *)
   val softbrk : t
 
+  (* Replaces all spaces with softln *)
+  val softtxt : string -> t
+
+  (* Like softtxt but preprends two spaces *)
+  val paragraph : string -> t
 
   (* Converts a preformatted text into a document. A newline character seperates
    * paragraphs and the folowing number of spaces determine the next paragraphs
    * indentation. So it basically does what you would expect. *)
   val str : string -> t
+
+  (* Takes the desired bullet as a string *)
+  val itemize : string -> t list -> t
+
+  datatype enumeration = Number | Letter | Roman | CapitalLetter | CapitalRoman
+  (* Takes an enumeration schema (which is a string to print before each
+   * enumeration, a kind of enumeration, and a string to print after) and an
+   * optional starting number (default is 1). *)
+  val enumerate : string * enumeration * string -> int option -> t list -> t
+
+  (* Double spaces after the word being described, following lines indented. *)
+  val description : (string * t) list -> t
+
+  (* Places one document besides another. The first argument determines the
+   * spacing *)
+  val besides : int -> t * t -> t
+
+  (* Flushes to the right if a maximum width is given. Does nothing otherwise *)
+  val flushRight : t -> t
 
   (* Indents a document. The indented document should follow a line break. *)
   val indent : int -> t -> t
@@ -36,6 +63,10 @@ sig
   (* Takes a function that given the printed width of a document generates a
    * second document. The two documents are then joined. *)
   val width : (int -> t) -> t -> t
+
+  (* Takes function that given the columns left until the desired maximum width
+   * is reached produces a document *)
+  val left : (int option -> t) -> t
 
   (* Takes a desired width and a document. Appends spaces if the document is
    * narrower, or inserts a line break and indents if it isn't. *)
@@ -52,7 +83,7 @@ sig
   val \\ : t * t -> t (* l \\ r = l ^^ brk ^^ r     *)
   val && : t * t -> t (* l && r = l ^^ softbrk ^^ r *)
 
-
+  (* Lays out its elements horizontally *or* vertically; nothing in between. *)
   val sep : t list -> t (* sep = group o vsep *)
   val cat : t list -> t (* cat = group o vcat *)
 
@@ -62,14 +93,16 @@ sig
 
   (* Seperate (As concatenate but always puts something between the documents,
    * eg. a space or a new line). *)
-  val hsep : t list -> t    (* With txt " " *)
-  val vsep : t list -> t    (* With nl      *)
-  val fillSep : t list -> t (* With softnl  *)
+  val hsep : t list -> t (* With txt " " *)
+  val vsep : t list -> t (* With nl      *)
+  (* Lays out as much as it can before a line break *)
+  val fsep : t list -> t (* With softnl  *)
 
   (* Concatenate. *)
-  val hcat : t list -> t    (* With empty   *)
-  val vcat : t list -> t    (* With brk     *)
-  val fillCat : t list -> t (* With softbrk *)
+  val hcat : t list -> t (* With empty   *)
+  val vcat : t list -> t (* With brk     *)
+  (* Lays out as much as it can before a line break *)
+  val fcat : t list -> t (* With softbrk *)
 
 
   val enclose : t * t -> t -> t (* enclose (l, r) d = l ^^ d ^^ r *)

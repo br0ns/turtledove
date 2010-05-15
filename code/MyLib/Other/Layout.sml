@@ -1,7 +1,13 @@
 structure Layout :> Layout =
 struct
-open General
+open General infix 2 $
 open Pretty infix ^^ ++ \ & \\ &&
+
+fun die s = raise Fail ("Layout: " ^ s)
+
+datatype enumeration = Number | Letter | Roman | CapitalLetter | CapitalRoman
+
+fun println n d = TextIO.println (pretty n d)
 
 val chr = txt o str
 val int = txt o Show.int
@@ -9,7 +15,7 @@ val real = txt o Show.real
 val bool = txt o Show.bool
 fun option f = txt o Show.option f
 
-fun spaces n = txt (String.tabulate (n, fn _ => #" "))
+val spaces = txt o String.spaces
 
 val lparen = txt "("
 val rparen = txt ")"
@@ -48,6 +54,7 @@ fun align d = column (fn k => nesting (fn i => nest (k - i) d))
 fun hang i d = align (nest i d)
 fun indent i d = hang i (spaces i ^^ d)
 fun width f d = column (fn l => d ^^ column (fn r => f (r - l)))
+fun left f = column (fn c => max $ f o Option.map (fn m => m - c))
 
 fun fill f =
     width (fn w =>
@@ -83,12 +90,12 @@ local
         nil     => empty
       | d :: ds => foldl sep d ds
 in
-val hsep    = mk op++
-val vsep    = mk op\
-val fillSep = mk op&
-val hcat    = mk op^^
-val vcat    = mk op\\
-val fillCat = mk op&&
+val hsep = mk op++
+val vsep = mk op\
+val fsep = mk op&
+val hcat = mk op^^
+val vcat = mk op\\
+val fcat = mk op&&
 end
 
 val sep = group o vsep
@@ -101,6 +108,13 @@ val parens   = enclose (lparen, rparen)
 val angles   = enclose (langle, rangle)
 val braces   = enclose (lbrace, rbrace)
 val brackets = enclose (lbracket, rbracket)
+
+fun softtxt s =
+    (fsep o
+     map txt o
+     String.fields Char.isSpace
+    ) s
+val paragraph = curry op^^ (spaces 2) o softtxt
 
 fun str s =
     let
@@ -206,7 +220,7 @@ fun str s =
       fun trees ls =
           let
             fun loop (_, nil) = (nil, nil)
-              | loop (i', (i, l) :: ls) =
+              | loop (i', ll as (i, l) :: ls) =
                 if i' <= i then
                   case bullet l of
                     (NONE, _) =>
@@ -218,7 +232,7 @@ fun str s =
                   | (SOME b, _) =>
                     let
                       fun loopi (_, _, nil) = (nil, nil)
-                        | loopi (i'', b', (i, l) :: ls) =
+                        | loopi (i'', b', ll as (i, l) :: ls) =
                           case (i'' = i, bullet l) of
                             (true, (SOME b, l)) =>
                             let
@@ -229,24 +243,20 @@ fun str s =
                             in
                               ((bs, Par (0, l) :: item) :: items, ls)
                             end
-                          | _ => (nil, (i, l) :: ls)
-                      val (lst, ls) = loopi (i, b, (i, l) :: ls)
+                          | _ => (nil, ll)
+                      val (lst, ls) = loopi (i, b, ll)
                       val (ts, ls) = loop (i', ls)
                     in
                       (List (i - i', lst) :: ts, ls)
                     end
                 else
-                  (nil, (i, l) :: ls)
+                  (nil, ll)
             val (ts, _) = loop (0, ls)
           in
             ts
           end
 
-      fun softtxt s =
-          (fillSep o
-           map (txt o Substring.string) o
-           Substring.fields Char.isSpace
-          ) s
+      val softtxt = softtxt o Substring.string
 
       fun doc ts =
           let
@@ -277,4 +287,121 @@ fun str s =
        Substring.full) s
     end
 
+fun besides spc (l, r) =
+    left
+      (fn w =>
+          case w of
+            NONE   => l ^^ r
+          | SOME w =>
+            let
+              val w = (w - spc) div 2
+              val ls = linearize (SOME w) l
+              val rs = linearize (SOME w) r
+              val lw = foldl Int.max 0 $ map (fn (i, s) => i + size s) ls
+              fun stitch (nil, (i, s) :: rs) =
+                  [spaces (lw + i + spc), txt s] :: stitch (nil, rs)
+                | stitch ((i, s) :: ls, nil) =
+                  [spaces i, txt s] :: stitch (ls, nil)
+                | stitch ((il, sl) :: ls, (ir, sr) :: rs) =
+                  [spaces il, txt sl, spaces (lw - il - size sl + spc),
+                   spaces ir, txt sr] :: stitch (ls, rs)
+                | stitch _ = nil
+            in
+              align o vcat o map hcat $ stitch (ls, rs)
+            end
+      )
+
+fun flushRight d =
+    column
+      (fn c =>
+          max
+            (fn NONE   => d
+              | SOME m =>
+                let
+                  val ls = linearize (SOME (m - c)) d
+                in
+                  align o vcat $ map (fn (_, s) => spaces (m - c - size s) ^^ txt s) ls
+                end
+            )
+      )
+fun itemize bullet ds =
+    vcat $ map (curry op^^ (txt bullet ^^ space) o align) ds
+
+local
+  val number = Int.toString
+  fun letter 1 = "a"
+    | letter n =
+      let
+        val sigma = "abcdefghijklmnopqrstuvwxyz"
+        val l = size sigma
+        fun loop 0 = nil
+          | loop n = String.sub (sigma, n mod l) :: loop (n div l)
+      in
+        implode o rev $ loop (n - 1)
+      end
+  local
+    fun toChar x =
+        case x of
+          1000 => #"m"
+        |  500 => #"d"
+        |  100 => #"c"
+        |   50 => #"l"
+        |   10 => #"x"
+        |    5 => #"v"
+        |    1 => #"i"
+        | _    => die "enumbullets.roman"
+    fun toRoman x =
+        let
+          val rs = [1000, 500, 100, 50, 10, 5, 1]
+          val rsr = rev rs
+          fun subtract (x, y :: ys) =
+              if x + y >= 0 then
+                y
+              else
+                subtract (x, ys)
+            | subtract _ = die "enumbullets.roman"
+
+          fun loop (0, _) = nil
+            | loop (x, yl as y :: ys) =
+              if x >= y then
+                y :: loop (x - y, yl)
+              else
+                (* Don't ask - it works *)
+                if x >= y * (9 - y div hd ys mod 2) div 10 then
+                  let
+                    val z = subtract (x - y, rsr)
+                  in
+                    z :: y :: loop (x - y + z, ys)
+                  end
+                else
+                  loop (x, ys)
+            | loop _ = die "enumbullets.roman"
+        in
+          loop (x, rs)
+        end
+  in
+  val roman = implode o map toChar o toRoman
+  end
+  fun enum style =
+      case style of
+        Number        => number
+      | Letter        => letter
+      | Roman         => roman
+      | CapitalLetter => String.map Char.toUpper o letter
+      | CapitalRoman  => String.map Char.toUpper o roman
+in
+fun enumerate (l, style, r) start ds =
+    let
+      val enum = enum style
+      val start = Option.getOpt (start, 1)
+      val bullets = List.tabulate
+                      (length ds, fn n => l ^ enum (start + n) ^ r)
+      val w = foldl Int.max 0 $ map size bullets
+    in
+      vcat o map (fn (b, s) => fill w $ txt b ++ align s)
+                 $ ListPair.zip (bullets, ds)
+    end
+end
+
+fun description items = vcat $ map (fn (s, d) => txt s ++ space ^^ nest 2 d) items
 end

@@ -4,7 +4,8 @@ sig
   type line = int * string
 
   val pretty : int option -> t -> string
-  val println : int option -> t -> unit
+  (* The flattening never contains line breaks *)
+  val flatten : t -> t
   val fold : (line * 'a -> 'a) -> 'a -> int option -> t -> 'a
   val linearize : int option -> t -> line list
 
@@ -42,6 +43,10 @@ sig
 
   (* Takes a function that given the current nesting level generates a document. *)
   val nesting : (int -> t) -> t
+
+  (* Takes a function that given the desired maximal printing width generates a
+   * document *)
+  val max : (int option -> t) -> t
 
   val ^^ : t * t -> t (* Join horizontally. *)
 end

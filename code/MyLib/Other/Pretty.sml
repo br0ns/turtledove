@@ -3,13 +3,14 @@ struct
 open Lazy General
 datatype t' =
          Empty
-       | Join of t * t
-       | Line of bool
-       | Nest of int * t
-       | Text of string
-       | Choice of t * t
+       | Join    of t * t
+       | Line    of bool
+       | Nest    of int * t
+       | Text    of string
+       | Choice  of t * t
        | Nesting of int -> t
-       | Column of int -> t
+       | Column  of int -> t
+       | Max     of int option -> t
 withtype t = t' Lazy.t
 type line = int * string
 
@@ -20,6 +21,7 @@ val ln = eager (Line true)
 val brk = eager (Line false)
 val column = eager o Column
 val nesting = eager o Nesting
+val max = eager o Max
 
 infix ^^
 
@@ -27,25 +29,24 @@ val op^^ = eager o Join
 
 fun nest n = eager o curry Nest n
 
-local
-  fun flatten doc =
-      delay
-        (fn _ =>
-            case force doc of
-              Empty         => doc
-            | Join (l, r)   => flatten l ^^ flatten r
-            | Nest (i, doc) => nest i (flatten doc)
-            | Text _        => doc
-            | Line b        => if b then txt " " else empty
-            | Choice (w, _) => w
-            | Column f      => column (flatten o f)
-            | Nesting f     => nesting (flatten o f)
-        )
-in
+fun flatten doc =
+    delay
+      (fn _ =>
+          case force doc of
+            Empty         => doc
+          | Join (l, r)   => flatten l ^^ flatten r
+          | Nest (i, doc) => nest i (flatten doc)
+          | Text _        => doc
+          | Line b        => if b then txt " " else empty
+          | Choice (w, _) => w
+          | Column f      => column (flatten o f)
+          | Nesting f     => nesting (flatten o f)
+          | Max f         => max (flatten o f)
+      )
+
 fun choice (w, n) =
     eager (Choice (flatten w, n))
 fun group d = choice (d, d)
-end
 
 fun linearize max doc =
     let
@@ -104,6 +105,8 @@ fun linearize max doc =
                     best used ((nest, f used) :: rest)
                   | Nesting f     =>
                     best used ((nest, f nest) :: rest)
+                  | Max f         =>
+                    best used ((nest, f max) :: rest)
             )
     in
       lin (best 0 [(0, doc)])
@@ -112,13 +115,10 @@ fun linearize max doc =
 fun fold f s max doc = foldl f s (linearize max doc)
 
 local
-  fun spaces n = String.tabulate (n, fn _ => #" ")
   fun strs nil = nil
-    | strs [(i, s)] = [spaces i, s]
-    | strs ((i, s) :: ls) = spaces i :: s :: "\n" :: strs ls
+    | strs [(i, s)] = [String.spaces i, s]
+    | strs ((i, s) :: ls) = String.spaces i :: s :: "\n" :: strs ls
 in
 fun pretty n d = String.concat (strs (linearize n d))
 end
-
-fun println n d = TextIO.println (pretty n d)
 end
