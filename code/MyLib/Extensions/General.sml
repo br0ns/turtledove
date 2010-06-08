@@ -5,6 +5,11 @@ fun id x = x
 
 fun $ (f, v) = f v
 
+fun flip f (a, b) = f (b, a)
+fun \< (a, f) b = f (a, b)
+fun \> (b, f) a = f (a, b)
+fun flipc f a b = f b a
+
 fun ^* (_, 0) = id
   | ^* (f, n) = f o (^* (f, n - 1))
 
@@ -28,4 +33,6 @@ fun to (a, b) =
 
 fun inc x = (x := !x + 1 ; !x)
 fun dec x = (x := !x - 1 ; !x)
+
+fun const a b = a
 end

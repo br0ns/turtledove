@@ -24,5 +24,5 @@ sig
   val mapSnd : ('b -> 'c) -> 'a * 'b -> 'a * 'c
   val foldl : ('a * 'c -> 'c) * ('b * 'c -> 'c) -> 'c -> 'a * 'b -> 'c
   val foldr : ('a * 'c -> 'c) * ('b * 'c -> 'c) -> 'c -> 'a * 'b -> 'c
-  val thunk : 'a Lazy.t * 'b Lazy.t -> ('a * 'b) Lazy.t
+  val delay : 'a Lazy.t * 'b Lazy.t -> ('a * 'b) Lazy.t
 end

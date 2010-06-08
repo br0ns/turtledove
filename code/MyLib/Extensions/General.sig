@@ -1,9 +1,16 @@
 signature General =
 sig
-  include GENERAL
+  include GENERAL where type unit = unit
+                  where type exn = exn
+                  where type order = order
   val id : 'a -> 'a
   val ^* : ('a -> 'a) * int -> 'a -> 'a
   val $ : ('a -> 'b) * 'a -> 'b
+  val flip : ('a * 'b -> 'c) -> 'b * 'a -> 'c
+  val \< : 'a * ('a * 'b -> 'c) -> 'b -> 'c
+  val \> : 'b * ('a * 'b -> 'c) -> 'a -> 'c
+
+  val flipc : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
   val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
   val uncurry : ('a -> 'b -> 'c) -> 'a * 'b -> 'c
   val curry3 : ('a * 'b * 'c -> 'd) -> 'a -> 'b -> 'c -> 'd
@@ -18,4 +25,5 @@ sig
   val to : int * int -> int list
   val inc : int ref -> int
   val dec : int ref -> int
+  val const : 'a -> 'b -> 'a
 end

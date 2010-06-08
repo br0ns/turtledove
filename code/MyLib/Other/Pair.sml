@@ -14,5 +14,5 @@ fun mapFst f = map (f, General.id)
 fun mapSnd f = map (General.id, f)
 fun foldl (fa, fb) c (a, b) = fb (b, fa (a, c))
 fun foldr (fa, fb) c (a, b) = fa (a, fb (b, c))
-fun thunk (ta, tb) = Lazy.lazy (fn _ => (Lazy.force ta, Lazy.force tb))
+fun delay (ta, tb) = Lazy.lazy (fn _ => (Lazy.force ta, Lazy.force tb))
 end

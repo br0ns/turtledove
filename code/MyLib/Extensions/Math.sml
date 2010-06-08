@@ -26,4 +26,18 @@ fun intpow (a : real, b) =
       in
         loop (a, b)
       end
+
+fun mean xs =
+    let
+      val l = real (length xs)
+    in
+      foldl (fn (x, a) => x / l + a) 0.0 xs
+    end
+
+fun harmonicMean xs =
+    let
+      val l = real (length xs)
+    in
+      l / foldl (fn (x, a) => 1.0 / x + a) 0.0 xs
+    end
 end

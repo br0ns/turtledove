@@ -7,11 +7,14 @@ sig
 
     val empty      : 'a t
     val isEmpty    : 'a t -> bool
-    val insert : 'a t -> key * 'a -> 'a t
+    val insert     : 'a t -> key * 'a -> 'a t
+    val fromList   : (key * 'a) list -> 'a t
 
     (* Deletes the element the sorts as the smallest element given the ordering of the key*)
     val delete     : 'a t -> 'a t
     val min        : 'a t -> 'a
+    val split      : 'a t -> 'a * 'a t
+    val spliti     : 'a t -> (key * 'a) * 'a t
     val merge      : 'a t -> 'a t -> 'a t
 
     val insertList : 'a t -> (key * 'a) list -> 'a t

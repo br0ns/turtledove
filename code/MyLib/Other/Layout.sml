@@ -279,12 +279,13 @@ fun str s =
             many ts
           end
     in
-      (doc o
-       trees o
-       map (Pair.map (Substring.size, id) o
-            Substring.splitl Char.isSpace) o
-       Substring.fields (curry op= #"\n") o
-       Substring.full) s
+      doc o
+      trees o
+      map (Pair.map (Substring.size, id) o
+           Substring.splitl Char.isSpace
+          ) o
+      Substring.fields (curry op= #"\n") $
+      Substring.full s
     end
 
 fun besides spc (l, r) =
@@ -312,17 +313,14 @@ fun besides spc (l, r) =
       )
 
 fun flushRight d =
-    column
-      (fn c =>
-          max
-            (fn NONE   => d
-              | SOME m =>
-                let
-                  val ls = linearize (SOME (m - c)) d
-                in
-                  align o vcat $ map (fn (_, s) => spaces (m - c - size s) ^^ txt s) ls
-                end
-            )
+    left
+      (fn NONE   => d
+        | SOME w =>
+          let
+            val ls = linearize (SOME w) d
+          in
+            align o vcat $ map (fn (_, s) => spaces (w - size s) ^^ txt s) ls
+          end
       )
 fun itemize bullet ds =
     vcat $ map (curry op^^ (txt bullet ^^ space) o align) ds

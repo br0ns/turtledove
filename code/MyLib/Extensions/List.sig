@@ -7,4 +7,7 @@ sig
   val leftmost  : 'a option list -> 'a option
   val rightmost : 'a option list -> 'a option
   val allPairs : 'a list -> 'b list -> ('a * 'b) list
+  val splitAt : 'a list * int -> 'a list * 'a list
+  val allSplits : 'a list -> ('a list * 'a list) list
+  val consAll : 'a * 'a list list -> 'a list list
 end

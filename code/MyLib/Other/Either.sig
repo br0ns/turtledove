@@ -1,6 +1,7 @@
 signature Either =
 sig
   datatype ('a, 'b) either = Left of 'a | Right of 'b
+  type ('a, 'b) t = ('a, 'b) either
   exception Either
 
   val ofLeft : ('a, 'b) either -> 'a

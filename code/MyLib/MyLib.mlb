@@ -9,9 +9,9 @@ in
  * Extensions to the standard library
  *)
 
+Extensions/General.sig Extensions/General.sml
 Extensions/List.sig Extensions/List.sml
 Extensions/TextIO.sig Extensions/TextIO.sml
-Extensions/General.sig Extensions/General.sml
 Extensions/Math.sig Extensions/Math.sml
 Extensions/String.sig Extensions/String.sml
 
@@ -21,6 +21,7 @@ Extensions/String.sig Extensions/String.sml
  *)
 
 Other/Lazy.sig Other/Lazy.sml
+Other/LazyList.sig Other/LazyList.sml
 Other/Benchmark.sig Other/Benchmark.sml
 Other/Show.sig Other/Show.sml
 Other/Either.sig Other/Either.sml
@@ -42,7 +43,9 @@ DataStructures/Ordered.sig
  * Map
  *)
 DataStructures/Map/Map.sig
-(* DataStructures/Map/ListMap.sml *)
+DataStructures/Map/ListMap.sml
+
+DataStructures/Map/Map.sml
 
 
 (*
@@ -132,6 +135,13 @@ DataStructures/Tree/Tree.sml
  *)
 (* DataStructures/Graph/Graph.sig
    DataStructures/Graph/LabeledGraph.sig *)
+
+
+(***
+ * Other (contd.)
+ *)
+
+Other/Parsing.sig Other/Parsing.sml
 
 
 (***

@@ -1,5 +1,6 @@
 structure List :> List =
 struct
+open General infix 2 $ infix 4 \< \> infix 5 ^* to
 open List
 
 local
@@ -65,4 +66,10 @@ fun allPairs xs ys =
     List.concat (
     map (fn x => map (fn y => (x, y)) ys) xs
     )
+
+fun splitAt x = (take x, drop x)
+
+fun allSplits xs = tabulate (length xs, xs \< splitAt)
+
+fun consAll (x, xss) = map (x \< op::) xss
 end

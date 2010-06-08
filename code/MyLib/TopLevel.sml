@@ -1,6 +1,10 @@
 val id = General.id
 val ^* = General.^*
 val $ = General.$
+val \< = General.\<
+val \> = General.\>
+val flip = General.flip
+val flipc = General.flipc
 val curry = General.curry
 val uncurry = General.uncurry
 val pair = General.pair
@@ -13,7 +17,10 @@ val quadruple = General.quadruple
 val to = General.to
 val inc = General.inc
 val dec = General.dec
-infix ^* $ to
+val const = General.const
+infix 5 ^* to
+infix 4 \< \>
+infixr 2 $
 
 val println = TextIO.println
 val ltoi = Int.fromLarge
