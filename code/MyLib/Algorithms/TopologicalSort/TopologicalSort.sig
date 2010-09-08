@@ -1,7 +1,7 @@
 signature TopologicalSort =
 sig
-
-  (* TODO: val sort : ''a list -> (''a * ''a) list -> ''a list *)
-  val sort : string list -> (string * string) list -> string list
+  datatype ''a result = Cycle of ''a list
+                      | Sorted of ''a list
+  val sort : ''a Set.t * (''a * ''a) Set.t -> ''a result
 
 end

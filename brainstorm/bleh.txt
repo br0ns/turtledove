@@ -1,0 +1,20 @@
+Vi skal have en stribe metafunktioner:
+  Pure : exp -> bool
+    Har et udtryk sideeffekter?
+  Clean : exp -> bool
+    Evaluerer (det sideeffektfri) udtryk altid til en værdi, eller kan
+    evalueringen hejse undtagelser?
+  NormalForm : match -> match
+    Udregner normalformer.
+  NormalFormOnSpeed : match -> match
+    Som NormalForm, men med dirty tricks i unificeringen.
+
+  Simp : exp -> exp
+    Simplificer et udtryk. Kan nok udtrykkes som en gruppe
+    omskrivningsregler. Kan måske udviddes over erklæringer og matches også.
+
+  Eval : exp -> exp
+    Forsøger at evaluere til et udtryk som ikke kan evalueres længere.
+
+  EvalsTo : exp -> exp -> bool
+    Forsøger at evaluere et udtryk til et andet.

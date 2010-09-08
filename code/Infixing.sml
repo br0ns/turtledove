@@ -25,7 +25,7 @@ open SMLGrammar Fixity
 infix or
 
 fun die s = Crash.die "Infixing" s
-val fail = Error.error
+val fail = Error.internal
 
 val join = Tree.join
 val wrap = Wrap.wrap

@@ -1,0 +1,60 @@
+Betragt
+
+fun map f [] = []
+  | map f [x] = [f x]
+  | map f (x :: xs) = f x :: map f xs
+
+Den skrives (let?) om til
+
+fun map f [] = []
+  | map f (x :: xs) = f x :: map f xs
+
+Men hvad med
+
+fun map f [x] = [f x]
+  | map f (xs :: x) = f x :: map f xs
+
+Mange studerende har problemer med at tage de sidste skridt mod
+basistilfældet. Vi kan ikke skrive om til den form som har [] som basistilfælde,
+fordi de to funktioner ikke er ens. Men kan vi opdage når folk ikke tager det
+sidste skridt? I så fald kan vi rapportere det; "mente du ...".
+
+Eksempel
+
+fun fac 1 = 1
+  | fac n = n * fac (n - 1)
+
+Kan skrive om til 
+
+fun fac 0 = 1
+  | fac n = n * fac (n - 1)
+
+Fremgangsmåden må være at generalisere mønsteret "1". Så skal "n => n" og "n =>
+n * fac (n - 1)" forenes for n = 1. Vi får metaligningen "1 == 1 * fac (1 -
+1)". Ved udregning får vi "1 == 1 * fac 0". Hvis vi kan løse den ligning burde
+vi få det nye mønster "0 => 1".
+Vi kan ikke generalisere videre fordi vi kommer til at skulle løse ligningen "1
+== 0 * fac (~1)".
+
+
+Konklusion: Det kunne være for vildt. Desværre tror jeg også det kunne være
+temmelig svært.
+
+
+Eksempel from the wild:
+
+fun makeHdPerms ([], 0) = []
+  | makeHdPerms (xs, 1) = [xs]
+  | makeHdPerms (xs, n) = List.take(xs, n-1) :: makeHdPerms(xs,n-1)
+
+Først generaliseres mønster to og linje to og tre slås sammen  under indførelse af
+"(xs, 0) => []". Derefter generaliseres mønster et til "(xs, 0)" og linje et og
+to slås sammen.
+
+Resultatet er: "Mente du
+
+fun makeHdPerms (_, 0) = []
+  | makeHdPerms (xs, n) = List.take(xs, n-1) :: makeHdPerms(xs,n-1)
+"
+
+Bemærk at den foreslåede funktion ikke er ækvivalent med den originale.

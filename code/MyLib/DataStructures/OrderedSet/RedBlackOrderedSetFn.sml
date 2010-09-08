@@ -1,7 +1,8 @@
 (* This deserves a reference to Chris Okasaki 1993 for the datatype, insert, member and balance funktions *)
 (* Delete is implemented from Haskell code http://www.cs.kent.ac.uk/people/staff/smk/redblack/Untyped.hs *)
 
-functor RedBlackOrderedSetFn (Element : Ordered) :> OrderedSet where type element = Element.t =
+functor RedBlackOrderedSetFn (Element : Ordered) :>
+        OrderedSet where type element = Element.t =
 struct
     type element = Element.t
 

@@ -1,4 +1,4 @@
-structure MLBGrammar =
+structure Grammar =
 struct
 type basid = string
 type basids = basid list
