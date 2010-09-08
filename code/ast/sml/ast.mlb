@@ -1,7 +1,7 @@
 local
 $(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/mylib/MyLib.mlb
 ../../Basic.mlb
-../../MyLib/MyLib.mlb
 in
 Sigcon.sig Sigcon.sml
 Fixity.sig Fixity.sml

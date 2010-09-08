@@ -1,8 +1,8 @@
 local
 $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
+$(SML_LIB)/mylib/MyLib.mlb
 ../Basic.mlb
-../MyLib/MyLib.mlb
 
 Source.sig Source.sml
 LexUtils.sig LexUtils.sml

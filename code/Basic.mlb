@@ -1,6 +1,6 @@
 local
 $(SML_LIB)/basis/basis.mlb
-MyLib/MyLib.mlb
+$(SML_LIB)/mylib/MyLib.mlb
 in
 
 Constants.sml
