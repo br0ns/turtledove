@@ -1,3 +1,4 @@
+(* TODO: empty productions mess with the position information. Fix that. *)
 structure Parser =
 struct
 structure SMLLrVals = SMLLrValsFun
