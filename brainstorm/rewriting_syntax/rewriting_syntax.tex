@@ -1,0 +1,219 @@
+\documentclass[oneside]{memoir}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[danish]{babel}
+
+\usepackage[draft]{fixme}
+
+\usepackage{mdwtab}
+\usepackage{mathenv}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{semantic} % for the \mathlig function
+
+\chapterstyle{hangnum}
+
+\theoremstyle{definition}
+\newtheorem{example}{Example}
+\newtheorem{definition}{Definition}
+
+\begin{document}
+
+\section{Problem definition}
+
+
+I nedenstående vil $\mathit{x}, \mathit{foo}$ betyde meta variable som kan
+instantieres til SML identifiers og $\diamond_n$ er n'te ``hul''.
+
+\begin{eqnarray*}[rlqTl]
+  \mathcal{X} : pat & \\
+  \mathcal{C} \textit{ : ctx} & = |[pat_1|] -> \ldots -> |[pat_n|] -> pat & Context \\
+  \mathbb{D} \textit{ : tfm} & = pat -> exp & Transform.
+\end{eqnarray*}
+
+
+\begin{description}
+\item[Contekst] På venstresiden matches alle $pat_x$ til $\diamond_x$ for $x \in
+  {1,\ldots, n}$. Og på højresiden indsættes $pat_y$ i stedet for $\diamond_y$
+  for $y \in {1, \ldots, n}$.
+\item[Transform] Konstruerer magisk et udtryk ud fra et pattern. Resulterende
+  $exp$ må ikke binde variable fra $\diamond_n$ (Capture Avoidance).
+\end{description}
+
+
+\begin{definition}[Omskrivning af \texttt{map}-instanser] \ \\
+  Skabelon for matchende funktioner:
+  \begin{eqnarray*}[rrll]
+    \textsf{val rec }\mathit{foo} = & \textsf{fn } & \mathcal{C} |[ \mathcal{X} ::
+    \mathcal{X\!S}|] &  => \mathbb{D} (\mathcal{C}|[ \mathcal{X} |]) :: \mathit{foo}(\mathcal{C}
+    |[ \mathcal{X\!S} |]\mathsf{)} \\
+    & \textsf{| } & x & => \mathsf{nil}
+  \end{eqnarray*}
+
+Omskrives til:
+
+\begin{eqnarray*}
+  \mathcal{C}|[\mathcal{X\!S}|] &=>& \textsf{map } \left( \textsf{fn } m =>
+    \mathbf{D}\left( \mathcal{C}|[m|] \right) \right) \mathcal{X\!S}
+\end{eqnarray*}
+\end{definition}
+
+
+Der kræves 4 skridt for at verificere om en funktion matcher en skabelon
+
+\begin{enumerate}
+\item Antal klausuler stemmer overens i skabelon og funktion der skal matche.
+
+\item Hver klausuls krop fra skabelonen kan ``matches'' med den tilsvarende
+  klausuls krop i funktion.
+
+\item $\mathcal{C}$ instantieres til funktionens parameter.
+  \begin{itemize}
+  \item For hver $pat_x$ i skabelonens venstreside
+    $\mathcal{C}|[pat_1|]\ldots|[pat_n|]$, der matcher i $\mathcal{C}$,
+    erstattes det matchende med $\diamond_x$ og $pat_x$ bindes til det
+    erstattede.
+
+  \item For hver $pat_y$ i samtlige $\mathcal{C}|[pat_1|]\ldots|[pat_n|]$ på
+    højresiden erstattes $\diamond_y$ i $\mathcal{C}$ med værdien som $pat_y$ er
+    bundet til.
+
+  \item Hvis ikke alle $pat_x$ kan bindes på venstresiden eller samtlige
+    $\diamond_x$ i alle $\mathcal{C}|[pat_1|]\ldots|[pat_n|]$ på højresiden
+    bliver erstattet, matcher funktionene ikke skabelonen.
+  \end{itemize}
+
+
+\item $\mathbb{D}$ genererer en funktion der sender det resulterende $pat$ hen i
+  en $exp$ hvor $exp$ netop er den $exp$ der matcher funktionens $exp$ på
+  pågældende plads.
+
+\end{enumerate}
+
+\section{Eksempler}
+
+Følgende eksempler definerer forskellige varianter af funktionen $\mathsf{foo}$
+som implementerer forskellige varianter af SML's $\mathsf{map}$ funktion.
+
+\begin{example}[\texttt{map}-instans]
+  \begin{eqnarray*}
+    (\mathsf{nil}, f) &=>& \mathsf{nil} \\
+    ([x], g) &=>& [g\ x] \\
+    (x::xs, f) &=>& f\ x  :: \mathsf{foo}(xs,f)
+  \end{eqnarray*}
+
+  vil den blive normaliseret til
+  \begin{eqnarray*}
+    ([x], g) &=>& [g\ x] \\
+    (x::xs, f) &=>& f\ x  :: \mathsf{foo}(xs,f) \\
+    \_ &=>& nil
+  \end{eqnarray*}
+
+  Da $\mathsf{nil}$ er mest generel, efterfulgt af $x::xs$ og $[x]$. $(\mathsf{nil}, f)$
+  bliver erstattet af en bundstreg af generaliseringen da ingen af argumenterne
+  bliver brugt på højresiden (bemærk at på højresiden $\mathsf{nil}$ er en
+  konstruktør og derfor ikke er bundet til $\mathsf{nil}$ på venstresiden).
+
+  Ovenstående eksempel vil have konteksterne $\mathcal{C} = (\diamond, ),
+  \mathcal{D} = f$
+
+  Ved unificering vil man hurtigt kunne fastslå at første klausul er unødvendig
+  (kræver 1 $\beta$-reduktion af $\mathsf{foo}$ i andet klausul). Hvis denne
+  unificering ikke udføres vil dette eksempel ikke kunne fanges af den
+  definerede regel:
+
+  \begin{enumerate}
+  \item Antal klausuler passer ikke, funktionen kan ikke matche skabelonen.
+  \end{enumerate}
+\end{example}
+
+
+
+\begin{example}[\texttt{map}-instans]
+  \begin{eqnarray*}
+    (\mathsf{nil}) &=>& \mathsf{nil} \\
+    (x::xs) &=>& x+1 :: \mathsf{foo} xs
+  \end{eqnarray*}
+
+  Bliver normaliseret til 
+  \begin{eqnarray*}
+    (x::xs) &=>& x+1 :: \mathsf{foo} xs \\
+    x &=>& \mathsf{nil}
+  \end{eqnarray*}
+
+  \begin{enumerate}
+  \item Antal klausuler matcher.
+
+  \item Funktions kroppe kan matche med tilsvarende klausuls kroppe.
+
+  
+  \item 
+    \begin{description}
+    \item[Klausul 1] $\mathcal{C}$ instantieres til $(x::xs)$.
+      \begin{itemize}
+      \item $\mathcal{C}|[\mathcal{X}::\mathcal{X\!S}|]$ på venstresiden
+        erstatter $x::xs$ i $\mathcal{C}$ til $\diamond_1$ da $pat_1 =
+        \mathcal{X}::\mathcal{X\!S}$ i venstresidens
+        $\mathcal{C}|[pat_1|]\ldots|[pat_n|]$. Heraf bindes $\mathcal{X} \mapsto
+        x, \mathcal{X\!S} \mapsto xs$. Der haves derfor nu at $\mathcal{C} =
+        \diamond_1$
+
+      \item På højresiden fås derfor $\mathcal{C}|[\mathcal{X}|] = x$ og
+        $\mathcal{C}|[\mathcal{X\!S}|] = xs$ ved substitution af $pat_n$ i
+        $\mathcal{C}|[pat_1|]\ldots|[pat_n|]$ for $\diamond_n$ i $\mathcal{C}$.
+      \end{itemize}
+      
+
+    \item[Klausul 2] $\mathcal{C}$ instantieres til $x$ (kunne også have været
+      $\_$ (wildcard).
+      \begin{itemize}
+      \item Trivielt/uinteressant. \fixme{do it...}
+      \end{itemize}
+
+    \end{description}
+
+  \item $\mathbb{D}$ genererer funktionen der for input
+    $\mathcal{C}|[\mathcal{X}|] = x$ returnerer $x + 1$ da dette er udtrykket i
+    funktionene som matcher $\mathbb{D}\left( \mathcal{C}|[\mathcal{X}|]
+    \right)$ i skabelonen. Altså $\mathbb{D}(x) = x + 1$ eller skrevet som som
+    SML funktion $\mathbb{D} = \textsf{fn } x => x + 1$ og $\mathbb{D}\left(
+      \mathcal{C}|[\mathcal{X}|] \right) = \left( \textsf{fn } x => x + 1
+    \right) \left( \mathcal{C}|[\mathcal{X}|] \right) $.
+  \end{enumerate}
+
+  Vi har altså nu at funktionen matcher skabelonen og derfor kan omskrives til
+  følgende ud fra omskrivnings definitionen og de bundne meta variable defineret
+  ovenfor
+
+  \begin{eqnarray*}[c]
+      \mathcal{C}|[\mathcal{X\!S}|] => \textsf{map } \left( \textsf{fn } m =>
+    \mathbf{D}\left( \mathcal{C}|[m|] \right) \right) \mathcal{X\!S} \\
+  %
+  \Downarrow \\
+  %
+  xs => \textsf{map } \left( \textsf{fn } m =>
+    \left( \textsf{fn } x => x + 1 \right) m \right) xs \\
+  \end{eqnarray*}
+
+\end{example}
+
+
+\begin{example}
+  \begin{eqnarray*}
+    (nil, \_) &=>& nil\\
+    (x::xs, n) &=>& F\ (x * n) :: \mathsf{foo} (xs, n)\\
+  \end{eqnarray*}
+\end{example}
+
+
+\end{document}
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
