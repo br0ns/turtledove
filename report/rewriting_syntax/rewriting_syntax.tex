@@ -14,6 +14,9 @@
 \usepackage{amsthm}
 \usepackage{semantic} % for the \mathlig function
 
+\newcommand{\floor}[1]{\ensuremath{\lfloor #1 \rfloor}}
+
+
 \chapterstyle{hangnum}
 
 \theoremstyle{definition}
@@ -25,42 +28,70 @@
 \section{Problem definition}
 
 
-I nedenstående vil $\mathit{x}, \mathit{foo}$ betyde meta variable som kan
+%I nedenstående vil $\mathit{x}, \mathit{foo}$ betyde meta variable som kan
 instantieres til SML identifiers og $\diamond_n$ er n'te ``hul''.
 
-\begin{eqnarray*}[rlqTl]
-  \mathcal{X} : pat & \\
-  \mathcal{C} \textit{ : ctx} & = |[pat_1|] -> \ldots -> |[pat_n|] -> pat & Context \\
-  \mathbb{D} \textit{ : tfm} & = pat -> exp & Transform.
-\end{eqnarray*}
 
+% \begin{description}
+% \item[Contekst] På venstresiden matches alle $pat_x$ til $\diamond_x$ for $x \in
+%   {1,\ldots, n}$. Og på højresiden indsættes $pat_y$ i stedet for $\diamond_y$
+%   for $y \in {1, \ldots, n}$.
+% \item[Transform] Konstruerer magisk et udtryk ud fra et pattern. Resulterende
+%   $exp$ må ikke binde variable fra $\diamond_n$ (Capture Avoidance).
+% \end{description}
 
-\begin{description}
-\item[Contekst] På venstresiden matches alle $pat_x$ til $\diamond_x$ for $x \in
-  {1,\ldots, n}$. Og på højresiden indsættes $pat_y$ i stedet for $\diamond_y$
-  for $y \in {1, \ldots, n}$.
-\item[Transform] Konstruerer magisk et udtryk ud fra et pattern. Resulterende
-  $exp$ må ikke binde variable fra $\diamond_n$ (Capture Avoidance).
-\end{description}
+Explain the \texttt{self} keyword (curry virker bare).
 
+For $\kappa$ værende den kanoniske afbildning af $pat -> exp$ defineret i
+miniml.
+
+Definer $\floor{...}$ (Kanonisk metamønster instantiering.
+
+Definer $\floor{\mathcal{C}}$. Eks. $\mathcal{C} = (\diamond, \overline{y})$:
+$\floor{\mathcal{C}} = \floor{(\diamond, \overline{y})} = (\diamond,
+\floor{\overline{y}}) = (\diamond, a)$.
+
+Forklar hvordan $\overline{x}$ implicit skal erstattes med dets bundne pattern når
+de bruges på højresiden, så $foo((a,b)::xs) = b+a$ for reglen $\mathcal{C}
+[\overline{x}::\overline{xs}] = \mathbb{D}(\mathcal{C}[\overline{x}])$ hvor på venstresiden
+bliver følgende bundet $\overline{x} \mapsto (a,b), \overline{xs} \mapsto xs$ så
+på højresiden bliver $\overline{x}$ erstattet med $(a,b)$ og der haves $\mathcal{C}
+[\overline{x}::\overline{xs}] = \mathbb{D}(\mathcal{C}[(a,b)])$ hvor
+$\mathcal{C} = \diamond$, så der kan yderligere reduceres til $\mathcal{C}
+[\overline{x}::\overline{xs}] = \mathbb{D}(a,b)$ hvor $\mathbb{D}$ gør det
+forventede og producere $b+a$. ~~~~~~~~~~~~ WUB WUB
+
+Nedenfor er skabeloner for matchende funktioner:
 
 \begin{definition}[Omskrivning af \texttt{map}-instanser] \ \\
-  Skabelon for matchende funktioner:
-  \begin{eqnarray*}[rrll]
-    \textsf{val rec }\mathit{foo} = & \textsf{fn } & \mathcal{C} |[ \mathcal{X} ::
-    \mathcal{X\!S}|] &  => \mathbb{D} (\mathcal{C}|[ \mathcal{X} |]) :: \mathit{foo}(\mathcal{C}
-    |[ \mathcal{X\!S} |]\mathsf{)} \\
-    & \textsf{| } & x & => \mathsf{nil}
+
+  \begin{eqnarray*}[rqrl]
+    | & \mathcal{C}  [\overline{x} :: \overline{xs}] &  => \mathbb{D}
+    (\mathcal{C}[ \overline{x}]) :: \mathtt{self}(\kappa \mathsf{(} \mathcal{C} 
+    [ \overline{xs} ] \mathsf{) )} \\
+    | & \overline{x} & => \mathsf{nil} \\
+   \tabpause{\begin{center}$\Downarrow$\end{center}}  
+    | & \floor{\mathcal{C}} [ xs ] & => \textsf{map } \left( \textsf{fn } m =>
+      \mathbb{D}\left( \floor{\mathcal{C}} [ m ] \right) \right) \ xs
   \end{eqnarray*}
-
-Omskrives til:
-
-\begin{eqnarray*}
-  \mathcal{C}|[\mathcal{X\!S}|] &=>& \textsf{map } \left( \textsf{fn } m =>
-    \mathbf{D}\left( \mathcal{C}|[m|] \right) \right) \mathcal{X\!S}
-\end{eqnarray*}
 \end{definition}
 
+\begin{definition}[Omskrivning af \texttt{fold}-instanser] \ \\
+
+  \begin{eqnarray*}[rqrl]
+    | & \mathcal{C}[\overline{x} :: \overline{xs}] &  => \mathbb{D} \left( \mathcal{C}
+      [\overline{x}],\ \mathtt{self} \left( \mathcal{C}[\overline{xs}] \right) \right) \\
+    | & \overline{x} & => \mathcal{G} \\
+    \tabpause{\begin{center}$\Downarrow$\end{center}}  
+    | & \floor{\mathcal{C}} [xs] & => \textsf{fold } \left( \textsf{fn } (a,b) =>
+      \mathbb{D}\left( \floor{\mathcal{C}}[a],\ b \right) \right) \ \floor{\mathcal{G}} \ xs
+  \end{eqnarray*}
+  
+  
+\end{definition}
+
+
+% D (\bar{x}, \bar{y}) = \kappa(\bar{x}) + \kappa(\bar{y})
 
 Der kræves 4 skridt for at verificere om en funktion matcher en skabelon
 
@@ -70,21 +101,16 @@ Der kræves 4 skridt for at verificere om en funktion matcher en skabelon
 \item Hver klausuls krop fra skabelonen kan ``matches'' med den tilsvarende
   klausuls krop i funktion.
 
-\item $\mathcal{C}$ instantieres til funktionens parameter.
-  \begin{itemize}
-  \item For hver $pat_x$ i skabelonens venstreside
-    $\mathcal{C}|[pat_1|]\ldots|[pat_n|]$, der matcher i $\mathcal{C}$,
-    erstattes det matchende med $\diamond_x$ og $pat_x$ bindes til det
-    erstattede.
+\item $\mathcal{C}[patvar_1]\ldots[patvar_n]$ fra regel $m$ skal matche den
+  oprindelige funktions pattern $m$, hvor samtlige $patvar_k$ skal kunne matche
+  et deltræ af det oprindelige pattern. Alle disse matchede deltræer må ikke
+  overlappe og de vil blive erstattet med $diamond_k$ og $patvar_k$ bliver
+  bundet til det deltræ den matchede.
 
-  \item For hver $pat_y$ i samtlige $\mathcal{C}|[pat_1|]\ldots|[pat_n|]$ på
-    højresiden erstattes $\diamond_y$ i $\mathcal{C}$ med værdien som $pat_y$ er
-    bundet til.
+  Eks:
+  ML Funktions pattern | Skabelon definition | Resulterende $\mathcal{C}$
 
-  \item Hvis ikke alle $pat_x$ kan bindes på venstresiden eller samtlige
-    $\diamond_x$ i alle $\mathcal{C}|[pat_1|]\ldots|[pat_n|]$ på højresiden
-    bliver erstattet, matcher funktionene ikke skabelonen.
-  \end{itemize}
+     (a,b)::xs         | 
 
 
 \item $\mathbb{D}$ genererer en funktion der sender det resulterende $pat$ hen i
@@ -207,6 +233,37 @@ som implementerer forskellige varianter af SML's $\mathsf{map}$ funktion.
     (x::xs, n) &=>& F\ (x * n) :: \mathsf{foo} (xs, n)\\
   \end{eqnarray*}
 \end{example}
+
+\begin{example}[\texttt{fold}-instans]
+
+  \begin{eqnarray*}
+    (y::ys) &=>& y + \mathtt{self} \left( ys \right) \\
+    nil &=>& 0
+  \end{eqnarray*}
+
+  Hvilket er normaliseret så det bliver ikke omskrevet.
+
+  Følgende bliver instantieret
+
+  $\mathcal{C} = \diamond, \mathcal{G} = 0, \mathbb{D}(\overline{n},
+  \overline{m}) = \kappa(\overline{n}) + \kappa(\overline{m}),
+  \floor{\mathcal{C}} = \diamond, \floor{\mathcal{G}} = 0$.
+
+  
+
+  \begin{description}
+    \item[Klausul 1] $\overline{x} = y, \overline{xs} = ys$
+
+    \item[Klausul 2] $\overline{x} = nil$
+  \end{description}
+
+  \begin{eqnarray*}
+    xs &=>& \textsf{fold } \left( \textsf{fn } (a,b) => \mathbb{D}(a,b)
+    \right) \ \mathcal{G} \ xs
+  \end{eqnarray*}
+  
+\end{example}
+
 
 
 \end{document}
