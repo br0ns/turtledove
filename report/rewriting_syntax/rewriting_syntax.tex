@@ -14,6 +14,8 @@
 \usepackage{amsthm}
 \usepackage{semantic} % for the \mathlig function
 
+\usepackage{tikz}
+
 \newcommand{\floor}[1]{\ensuremath{\lfloor #1 \rfloor}}
 
 
@@ -28,19 +30,42 @@
 \section{Problem definition}
 
 
-%I nedenstående vil $\mathit{x}, \mathit{foo}$ betyde meta variable som kan
-instantieres til SML identifiers og $\diamond_n$ er n'te ``hul''.
 
 
-% \begin{description}
-% \item[Contekst] På venstresiden matches alle $pat_x$ til $\diamond_x$ for $x \in
-%   {1,\ldots, n}$. Og på højresiden indsættes $pat_y$ i stedet for $\diamond_y$
-%   for $y \in {1, \ldots, n}$.
-% \item[Transform] Konstruerer magisk et udtryk ud fra et pattern. Resulterende
-%   $exp$ må ikke binde variable fra $\diamond_n$ (Capture Avoidance).
-% \end{description}
 
-Explain the \texttt{self} keyword (curry virker bare).
+I nedenstående vil $\alpha$ patterns vil være træer af konstruktører som knuder og $\alpha$ som
+blade, hvor tal (SML special consts) opfattes som nulære konstruktører af
+simplificerende grunde og har derfor ingen blade.
+
+\subsection{Term definition}
+\label{sec:term-definition} \fixme{find på bedre sektions navn}
+
+\begin{description}
+\item[patvar] $\overline{x}, \overline{y}, \overline{xs}$ er pattern variable
+
+\item[hole] $\diamond_n$ er n'te "`hul"' i et meta pattern.
+
+
+\item[ML pattern] $x,y,z$ er ML pattern med $\alpha$ værende .....
+  \fixme{Hvordan passer det ind i vores definition af patterns?}
+
+
+\item[meta pattern] $\mathcal{A}, \mathcal{B}, \mathcal{C}$ er meta patterns
+  hvor $\alpha$ kan være pattern variable (patvars) eller huller (holes). Hvis
+  der kun er et hul i et meta pattern vil hullet være implicit annoteret med
+  $n=1$.
+
+\item[Scheme pattern] Skabelonsmønstre er patterns med $\alpha$ som meta
+  patterns. Kan omtales patterns over meta patterns.
+
+
+\item[Scheme body] SML udtryk uden type annotering, infix operatore og med
+  \texttt{self}, meta patterns og .
+
+
+\item[Transformer] $\mathbb{M}, \mathbb{O}', \mathbb{D}$
+
+%Megatron, Optimus Prime (')
 
 For $\kappa$ værende den kanoniske afbildning af $pat -> exp$ defineret i
 miniml.
@@ -60,6 +85,100 @@ på højresiden bliver $\overline{x}$ erstattet med $(a,b)$ og der haves $\mathc
 $\mathcal{C} = \diamond$, så der kan yderligere reduceres til $\mathcal{C}
 [\overline{x}::\overline{xs}] = \mathbb{D}(a,b)$ hvor $\mathbb{D}$ gør det
 forventede og producere $b+a$. ~~~~~~~~~~~~ WUB WUB
+\end{description}
+
+
+Et meta pattern $\mathcal{X}$ er derfor et træ kun bestående af konstruktører som
+knuder og pattern variable $\overline{x}$ eller huller $diamond_n$ som
+blade. 
+
+I nedenstående er $((a,\ b),\ x\ ::\ y\ ::\ xs)$ en instans af $\mathcal{X}$
+
+\begin{tikzpicture}[]
+  
+  \node (pair)     {$(,)$};
+
+  \node (X)  [below left of = pair] {$\overline{x}$};
+
+  \node (cons)  [below right of = pair] {$::$};
+
+  \node (Y)  [below left of = cons] {$\overline{y}$};
+  \node (Z)  [below right of = cons] {$\overline{z}$};
+
+  \path (pair) edge (X)
+        (pair) edge (cons)
+
+        (cons) edge (Y)
+        (cons) edge (Z);
+
+\end{tikzpicture}
+
+
+En skabelon defineres kun ud fra de mønstre og kroppe som de skal matche. Altså
+bruges der ikke syntaks til at matche funktionsnavnet. For at kunne matche
+rekursive funktioner introducerer vi nøgleordet \texttt{self} som er en
+pladsholder for funktionsnavnet af den funktion der bliver matchet mod
+skabelonen.
+
+Ved ikke at udtrykke mere information om funktionene eller dens parametre kan vi
+have samme skabelons syntaks for curry'et og uncurry'et funktions definitioner.
+
+Det huskes at følgende curry'et funktion 
+
+\begin{verbatim}
+fun add n [] = []
+  | add n (x::xs) = n+x :: add n xs
+\end{verbatim}
+
+ville blive af sukkeret (af flere omgange) til
+
+\begin{verbatim}
+val rec add = fn n => fn xs => (fn (n, []) => []
+                                 | (n, x::xs) => n + x :: add n xs) (n, xs)
+\end{verbatim}
+
+og samme funktion på uncurry'et form
+
+\begin{verbatim}
+fun add' (n,[]) = []
+  | add' (n, x::Xs) = n+x :: add'(n, xs)
+\end{verbatim}
+
+bliver af sukkeret til 
+
+\begin{verbatim}
+val rec add' = fn (n,[]) = []
+                | (n, x::Xs) = n+x :: add'(n, xs)
+\end{verbatim}
+
+Som det ses endes der i begge tilfælde her med en case hvor de oprindelige patterns bliver samlet
+i en tupel \fixme{tupel / tubel ?  hvad er det nu der er dansk}. Det samme sker
+for uncurry'et funktioner.
+
+Alle klausuler i en skabelon starter på $|$ (hvilket på nær den første også
+altid er tilfælde for SML). Vi bruger $|$ af samme årsag som SML, mulighed for
+multiline klausuler. Dog kræver vi $|$ for første klausul af æstetiske grunde
+(symmetri) samt det giver en simplerer grammatik og parser for
+skabeloner. \fixme{Er dette argument for hvordan vi har udformet skabelon
+  syntaksen relevant?}
+
+\begin{verbatim}
+| m_1 => e_1
+.
+.
+.
+| m_n => e_n
+\end{verbatim}
+
+Hvis skabelons mønstre var meta patterns ville vi kunne udtrykket mønstre som
+$(\overline{x}, \overline{y})$ eller $\mathcal{C}[\overline{x} ::
+\overline{xs}]$ men vi ville ikke kunne udtrykke mønstre som $(\overline{x},
+\mathcal{C}[\overline{y} :: \overline{ys}])$ da bladene i meta patterns kun kan
+være patvars eller huller (se \ref{sec:term-definition}).
+
+Ved at skabelons mønstre er patterns over meta patterns får vi mere udtrykskraft
+og kan derfor udtrykke førnævnte mønster $(\overline{x}, \mathcal{C}[\overline{y} ::
+\overline{ys}])$
 
 Nedenfor er skabeloner for matchende funktioner:
 
@@ -87,6 +206,7 @@ Nedenfor er skabeloner for matchende funktioner:
       \mathbb{D}\left( \floor{\mathcal{C}}[a],\ b \right) \right) \ \floor{\mathcal{G}} \ xs
   \end{eqnarray*}
   
+  where $\textrm{closed}(\sin\mathcal{G})$
   
 \end{definition}
 
@@ -108,10 +228,11 @@ Der kræves 4 skridt for at verificere om en funktion matcher en skabelon
   bundet til det deltræ den matchede.
 
   Eks:
-  ML Funktions pattern | Skabelon definition | Resulterende $\mathcal{C}$
+  ML Funktions pattern | Skabelon definition                         | Resulterende $\mathcal{C}$
 
-     (a,b)::xs         | 
+     (a,b) :: xs       | $\mathcal{C}[\overline{x} :: \overline{xs}]$ | 
 
+     (b,a) :: xs       | 
 
 \item $\mathbb{D}$ genererer en funktion der sender det resulterende $pat$ hen i
   en $exp$ hvor $exp$ netop er den $exp$ der matcher funktionens $exp$ på
