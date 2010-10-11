@@ -515,7 +515,59 @@ almindelige ML udtryk.
   
 \end{definition}
 
-\section{Eksempler}
+
+\chapter{Rewriting syntax}
+
+$\{ \ldots \}$ means zero or more occurances.
+$+$ means 1 or more occurances.
+
+When specifying rewriting rules we 
+
+\setlength{\grammarindent}{7.3em}
+\begin{grammar} 
+ 
+  <upper-letter> = "[A-Z]" \hfill "# Regex, big letter"
+
+  <lower-letter> = "[a-z]" \hfill "# Regex, small letter"
+
+  <ws> = "\\s" \hfill "\# Regex, all whitespace"
+
+  <letter> ::= <upper-letter> | <lower-letter>
+
+  <rules> ::= <rule> | <rule> <rules>
+
+  <rule> ::= "rule" <rule-type> <rule-name> \\
+             \hspace*{1em} <clauses> \\
+             <opt-where> \hfill "\# is optional" \\
+             "becomes" \\
+             \hspace*{1em} <clauses> \\
+             "end"
+
+  <rule-type> ::= "clauses" | "expression" 
+
+  <rule-name> ::= <letter>+ \hfill "\# No spaces allowed in rule-names"
+
+  <clauses> ::= <clause>+
+
+  <clause> ::= "|" <spat> "=>" <sexps>
+
+  <opt-where> ::= something with the dom....
+
+  <spat> ::= <sml-identifier> | <meta-pattern>
+
+  <sexps>  ::= <sexp>+
+  
+  <sexp>   ::= <sml-identifier> | <meta-pattern> | <transformer>
+
+  <transformer> ::= "{" <upper-letter> "}" "(" <meta-pattern> ")" \hfill "\# Fix the input"
+
+  <meta-pattern> ::= "§" <upper-letter> \{ <opt-meta-pattern-input> \}
+
+  <opt-meta-pattern-input> ::= "[" <meta-pattern> "]" \hfill "\# Fix the input"
+
+\end{grammar}
+
+\fixme{Needs an owehaul}
 
 Følgende eksempler definerer forskellige varianter af funktionen $\texttt{foo}$
 som implementerer forskellige varianter af SML's $\texttt{map}$ funktion.
@@ -650,6 +702,8 @@ fun foo a = map (fn a => a + 1) a
 %   \end{eqnarray*}
 % \end{example}
 
+\section{Map}
+
 \begin{example}[\textsf{fold}-instans]\
 \begin{verbatim}
 fun sum nil       = 0
@@ -729,6 +783,14 @@ fun sum a = foldl (fn (a, b) => b + a) 0 a
   % \end{eqnarray*}
   
 \end{example}
+
+\appendix
+
+\chapter{Sample rewriting rules}
+
+\section{Map}
+
+
 
 
 
