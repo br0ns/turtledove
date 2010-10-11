@@ -12,7 +12,7 @@ fun map f [] = []
 Men hvad med
 
 fun map f [x] = [f x]
-  | map f (xs :: x) = f x :: map f xs
+  | map f (x :: xs) = f x :: map f xs
 
 Mange studerende har problemer med at tage de sidste skridt mod
 basistilfældet. Vi kan ikke skrive om til den form som har [] som basistilfælde,
