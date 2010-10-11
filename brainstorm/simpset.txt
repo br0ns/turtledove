@@ -67,3 +67,10 @@ if B then T else false --> B andalso T
 
 if B then true else T --> B orelse T
 
+if clean(a) andalso clean(b):
+  a > b orelse a = b --> a >= b
+  a < b orelse a = b --> a <= b
+  ... yderligere 14 permutationer ...
+
+  a < b andalso a > b --> a <> b
+  ... yderligere 7 permutationer ...
