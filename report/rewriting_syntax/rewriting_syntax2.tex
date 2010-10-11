@@ -7,6 +7,7 @@
 \usepackage[draft]{fixme}
 
 \usepackage{mdwtab}
+\usepackage{syntax}
 \usepackage{mathenv}
 \usepackage{amsfonts}
 \usepackage{amsmath}
@@ -66,7 +67,10 @@ unary functions. The record constructors form a countably infinite set of
 functions with finite arity. To distinguish constructors from the surrounding
 program text we write them with at initial capital letter (with very few
 exceptions like \codeinline{::} \codeinline{nil}). We respect the infix status
-of the symbols given by $V\!E$.
+of the symbols given by $E$.
+
+We write $\mathfrak{a}, \mathfrak{b}, \mathfrak{c}, \ldots$ for variables ranging
+over $con$.
 
 \begin{definition}[Record constructors] \ \\
   The record constructor given by
@@ -93,33 +97,33 @@ of the symbols given by $V\!E$.
 \end{definition}
 
 \begin{definition}[Meta variables] \ \\
-  Is the set of $mvar \equiv \{x,\ y,\ xs,\ \ldots \}$. Meta variable range
-  over $var$ and wildcards.
+  Is the set of $mvar = \{x,\ y,\ xs,\ \ldots \}$. Meta variable range
+  over $var$ and wild-cards.
 \end{definition}
 
 \begin{definition}[Pattern variables] \ \\
-  Is the set of $pvar \equiv \{ \overline{x},\ \overline{y},\
-  \overline{xs} \}$. Pattern variables range of $pat^{var}$ .
+  Is the set of $pvar = \{ \overline{x},\ \overline{y},\
+  \overline{xs} \}$. Pattern variables range over $pat^{var}$ .
 \end{definition}
 
 \begin{definition}[Holes] \ \\
   Is the countably infinite set, $holes$, of constants named $\diamond_1, \diamond_2,
-  \ldots$, and we write $\diamond \equiv \diamond_1$.
+  \ldots$, and we write $\diamond$ to mean $\diamond_1$.
 \end{definition}
 
 \begin{definition}[Meta patterns] \ \\
-  Is the set of meta patterns $mpat \equiv \{ \mathcal{A},\ \mathcal{B},\
-  \mathcal{C},\ \ldots \}$. Meta patterns range over $pat^\alpha$ for $\alpha
-  \equiv pvar \cup holes$
+  Is the set of meta patterns $mpat = pat^{pvar \cup holes}$. The subset $mpat_n
+  \subset mpat$ is the meta patterns with exactly $n$ holes. We write
+  $\mathcal{A},\mathcal{B}, \mathcal{C}, \ldots$ for variables ranging over
+  $mpat$.
 \end{definition}
 
 \begin{definition}[Scheme patterns]
-  Is the set $spat = pat^{mpat} $
+  Is the set $spat = pat^{mpat_0} = \{\alpha, \beta, \ldots \}$
 \end{definition}
 
 \begin{definition}[Scheme bodies] \ \\
-  Is the set $sbod$ which contains $simp\_exp$, the keyword \textsf{self},
-  instantiated meta patterns without holes and applied transformers. 
+  Is the set $sexp$. The grammar and semantics is described in the next section.
 \end{definition}
 
 \begin{definition}[Scheme clauses] \ \\
@@ -132,12 +136,110 @@ of the symbols given by $V\!E$.
 \end{definition}
 
 \begin{definition}[(Rewriting) rules] \ \\
-  
+  Is set $rules = schemes \times sbod$. We write
+  \[
+  \shortstack[ccc]{$\alpha$ \\ $\Downarrow$ \\ $\beta$}
+  \]
+  for the pair $(\alpha, \beta)$.
 \end{definition}
 
 \begin{definition}[Transformers]
-  foo
+  Is the set $trans$ which is a subset of the partial functions
+  \[
+  pat^{var \cup holes} \rightharpoonup exp
+  \]
 \end{definition}
+
+\section{Semantics}
+A rewriting rule ``works'' on a list of SML-clauses. In SML clauses are found in
+function declarations, recursive value declarations, anonymous functions, case
+expressions and exception handlers. A rewriting rule works on a sublist (not
+necessarily proper) of such a list of clauses. In the following the regard a SML
+clause as a set of a pattern and an expression (and thus we can use the $\alpha
+=> \beta$ notation).
+
+\paragraph{Remark.} In the scheme bodies we allow the keyword \textsf{self},
+which we take to mean a recursive call.
+
+\subsection{Meta patterns}
+
+\subsection{Scheme bodies}
+
+\subsection{Schemes}
+We use the judgement $\Lambda, \Gamma |- m : s$ to mean that the list of clauses $m$ is
+an instance of the scheme $s$ in the meta pattern environment $\Lambda$ and the
+transformer environment $\Gamma$.
+
+\[
+\inference{\Lambda, [] |- p : \langle \alpha, T \rangle &
+  \Lambda, \Gamma, T |- b : \beta &
+\Lambda, \Gamma |- m : s}
+{\Lambda, \Gamma |- p => b, m : \alpha => \beta, s}
+\]
+
+The judgement $\Lambda, T |- p : \langle \alpha, T' \rangle$ means that the
+pattern $p$ is an instance of the scheme pattern $\alpha$ in the meta pattern
+environment $\Lambda$ and the pattern variable environment $T$ with the
+resulting pattern variable environment $T'$.
+
+\[
+\inference{\Lambda, T |- p_0 : \langle \alpha_0, T_o \rangle &
+\Lambda, T_0 |- p_1 : \langle \alpha_1, T_1 \rangle &
+\cdots &
+\Lambda, T_{i-1} |- p_i : \langle \alpha_i, T' \rangle
+}
+{\Lambda, T |- \mathfrak{a}(p_0, \ldots p_i) : \langle \mathfrak{a}(\alpha_0,
+  \ldots, \alpha_i), T' \rangle}
+\]
+
+\[
+\inference
+{\Lambda, \Gamma |- p : \Lambda(\mathcal{C})}
+{\Lambda, \Gamma |- p : \mathcal{C}}
+\]
+
+\[
+\inference
+{\Lambda, \Gamma |- p : \sigma(\mathcal{C}, \alpha)}
+{\Lambda, \Gamma |- p : \mathcal{C}[\alpha]}
+\]
+
+\[
+\inference{}
+{\Lambda, T |- p : \langle \overline{a}, T[\overline{a} \mapsto p] \rangle}
+\]
+
+The judgement $\Lambda, \Gamma, T |- b : \beta$ means that the expression $b$ is
+an instance of the scheme expression $\beta$. We have left out the rules that
+handle the structure of expressions and scheme expressions.
+
+\[
+\inference{e = T(\overline{a})}
+{\Lambda, \Gamma, T |- e : \overline{a}}
+\]
+
+\[
+\inference{\Lambda, \Gamma, T |- e : \Lambda(\mathcal{C})}
+{\Lambda, \Gamma, T |- e : \mathcal{C}}
+\]
+
+\[
+\inference
+{\Lambda, \Gamma, T |- e : \sigma(\mathcal{C}, \alpha)}
+{\Lambda, \Gamma, T |- e : \mathcal{C}[\alpha]}
+\]
+
+\[
+\inference{\Lambda, \Gamma, T |- e' : \beta}
+{\Lambda, \Gamma, T |- e : \mathbb{E}(\beta)}{\Gamma(\mathbb{E})(e') = e}
+\]
+
+\subsection{Transformers}
+
+\subsection{Rules}
+
+
+
 
 \fixme{Find på bedre måde at opstille disse definitions... Evt ligesom det gamle
 uden definition environments.}
@@ -523,6 +625,8 @@ $+$ means 1 or more occurances.
 
 When specifying rewriting rules we 
 
+\fixme{Add pattern variables to the grammer as using..}
+
 \setlength{\grammarindent}{7.3em}
 \begin{grammar} 
  
@@ -559,13 +663,15 @@ When specifying rewriting rules we
   
   <sexp>   ::= <sml-identifier> | <meta-pattern> | <transformer>
 
-  <transformer> ::= "{" <upper-letter> "}" "(" <meta-pattern> ")" \hfill "\# Fix the input"
+  <transformer> ::= "[" <upper-letter> "]" "(" <meta-pattern> ")" \hfill "\# Fix the input"
 
   <meta-pattern> ::= "§" <upper-letter> \{ <opt-meta-pattern-input> \}
 
   <opt-meta-pattern-input> ::= "[" <meta-pattern> "]" \hfill "\# Fix the input"
 
 \end{grammar}
+
+\chapter{Examples}
 
 \fixme{Needs an owehaul}
 
@@ -791,7 +897,32 @@ fun sum a = foldl (fn (a, b) => b + a) 0 a
 \section{Map}
 
 
+\fixme{The missing notation of meta variables makes the xs in the matching seem
+  exactly the same.}
+\begin{verbatim}
+Rule Clauses Map
+   | §C[x :: xs] => {D} §C[x] :: self §C[xs]
+   | §D => nil
+where
+   dom §D = dom §C
+becomes
+   | §C[xs] => map (fn m => {D} §C[m]) xs
+end
+\end{verbatim}
 
+
+\section{Fold}
+
+\begin{verbatim}
+Rule Clauses foldr
+   | §C[x :: xs] => {D} (§C[x], self §C[xs])
+   | §D => {E} §D
+where
+   dom §D = dom §C
+becomes
+   | §C[xs] => foldr (fn (a, b) => {D} (§C[a], b)) ({E} §C) xs
+end
+\end{verbatim}
 
 
 \end{document}
