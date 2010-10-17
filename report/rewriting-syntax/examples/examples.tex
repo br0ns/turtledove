@@ -1,0 +1,225 @@
+\chapter{Concrete Examples}
+
+\fixme{Needs an owehaul}
+
+Følgende eksempler definerer forskellige varianter af funktionen $\texttt{foo}$
+som implementerer forskellige varianter af SML's $\texttt{map}$ funktion.
+
+\section{Map}
+
+\begin{example}[\textsf{map}-instans]\
+\begin{verbatim}
+fun foo (nil, f)     = nil
+  | foo ([x], g)     = [g x]
+  | foo (x :: xs, f) = f x :: foo (xs, f)
+\end{verbatim}
+
+bliver normaliseret til
+
+\begin{verbatim}
+fun foo ([x], g)     = [g x]
+  | foo (x :: xs, f) = f x :: foo (xs, f)
+  | foo _            = nil
+\end{verbatim}
+
+De to sidste to klausuler er en instans af \textsf{map}-reglen med
+\begin{align}
+\mathcal{C} &\mapsto \texttt{($\diamond$, $\overline{y}$)}\\
+\overline{x} &\mapsto \texttt{x}\\
+\overline{xs} &\mapsto \texttt{xs}\\
+\mathbb{D}(\texttt{($\overline{a}$, $\overline{b}$)}) &= \kappa(\overline{b})\
+\kappa(\overline{a})\\
+\mathcal{D} &\mapsto \texttt{\_}
+\end{align}
+
+Så de skrives om til
+  \begin{align}
+    &\texttt{$\mathcal{C}[xs]$ => map (fn $m$ =>
+      $\mathbb{D}(\mathcal{C}[m])$) $xs$} =\\
+    &\texttt{(a, b) => map (fn a => b a) a}
+  \end{align}
+
+Og det endelige resultat er
+
+\begin{verbatim}
+fun foo ([x], g) = [g x]
+  | foo (a, b)   = map (fn a => b a) a
+\end{verbatim}
+
+\end{example}
+
+\begin{example}[\textsf{map}-instans]\
+\begin{verbatim}
+fun foo nil       = nil
+  | foo (x :: xs) = x + 1 :: foo xs
+\end{verbatim}
+
+bliver normaliseret til
+
+\begin{verbatim}
+fun foo (x :: xs) = x + 1 :: foo xs
+  | foo _         = nil
+\end{verbatim}
+
+Resultatet bliver
+
+\begin{verbatim}
+fun foo a = map (fn a => a + 1) a
+\end{verbatim}
+
+
+% \begin{eqnarray*}
+%     (\mathsf{nil}) &=>& \mathsf{nil} \\
+%     (x::xs) &=>& x+1 :: \mathsf{foo} xs
+%   \end{eqnarray*}
+  
+%   Bliver normaliseret til 
+
+%   \begin{eqnarray*}
+%     (x::xs) &=>& x+1 :: \mathsf{foo} xs \\
+%     x &=>& \mathsf{nil}
+%   \end{eqnarray*}
+
+%   \begin{enumerate}
+%   \item Antal klausuler matcher.
+    
+%   \item Funktions kroppe kan matche med tilsvarende klausuls kroppe.
+    
+%   \item $\mathcal{C}$ instantieres til $\diamond$
+    
+%     \begin{description}
+%     \item[Klausul 1] 
+%       \begin{itemize}
+%       \item På venstresiden bindes $\overline{x} \mapsto x, \overline{xs} \mapsto xs$.
+        
+%       \item På højresiden fås derfor $\mathcal{C}[\overline{x}] = x$ og
+%         $\mathcal{C}[\overline{xs}] = xs$        
+%       \end{itemize}
+        
+      
+%     \item[Klausul 2]
+%       \begin{itemize}
+%       \item På venstresiden bindes $\overline{x} \mapsto
+%         x$.
+        
+%       \item På højresiden er der ikke brugt nogle patvars så der sker ikke
+%         noget.
+%       \end{itemize}
+      
+%     \end{description}
+      
+%   \item $\mathbb{D}$ genererer funktionen der for input
+%     $\mathcal{C}[\overline{x}] = x$ returnerer $x + 1$ da dette er udtrykket i
+%     funktionen som matcher $\mathbb{D}\left( \mathcal{C}[\overline{x}] \right)$
+%     i skabelonen. Altså $\mathbb{D}(\overline{x}) = \kappa(\overline{x}) + 1$ 
+%   \end{enumerate}
+
+%   Vi har altså nu at funktionen matcher skabelonen og derfor kan omskrives til
+%   følgende ud fra skabelonenes omskrivning regel
+
+%   \begin{eqnarray*}[c]
+%       \mathcal{C}|[\mathcal{X\!S}|] => \textsf{map } \left( \textsf{fn } m =>
+%     \mathbf{D}\left( \mathcal{C}|[m|] \right) \right) \mathcal{X\!S} \\
+%   %
+%   \Downarrow \\
+%   %
+%   xs => \textsf{map } \left( \textsf{fn } m =>
+%     \left( \textsf{fn } x => x + 1 \right) m \right) xs \\
+%   \end{eqnarray*}
+
+\end{example}
+
+
+% \begin{example}
+%   \begin{eqnarray*}
+%     (nil, \_) &=>& nil\\
+%     (x::xs, n) &=>& F\ (x * n) :: \mathsf{foo} (xs, n)\\
+%   \end{eqnarray*}
+% \end{example}
+
+\section{Fold}
+
+\begin{example}[\textsf{fold}-instans]\
+\begin{verbatim}
+fun sum nil       = 0
+  | sum (x :: xs) = sum xs + x
+\end{verbatim}
+
+normaliseres til
+
+\begin{verbatim}
+fun sum (x :: xs) = sum xs + x
+  | sum _         = 0
+\end{verbatim}
+
+De to klausuler er en instans af \textsf{foldl}-reglen med
+
+\begin{align}
+  \mathcal{C} &\mapsto \diamond\\
+  \overline{x} &\mapsto \texttt{x}\\
+  \overline{xs} &\mapsto \texttt{xs}\\
+  \mathbb{D}(\texttt{($\overline{a}$, $\overline{b}$)}) &=
+  \kappa(\overline{b}) \texttt{ + } \kappa(\overline{a})\\
+  \mathcal{D} &\mapsto \texttt{\_}\\
+  \mathbb{E}(\overline{a}) &= \texttt{0}
+\end{align}
+
+Så de skrives om til
+  \begin{align}
+    &\texttt{$\mathcal{C}[xs]$ => foldl (fn ($a$, $b$) =>
+      $\mathbb{D}($($\mathcal{C}[a]$, $b$)$)$) $\mathbb{E}(\mathcal{C}[$nil$])$ $xs$} =\\
+    &\texttt{a => foldl (fn (a, b) => b + a) 0 a}
+  \end{align}
+
+Og det endelige resultat er
+
+\begin{verbatim}
+fun sum a = foldl (fn (a, b) => b + a) 0 a
+\end{verbatim}
+
+
+  % \begin{eqnarray*}
+  %   (y::ys) &=>& y + \mathtt{self} \left( ys \right) \\
+  %   nil &=>& 0
+  % \end{eqnarray*}
+
+  % Hvilket er normaliseret så det bliver ikke omskrevet.
+
+  % \begin{enumerate}
+  % \item Antal klausuler matcher.
+
+  % \item 
+
+  % \item $\mathcal{C}$ instantieres til $\diamond$ og $\mathcal{G} = 0$
+
+  %   \begin{description}
+  %   \item[Klausul 1] $\overline{x} \mapsto y, \overline{xs} \mapsto ys$
+      
+  %   \item[Klausul 2] $\overline{x} \mapsto nil$
+  %   \end{description}
+    
+    
+  % \item $\mathbb{D}(\overline{n}, \overline{m}) = \kappa(\overline{n}) +
+  %   \kappa(\overline{m})$
+  % \end{enumerate}
+
+  % Vi kan derfor anvende denne skabelon og lave omskrivningen, hvor der haves
+  % $\floor{\mathcal{C}} = \diamond, \floor{\mathcal{G}} = 0$
+
+  % \begin{eqnarray*}[c]
+  %    \floor{\mathcal{C}} [xs]  => \textsf{fold } \left( \textsf{fn } (a,b) =>
+  %     \mathbb{D}\left( \floor{\mathcal{C}}[a],\ b \right) \right) \
+  %   \floor{\mathcal{G}} \ xs \\
+  %   %
+  %   \Downarrow \\
+  %   % 
+  %   xs => \textsf{fold } \left( \textsf{fn } (a,b) => a+b
+  %   \right) \ 0 \ xs
+  % \end{eqnarray*}
+  
+\end{example}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../rewriting_syntax2"
+%%% End: 

@@ -1,0 +1,37 @@
+\subsection{Predefined rules}
+
+
+Nedenfor gives forskellige skabeloner for omskrivning til nogle af de mest
+almindelige ML udtryk.
+
+\begin{definition}[Omskrivning af \textsf{map}-instanser]
+  % Bemærk at omkskrivningen til normalform garanterer at mønsteret i den anden
+  % klausul er joker.
+
+  \begin{eqnarray*}[rqrl]
+    | & \mathcal{C}  [\overline{x} \texttt{ :: } \overline{xs}] &  => \mathbb{D}
+    (\mathcal{C}[ \overline{x}]) \texttt{ :: } \textsf{self}(\kappa ( \mathcal{C}
+    [ \overline{xs} ] ) ) \\
+    | & \mathcal{D} & => \texttt{nil}\\
+    & \textsf{where}\ \ & dom(\mathcal{D}) = dom(\mathcal{C}[\texttt{\_}])\\
+   \tabpause{\begin{center}$\Downarrow$\end{center}}
+    | & \mathcal{C} [ xs ] & => \texttt{map (fn $m$ => $\mathbb{D}(\mathcal{C} [ m ]$ )) $xs$}
+  \end{eqnarray*}
+\end{definition}
+
+\begin{definition}[Omskrivning af \textsf{foldl}-instanser] \ \\
+
+  \begin{eqnarray*}[rqrl]
+    | & \mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}] &  => \mathbb{D} ( \texttt{($\mathcal{C}
+      [\overline{x}]$, $\textsf{self}( \mathcal{C}[\overline{xs}])$)} ) \\
+    | & \mathcal{D} & => \mathbb{E}(\mathcal{D})\\
+    & \textsf{where}\ \ & dom(\mathcal{D}) = dom(\mathcal{C}[\texttt{\_}])\\
+    \tabpause{\begin{center}$\Downarrow$\end{center}}  
+    | & \mathcal{C} [xs] & => \texttt{foldl (fn ($a$, $b$) => $\mathbb{D}($($\mathcal{C}[a]$, $b$)$)$) $\mathbb{E}(\mathcal{C}[\texttt{nil}])$ $xs$}
+  \end{eqnarray*}
+\end{definition}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../rewriting_syntax2"
+%%% End: 

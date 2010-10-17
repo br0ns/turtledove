@@ -1,0 +1,98 @@
+\section{Semantics}
+A rewriting rule ``works'' on a list of SML-clauses. In SML clauses are found in
+function declarations, recursive value declarations, anonymous functions, case
+expressions and exception handlers. A rewriting rule works on a sublist (not
+necessarily proper) of such a list of clauses. In the following the regard a SML
+clause as a set of a pattern and an expression (and thus we can use the $\alpha
+=> \beta$ notation).
+
+\paragraph{Remark.} In the scheme bodies we allow the keyword \textsf{self},
+which we take to mean a recursive call.
+
+\subsection{Meta patterns}
+
+\subsection{Scheme bodies}
+
+\subsection{Schemes}
+We use the judgement $\Lambda, \Gamma |- m : s$ to mean that the list of clauses $m$ is
+an instance of the scheme $s$ in the meta pattern environment $\Lambda$ and the
+transformer environment $\Gamma$.
+
+\[
+\inference{\Lambda, [] |- p : \langle \alpha, T \rangle &
+  \Lambda, \Gamma, T |- b : \beta &
+\Lambda, \Gamma |- m : s}
+{\Lambda, \Gamma |- p => b, m : \alpha => \beta, s}
+\]
+
+The judgement $\Lambda, T |- p : \langle \alpha, T' \rangle$ means that the
+pattern $p$ is an instance of the scheme pattern $\alpha$ in the meta pattern
+environment $\Lambda$ and the pattern variable environment $T$ with the
+resulting pattern variable environment $T'$.
+
+\[
+\inference{\Lambda, T |- p_0 : \langle \alpha_0, T_o \rangle &
+\Lambda, T_0 |- p_1 : \langle \alpha_1, T_1 \rangle &
+\cdots &
+\Lambda, T_{i-1} |- p_i : \langle \alpha_i, T' \rangle
+}
+{\Lambda, T |- \mathfrak{a}(p_0, \ldots p_i) : \langle \mathfrak{a}(\alpha_0,
+  \ldots, \alpha_i), T' \rangle}
+\]
+
+\[
+\inference
+{\Lambda, \Gamma |- p : \Lambda(\mathcal{C})}
+{\Lambda, \Gamma |- p : \mathcal{C}}
+\]
+
+\[
+\inference
+{\Lambda, \Gamma |- p : \sigma(\mathcal{C}, \alpha)}
+{\Lambda, \Gamma |- p : \mathcal{C}[\alpha]}
+\]
+
+\[
+\inference{}
+{\Lambda, T |- p : \langle \overline{a}, T[\overline{a} \mapsto p] \rangle}
+\]
+
+The judgement $\Lambda, \Gamma, T |- b : \beta$ means that the expression $b$ is
+an instance of the scheme expression $\beta$. We have left out the rules that
+handle the structure of expressions and scheme expressions.
+
+\[
+\inference{e = T(\overline{a})}
+{\Lambda, \Gamma, T |- e : \overline{a}}
+\]
+
+\[
+\inference{\Lambda, \Gamma, T |- e : \Lambda(\mathcal{C})}
+{\Lambda, \Gamma, T |- e : \mathcal{C}}
+\]
+
+\[
+\inference
+{\Lambda, \Gamma, T |- e : \sigma(\mathcal{C}, \alpha)}
+{\Lambda, \Gamma, T |- e : \mathcal{C}[\alpha]}
+\]
+
+\[
+\inference{\Lambda, \Gamma, T |- e' : \beta}
+{\Lambda, \Gamma, T |- e : \mathbb{E}(\beta)}{\Gamma(\mathbb{E})(e') = e}
+\]
+
+\subsection{Transformers}
+
+\subsection{Rules}
+
+
+
+
+\fixme{Find på bedre måde at opstille disse definitions... Evt ligesom det gamle
+uden definition environments.}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../rewriting_syntax2"
+%%% End: 

@@ -1,0 +1,320 @@
+\section{Intuition}
+
+\begin{description}
+\item[Metamønster:] $\mathcal{A}, \mathcal{B}, \mathcal{C}, \ldots$\\
+  Metamønstre er mønstre over foreningsmængden af mønstervariable og huller.
+  Et metamønster kan være højereordens i den forstand at det kan indeholde et
+  eller flere huller. På hullernes plads kan stå metamønstre og vi skriver
+  $\mathcal{C}[\texttt{SOME } \overline{x}]$ for at indsætte metamønsteret
+  $\texttt{SOME } \overline{x}$ på det første\footnote{med en passende
+    definition af ``første''.} huls plads i $\mathcal{C}$.
+
+  Et metamønster $\mathcal{A}$ er derfor et træ med (værdi-)konstruktører i
+  knuderne mønstervariable, $\overline{x}$, eller huller $\diamond_n$ i bladene.
+
+  Det konkrete SML-mønster \texttt{((a,\ b),\ x\ ::\ y\ ::\ xs)} en instans af
+
+  \begin{tikzpicture}[]
+    \node (pair)     {$(,)$};
+    
+    \node (X)  [below left of = pair] {$\overline{x}$};
+    
+    \node (cons)  [below right of = pair] {$::$};
+    
+    \node (Y)  [below left of = cons] {$\overline{y}$};
+    \node (Z)  [below right of = cons] {$\overline{z}$};
+    
+    \path (pair) edge (X)
+          (pair) edge (cons)
+    
+          (cons) edge (Y)
+          (cons) edge (Z);
+  \end{tikzpicture}
+
+
+\item[Scheme pattern] Skabelonsmønstre, defineret som $\alpha$ patterns med
+  $\alpha$ værende meta patterns. Kan omtales patterns over meta patterns.
+
+  Hvis skabelons mønstre blot var meta patterns ville vi kunne udtrykket mønstre
+  som $(\overline{x}, \overline{y})$ eller $\mathcal{C}[\overline{x} ::
+  \overline{xs}]$ men der ville ikke kunne udtrykkes mønstre som $(\overline{x},
+  \mathcal{C}[\overline{y} :: \overline{ys}])$ da bladene i meta patterns kun
+  kan være patvars eller huller.
+
+  Ved at skabelons mønstre er patterns over meta patterns får vi mere
+  udtrykskraft og kan derfor udtrykke førnævnte mønster $(\overline{x},
+  \mathcal{C}[\overline{y} :: \overline{ys}])$
+
+\item[Transformere:] % M for Megatron, O' for Optimus Prime
+  $\mathbb{M}_{\textnormal{\fontsize{2}{3pt}\selectfont egatron}}, \mathbb{O}',
+  \mathbb{D}, \ldots$\\
+  Er metafunktioner som tager nøjagtigt et SML-mønster og returnerer
+  et SML-udtryk. \fixme{At some point define how the magic works.}
+
+\item[Skabelonkroppe:]
+  SML-udtryk uden typeannotering og infix-operatorer, med tilføjelse af
+  nøgleordet \textsf{self} samt (instantierede) hulfri metamønstre og (anvendte)
+  transformatorer.
+
+\item[Scheme body] SML udtryk uden type annotering, infix operatorer, Og
+  \texttt{self}, meta patterns og transformers.
+
+
+\item[Skabelon] | $schemepat => schemebody$ \ldots\\
+  Er en liste af par af skabelonmønstre og skabelonkroppe adskilt af $=>$. Et
+  konkret stykke SML-kode kan være en instans af en skabelon, hvorved
+  metamønstrene instantieres. Mønstervariable i skabelonmønstre instantieres per
+  klausul. Dette og muligheden for forekomster af huller er den eneste forskel
+  på metamønstre og mønstervariable.
+
+\item[Omskrivningsregel:]
+  En omskrivningsregel har en venstreside som er en skabelon og en højreside som
+  er et konkret stykke SML-kode. I højresiden kan bruges instantierede
+  metamønstre og transformere fra venstresiden.
+
+\item[Kanoniske afbildning af SML-mønstre til SML-udtryk] betegnes $\kappa$.
+
+\item[Kanonisk instantiering:] $\floor{\mathcal{C}}$ er den kanoniske
+  instantiering af et metamønster. Alle mønstervariable i det givne metamønster bliver
+  instantieret til konkrete SML-variabel med hensyntagen til capture
+  avoidance\fixme{hvad hedder capture avoidance på dansk}.
+
+  Dette bruges i resultatet af en skabelon, da mønstervariable her ikke er
+  bundet til et ML-mønster.
+
+  Eksempel $\floor{\mathcal{C}}$ $\mathcal{C} = \texttt{(}\diamond\texttt{,} \overline{y}\texttt{)}$:
+  $\floor{\mathcal{C}} = \floor{\texttt{(}\diamond\texttt{,} \overline{y}\texttt{)}} = \texttt{(}\diamond\texttt{,}
+  \floor{\overline{y}}\texttt{)} = \texttt{(}\diamond\texttt{,} \texttt{a)}$.
+ 
+\end{description}
+
+Når mønstervariable ($\overline{x}$) bruges i højresiden af en skabelonklausul
+(skabelonkrop) bliver de implicit erstattet med det ML mønster de er bundet
+til fra venstresiden (skabelons mønsteret), se nedenstående eksempel
+
+\begin{example}[Matching/brug af mønstervariable] \
+
+  \fixme{Find ordenligt eksempel navn/tekst}
+  
+  Betragt ML-funktionen \texttt{foo}:
+
+\begin{verbatim}
+fun foo (a, b :: xs) = b + a
+  | foo _            = 0
+\end{verbatim}
+
+  Den første klausul er en instans af skabelonklausulen
+  \[
+  \mathcal{C}[\overline{x}\texttt{ :: }\overline{xs}] =>
+  \mathbb{D}(\mathcal{C}[\overline{x}])
+  \]
+
+  med
+  \begin{align}
+    \mathcal{C} &\mapsto \texttt{(}\overline{y}\texttt{,} \diamond\texttt{)}\\
+    \overline{a} &\mapsto \texttt{a}\\
+    \overline{x} &\mapsto \texttt{b}\\
+    \overline{xs} &\mapsto \texttt{xs}\\
+    \mathbb{D}(\texttt{(}\overline{a}\texttt{,} \overline{b}\texttt{)}) &=
+    \kappa(\overline{b}) \texttt{ + } \kappa(\overline{a})
+  \end{align}
+
+  Den anden klausul er en instans af skabelonklausulen
+  \[
+  \mathcal{D} => \mathbb{E}(\mathcal{D})
+  \]
+
+  med
+  \begin{align}
+    \mathcal{D} &\mapsto \overline{a}\\
+    \overline{a} &\mapsto \texttt{\_}\\
+    \mathbb{E}(\overline{a}) &= \texttt{0}
+  \end{align}
+
+  Hvis vi nu er så heldige (og det er vi her) at $dom(\lfloor\mathcal{D}\rfloor)
+  = dom(\lfloor\mathcal{C[\texttt{\_}]}\rfloor)$ har vi en instans af
+  $\textsf{map}$. Resultatet er
+  \begin{align}
+    &\texttt{fun foo $\lfloor \mathcal{C} \rfloor [\lfloor xs \rfloor]$ = map (fn $x$ =>
+      $\mathbb{D}(\lfloor \mathcal{C} \rfloor[\lfloor x \rfloor])$) $\lfloor xs
+      \rfloor$} =\\
+    &\texttt{fun foo (a, b) = map (fn b => b + a) b}
+  \end{align}
+
+  Vi har her skrevet den kanoniske instantiering eksplicit, men i resten af
+  dokumentet lader vi den være underforstået. Instantieringer kan jo kun
+  forekomme i omskrivningsreglers højresider, hvor de i øvrigt ikke kan
+  undværes.
+\end{example}
+
+
+\subsection{Skabeloner}
+
+En skabelon defineres kun ud fra de klausuler som den skal matche. Altså
+bruges der ikke syntaks til at matche funktionsnavnet. For at kunne matche
+rekursive funktioner introducerer vi nøgleordet \textsf{self} som er en
+pladsholder for funktionsnavnet af den funktion der bliver matchet mod
+skabelonen.
+
+\fixme{Her kommer normalformen på noget af en opgave, men det ser ud til at
+  virke. Tjek det!}
+
+Skabeloner kan matche partielt i den forstand at hvis klausulerne $n$ til $n +
+i$ er en instans af en regel med $i$ skabelonklausuler, så kan omskrivningen
+udføres for blot disse klausuler.
+
+Ved ikke at udtrykke mere information om funktionen eller dens parametre kan vi
+have samme skabelonsyntaks for sekventialiserede og ikke-sekventialiserede
+funktionserklæringer.
+
+Det huskes at den sekventialiserede funktion
+
+\begin{verbatim}
+fun add n nil       = nil
+  | add n (x :: xs) = n + x :: add n xs
+\end{verbatim}
+
+skrives om (i flere trin) til
+
+\begin{verbatim}
+val rec add = fn n => 
+              fn xs => (fn (n, nil) => nil
+                         | (n, x::xs) => n + x :: add n xs) (n, xs)
+\end{verbatim}
+
+Og samme funktion på ikke-sekventialiseret form
+
+\begin{verbatim}
+fun add' (n, nil)     = nil
+  | add' (n, x :: Xs) = n + x :: add' (n, xs)
+\end{verbatim}
+
+bliver skrevet om til
+
+\begin{verbatim}
+val rec add' = fn (n, nil) = []
+                | (n, x::xs) = n + x :: add' (n, xs)
+\end{verbatim}
+
+Som det ses ender begge tilfælde her med en enkelt anonym funktion (kun den inderste
+har interesse hvis der skulle være flere). Hvis den oprindelige funktion var på
+sekventialiseret form bliver alle argumenterne sat sammen til en tupel og hvis
+den var på ikke sekventialiseret form så var argumentet allerede en tupel.
+
+Denne inderste anonyme funktion har derfor nu et antal klausuler og hvor hvert
+klausuls mønster og krop matcher det der var givet i den oprindelige
+funktion.
+
+Vi har valgt at definere vores skabeloner på en sådan måde at de minder meget om
+ovenstående. Alle klausuler i en skabelon starter på $|$ (hvilket på nær den
+første også altid er tilfælde for ML). Da vi ønsker at abstrahere den konkrete
+erklæring væk (\texttt{val} \texttt{fun}, sekventialiseret,
+ikke-sekventialiseret) starter alle vores klausuler på $|$.
+
+Vi mener dette tilstræber den mest naturlige måde at udtrykke skabeloner der
+matcher ML kode.
+
+Skabeloner defineres altså som en liste af $n$ klausuler
+
+\begin{eqnarray*}[rqrl]
+| & m_1 & => e_1 \\
+  &  & \vdots \\
+| & m_n & => e_n
+\end{eqnarray*}
+
+hvor $m_k$ er skabelonmønstre og $e_k$ er skabelonkroppe.
+
+\fixme{Der beskrives slet ikke hvordan og hvorledes med resultat
+  omskrivningen. Der beskrives kun den matchende del af skabelonen.}
+
+\subsubsection{Restriktioner, prædikater og metafunktioner}
+\textit{Here be løse tanker}\\
+
+Vi udtrykker restriktioner på en skabelon med nøgleordet \textsf{where}
+efterfulgt af restriktionerne.
+
+Som vi så i eksemplet ovenfor kan det blive nødvendigt at indføre restriktioner
+på nogle metamønstre som funktion af andre. Vi ved at vi har brug for noget alá
+$dom$. Måske skal vi bruge andre ting.
+
+Prædikater og funktioner på udtryk (og ved udvidelse på metafunktioner) kan også
+blive nødvendige. Specielt kan det tænkes at et prædikat som afgør om et udtryk
+har sideeffekter eller ej bliver nødvendigt.
+
+Metafunktionerne implementeres nok kønnest ``uden for''
+omskrivningssystemet. F.eks. omformes erklæringer til normalform før de
+forsøges omskrevet, og man kunne forestille sig et forsimplingstrin
+efterfølgende (eta-reduktion vil være ret nyttigt). Andre ting som
+\texttt{let}-løftning bør også overvejes.
+
+Bemærk at metafunktionerne kan have en nytteværdi i sig selv, og ikke blot
+sammen med omskrivningssystemet.
+
+
+\subsection{Maching af skabeloner}
+
+% \fixme{bedre titel næste gang...}
+
+% Der kræves 4 skridt for at verificere om en funktion matcher en skabelon
+
+% \begin{enumerate}
+% \item Antal klausuler stemmer overens i skabelon og funktion der skal matche.
+
+% \item Hver klausuls krop fra skabelonen kan ``matches'' med den tilsvarende
+%   klausuls krop i funktion.
+
+% \item $\mathcal{C}[patvar_1]\ldots[patvar_n]$ fra regel $m$ skal matche den
+%   oprindelige funktions pattern $m$, hvor samtlige $patvar_k$ skal kunne matche
+%   et deltræ af det oprindelige pattern. Alle disse matchede deltræer må ikke
+%   overlappe og de vil blive erstattet med $diamond_k$ og $patvar_k$ bliver
+%   bundet til det deltræ den matchede.
+
+Det er en af vores pointer at systemet selv skal finde passende
+metamønstre. Nogle gange giver en skabelonklausul anledning til flere
+mulige metamønstre. I de fald må resten af omskrivningsreglen slå fast hvilket
+der er rigtigt (om noget).
+
+Her er eksempler på mønstre og de metamønstre de resulterer i.
+
+Vi regner med at en blindgydesøgning i praksis vil være hurtig nok.
+
+  \begin{example} \ 
+
+    % \fixme{Burde nok medtage hvad parvars bliver bundet til også.}
+
+    \begin{tabular}{l|l|l} 
+      ML-mønster & Skabelonmønster & Resulterende
+      $\mathcal{C}$ \\ \hline
+      
+      \texttt{(a, b) :: xs} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
+      $\diamond$ \\
+
+      \texttt{(b, a) :: xs} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
+      $\diamond$ \\
+
+      \texttt{(a, x :: xs)} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
+      $(\overline{a}, \diamond)$ \\
+
+      \texttt{(x :: xs, b)} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
+      $(\diamond, \overline{b})$ \\
+
+      \texttt{(x :: xs, y :: ys)} & $\mathcal{C}[\overline{x} \texttt{ :: }
+      \overline{xs}][\overline{y} \texttt{ :: } \overline{ys}]$ &
+      $(\diamond_1, \diamond_2)$ eller $(\diamond_2, \diamond_1)$\\
+      
+    \end{tabular}
+    
+  \end{example}
+
+% \item $\mathbb{D}$ genererer en funktion der sender det resulterende $pat$ hen i
+%   en $exp$ hvor $exp$ netop er den $exp$ der matcher funktionens $exp$ på
+%   pågældende plads.
+
+% \end{enumerate}
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../rewriting_syntax2"
+%%% End: 
