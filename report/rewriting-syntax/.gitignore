@@ -1,0 +1,10 @@
+*.pdf
+*.log
+*.lox
+
+auto
+
+*.aux
+*/*.aux
+
+
