@@ -6,8 +6,14 @@
 
 \usepackage[draft]{fixme}
 
+% As we dont really have any use for \fref and \Fref we just undefine what
+% memoir defined them as, so fancyref can define what it wants.
+\let\fref\undefined
+\let\Fref\undefined
+\usepackage{fancyref} % Better reference. 
+
 \usepackage{mdwtab}
-\usepackage{syntax}
+\usepackage[rounded]{syntax} % Part of the mdwtools package
 \usepackage{mathenv}
 \usepackage{amsfonts}
 \usepackage{amsmath}
@@ -34,6 +40,37 @@
 \newtheorem{example}{Example}
 \newtheorem{definition}{Definition}
 
+\newcommand*{\fancyrefexlabelprefix}{ex}
+\fancyrefaddcaptions{english}{
+  \newcommand*{\Frefexname}{Example}
+  \newcommand*{\frefexname}{\MakeLowercase{\Frefexname}}
+}
+\frefformat{vario}{\fancyrefexlabelprefix}{%
+  \frefexname\fancyrefdefaultspacing#1#3%
+}
+\Frefformat{vario}{\fancyrefexlabelprefix}{%
+  \Frefexname\fancyrefdefaultspacing#1#3%
+}
+\frefformat{plain}{\fancyrefexlabelprefix}{%
+  \frefexname\fancyrefdefaultspacing#1%
+}
+\Frefformat{plain}{\fancyrefexlabelprefix}{%
+  \Frefexname\fancyrefdefaultspacing#1%
+}
+
+\newcommand*{\fancyrefdeflabelprefix}{def}
+\fancyrefaddcaptions{english}{
+  \newcommand*{\Frefdefname}{Definition}
+  \newcommand*{\frefdefname}{\MakeLowercase{\Frefdefname}}
+}
+\frefformat{vario}{\fancyrefdeflabelprefix}{%
+  \frefdefname\fancyrefdefaultspacing#1#3%
+}
+\Frefformat{vario}{\fancyrefdeflabelprefix}{%
+  \Frefdefname\fancyrefdefaultspacing#1#3%
+}
+
+
 \begin{document}
 
 \listoffixmes{}
@@ -46,18 +83,26 @@
 
 \fixme[inline, margin=false]{Indledning} \ \\
 
-I SML kan et mønster opfatters som et træ hvor knuderne er konstruktører og
-bladende er variable. Bemærk at nulære konstruktører ikke opfattes som blade.
+Patterns in SML can be thought of as trees with constructors as nodes and
+variables as liefs where nullary constructors is not seen as liefs.
 
-I det nedenstående generaliserer vi mønstre til at være parametriserede over
-deres blade. Således er et SML-mønster et mønster over (SML-)variable.
+In the following chapter we will be generalising patterns to be parameterised
+over their liefs, meaning that SML patterns are patterns over (SML) variables.
 
-Vi følger konventionen at konstanter blot opfattes som nulære konstruktører.
+We follow the convention that constants can be thought of as being nullary
+constructors\footnote{as in the ``Mini-ML'' document}. It is also assumed, for
+all code we will match, that
 
-Vi antager at alle \texttt{as}-mønstre er fjernet. Det kan let lade sig gøre ved
-substitution.
+\begin{enumerate}
+\item All \texttt{as}-patterns has been removed (this can be done by
+  substitution).
 
-\fixme[inline, margin=false]{noget med infix stuff...}
+\item All infix functions has been turned into their nonfix counterparts.
+
+\item ... Most likely something else \fixme{More to the list of stuff that is
+    assumed of the code we will work on}
+\end{enumerate}
+
 
 \input{definitions/definitions}
 
@@ -71,37 +116,7 @@ substitution.
 
 \appendix
 
-\chapter{Sample rewriting rules}
-
-\section{Map}
-
-
-\fixme{The missing notation of meta variables makes the xs in the matching seem
-  exactly the same.}
-\begin{verbatim}
-Rule Clauses Map
-   | §C[x :: xs] => {D} §C[x] :: self §C[xs]
-   | §D => nil
-where
-   dom §D = dom §C
-becomes
-   | §C[xs] => map (fn m => {D} §C[m]) xs
-end
-\end{verbatim}
-
-
-\section{Fold}
-
-\begin{verbatim}
-Rule Clauses foldr
-   | §C[x :: xs] => {D} (§C[x], self §C[xs])
-   | §D => {E} §D
-where
-   dom §D = dom §C
-becomes
-   | §C[xs] => foldr (fn (a, b) => {D} (§C[a], b)) ({E} §C) xs
-end
-\end{verbatim}
+\input{appendix/appendix}
 
 
 \end{document}
