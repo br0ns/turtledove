@@ -14,30 +14,32 @@ which we take to mean a recursive call.
 \subsection{Scheme bodies}
 
 The grammar of $sexp$'s is given by
-\begin{verbatim}
-atsexp  ::= scon
-          | <op>longvid
-          | { <sexprow> }
-          | # lab
-          | ()
-          | (sexp_1, ..., sexp_n)
-          | let dec in sexp end
-          | ( sexp )
+\setlength{\grammarindent}{7.3em}
+\begin{grammar}
+ 
+<atsexp>  ::= <scon>
+          \alt "op" <longvid>
+          \alt "{" <sexprow> "}"
+          \alt "\#" <lab> 
+          \alt "()"
+          \alt "(" <sexp>, ..., <sexp> ")"
+          \alt "let" <dec> "in" <sexp> "end"
+          \alt "(" <sexp> ")"
 
-sexprow ::= lab = sexp <, sexprow>
+<sexprow> ::= <lab> "=" <sexp> ["," <sexprow>] "\# fix correct meaning of this"
 
-sexp    ::= sexp atsexp
-          | sexp1 andalso sexp2
-          | sexp1 orelse sexp2
-          | sexp handle smatch
-          | if sexp1 then sexp2 else sexp3
-          | case sexp of smatch
-          | fn smatch
+<sexp>    ::= <sexp> <atsexp>
+          \alt <sexp> "andalso" <sexp>
+          \alt <sexp> "orelse" <sexp>
+          \alt <sexp> "handle" <smatch>
+          \alt "if" <sexp> "then" <sexp> "else" <sexp>
+          \alt "case" <sexp> "of" <smatch>
+          \alt "fn" <smatch>
 
-smatch  ::= smrule <| smatch>
+<smatch>  ::= <smrule> "<|" <smatch> ">" "\# fix wierd <|"
 
-smrule  ::= spat => sexp
-\end{verbatim}
+<smrule>  ::= <spat> "=>" <sexp>
+\end{grammar}
 
 \subsection{Rules}
 \newcommand{\becomesthrough}[3]{#1 \textsf{ becomes } #2 \textsf{ through } #3}
