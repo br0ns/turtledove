@@ -105,32 +105,34 @@ expressing more information about the function or its parameters in the rule.
 
 It might be remembered that the curried function below
 
-\begin{code}
+\begin{sml}
 fun add n nil       = nil
   | add n (x :: xs) = n + x :: add n xs
-\end{code}
+\end{sml}
 
 is desugared (in multiple steps) to
 
-\begin{code}
+\begin{sml}
 val rec add = fn n => 
               fn xs => (fn (n, nil) => nil
                          | (n, x::xs) => n + x :: add n xs) (n, xs)
-\end{code} 
+\end{sml} 
 
 and the same uncurried function 
 
-\begin{code}
+\begin{sml}
 fun add' (n, nil)     = nil
   | add' (n, x :: Xs) = n + x :: add' (n, xs)
-\end{code}
+\end{sml}
 
 becomes
 
-\begin{code}
+\begin{sml}
 val rec add' = fn (n, nil) = []
                 | (n, x::xs) = n + x :: add' (n, xs)
-\end{code}
+\end{sml}
+
+               
 
 As it is seen, both cases end up with an anonymous function. If there are more
 than one then only the inner most is of interest as this anonymous
