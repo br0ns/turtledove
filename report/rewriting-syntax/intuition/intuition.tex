@@ -75,6 +75,7 @@ mentioned pattern and thus gains more expressive power
 blalblalbla
 
 \subsection{Rewriting rules}
+
 \fixme{This is utterly wrong.}
 \fixme{Reference to the definition}
 
@@ -173,7 +174,7 @@ Predicates and functions over expressions (and with extension over meta
 functions) \fixme{why over metafunctions?} might come in handy, such as a
 predicate that may determine whether an expression has side effects.
 
-====================================
+blabla....
 
 Metafunktionerne implementeres nok kønnest ``uden for''
 omskrivningssystemet. F.eks. omformes erklæringer til normalform før de
@@ -183,61 +184,6 @@ efterfølgende (eta-reduktion vil være ret nyttigt). Andre ting som
 
 Bemærk at metafunktionerne kan have en nytteværdi i sig selv, og ikke blot
 sammen med omskrivningssystemet.
-
-\subsubsection{Maching af skabeloner}
-
-% \fixme{bedre titel næste gang...}
-
-% Der kræves 4 skridt for at verificere om en funktion matcher en skabelon
-
-% \begin{enumerate}
-% \item Antal klausuler stemmer overens i skabelon og funktion der skal matche.
-
-% \item Hver klausuls krop fra skabelonen kan ``matches'' med den tilsvarende
-%   klausuls krop i funktion.
-
-% \item $\mathcal{C}[patvar_1]\ldots[patvar_n]$ fra regel $m$ skal matche den
-%   oprindelige funktions pattern $m$, hvor samtlige $patvar_k$ skal kunne matche
-%   et deltræ af det oprindelige pattern. Alle disse matchede deltræer må ikke
-%   overlappe og de vil blive erstattet med $diamond_k$ og $patvar_k$ bliver
-%   bundet til det deltræ den matchede.
-
-Det er en af vores pointer at systemet selv skal finde passende
-metamønstre. Nogle gange giver en skabelonklausul anledning til flere
-mulige metamønstre. I de fald må resten af omskrivningsreglen slå fast hvilket
-der er rigtigt (om noget).
-
-Her er eksempler på mønstre og de metamønstre de resulterer i.
-
-Vi regner med at en blindgydesøgning i praksis vil være hurtig nok.
-
-  \begin{example} \ 
-
-    % \fixme{Burde nok medtage hvad parvars bliver bundet til også.}
-
-    \begin{tabular}{l|l|l} 
-      ML-mønster & Skabelonmønster & Resulterende
-      $\mathcal{C}$ \\ \hline
-      
-      \texttt{(a, b) :: xs} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
-      $\diamond$ \\
-
-      \texttt{(b, a) :: xs} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
-      $\diamond$ \\
-
-      \texttt{(a, x :: xs)} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
-      $(\overline{a}, \diamond)$ \\
-
-      \texttt{(x :: xs, b)} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
-      $(\diamond, \overline{b})$ \\
-
-      \texttt{(x :: xs, y :: ys)} & $\mathcal{C}[\overline{x} \texttt{ :: }
-      \overline{xs}][\overline{y} \texttt{ :: } \overline{ys}]$ &
-      $(\diamond_1, \diamond_2)$ eller $(\diamond_2, \diamond_1)$\\
-      
-    \end{tabular}
-    
-  \end{example}
 
 
 \subsubsection{Canonical instantiation}
@@ -276,10 +222,10 @@ Introduction...
   Given the below function \texttt{foo}, we will try and match it up with the
   \textsf{map}-rule
 
-\begin{code}
+\begin{sml}
 fun foo (a, b :: xs) = b + a
   | foo _            = 0
-\end{code}
+\end{sml}
 
   The first clause in \texttt{foo} is an instance of the first
   scheme in the \textsf{map}-rule
