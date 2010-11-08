@@ -62,7 +62,7 @@ judgements:
   \Gamma \in id \rightharpoonup trans\\
   & T \in id \rightharpoonup pvar, b \in pat, \beta \in spat, \rho \in rid\\
   \\
-  \mathbb{D}(\alpha) = \beta & \mathbb{D} \in trans, \alpha \in pat, \beta \in var\\
+  \mathbb{D}(p) = e & \mathbb{D} \in trans, p \in pat, e \in exp\\
   \\
   \mathcal{C}[\alpha] = \mathcal{D} & \mathcal{C} \in mpat_n, \alpha \in
   pat^{pvar}, \mathcal{D} \in mpat_{n - 1}\\
@@ -144,16 +144,29 @@ m' =
 \]
 for some $1 \leq i < j \leq n$.
 
-\subsection{Schemes}
+\[
+\inference
+{
+  \Lambda, [] |- p : \langle \alpha, T \rangle&
+  \beta[x_1/T(x_1)]\cdots[x_n/T(x_n)]
+}
+{
+  \mathbb{D}(p) = b
+}
+{
+  \mathbb{D} = (\alpha, \beta), \text{dom } T = x_1, \ldots, x_n
+}
+\]
+
 We use the judgement $\Lambda, \Gamma |- m : s$ to mean that the list of clauses $m$ is
 an instance of the scheme $s$ in the meta pattern environment $\Lambda$ and the
 transformer environment $\Gamma$.
 
 \[
 \inference{\Lambda, [] |- p : \langle \alpha, T \rangle &
-  \Lambda, \Gamma, T |- b : \beta &
-\Lambda, \Gamma |- m : s}
-{\Lambda, \Gamma |- p => b, m : \alpha => \beta, s}
+  \rho, \Lambda, \Gamma, T |- b : \beta &
+\rho, \Lambda, \Gamma |- m : s}
+{\rho, \Lambda, \Gamma |- p => b, m : \alpha => \beta, s}
 \]
 
 The judgement $\Lambda, T |- p : \langle \alpha, T' \rangle$ means that the
@@ -174,14 +187,23 @@ resulting pattern variable environment $T'$.
 
 \[
 \inference
-{\Lambda, \Gamma |- p : \Lambda(\mathcal{C})}
-{\Lambda, \Gamma |- p : \mathcal{C}}
+{
+  \Lambda, T |- p : \langle \mathcal{D}, T' \rangle&
+  \mathcal{C}[\alpha] = \mathcal{D}
+}
+{
+  \Lambda, T |- p : \langle \mathcal{C}[\alpha], T' \rangle
+}
 \]
 
 \[
 \inference
-{\Lambda, \Gamma |- p : \sigma(\mathcal{C}, \alpha)}
-{\Lambda, \Gamma |- p : \mathcal{C}[\alpha]}
+{
+  \Lambda, T |- p : \langle \Lambda(\mathcal{C}), T' \rangle
+}
+{
+  \Lambda, T |- p : \langle \mathcal{C}, T' \rangle
+}
 \]
 
 \[
@@ -226,5 +248,5 @@ uden definition environments.}
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: "../rewriting_syntax2"
+%%% TeX-master: "../rewriting-syntax"
 %%% End: 
