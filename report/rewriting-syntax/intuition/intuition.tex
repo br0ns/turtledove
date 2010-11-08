@@ -1,245 +1,180 @@
 \section{Intuition}
 
-\begin{description}
-\item[Metamønster:] $\mathcal{A}, \mathcal{B}, \mathcal{C}, \ldots$\\
-  Metamønstre er mønstre over foreningsmængden af mønstervariable og huller.
-  Et metamønster kan være højereordens i den forstand at det kan indeholde et
-  eller flere huller. På hullernes plads kan stå metamønstre og vi skriver
-  $\mathcal{C}[\texttt{SOME } \overline{x}]$ for at indsætte metamønsteret
-  $\texttt{SOME } \overline{x}$ på det første\footnote{med en passende
-    definition af ``første''.} huls plads i $\mathcal{C}$.
-
-  Et metamønster $\mathcal{A}$ er derfor et træ med (værdi-)konstruktører i
-  knuderne mønstervariable, $\overline{x}$, eller huller $\diamond_n$ i bladene.
-
-  Det konkrete SML-mønster \texttt{((a,\ b),\ x\ ::\ y\ ::\ xs)} en instans af
-
-  \begin{tikzpicture}[]
-    \node (pair)     {$(,)$};
-    
-    \node (X)  [below left of = pair] {$\overline{x}$};
-    
-    \node (cons)  [below right of = pair] {$::$};
-    
-    \node (Y)  [below left of = cons] {$\overline{y}$};
-    \node (Z)  [below right of = cons] {$\overline{z}$};
-    
-    \path (pair) edge (X)
-          (pair) edge (cons)
-    
-          (cons) edge (Y)
-          (cons) edge (Z);
-  \end{tikzpicture}
+This section will try and give an intuition into how why and what the
+definitions above are all good for \fixme{proper introduction}
 
 
-\item[Scheme pattern] Skabelonsmønstre, defineret som $\alpha$ patterns med
-  $\alpha$ værende meta patterns. Kan omtales patterns over meta patterns.
+\subsection{Meta patterns}
+\fixme{Reference to the definition}
+Meta patterns ($\mathcal{C}$) are patterns over the union of patternvariables
+($\overline{x}$) and holes ($\diamond$). A meta pattern can be thought of as
+higher-order in the sense that it may contain one or more holes. Every hole in a
+meta pattern can be replaced by another meta pattern and we write
+$\mathcal{C}[\texttt{SOME } \overline{x}]$ to insert the meta pattern
+$\texttt{SOME } \overline{x}$ at the first\footnote{with a suitable definition
+  of ``first''.} holes place in $\mathcal{C}$.
 
-  Hvis skabelons mønstre blot var meta patterns ville vi kunne udtrykket mønstre
-  som $(\overline{x}, \overline{y})$ eller $\mathcal{C}[\overline{x} ::
-  \overline{xs}]$ men der ville ikke kunne udtrykkes mønstre som $(\overline{x},
-  \mathcal{C}[\overline{y} :: \overline{ys}])$ da bladene i meta patterns kun
-  kan være patvars eller huller.
-
-  Ved at skabelons mønstre er patterns over meta patterns får vi mere
-  udtrykskraft og kan derfor udtrykke førnævnte mønster $(\overline{x},
-  \mathcal{C}[\overline{y} :: \overline{ys}])$
-
-\item[Transformere:] % M for Megatron, O' for Optimus Prime
-  $\mathbb{M}_{\textnormal{\fontsize{2}{3pt}\selectfont egatron}}, \mathbb{O}',
-  \mathbb{D}, \ldots$\\
-  Er metafunktioner som tager nøjagtigt et SML-mønster og returnerer
-  et SML-udtryk. \fixme{At some point define how the magic works.}
-
-\item[Skabelonkroppe:]
-  SML-udtryk uden typeannotering og infix-operatorer, med tilføjelse af
-  nøgleordet \textsf{self} samt (instantierede) hulfri metamønstre og (anvendte)
-  transformatorer.
-
-\item[Scheme body] SML udtryk uden type annotering, infix operatorer, Og
-  \texttt{self}, meta patterns og transformers.
+Meta patterns can, as SML patterns, bee seen as a tree with constructors in the
+nodes and pattern variables and holes in the liefs. Thus this concrete SML
+pattern \texttt{((a,\ b),\ x\ ::\ y\ ::\ xs)} is an instance of the following
+meta pattern (shown graphically)
 
 
-\item[Skabelon] | $schemepat => schemebody$ \ldots\\
-  Er en liste af par af skabelonmønstre og skabelonkroppe adskilt af $=>$. Et
-  konkret stykke SML-kode kan være en instans af en skabelon, hvorved
-  metamønstrene instantieres. Mønstervariable i skabelonmønstre instantieres per
-  klausul. Dette og muligheden for forekomster af huller er den eneste forskel
-  på metamønstre og mønstervariable.
-
-\item[Omskrivningsregel:]
-  En omskrivningsregel har en venstreside som er en skabelon og en højreside som
-  er et konkret stykke SML-kode. I højresiden kan bruges instantierede
-  metamønstre og transformere fra venstresiden.
-
-\item[Kanoniske afbildning af SML-mønstre til SML-udtryk] betegnes $\kappa$.
-
-\item[Kanonisk instantiering:] $\floor{\mathcal{C}}$ er den kanoniske
-  instantiering af et metamønster. Alle mønstervariable i det givne metamønster bliver
-  instantieret til konkrete SML-variabel med hensyntagen til capture
-  avoidance\fixme{hvad hedder capture avoidance på dansk}.
-
-  Dette bruges i resultatet af en skabelon, da mønstervariable her ikke er
-  bundet til et ML-mønster.
-
-  Eksempel $\floor{\mathcal{C}}$ $\mathcal{C} = \texttt{(}\diamond\texttt{,} \overline{y}\texttt{)}$:
-  $\floor{\mathcal{C}} = \floor{\texttt{(}\diamond\texttt{,} \overline{y}\texttt{)}} = \texttt{(}\diamond\texttt{,}
-  \floor{\overline{y}}\texttt{)} = \texttt{(}\diamond\texttt{,} \texttt{a)}$.
- 
-\end{description}
-
-Når mønstervariable ($\overline{x}$) bruges i højresiden af en skabelonklausul
-(skabelonkrop) bliver de implicit erstattet med det ML mønster de er bundet
-til fra venstresiden (skabelons mønsteret), se nedenstående eksempel
-
-\begin{example}[Matching/brug af mønstervariable] \
-
-  \fixme{Find ordenligt eksempel navn/tekst}
+\begin{tikzpicture}[]
+  \node (pair)     {$(,)$};
   
-  Betragt ML-funktionen \texttt{foo}:
-
-\begin{verbatim}
-fun foo (a, b :: xs) = b + a
-  | foo _            = 0
-\end{verbatim}
-
-  Den første klausul er en instans af skabelonklausulen
-  \[
-  \mathcal{C}[\overline{x}\texttt{ :: }\overline{xs}] =>
-  \mathbb{D}(\mathcal{C}[\overline{x}])
-  \]
-
-  med
-  \begin{align}
-    \mathcal{C} &\mapsto \texttt{(}\overline{y}\texttt{,} \diamond\texttt{)}\\
-    \overline{a} &\mapsto \texttt{a}\\
-    \overline{x} &\mapsto \texttt{b}\\
-    \overline{xs} &\mapsto \texttt{xs}\\
-    \mathbb{D}(\texttt{(}\overline{a}\texttt{,} \overline{b}\texttt{)}) &=
-    \kappa(\overline{b}) \texttt{ + } \kappa(\overline{a})
-  \end{align}
-
-  Den anden klausul er en instans af skabelonklausulen
-  \[
-  \mathcal{D} => \mathbb{E}(\mathcal{D})
-  \]
-
-  med
-  \begin{align}
-    \mathcal{D} &\mapsto \overline{a}\\
-    \overline{a} &\mapsto \texttt{\_}\\
-    \mathbb{E}(\overline{a}) &= \texttt{0}
-  \end{align}
-
-  Hvis vi nu er så heldige (og det er vi her) at $dom(\lfloor\mathcal{D}\rfloor)
-  = dom(\lfloor\mathcal{C[\texttt{\_}]}\rfloor)$ har vi en instans af
-  $\textsf{map}$. Resultatet er
-  \begin{align}
-    &\texttt{fun foo $\lfloor \mathcal{C} \rfloor [\lfloor xs \rfloor]$ = map (fn $x$ =>
-      $\mathbb{D}(\lfloor \mathcal{C} \rfloor[\lfloor x \rfloor])$) $\lfloor xs
-      \rfloor$} =\\
-    &\texttt{fun foo (a, b) = map (fn b => b + a) b}
-  \end{align}
-
-  Vi har her skrevet den kanoniske instantiering eksplicit, men i resten af
-  dokumentet lader vi den være underforstået. Instantieringer kan jo kun
-  forekomme i omskrivningsreglers højresider, hvor de i øvrigt ikke kan
-  undværes.
-\end{example}
+  \node (X)  [below left of = pair] {$\overline{x}$};
+  
+  \node (cons)  [below right of = pair] {$::$};
+  
+  \node (Y)  [below left of = cons] {$\overline{y}$};
+  \node (Z)  [below right of = cons] {$\overline{z}$};
+  
+  \path (pair) edge (X)
+        (pair) edge (cons)
+    
+        (cons) edge (Y)
+        (cons) edge (Z);
+\end{tikzpicture}
 
 
-\subsection{Skabeloner}
+\subsection{Schemes}
 
-En skabelon defineres kun ud fra de klausuler som den skal matche. Altså
-bruges der ikke syntaks til at matche funktionsnavnet. For at kunne matche
-rekursive funktioner introducerer vi nøgleordet \textsf{self} som er en
-pladsholder for funktionsnavnet af den funktion der bliver matchet mod
-skabelonen.
+\fixme{Is this the correct syntax used in the mathematical definitions?}
+
+\fixme{Add a ref to the definition}
+
+Schemes are lists of pairs of scheme patterns and scheme expressions (also
+called a clause) where we write $|\ spat => sexp$ to mean the pair $(spat,
+sexp)$. A piece of concrete SML code can be an instance of a scheme, where the meta
+patterns gets instantiated accordingly. 
+
+Pattern variables in a scheme pattern gets instantiated per clause and they are
+implicitly replaced by the concrete SML pattern they are bound to from the left
+hand side of the clause (scheme pattern) when used on the right hand side of the
+clause (scheme expression), see \fref{ex:intuition-example}
+
+whereas meta patterns gets instantiated across the whole
+scheme.
+
+
+\subsubsection{Scheme patterns}
+\fixme{Reference to the definition}
+Scheme patterns can be seen as patterns over meta patterns. If this was not the
+case and we defined them as just being meta patterns then we would be able to
+express patterns as $(\overline{x}, \overline{y})$ and $\mathcal{C}[\overline{x}
+:: \overline{xs}]$, however we would not be able to express patterns as
+$(\overline{x}, \mathcal{C}[\overline{y} :: \overline{ys}])$ since the liefs of
+meta patterns may only be pattern variables or holes.
+
+By defining scheme patterns as patterns over meta patterns we allow before
+mentioned pattern and thus gains more expressive power
+
+\subsubsection{Scheme expressions}
+\fixme{Reference to the definition}
+blalblalbla
+
+\subsection{Rewriting rules}
+
+\fixme{This is utterly wrong.}
+\fixme{Reference to the definition}
+
+
+A rewriting rule is defined from the clauses of the function that it must match,
+thus it doesn't define any meta information such as the functions name. However
+to be able to match recursive functions we introduce the keyword \textsf{self}
+as a placeholder for the name of the function that is being matched.
 
 \fixme{Her kommer normalformen på noget af en opgave, men det ser ud til at
   virke. Tjek det!}
 
-Skabeloner kan matche partielt i den forstand at hvis klausulerne $n$ til $n +
-i$ er en instans af en regel med $i$ skabelonklausuler, så kan omskrivningen
-udføres for blot disse klausuler.
+A rule may match partially in the sense that if the clauses $n$ through $n+1$ of
+a function is an instance of a rule with $i$ schemes, then the rewriting may still be
+done for those specific clauses.
 
-Ved ikke at udtrykke mere information om funktionen eller dens parametre kan vi
-have samme skabelonsyntaks for sekventialiserede og ikke-sekventialiserede
-funktionserklæringer.
+\fixme{example hereof}
 
-Det huskes at den sekventialiserede funktion
+\fixme{This might be broken up and then the canonical instantiation may be brought
+  up and the rest of the text below in a subsubsection}. 
 
-\begin{verbatim}
+% subsubsection{simplicity of the syntax and why it looks as it does}
+
+\fixme{Most of the below is more aimed at the schemes}
+
+We can use the same rule syntax for both curried and uncurried functions by not
+expressing more information about the function or its parameters in the rule.
+
+It might be remembered that the curried function below
+
+\begin{sml}
 fun add n nil       = nil
   | add n (x :: xs) = n + x :: add n xs
-\end{verbatim}
+\end{sml}
 
-skrives om (i flere trin) til
+is desugared (in multiple steps) to
 
-\begin{verbatim}
+\begin{sml}
 val rec add = fn n => 
               fn xs => (fn (n, nil) => nil
                          | (n, x::xs) => n + x :: add n xs) (n, xs)
-\end{verbatim}
+\end{sml} 
 
-Og samme funktion på ikke-sekventialiseret form
+and the same uncurried function 
 
-\begin{verbatim}
+\begin{sml}
 fun add' (n, nil)     = nil
   | add' (n, x :: Xs) = n + x :: add' (n, xs)
-\end{verbatim}
+\end{sml}
 
-bliver skrevet om til
+becomes
 
-\begin{verbatim}
+\begin{sml}
 val rec add' = fn (n, nil) = []
                 | (n, x::xs) = n + x :: add' (n, xs)
-\end{verbatim}
+\end{sml}
 
-Som det ses ender begge tilfælde her med en enkelt anonym funktion (kun den inderste
-har interesse hvis der skulle være flere). Hvis den oprindelige funktion var på
-sekventialiseret form bliver alle argumenterne sat sammen til en tupel og hvis
-den var på ikke sekventialiseret form så var argumentet allerede en tupel.
+               
 
-Denne inderste anonyme funktion har derfor nu et antal klausuler og hvor hvert
-klausuls mønster og krop matcher det der var givet i den oprindelige
-funktion.
+As it is seen, both cases end up with an anonymous function. If there are more
+than one then only the inner most is of interest as this anonymous
+function gets the two arguments as a tuple. This anonymous function has a number
+of clauses with pattern and body which match that of the original function
 
-Vi har valgt at definere vores skabeloner på en sådan måde at de minder meget om
-ovenstående. Alle klausuler i en skabelon starter på $|$ (hvilket på nær den
-første også altid er tilfælde for ML). Da vi ønsker at abstrahere den konkrete
-erklæring væk (\texttt{val} \texttt{fun}, sekventialiseret,
-ikke-sekventialiseret) starter alle vores klausuler på $|$.
+We have chosen to define our schemes in such a way that they look similar to the
+above. Alle clauses in a scheme starts on $|$ (which except for the first clause
+also apply for SML), since we have partial matching and thus don't know if the
+the first function clause will match the first scheme clause.
 
-Vi mener dette tilstræber den mest naturlige måde at udtrykke skabeloner der
-matcher ML kode.
-
-Skabeloner defineres altså som en liste af $n$ klausuler
+We believe this makes up the most natural way of expressing schemes that will
+match SML and thus a scheme is a list of $n$ scheme clauses
 
 \begin{eqnarray*}[rqrl]
-| & m_1 & => e_1 \\
+| & spat_1 & => sexp_1 \\
   &  & \vdots \\
-| & m_n & => e_n
+| & spat_n & => sexp_n
 \end{eqnarray*}
 
-hvor $m_k$ er skabelonmønstre og $e_k$ er skabelonkroppe.
+where $spat_n$ is a scheme pattern and $sexp_n$ is a scheme expression.
 
 \fixme{Der beskrives slet ikke hvordan og hvorledes med resultat
   omskrivningen. Der beskrives kun den matchende del af skabelonen.}
 
-\subsubsection{Restriktioner, prædikater og metafunktioner}
-\textit{Here be løse tanker}\\
+\subsubsection{Restrictions, predicates and meta functions}
 
-Vi udtrykker restriktioner på en skabelon med nøgleordet \textsf{where}
-efterfulgt af restriktionerne.
+\fixme{This is a lot of ideas of what we might need. It should be more concrete}
 
-Som vi så i eksemplet ovenfor kan det blive nødvendigt at indføre restriktioner
-på nogle metamønstre som funktion af andre. Vi ved at vi har brug for noget alá
-$dom$. Måske skal vi bruge andre ting.
+We express restrictions on a scheme with the keyword \textsf{where} followed by
+the restrictions \fixme{insert ref to the syntax definition}. 
 
-Prædikater og funktioner på udtryk (og ved udvidelse på metafunktioner) kan også
-blive nødvendige. Specielt kan det tænkes at et prædikat som afgør om et udtryk
-har sideeffekter eller ej bliver nødvendigt.
+As we saw in the \textsf{map} example above it may be necessary to introduce
+restrictions on some of the meta patterns as a function of others, such as
+$dom$.
+
+Predicates and functions over expressions (and with extension over meta
+functions) \fixme{why over metafunctions?} might come in handy, such as a
+predicate that may determine whether an expression has side effects.
+
+blabla....
 
 Metafunktionerne implementeres nok kønnest ``uden for''
 omskrivningssystemet. F.eks. omformes erklæringer til normalform før de
@@ -251,70 +186,102 @@ Bemærk at metafunktionerne kan have en nytteværdi i sig selv, og ikke blot
 sammen med omskrivningssystemet.
 
 
-\subsection{Maching af skabeloner}
+\subsubsection{Canonical instantiation}
+\fixme{Reference to the definition}
+The canonical instantiation of a meta pattern ($\floor{\mathcal{C}}$) is when
+all pattern variables are instantiated to concrete SML variables with capture
+avoidance. 
 
-% \fixme{bedre titel næste gang...}
+\fixme{add something about using of meta patterns from the schemes}
 
-% Der kræves 4 skridt for at verificere om en funktion matcher en skabelon
+This is used in the resulting part of a rewriting rule, because pattern
+variables aren't bound to any concrete SML code.
 
-% \begin{enumerate}
-% \item Antal klausuler stemmer overens i skabelon og funktion der skal matche.
+Example: $\floor{\mathcal{C}}$ $\mathcal{C} = \texttt{(}\diamond\texttt{,} \overline{y}\texttt{)}$:
+$\floor{\mathcal{C}} = \floor{\texttt{(}\diamond\texttt{,} \overline{y}\texttt{)}} = \texttt{(}\diamond\texttt{,}
+\floor{\overline{y}}\texttt{)} = \texttt{(}\diamond\texttt{,} \texttt{a)}$.
 
-% \item Hver klausuls krop fra skabelonen kan ``matches'' med den tilsvarende
-%   klausuls krop i funktion.
+\paragraph{Note.} The canonical instantiation only occurs in the right hand side
+of rewriting rules and since they are mandatory we will let it be implicit in the
+rest of the document.
 
-% \item $\mathcal{C}[patvar_1]\ldots[patvar_n]$ fra regel $m$ skal matche den
-%   oprindelige funktions pattern $m$, hvor samtlige $patvar_k$ skal kunne matche
-%   et deltræ af det oprindelige pattern. Alle disse matchede deltræer må ikke
-%   overlappe og de vil blive erstattet med $diamond_k$ og $patvar_k$ bliver
-%   bundet til det deltræ den matchede.
+\subsection{Example}
 
-Det er en af vores pointer at systemet selv skal finde passende
-metamønstre. Nogle gange giver en skabelonklausul anledning til flere
-mulige metamønstre. I de fald må resten af omskrivningsreglen slå fast hvilket
-der er rigtigt (om noget).
+Introduction...
 
-Her er eksempler på mønstre og de metamønstre de resulterer i.
+\begin{example}[Matching / use of pattern variables] \
+\label{ex:intuition-example}
 
-Vi regner med at en blindgydesøgning i praksis vil være hurtig nok.
+  \fixme{Find ordenligt eksempel navn/tekst}
 
-  \begin{example} \ 
+  \fixme{this example uses dom. Rearrange the text so dom is explained before}
 
-    % \fixme{Burde nok medtage hvad parvars bliver bundet til også.}
+  \fixme{add reference to the map rule definition, instead of hiding that this
+    is a map example.}
+  
+  Given the below function \texttt{foo}, we will try and match it up with the
+  \textsf{map}-rule
 
-    \begin{tabular}{l|l|l} 
-      ML-mønster & Skabelonmønster & Resulterende
-      $\mathcal{C}$ \\ \hline
-      
-      \texttt{(a, b) :: xs} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
-      $\diamond$ \\
+\begin{sml}
+fun foo (a, b :: xs) = b + a
+  | foo _            = 0
+\end{sml}
 
-      \texttt{(b, a) :: xs} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
-      $\diamond$ \\
+  The first clause in \texttt{foo} is an instance of the first
+  scheme in the \textsf{map}-rule
 
-      \texttt{(a, x :: xs)} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
-      $(\overline{a}, \diamond)$ \\
+  \[
+  |\ \mathcal{C}[\overline{x}\texttt{ :: }\overline{xs}] =>
+  \mathbb{D}(\mathcal{C}[\overline{x}])
+  \]
 
-      \texttt{(x :: xs, b)} & $\mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}]$ &
-      $(\diamond, \overline{b})$ \\
+  with
 
-      \texttt{(x :: xs, y :: ys)} & $\mathcal{C}[\overline{x} \texttt{ :: }
-      \overline{xs}][\overline{y} \texttt{ :: } \overline{ys}]$ &
-      $(\diamond_1, \diamond_2)$ eller $(\diamond_2, \diamond_1)$\\
-      
-    \end{tabular}
-    
-  \end{example}
+  \begin{eqnarray*}[rl]
+    \mathcal{C} &\mapsto \texttt{(}\overline{y}\texttt{,} \diamond\texttt{)}\\
+    \overline{a} &\mapsto \texttt{a}\\
+    \overline{x} &\mapsto \texttt{b}\\
+    \overline{xs} &\mapsto \texttt{xs}\\
+    \mathbb{D}(\texttt{(}\overline{a}\texttt{,} \overline{b}\texttt{)}) &=
+    \kappa(\overline{b}) \texttt{ + } \kappa(\overline{a})
+  \end{eqnarray*}
 
-% \item $\mathbb{D}$ genererer en funktion der sender det resulterende $pat$ hen i
-%   en $exp$ hvor $exp$ netop er den $exp$ der matcher funktionens $exp$ på
-%   pågældende plads.
+  The second clause is an instance of the scheme
 
-% \end{enumerate}
+  \[
+  |\ \mathcal{D} => \mathbb{E}(\mathcal{D})
+  \]
+
+  with
+
+  \begin{eqnarray*}[rl]
+    \mathcal{D} &\mapsto \overline{a}\\
+    \overline{a} &\mapsto \texttt{\_}\\
+    \mathbb{E}(\overline{a}) &= \texttt{0}
+  \end{eqnarray*}
+  
+  Finally, if $dom(\lfloor\mathcal{D}\rfloor) =
+  dom(\lfloor\mathcal{C[\texttt{\_}]}\rfloor)$, which is the case here, then the
+  function \texttt{foo} is an instance of the $\mathsf{map}$-rule and may be
+  rewritten accordingly:
+
+  \fixme{maybe some more text about the dom}
+
+  \begin{eqnarray*}[c]
+    \texttt{fun foo $\lfloor \mathcal{C} \rfloor [\lfloor xs \rfloor]$ = map (fn $x$ =>
+      $\mathbb{D}(\lfloor \mathcal{C} \rfloor[\lfloor x \rfloor])$) $\lfloor xs
+      \rfloor$}\\
+    =\\
+    \texttt{fun foo (a, b) = map (fn b => b + a) b}
+  \end{eqnarray*}
+  
+  We have explicitly written the canonical instantiation, but as noted before
+  this will not always be done.
+\end{example}
 
 
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: "../rewriting_syntax2"
+%%% TeX-master: "../rewriting-syntax"
 %%% End: 

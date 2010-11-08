@@ -8,64 +8,65 @@ som implementerer forskellige varianter af SML's $\texttt{map}$ funktion.
 \section{Map}
 
 \begin{example}[\textsf{map}-instans]\
-\begin{verbatim}
+\begin{sml}
 fun foo (nil, f)     = nil
   | foo ([x], g)     = [g x]
   | foo (x :: xs, f) = f x :: foo (xs, f)
-\end{verbatim}
+\end{sml}
 
 bliver normaliseret til
 
-\begin{verbatim}
+\begin{sml}
 fun foo ([x], g)     = [g x]
   | foo (x :: xs, f) = f x :: foo (xs, f)
   | foo _            = nil
-\end{verbatim}
+\end{sml}
 
 De to sidste to klausuler er en instans af \textsf{map}-reglen med
-\begin{align}
+\begin{eqnarray*}[rl]
 \mathcal{C} &\mapsto \texttt{($\diamond$, $\overline{y}$)}\\
 \overline{x} &\mapsto \texttt{x}\\
 \overline{xs} &\mapsto \texttt{xs}\\
 \mathbb{D}(\texttt{($\overline{a}$, $\overline{b}$)}) &= \kappa(\overline{b})\
 \kappa(\overline{a})\\
 \mathcal{D} &\mapsto \texttt{\_}
-\end{align}
+\end{eqnarray*}
 
 Så de skrives om til
-  \begin{align}
-    &\texttt{$\mathcal{C}[xs]$ => map (fn $m$ =>
-      $\mathbb{D}(\mathcal{C}[m])$) $xs$} =\\
-    &\texttt{(a, b) => map (fn a => b a) a}
-  \end{align}
-
+  \begin{eqnarray*}[c]
+    \texttt{$\mathcal{C}[xs]$ => map (fn $m$ =>
+      $\mathbb{D}(\mathcal{C}[m])$) $xs$}\\
+    =\\
+    \texttt{(a, b) => map (fn a => b a) a}
+  \end{eqnarray*}
+  
 Og det endelige resultat er
 
-\begin{verbatim}
+\begin{sml}
 fun foo ([x], g) = [g x]
   | foo (a, b)   = map (fn a => b a) a
-\end{verbatim}
+\end{sml}
 
 \end{example}
 
 \begin{example}[\textsf{map}-instans]\
-\begin{verbatim}
+\begin{sml}
 fun foo nil       = nil
   | foo (x :: xs) = x + 1 :: foo xs
-\end{verbatim}
+\end{sml}
 
 bliver normaliseret til
 
-\begin{verbatim}
+\begin{sml}
 fun foo (x :: xs) = x + 1 :: foo xs
   | foo _         = nil
-\end{verbatim}
+\end{sml}
 
 Resultatet bliver
 
-\begin{verbatim}
+\begin{sml}
 fun foo a = map (fn a => a + 1) a
-\end{verbatim}
+\end{sml}
 
 
 % \begin{eqnarray*}
@@ -140,21 +141,21 @@ fun foo a = map (fn a => a + 1) a
 \section{Fold}
 
 \begin{example}[\textsf{fold}-instans]\
-\begin{verbatim}
+\begin{sml}
 fun sum nil       = 0
   | sum (x :: xs) = sum xs + x
-\end{verbatim}
+\end{sml}
 
 normaliseres til
 
-\begin{verbatim}
+\begin{sml}
 fun sum (x :: xs) = sum xs + x
   | sum _         = 0
-\end{verbatim}
+\end{sml}
 
 De to klausuler er en instans af \textsf{foldl}-reglen med
 
-\begin{align}
+\begin{eqnarray*}[rl]
   \mathcal{C} &\mapsto \diamond\\
   \overline{x} &\mapsto \texttt{x}\\
   \overline{xs} &\mapsto \texttt{xs}\\
@@ -162,20 +163,22 @@ De to klausuler er en instans af \textsf{foldl}-reglen med
   \kappa(\overline{b}) \texttt{ + } \kappa(\overline{a})\\
   \mathcal{D} &\mapsto \texttt{\_}\\
   \mathbb{E}(\overline{a}) &= \texttt{0}
-\end{align}
+\end{eqnarray*}
 
 Så de skrives om til
-  \begin{align}
-    &\texttt{$\mathcal{C}[xs]$ => foldl (fn ($a$, $b$) =>
-      $\mathbb{D}($($\mathcal{C}[a]$, $b$)$)$) $\mathbb{E}(\mathcal{C}[$nil$])$ $xs$} =\\
-    &\texttt{a => foldl (fn (a, b) => b + a) 0 a}
-  \end{align}
+  \begin{eqnarray*}[c]
+    \texttt{$\mathcal{C}[xs]$ => foldl (fn ($a$, $b$) =>
+      $\mathbb{D}($($\mathcal{C}[a]$, $b$)$)$) $\mathbb{E}(\mathcal{C}[$nil$])$
+      $xs$}\\
+    =\\
+    \texttt{a => foldl (fn (a, b) => b + a) 0 a}
+  \end{eqnarray*}
 
 Og det endelige resultat er
 
-\begin{verbatim}
+\begin{sml}
 fun sum a = foldl (fn (a, b) => b + a) 0 a
-\end{verbatim}
+\end{sml}
 
 
   % \begin{eqnarray*}
@@ -221,5 +224,5 @@ fun sum a = foldl (fn (a, b) => b + a) 0 a
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: "../rewriting_syntax2"
+%%% TeX-master: "../rewriting-syntax"
 %%% End: 

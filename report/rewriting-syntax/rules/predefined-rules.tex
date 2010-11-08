@@ -1,12 +1,9 @@
 \subsection{Predefined rules}
 
+Below are the mathematical definitions of rewriting rules for some of the most
+common mistakes made in SML.
 
-Nedenfor gives forskellige skabeloner for omskrivning til nogle af de mest
-almindelige ML udtryk.
-
-\begin{definition}[Omskrivning af \textsf{map}-instanser]
-  % Bemærk at omkskrivningen til normalform garanterer at mønsteret i den anden
-  % klausul er joker.
+\begin{definition}[Rewriting of \textsf{map}-instances] \ \\
 
   \begin{eqnarray*}[rqrl]
     | & \mathcal{C}  [\overline{x} \texttt{ :: } \overline{xs}] &  => \mathbb{D}
@@ -18,11 +15,12 @@ almindelige ML udtryk.
     | & \mathcal{C} [ xs ] & => \texttt{map (fn $m$ => $\mathbb{D}(\mathcal{C} [ m ]$ )) $xs$}
   \end{eqnarray*}
 \end{definition}
-
-\begin{definition}[Omskrivning af \textsf{foldl}-instanser] \ \\
+\fixme{add the foldr rule}
+\begin{definition}[Rewriting of \textsf{foldl}-instances] \ \\
 
   \begin{eqnarray*}[rqrl]
-    | & \mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}] &  => \mathbb{D} ( \texttt{($\mathcal{C}
+    | & \mathcal{C}[\overline{x} \texttt{ :: } \overline{xs}] &
+    => \mathbb{D} ( \texttt{($\mathcal{C}
       [\overline{x}]$, $\textsf{self}( \mathcal{C}[\overline{xs}])$)} ) \\
     | & \mathcal{D} & => \mathbb{E}(\mathcal{D})\\
     & \textsf{where}\ \ & dom(\mathcal{D}) = dom(\mathcal{C}[\texttt{\_}])\\
@@ -33,5 +31,5 @@ almindelige ML udtryk.
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: "../rewriting_syntax2"
+%%% TeX-master: "../rewriting-syntax"
 %%% End: 

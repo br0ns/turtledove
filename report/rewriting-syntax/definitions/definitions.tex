@@ -1,8 +1,8 @@
 \section{Definitions}
 We write concrete SML i typewriter font as this:
-\begin{code}
+\begin{sml}
 fun id x = x
-\end{code}
+\end{sml}
 
 We use the names given in \cite{SML97} for the different syntactic categories.
 
@@ -26,11 +26,15 @@ program text we write them with at initial capital letter (with very few
 exceptions like \codeinline{::} \codeinline{nil}). We respect the infix status
 of the symbols given by $E$.
 
-We write $\mathfrak{a}, \mathfrak{b}, \mathfrak{c}, \ldots$ for variables ranging
-over $con$.
+We write $\mathfrak{a}, \mathfrak{b}, \mathfrak{c}, \ldots$ for variables
+ranging over $con$.
 
-\begin{definition}[Record constructors] \ \\
-  The record constructor given by
+\fixme{Note about non-equality of wildcards.}
+
+
+
+\begin{description}
+\item[Record constructors] The record constructor given by
   \[
   (\alpha, \beta) \mapsto \texttt{\{foo = $\alpha$, bar = $\beta$\}}
   \]
@@ -39,77 +43,70 @@ over $con$.
   Recall that the tuple constructors are just syntactic sugar for a subset of
   the record constructors. We write $\mathfrak{T}_n$ to mean
   $\mathfrak{R}_{\texttt{1},\ldots,\texttt{n}}$.
-\end{definition}
 
-\begin{definition}[(SML) Variables] \ \\
-  Is the set $var$ of all valid SML variables, which we denote by any text in
-  typewriter font as with any concrete SML. For example $\mathtt{x},\
-  \mathtt{y},\ \mathtt{xs}$.
-\end{definition}
 
-% \begin{definition}[Simple (SML) expressions]
-%   Is the set of $simp\_exp$ which is SML expressions without type annotation and
-%   infix status. \fixme[inline, margin=false]{Is this ok or shoud it be inlined down in the scheme
-%     body?}
-% \end{definition}
+\item[(SML) Variables] Is the set $var$ of all valid SML variables, which we
+  denote by any text in typewriter font as with any concrete SML. For example
+  $\mathtt{x},\ \mathtt{y},\ \mathtt{xs}$.
 
-\begin{definition}[Meta variables] \ \\
-  Is the set of $mvar = \{x,\ y,\ xs,\ \ldots \}$. Meta variable range
-  over $var \cup \{\texttt{_}\}$.
-\end{definition}
 
-\begin{definition}[Pattern variables] \ \\
-  Is the set of $pvar = \{ \overline{x},\ \overline{y},\
+  % \item[Simple (SML) expressions]
+  %   Is the set of $simp\_exp$ which is SML expressions without type annotation
+  %   and infix status. \fixme[inline, margin=false]{Is this ok or shoud it be
+  %     inlined down in the scheme body?}
+  % \end{definition}
+
+\item[Meta variables] Is the set of $mvar = \{x,\ y,\ xs,\ \ldots \}$. Meta
+  variable range over $var \cup \{\texttt{_}\}$.
+
+
+\item[Pattern variables] Is the set of $pvar = \{ \overline{x},\ \overline{y},\
   \overline{xs} \}$. Pattern variables range over $pat^{var}$ .
-\end{definition}
 
-\begin{definition}[Holes] \ \\
-  Is the countably infinite set, $holes$, of constants named $\diamond_1, \diamond_2,
-  \ldots$, and we write $\diamond$ to mean $\diamond_1$.
-\end{definition}
 
-\begin{definition}[Meta patterns] \ \\
-  Is the set of meta patterns $mpat = pat^{pvar \cup holes}$. The subset $mpat_n
-  \subset mpat$ is the meta patterns with exactly $n$ holes. We write
-  $\mathcal{A},\mathcal{B}, \mathcal{C}, \ldots$ for variables ranging over
-  $mpat$.
-\end{definition}
+\item[Holes] Is the countably infinite set, $holes$, of constants named
+  $\diamond_1, \diamond_2, \ldots$, and we write $\diamond$ to mean
+  $\diamond_1$.
 
-\begin{definition}[Scheme patterns]
-  Is the set $spat = pat^{mpat_0} = \{\alpha, \beta, \ldots \}$
-\end{definition}
 
-\begin{definition}[Scheme bodies] \ \\
-  Is the set $sexp$. The grammar and semantics is described in the next
-  section. We write $\alpha, \beta, \gamma, \ldots$ for variables ranging over
-  $sexp$.
-\end{definition}
+\item[Meta patterns] Is the set of meta patterns $mpat = pat^{pvar \cup
+    holes}$. The subset $mpat_n \subset mpat$ is the meta patterns with exactly
+  $n$ holes. We write $\mathcal{A},\mathcal{B}, \mathcal{C}, \ldots$ for
+  variables ranging over $mpat$.
 
-\begin{definition}[Scheme clauses] \ \\
-  Is the set $clauses = spat \times sexp$. We write $|\ \alpha => \beta$ for the pair
-  $(\alpha, \beta)$
-\end{definition}
 
-\begin{definition}[Schemes] \ \\
-  Is the set $schemes = clauses^{+}$
-\end{definition}
+\item[Scheme patterns] Is the set $spat = pat^{mpat_0} = \{\alpha, \beta, \ldots
+  \}$
 
-\begin{definition}[(Rewriting) rules] \ \\
-  Is set $rules = schemes \times sexp$. We write
+
+\item[Scheme bodies] Is the set $sexp$. The grammar and semantics is described
+  in the next section. We write $\alpha, \beta, \gamma, \ldots$ for variables
+  ranging over $sexp$.
+
+
+\item[Scheme clauses] Is the set $clauses = spat \times sexp$. We write $|\
+  \alpha => \beta$ for the pair $(\alpha, \beta)$
+
+
+\item[Schemes] Is the set $schemes = clauses^{+}$
+
+
+\item[(Rewriting) rules] Is set $rules = schemes \times sexp$. We write
   \[
   \shortstack[ccc]{$\alpha$ \\ $\Downarrow$ \\ $\beta$}
   \]
   for the pair $(\alpha, \beta)$.
-\end{definition}
 
-\begin{definition}[Transformers]
-  Is the set $trans = pat^{var \cup holes} \times sexp$. We write $\mathbb{D},
-  \mathbb{E}, \ldots$ to range over transformers.
+
+\item[Transformers] Is the set $trans = pat^{var \cup holes} \times sexp$. We
+  write $\mathbb{D}, \mathbb{E}, \ldots$ to range over transformers.
   % Is the set $trans$ which is a subset of the partial functions
   % \[
   % pat^{var \cup holes} \rightharpoonup exp
   % \]
-\end{definition}
+
+\end{description}
+
 
 %%% Local Variables: 
 %%% mode: latex
