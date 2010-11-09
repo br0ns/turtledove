@@ -47,9 +47,28 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathreplacing}
 
+\makeatletter
+\newenvironment{nonfloatingfigure}{
+  \vskip\intextsep
+  \def\@captype{figure}
+  }{
+  \vskip\intextsep
+}
+
+\newenvironment{nonfloatingtable}{
+  \vskip\intextsep
+  \def\@captype{table}
+  }{
+  \vskip\intextsep
+}
+\makeatother
+
+
 \lstnewenvironment{sml}
 {\lstset{xleftmargin=3em}} % starting code, ex a lstset that is more specific;
 {} % ending code
+
+
 
 
 \newcommand{\floor}[1]{\ensuremath{\lfloor #1 \rfloor}}

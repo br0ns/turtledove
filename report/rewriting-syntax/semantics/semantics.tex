@@ -14,32 +14,36 @@ which we take to mean a recursive call.
 \subsection{Scheme bodies}
 
 The grammar of $sexp$'s is given by
+
+\begin{nonfloatingfigure}
+
 \setlength{\grammarindent}{7.3em}
 \begin{grammar}
  
-<atsexp>  ::= <scon>
-          \alt "op" <longvid>
-          \alt "{" <sexprow> "}"
-          \alt "\#" <lab> 
-          \alt "()"
-          \alt "(" <sexp>, ..., <sexp> ")"
-          \alt "let" <dec> "in" <sexp> "end"
-          \alt "(" <sexp> ")"
-
-<sexprow> ::= <lab> "=" <sexp> ["," <sexprow>] "\# fix correct meaning of this"
-
-<sexp>    ::= <sexp> <atsexp>
-          \alt <sexp> "andalso" <sexp>
-          \alt <sexp> "orelse" <sexp>
-          \alt <sexp> "handle" <smatch>
-          \alt "if" <sexp> "then" <sexp> "else" <sexp>
-          \alt "case" <sexp> "of" <smatch>
-          \alt "fn" <smatch>
-
-<smatch>  ::= <smrule> "<|" <smatch> ">" "\# fix wierd <|"
-
-<smrule>  ::= <spat> "=>" <sexp>
+  <atsexp> ::= <scon> \alt "op" <longvid> \alt "{" <sexprow> "}" \alt "\#"
+  <lab> \alt "()" \alt "(" <sexp>, ..., <sexp> ")" \alt "let" <dec> "in"
+  <sexp> "end" \alt "(" <sexp> ")"
+  
+  <sexprow> ::= <lab> "=" <sexp> ["," <sexprow>] "\# fix correct meaning of this"
+  
+  <sexp> ::= <sexp> <atsexp> \alt <sexp> "andalso" <sexp> \alt <sexp> "orelse"
+  <sexp> \alt <sexp> "handle" <smatch> \alt "if" <sexp> "then" <sexp> "else"
+  <sexp> \alt "case" <sexp> "of" <smatch> \alt "fn" <smatch>
+  
+  <smatch> ::= <smrule> "<|" <smatch> ">" "\# fix wierd <|"
+  
+  <smrule> ::= <spat> "=>" <sexp>
 \end{grammar}
+  
+  \caption{Grammar for scheme expressions.}
+  \label{fig:scheme-expressions}
+\end{nonfloatingfigure}
+
+
+
+
+
+\fixme{Add short comment about what this is: SML without types, added with ...}
 
 \subsection{Rules}
 \newcommand{\becomesthrough}[3]{#1 \textsf{ becomes } #2 \textsf{ through } #3}

@@ -19,22 +19,22 @@ When specifying rewriting rules we
 
   <letter> ::= <upper-letter> | <lower-letter>
 
-  <rules> ::= <rule> | <rule> <rules>
+%  <rules> ::= <rule>+
 
-  <rule> ::= "rule" <rule-type> <rule-name> \\
-             \hspace*{1em} <clauses> \\
-             <opt-where> \hfill "\# is optional" \\
-             "becomes" \\
-             \hspace*{1em} <clauses> \\
-             "end"
+  <rule> ::= "rule" <rule-header> <scheme> "becomes" <clause>+
+  "end"
+
+  <rule-header> ::= <rule-type> <rule-name>
 
   <rule-type> ::= "clauses" | "expression" 
 
   <rule-name> ::= <letter>+ \hfill "\# No spaces allowed in rule-names"
 
-  <clauses> ::= <clause>+
+  <scheme> ::= <clause>+ [<opt-where>]
 
-  <clause> ::= "|" <spat> "=>" <sexps>
+%  <clauses> ::= <clause>+
+
+  <clause> ::= "|" <spat> "=>" <sexp>
 
   <opt-where> ::= something with the dom....
 
