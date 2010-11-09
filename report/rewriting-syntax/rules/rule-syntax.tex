@@ -11,14 +11,6 @@ When specifying rewriting rules we
 \setlength{\grammarindent}{7.3em}
 \begin{grammar} 
  
-  <upper-letter> = "[A-Z]" \hfill "# Regex, big letter"
-
-  <lower-letter> = "[a-z]" \hfill "# Regex, small letter"
-
-  <ws> = "\\s" \hfill "\# Regex, all whitespace"
-
-  <letter> ::= <upper-letter> | <lower-letter>
-
 %  <rules> ::= <rule>+
 
   <rule> ::= "rule" <rule-header> <scheme> "becomes" <clause>+
@@ -30,17 +22,19 @@ When specifying rewriting rules we
 
   <rule-name> ::= <letter>+ \hfill "\# No spaces allowed in rule-names"
 
-  <scheme> ::= <clause>+ [<opt-where>]
+  <scheme> ::= <clause>+ [<cstrn>]
 
 %  <clauses> ::= <clause>+
 
   <clause> ::= "|" <spat> "=>" <sexp>
 
-  <opt-where> ::= something with the dom....
+  <cstrn> ::= "where" <cstrn-body> 
+
+  <cstrn-body> ::= <cstrn-rel> | <cstrn-rel> "," <cstrn-body>
+
+  <cstrn-rel> ::= .... to be defined.
 
   <spat> ::= <sml-identifier> | <meta-pattern>
-
-  <sexps>  ::= <sexp>+
   
   <sexp>   ::= <sml-identifier> | <meta-pattern> | <transformer>
 
@@ -48,7 +42,7 @@ When specifying rewriting rules we
 
   <meta-pattern> ::= "§" <upper-letter> \{ <opt-meta-pattern-input> \}
 
-  <opt-meta-pattern-input> ::= "[" <meta-pattern> "]" \hfill "\# Fix the input"
+  <opt-meta-pattern-input> ::= "[" <meta-pattern> "]" \hfill "\# Fix the input" 
 
 \end{grammar}
 
