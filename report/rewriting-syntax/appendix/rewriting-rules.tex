@@ -7,12 +7,12 @@
   exactly the same.}
 \begin{verbatim}
 Rule Clauses Map
-   | §C[x :: xs] => {D} §C[x] :: self §C[xs]
+   | §C[x :: xs] => :: (£D §C[x],  self §C[xs])
    | §D => nil
 where
-   dom §D = dom §C
+   dom (§D, §C)
 becomes
-   | §C[xs] => map (fn m => {D} §C[m]) xs
+   | §C[xs] => map (fn m => £D §C[m]) xs
 end
 \end{verbatim}
 
@@ -21,12 +21,12 @@ end
 
 \begin{verbatim}
 Rule Clauses foldr
-   | §C[x :: xs] => {D} (§C[x], self §C[xs])
-   | §D => {E} §D
+   | §C[x :: xs] => £D (§C[x], self §C[xs])
+   | §D => [E] §D
 where
-   dom §D = dom §C
+   dom (§D, §C)
 becomes
-   | §C[xs] => foldr (fn (a, b) => {D} (§C[a], b)) ({E} §C) xs
+   | §C[xs] => foldr (fn (a, b) => £D (§C[a], b)) (£E §C) xs
 end
 \end{verbatim}
 

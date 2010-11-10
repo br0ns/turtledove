@@ -38,15 +38,18 @@ When specifying rewriting rules we
   
   <sexp>   ::= <sml-identifier> | <meta-pattern> | <transformer>
 
-  <transformer> ::= "[" <upper-letter> "]" "(" <meta-pattern> ")" \hfill "\# Fix the input"
+  <transformer> ::= "£" <upper-letter> <transformer-input> \hfill "\# Fix the input"
 
-  <meta-pattern> ::= "§" <upper-letter> \{ <opt-meta-pattern-input> \}
+  <transformer-input> ::= <pat>
 
-  <opt-meta-pattern-input> ::= "[" <meta-pattern> "]" \hfill "\# Fix the input" 
+  <meta-pattern> ::= "§" <upper-letter>+  <meta-pattern-input>*
+
+  <meta-pattern-input> ::= "[" <meta-pattern> "]" \hfill "\# Fix the input" 
 
 \end{grammar}
 
-%%% Local Variables: 
+
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "../rewriting-syntax"
 %%% End: 
