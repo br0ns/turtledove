@@ -41,7 +41,6 @@ datatype patexp = Wildcard
                                                        was delimited by a period. *)
                 | LongvidAtPat of string list * patexp (* Constructed pattern - each string in the 
                                                           list was delimited by a period. *)
-                | Layered of string * patexp        (* Layered vid * pat *)
                 | Record of (string * patexp) list  (* pat fix StringMap.t *)
                 | App of exp * exp                  (* Function application, left recursive *)
                 | Fun of mrule list                 (* anonymous function definition *)
@@ -64,13 +63,13 @@ datatype rule = Rule of ruleHeader * scheme * clause list
 
 
 
-val smlIdentifierP = Lex.identifier {identHd = "", identTl = ""}
+val smlIdentifierParser = Lex.identifier {head = "", tail = ""}
 
-val smlLongVidP = Lex.lexeme $ many1 (smlIdentifierP --| (Text.char "."))
+val smlLongVidParser = Lex.lexeme $ many1 (smlIdentifierP --| (Text.char "."))
 
-val smlVidP = ...
+val smlVidParser = ...
 
-val sconP = Lex.lexeme $ Parser.Text.word
+val sconParser = Lex.lexeme $ Parser.Text.word
 
 
 fun spatParser x = 
@@ -80,47 +79,51 @@ fun spatParser x =
       infix 1 --- |-- --|
       infix 2 >>> --> ??? produce
 
+      (*****************)
       (* atpat parsers *)
+      (*****************)
 
-      val wildcardP = Lex.symbol "_" >>> Wildcard                      
+      (* Wildcards in pattern "_"  *)
+      val wildcardP = Lex.symbol "_" produce Wildcard                      
 
-      val recordKeyValP = 
-          ( 
-           smlIdentifierP 
-               --> (fn id1 =>                        
-                       ( (* Either we are followed by a "=" and the new binding *)
-                        (Lex.symbol "=")
-                            |-- smlIdentifierP
-                            --> (fn id2 => return (id1, Longvid id2 ))
-                       ) |||
-                       ( (* Or we bind the first id as the new binding as well *)
-                        return (id1, Longvid id1)
-                       )
-                   )
-          ) (*Fixme: We ought to parse the "..." as well *)
-
+      (* record with zero or more key value pairs. *)
       val recordP = (Lex.braces $ Lex.commaSep recordKeyValP) >>> Record
 
+      (* Record key value pairs: "id_l = id_r" or "id_l" or "..." =>
+      "[(id_l,id_r), ..., (id_l, id_r)] where if only "id_l" is supplied it will
+      expand to "(id_l, id_l)" and "..." will stop parsing for more input. *)
+      val recordKeyValP = 
+          ( 
+           try smlIdentifierParser --> (fn idL =>           
+           ( (* Either we are followed by a "=" and the new binding *)
+               try $ (Lex.symbol "=") |-- 
+               smlIdentifierP --> (fn idR => 
+               return (idL, Longvid idR ))
+           ) |||
+           ( (* Or we bind the first id as the new binding as well *)
+               return (idL, Longvid idL)
+           ))           
+          ) ||| 
+          (
+           lex.symbol "..." |--- fail 
+          )
 
+      (***************)
       (* pat parsers *)
-
-      fun layeredP x = (
-          smlVidP
-              --> (fn vid => 
-                      (Lex.symbol "as")
-                          |-- patP >>> (pair vid)
-                  )
-      ) x 
-                       
-      and londVidAtPat x = (
-          smlLongVidP --> (fn lngVid => atpatP >>> (pair lngVid) )
+      (***************)
+          
+      (* Constructed patterns such as SOME x, NONE or SOME 5 *)
+      fun londVidAtPat x = (
+          (smlLongVidParser --- atpatP)
       ) x
-                           
-                           
-                           
+                       
+      (***************************************)
+      (* Resulting main parsers for patterns *)
+      (***************************************)
+                                                      
       and atpatP x = (
           wildcardP  
-              ||| sconP 
+              ||| sconParser 
               ||| smlLongVidP 
               ||| recordP 
               ||| Lex.parens patP                   
@@ -135,46 +138,69 @@ fun spatParser x =
       patp x
     end
 
-fun parser x =
+fun sexpparser x = 
     let
       open Parser
       infix 0 |||
       infix 1 --- |-- --|
       infix 2 >>> --> ??? produce
 
-      val idP =  (Lex.lexeme $ many1 Text.letter) >>> (Nullary o implode)
-      val conP = ... Unary
-      val tupleP = (Lex.parens $ Lex.commaSep1 patP) >>> Tuple
+      (*****************)
+      (* atexp parsers *)
+      (*****************)
 
-      (* Record parser, parses sml records with zero or more recordKeyVal
-      pairs.*)
+      (* Record with zero or more key value pairs.*)
       fun recordP x = (
-          (Lex.braces $ commaSep recordKeyValP) >>> Record
-      ) x
+          (Lex.braces $ Lex.commaSep recordKeyValP) >>> Record
+      ) x              
 
-      (* record key value parser, parses an sml identifier folowed by a "=" and
-      then a pattern *)
+      (* Record key value pairs: "id = exp" => (id, exp) *)
       and recordKeyValP x = (
-          smlIdentifierP --> (fn id => symbol "=" |-- patP >>> (pair id))
+          smlIdentifierParser --- (Lex.symbol "=" |-- expP)
       ) x
-                            
-      (* Meta pattern parser for the metaPattern type *)
-      and metaP x = (
-          
-          ) x
 
-      (* Transformer parser for the trans datatype *)
-      and transP x = (
-          symbol "£" |-- (Lex.Lexeme $ many1 Text.upper) --> 
-                 (fn transName => patP >>> (pair transName))
-          ) x                  
-
-      (* Pattern parser for the pat datatype. *) 
-      and patP x = (
-          idP ||| tupleP
+      (***************)
+      (* exp parsers *)
+      (***************)
+                      
+      (* Function application (left recursive): "exp atexp" => (exp, atexp)  *)
+      and appP x = (
+          (expP --- atexpP) >>> App
       ) x
-                       
+
+      (* Anonymous function definition: "fn match" *)
+      and fnP x = (
+          (Lex.symbol "fn" |-- matchP) >>> Fun
+      ) x
+
+      (* Anonymous function matches: A rule followed by zero or more "| mrule"
+         => [(pat,exp), ..., (pat_n, exp_n)] *)
+      and matchP x = (
+          sepBy1 mruleP (Lex.symbol "|")
+      ) x 
+
+      (* Anonymous function mrule: "pat => exp" => (pat, exp) *)
+      and mruleP x = (
+          spatParser --- (lex.symbol "=>" |-- sexpParser)
+      ) x
+         
+      (******************************************)
+      (* Resulting main parsers for expressions *)
+      (******************************************)
+
+        and atexpP x = (
+            sconParser 
+                ||| smlLongVidParser
+                ||| recordP
+                ||| Lex.parens expP
+        ) x
+
+        and expP x = (
+            atexpP
+                ||| appP
+                ||| fnP
+        ) x
+
     in
-      Text.whitespace |-- patP --> (fn p => eof >>> p)
+
     end
-*)
