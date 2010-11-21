@@ -19,6 +19,10 @@ fun eof source =
 
 fun tok t s p = t (s, p, p + size s)
 
+(* Positioning of the £ and § chars introduces off by one for each, as they are
+composed of two 8bit chars, but is handled as one, thus the yypos counts two
+chars where as it ought to count only one.*)
+
 %%
 %reject
 %full
@@ -65,8 +69,9 @@ hexnum={hexDigit}+;
 <INITIAL>"clauses"             => ( T.RULE_TYPE_CLAUSES (yypos, yypos + 7) );
 <INITIAL>"expression"          => ( T.RULE_TYPE_EXPRESSION (yypos, yypos + 10) );
 <INITIAL>"becomes"             => ( T.BECOMES (yypos, yypos + 7) );
-<INITIAL>{secId}               => ( tok T.META (String.extract(yytext, 1, NONE)) yypos );
-<INITIAL>{poundId}             => ( tok T.TRANS (String.extract(yytext, 1, NONE)) yypos );
+<INITIAL>"self"                => ( T.SELF (yypos, yypos + 4) );
+<INITIAL>{secId}               => ( tok T.META (String.extract(yytext, 2, NONE)) yypos );
+<INITIAL>{poundId}             => ( tok T.TRANS (String.extract(yytext, 2, NONE)) yypos );
 
 
 <INITIAL>"_"                   => ( T.WILD (yypos, yypos + 1) );

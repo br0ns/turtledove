@@ -1,5 +1,5 @@
 open SMLGrammar
-type comments = Source.Comments.t
+type cmoments = Source.Comments.t
 val dummypos = ~1
 
 val join = Tree.join
@@ -59,7 +59,7 @@ fun mkTyvar l r s =
     (* Rule *)
       META of string
     | TRANS of string
-    | RULE | RULE_TYPE_CLAUSES | RULE_TYPE_EXPRESSION | BECOMES 
+    | RULE | RULE_TYPE_CLAUSES | RULE_TYPE_EXPRESSION | BECOMES | SELF
     (* Regular SML *)
     | CHAR of string
     | INT of string
@@ -262,7 +262,8 @@ fun mkTyvar l r s =
 
 %name Rule
 
-%keyword ABSTYPE AND AS CASE DATATYPE DOTDOTDOT ELSE END
+%keyword RULE RULE_TYPE_CLAUSES RULE_TYPE_EXPRESSION BECOMES 
+  ABSTYPE AND AS CASE DATATYPE DOTDOTDOT ELSE END
   EQTYPE EXCEPTION  DO  DARROW  FN  FUN  FUNCTOR  HANDLE
   IF IN INCLUDE  INFIX  INFIXR  LET  LOCAL  NONFIX  OF  OP
   OPEN OVERLOAD  RAISE  REC  SHARING  SIG  SIGNATURE  STRUCT
@@ -283,6 +284,159 @@ fun mkTyvar l r s =
 %value WORD ("0w42")
 
 %%
+
+(*---------------------------------------------------*)
+(*                    Rules                          *)
+(*---------------------------------------------------*)
+
+(* tree * comments *)
+ruleProgram :
+    rules
+                ((join (wrap Rules rulesleft rulesright) rules,
+                 Source.Comments.get source))
+
+(* tree list *)
+rules :
+                (nil)
+  | rule rules
+                (rule :: rules)
+(* tree *)
+rule :
+    ruleTypeClauses
+                (ruleTypeClauses)
+
+(* tree *)
+ruleTypeClauses : 
+    RULE RULE_TYPE_CLAUSES longidNoAsterisk ruleScheme BECOMES ruleClauses END
+                (join (wrap (Rule_Type_Clauses longidNoAsterisk)
+                            RULEleft 
+                            ENDright) 
+                      [ruleScheme,
+                       join (wrap Rule_Clauses 
+                                  ruleClausesleft 
+                                  ruleClausesright) 
+                            ruleClauses])
+
+(* Missing expRule for expression rules 
+expRule :
+    RULE RULE_TYPE_EXPRESSIONS scheme BECOMES clauses END
+                () 
+
+*)
+
+
+(*---------------------------------------------------*)
+(*                    Schemes                        *)
+(*---------------------------------------------------*)
+
+(* tree *)               
+ruleScheme : 
+    ruleClauses ruleCstrns (* sctrn may be empty *)
+                (join (wrap Rule_Scheme ruleClausesleft ruleCstrnright) 
+                      [join (wrap Rule_Clauses 
+                                  ruleClausesleft 
+                                  ruleClausesright) 
+                            ruleClauses, 
+                       join (wrap Rule_Cstrns 
+                                  ruleCstrnsleft 
+                                  ruleCstrnsright) 
+                            ruleCstrns])
+(* tree list *)
+ruleClauses :
+    ruleClause
+                (nil)
+  | ruleClause ruleClauses
+                (ruleClause :: ruleClauses)
+
+(* tree *)
+RuleClause : 
+    BAR ruleSpat DARROW ruleSexp
+                (join (wrap Rule_Clause 
+                            BARleft
+                            ruleSexpright) 
+                      [ruleSpat, ruleSexp])
+
+(* tree *)
+ruleSpat :
+    pat
+                (pat)
+
+(* tree *)
+ruleSexp :
+    exp
+                (exp)
+
+(*---------------------------------------------------*)
+(*                    Constraints                    *)
+(*---------------------------------------------------*)
+
+(* tree list *)
+ruleCstrns : 
+                (nil) 
+  | WHERE ruleCstrnBody
+                (ruleCstrnBody) 
+
+(* tree list *)
+ruleCstrnBody :   
+    ruleCstrnRel
+                ([ruleCstrnRel]) 
+  | ruleCstrnRel COMMA ruleCstrnBody
+                (ruleCstrnRel :: ruleCstrnBody)
+
+(* tree *)
+ruleCstrnRel :
+    longidNoAsterisk LPAREN cstrnRelBody RPAREN
+                (join (wrap (Rule_Cstrn_Rel longidNoAsterisk)
+                            longidNoAsteriskleft
+                            RPARENright)
+                      cstrnRelBody)
+
+(* tree list *)
+ruleCstrnRelBody :
+    ruleSpat
+                ([ruleSpat])
+  | ruleSpat COMMA ruleCstrnRelBody
+             (ruleSpat :: ruleCstrnRelBody)
+
+(*---------------------------------------------------*)
+(*                    Transformers                   *)
+(*---------------------------------------------------*)
+
+
+transformer : 
+    TRANS spat
+                ()
+    
+
+(*---------------------------------------------------*)
+(*                    Metapatterns                   *)
+(*---------------------------------------------------*)
+
+
+metaPat :
+    META metaPatInputs
+                ()
+  | META
+                ()
+
+metaPatInputs :
+    metaPatInput
+                ()
+  | metaPatInput metaPatInputs
+                ()
+
+metaPatInput :
+    LBRACKET spat RBRACKET
+                ()
+
+
+(*---------------------------------------------------*)
+(* Below is the original full SML parser grammar     *)
+(* only slightly changed so it handles transformers  *)
+(* and metapatterns and without any types for pat    *)
+(* and exp                                           *)
+(*---------------------------------------------------*)
+
 
 (* tree * comments *)
 program : expsAndTopdecs

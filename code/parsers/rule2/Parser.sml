@@ -20,16 +20,67 @@ fun lex str =
     end
 
 
-val tk = lex "3" ()
+structure T = LrParser.Token
+structure PD = RuleLrVals.ParserData
+structure EC = RuleLrVals.ParserData.EC
+structure MV = RuleLrVals.ParserData.MlyValue
 
-structure T = RuleLrVals.Tokens
+(* To be placed after the svalue datatype
+fun showSV (META f) = f ()
+  | showSV (TRANS f) = f ()
+  | showSV (CHAR f) = f ()
+  | showSV (INT f) = f ()
+  | showSV (LONGID f) = f ()
+  | showSV (REAL f) = f ()
+  | showSV (STRING f) = f ()
+  | showSV (TYVAR f) = f ()
+  | showSV (WORD f) = f ()
+  | showSV _ = ""
+end
+*)
 
-fun showToken tk =  
-    case tk of 
-      s => s 
-    | _ => "Unknown\n"
-           
-val _ = print $ showToken tk
+fun showToken (T.TOKEN (trm, (sv, p1, p2))) = 
+    print $ (EC.showTerminal trm)
+    ^ " '" ^(MV.showSV sv) ^ "'"
+    ^ "\t\t (Start: " ^ (Int.toString p1)
+    ^ " End: " ^ (Int.toString p2)
+    ^ ")\n";
+
+fun showTokens str =
+    let
+      val l = lex str
+      fun loop () =
+          let
+            val tk as (T.TOKEN (trm, _)) = l ()
+          in
+            (showToken tk;
+             case (EC.showTerminal trm) of
+               "EOF" => ()
+             | sTrm => loop()
+            )
+          end
+    in
+      loop ()
+    end
+
+fun readFile f = 
+    let 
+      val is = TextIO.openIn f
+    in
+      TextIO.inputAll is before TextIO.closeIn is
+    end
+
+
+(*
+fun t c = (print $ Int.toString $ ord c; print "\n")
+
+val _ = List.app t $ explode $ readFile "test/test.rule"
+*)
+
+(* val _ = showTokens $ readFile "test/test.rule" *)
+
+val _ = showTokens $ readFile "test/fold.rule" 
+
 
 (*
 
