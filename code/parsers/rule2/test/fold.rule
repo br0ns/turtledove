@@ -1,0 +1,8 @@
+rule clauses foldr
+  | §Co [x :: xs] => £D (§Co [x], self §Co[xs])
+  | §Dimmer => £Effi §Dimmer
+where
+  dom (§Dimmer, §C)
+becomes
+  | §Co[xs] => foldr (fn (a, b) => £D (§Co[a], b)) (£Effi §Co) xs
+end
