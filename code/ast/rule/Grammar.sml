@@ -1,14 +1,39 @@
 structure Grammar =
 struct
 fun die s = Crash.die "SMLGrammar" s
-type ident = Ident.t Wrap.t
+type ident = Ident.t Wrap.
 
 (*
  Topdec = Strdec U Sigdec U Fundec U Dec U Exp
  Strdec' = Strdec U Dec U Exp
  *)
 
-datatype t = Topdecs (* Topdec list *)
+datatype t = 
+           (* Rules *)
+             Rules (* Rule_Type list *)
+
+           (* Rule_Type *)
+           | Rule_Type_Clauses of ident (* [Rule_Scheme, Rule_Clauses] *)
+           | Rule_Type_Expressions of ident (* who knows? *)
+
+           (* Rule_Scheme *)
+           | Rule_Scheme (* [Rule_Clauses, Cstrns] *)
+
+           (* Rule_Clauses *)
+           | Rule_Clauses (* Rule_Clause list *)
+
+           (* Rule_Clause *)
+           | Rule_Clause (*  *)             
+
+           (* Rule_Cstrns *)
+           | Rule_Cstrns (* Rule_Cstrn_Rel list *)  
+
+           (* Rule_Cstrn_Rel *)
+           | Rule_Cstrn_Rel of ident (* Meta_Pattern list *)
+
+           (* Normal SML types follows *)
+
+           | Topdecs (* Topdec list *)
 
            (* Strdecs *)
            | Strdecs (* Strdec' list *)
