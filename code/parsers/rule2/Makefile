@@ -15,7 +15,7 @@ YACCPROG = $(PROGRAM).yacc
 
 
 .PHONY: all
-all : lex yacc
+all : lex yacc mlton
 
 
 lex : $(LEXPROG)
@@ -30,3 +30,6 @@ yacc : $(YACCPROG)
 clean : 
 	-rm $(YACCPROG).*
 	-rm $(LEXPROG).*
+
+mlton : 
+	mlton Rule.mlb
