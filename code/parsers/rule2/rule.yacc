@@ -80,8 +80,25 @@ fun mkTyvar l r s =
     | ADDRESS | EXPORT | IMPORT | SYMBOL
     | PRIM
 
-%nonterm
-         aexp of t * tree list
+%nonterm ruleProgram of tree * comments
+       | ruleRules of tree list
+       | ruleRule of tree
+       | ruleTypeClauses of tree
+       | ruleScheme of tree
+       | ruleClauses of tree list
+       | ruleClause of tree
+       | ruleSpat of tree
+       | ruleSexp of tree
+       | ruleCstrns of tree list
+       | ruleCstrnBody of tree list
+       | ruleCstrnRel of tree
+       | ruleCstrnRelBody of tree list
+       | transformerNode of t * tree list
+       | metaPatNode of t * tree list
+       | metaPatInputs of tree list
+       | metaPatInput of tree
+         (* Normal sml nonterms *)
+       | aexp of t * tree list
        | andspecs of tree list
        | apat of tree
        | apatnode of t * tree list
@@ -291,19 +308,26 @@ fun mkTyvar l r s =
 
 (* tree * comments *)
 ruleProgram :
-    rules
-                ((join (wrap Rules rulesleft rulesright) rules,
-                 Source.Comments.get source))
-
+    ruleRules
+                ((join (wrap Rule_Rules 
+                             ruleRulesleft 
+                             ruleRulesright) 
+                       ruleRules,
+                  Source.Comments.get source))
+                
 (* tree list *)
-rules :
+ruleRules :
                 (nil)
-  | rule rules
-                (rule :: rules)
+  | ruleRule ruleRules
+                (ruleRule :: ruleRules)
 (* tree *)
-rule :
+ruleRule :
     ruleTypeClauses
                 (ruleTypeClauses)
+(*
+  | ruleTypeExpression
+                (ruleTypeExpression)
+*)
 
 (* tree *)
 ruleTypeClauses : 
@@ -318,8 +342,8 @@ ruleTypeClauses :
                             ruleClauses])
 
 (* Missing expRule for expression rules 
-expRule :
-    RULE RULE_TYPE_EXPRESSIONS scheme BECOMES clauses END
+ruleTypeExpression :
+    RULE RULE_TYPE_EXPRESSION scheme BECOMES clauses END
                 () 
 
 *)
@@ -349,7 +373,7 @@ ruleClauses :
                 (ruleClause :: ruleClauses)
 
 (* tree *)
-RuleClause : 
+ruleClause : 
     BAR ruleSpat DARROW ruleSexp
                 (join (wrap Rule_Clause 
                             BARleft
@@ -385,11 +409,11 @@ ruleCstrnBody :
 
 (* tree *)
 ruleCstrnRel :
-    longidNoAsterisk LPAREN cstrnRelBody RPAREN
+    longidNoAsterisk LPAREN ruleCstrnRelBody RPAREN
                 (join (wrap (Rule_Cstrn_Rel longidNoAsterisk)
                             longidNoAsteriskleft
                             RPARENright)
-                      cstrnRelBody)
+                      ruleCstrnRelBody)
 
 (* tree list *)
 ruleCstrnRelBody :
@@ -402,32 +426,31 @@ ruleCstrnRelBody :
 (*                    Transformers                   *)
 (*---------------------------------------------------*)
 
+(* t * tree list *)
+transformerNode : 
+    TRANS ruleSpat
+                (((Rule_Trans TRANS),  [ruleSpat]))
 
-transformer : 
-    TRANS spat
-                ()
-    
 
 (*---------------------------------------------------*)
 (*                    Metapatterns                   *)
 (*---------------------------------------------------*)
 
-
-metaPat :
+(* t * tree list *)
+metaPatNode :
     META metaPatInputs
-                ()
-  | META
-                ()
+                (((Rule_Meta_Pat META), metaPatInputs))
 
+(* tree list *)
 metaPatInputs :
-    metaPatInput
-                ()
+                (nil)
   | metaPatInput metaPatInputs
-                ()
+                (metaPatInput :: metaPatInputs)
 
+(* tree *)
 metaPatInput :
-    LBRACKET spat RBRACKET
-                ()
+    LBRACKET ruleSpat RBRACKET
+                (ruleSpat)
 
 
 (*---------------------------------------------------*)
@@ -1422,27 +1445,39 @@ exp
        end)
 
 (* t * tree list *)
-expnode
-  : exp HANDLE match
+expnode :
+(*
+    exp HANDLE match
       ((Exp_Handle, [exp, match]))
-  | exp ORELSE exp
+*)
+    exp ORELSE exp
       ((Exp_Orelse, [exp1, exp2]))
   | exp ANDALSO exp
       ((Exp_Andalso, [exp1, exp2]))
+(*
   | exp COLON ty
       ((Exp_Typed, [exp, ty]))
+*)
   | app_exp
       ((Exp_FlatApp, app_exp))
+  | metaPatNode
+                (metaPatNode)
+  | transformerNode
+                (transformerNode)
   | FN match
       ((Exp_Fn, [match]))
   | CASE exp OF match
       ((Exp_Case, [exp, match]))
+(* NO FUCKING WHILE!!!!
   | WHILE exp DO exp
       ((Exp_While, [exp1, exp2]))
+*)
   | IF exp THEN exp ELSE exp
       ((Exp_If, [exp1, exp2, exp3]))
+(*
   | RAISE exp
       ((Exp_Raise, [exp]))
+*)
 
 (* tree list *)
 app_exp
@@ -1563,8 +1598,10 @@ patnode
            patleft
            "Left side of layered pattern must be an identifier."
       )
-  | pat COLON ty
-      ((Pat_Typed, [pat, ty]))
+(*  | pat COLON ty
+      ((Pat_Typed, [pat, ty])) *)
+  | metaPatNode
+                (metaPatNode)
   | apats
       ((Pat_FlatApp, apats))
 
@@ -1669,7 +1706,7 @@ opaspat :
 (*---------------------------------------------------*)
 (*                       Types                       *)
 (*---------------------------------------------------*)
-
+(*
 (* tree *)
 ty
   : tynode
@@ -1748,7 +1785,7 @@ ty0_pc
       ([ty1, ty2])
   | ty COMMA ty0_pc
       (ty :: ty0_pc)
-
+*)
 (*---------------------------------------------------*)
 (*                       Atoms                       *)
 (*---------------------------------------------------*)
