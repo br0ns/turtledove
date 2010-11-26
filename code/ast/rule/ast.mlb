@@ -1,0 +1,18 @@
+local
+  $(SML_LIB)/basis/basis.mlb
+  $(SML_LIB)/mylib/MyLib.mlb
+  ../../Basic.mlb
+in
+  Sigcon.sig Sigcon.sml
+  Fixity.sig Fixity.sml
+  SCon.sig SCon.sml
+  Ident.sig Ident.sml
+  Wrap.sig Wrap.sml
+
+  local 
+    Grammar.sml
+  in
+    structure RuleGrammar = Grammar
+  end
+
+end

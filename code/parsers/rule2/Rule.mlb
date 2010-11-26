@@ -1,0 +1,22 @@
+local
+    $(SML_LIB)/basis/basis.mlb
+    $(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
+    $(SML_LIB)/mylib/MyLib.mlb
+    ../../Basic.mlb
+
+    ../Source.sig ../Source.sml
+    ../LexUtils.sig ../LexUtils.sml
+in
+
+    ../../ast/ast.mlb
+
+    local
+        rule.yacc.sig rule.yacc.sml
+        rule.lex.sml
+
+        Parser.sml
+    in
+        structure RuleParser = Parser
+    end
+
+end

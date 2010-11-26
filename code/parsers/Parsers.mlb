@@ -1,36 +1,42 @@
 local
-$(SML_LIB)/basis/basis.mlb
-$(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
-$(SML_LIB)/mylib/MyLib.mlb
-../Basic.mlb
+  $(SML_LIB)/basis/basis.mlb
+  $(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
+  $(SML_LIB)/mylib/MyLib.mlb
+  ../Basic.mlb
 
-Exns.sml
-Source.sig Source.sml
-LexUtils.sig LexUtils.sml
+  Exns.sml
+  Source.sig Source.sml
+  LexUtils.sig LexUtils.sml
+
 in
 
-../ast/ast.mlb
+  ../ast/ast.mlb
 
-local
-mlb/MLB.yacc.sig mlb/MLB.yacc.sml
-mlb/MLB.lex.sml
+  local
+    mlb/MLB.yacc.sig mlb/MLB.yacc.sml
+    mlb/MLB.lex.sml
 
-mlb/Parser.sig mlb/Parser.sml
-in
-structure MLBParser = Parser
-end
+    mlb/Parser.sig mlb/Parser.sml
+  in
+    structure MLBParser = Parser
+  end
 
-local
-sml/SML.yacc.sig sml/SML.yacc.sml
-sml/SML.lex.sml
+  local
+    sml/SML.yacc.sig sml/SML.yacc.sml
+    sml/SML.lex.sml
 
-InfixStackFn.sml
-Infixing.sml
+    sml/Parser.sml
+  in
+    structure SMLParser = Parser
+  end
 
-sml/Parser.sml
-in
-structure SMLParser = Parser
-end
+  local
+    rule2/SML.yacc.sig rule2/SML.yacc.sml
+    rule2/SML.lex.sml
 
+    rule2/Parser.sml
+  in
+    structure RuleParser = Parser
+  end
 
 end
