@@ -1,2 +1,3 @@
 mlb/ast.mlb
 sml/ast.mlb
+rule/ast.mlb
