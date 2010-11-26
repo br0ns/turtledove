@@ -1,5 +1,5 @@
-open SMLGrammar
-type cmoments = Source.Comments.t
+open RuleGrammar
+type comments = Source.Comments.t
 val dummypos = ~1
 
 val join = Tree.join
@@ -97,6 +97,7 @@ fun mkTyvar l r s =
        | metaPatNode of t * tree list
        | metaPatInputs of tree list
        | metaPatInput of tree
+       | ruleSelfNode of t * tree list
          (* Normal sml nonterms *)
        | aexp of t * tree list
        | andspecs of tree list
@@ -280,6 +281,7 @@ fun mkTyvar l r s =
 %name Rule
 
 %keyword RULE RULE_TYPE_CLAUSES RULE_TYPE_EXPRESSION BECOMES 
+  SELF
   ABSTYPE AND AS CASE DATATYPE DOTDOTDOT ELSE END
   EQTYPE EXCEPTION  DO  DARROW  FN  FUN  FUNCTOR  HANDLE
   IF IN INCLUDE  INFIX  INFIXR  LET  LOCAL  NONFIX  OF  OP
@@ -356,7 +358,7 @@ ruleTypeExpression :
 (* tree *)               
 ruleScheme : 
     ruleClauses ruleCstrns (* sctrn may be empty *)
-                (join (wrap Rule_Scheme ruleClausesleft ruleCstrnright) 
+                (join (wrap Rule_Scheme ruleClausesleft ruleCstrnsright) 
                       [join (wrap Rule_Clauses 
                                   ruleClausesleft 
                                   ruleClausesright) 
@@ -389,6 +391,7 @@ ruleSpat :
 ruleSexp :
     exp
                 (exp)
+
 
 (*---------------------------------------------------*)
 (*                    Constraints                    *)
@@ -429,7 +432,11 @@ ruleCstrnRelBody :
 (* t * tree list *)
 transformerNode : 
     TRANS ruleSpat
-                (((Rule_Trans TRANS),  [ruleSpat]))
+                (let
+                   val ident = mkIdent TRANSleft TRANSright Fixity.Nonfix TRANS
+                 in
+                   (Rule_Trans ident,  [ruleSpat])
+                 end)
 
 
 (*---------------------------------------------------*)
@@ -439,7 +446,11 @@ transformerNode :
 (* t * tree list *)
 metaPatNode :
     META metaPatInputs
-                (((Rule_Meta_Pat META), metaPatInputs))
+                (let
+                   val ident = mkIdent METAleft METAright Fixity.Nonfix META
+                 in
+                   (Rule_Meta_Pat ident, metaPatInputs)
+                 end)
 
 (* tree list *)
 metaPatInputs :
@@ -451,6 +462,15 @@ metaPatInputs :
 metaPatInput :
     LBRACKET ruleSpat RBRACKET
                 (ruleSpat)
+
+(*---------------------------------------------------*)
+(*                    Self                           *)
+(*---------------------------------------------------*)
+
+(* t * tree list *)
+ruleSelfNode :
+    SELF ruleSexp 
+                ((Rule_Self, [ruleSexp]))
 
 
 (*---------------------------------------------------*)
@@ -1460,6 +1480,8 @@ expnode :
 *)
   | app_exp
       ((Exp_FlatApp, app_exp))
+  | ruleSelfNode 
+                (ruleSelfNode)
   | metaPatNode
                 (metaPatNode)
   | transformerNode
