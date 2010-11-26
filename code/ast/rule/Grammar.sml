@@ -1,7 +1,7 @@
 structure Grammar =
 struct
 fun die s = Crash.die "SMLGrammar" s
-type ident = Ident.t Wrap.
+type ident = Ident.t Wrap.t
 
 (*
  Topdec = Strdec U Sigdec U Fundec U Dec U Exp
@@ -10,7 +10,7 @@ type ident = Ident.t Wrap.
 
 datatype t = 
            (* Rules *)
-             Rules (* Rule_Type list *)
+             Rule_Rules (* Rule_Type list *)
 
            (* Rule_Type *)
            | Rule_Type_Clauses of ident (* [Rule_Scheme, Rule_Clauses] *)
@@ -31,7 +31,19 @@ datatype t =
            (* Rule_Cstrn_Rel *)
            | Rule_Cstrn_Rel of ident (* Meta_Pattern list *)
 
+           (* Rule_Transformer *)
+           | Rule_Trans of ident (* [spat] *)
+
+           (* Rule_Meta_Pat *)
+           | Rule_Meta_Pat of ident (* spat list | [] *)
+
+           (* Rule_Self *)
+           | Rule_Self (* [sexp] *)
+
+
+           (****************************)
            (* Normal SML types follows *)
+           (****************************)
 
            | Topdecs (* Topdec list *)
 
@@ -344,7 +356,19 @@ fun show t =
           | SCon.Word w => w
     in
       case node t of
-        Topdecs => next "Topdecs"
+        Rule_Rules => next "Rule_Rules"
+      | Rule_Type_Clauses id => next ("Rule_Type_Clauses: " ^ show id)
+      | Rule_Type_Expressions id => next ("Rule_Type_Expressions: " ^ show id)
+      | Rule_Scheme => next "Rule_Scheme>"
+      | Rule_Clauses => next "Rule_Clauses"
+      | Rule_Clause => next "Rule_Clause"
+      | Rule_Cstrns => next "Rule_Cstrns"
+      | Rule_Cstrn_Rel id => next ("Rule_Cstrn_Rel: " ^ show id)
+      | Rule_Trans id => next ("Rule_Cstrn_Rel: " ^ show id)
+      | Rule_Meta_Pat id => next ("Rule_Meta_Pat: " ^ show id)
+      | Rule_Self => next "Rule_Self"
+      (* SML *)
+      | Topdecs => next "Topdecs"
       | Strdecs => next "Strdecs"
       | Strdec_Str => next "Strdec_Str"
       | Strdec_Local => next "Strdec_Local"
