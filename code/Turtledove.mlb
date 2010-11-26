@@ -3,5 +3,4 @@ $(SML_LIB)/mylib/MyLib.mlb
 parsers/Parsers.mlb
 Basic.mlb
 
-InfixStackFn.sml
-Infixing.sml
+

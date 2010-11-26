@@ -2,7 +2,7 @@ signature Path =
 sig
   eqtype t
 
-  exception Path of Report.t
+  exception Path of Layout.t
 
   (* Raises Path if the argument is a relative path. *)
   val new : string -> t
@@ -26,5 +26,5 @@ sig
   (* maybe rename to isPrefix *)
   val sub : t -> t -> bool
 
-  val show : t -> Report.t
+  val show : t -> Layout.t
 end

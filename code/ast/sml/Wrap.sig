@@ -1,10 +1,9 @@
 signature Wrap =
 sig
-eqtype ''a t
+  type ('a, 'b) t = {node: 'a, data: 'b}
 
-val wrap : ''a -> int -> int -> ''a t
-val unwrap : ''a t -> ''a
-val left : ''a t -> int
-val right : ''a t -> int
-val modify : (''a -> ''b) -> ''a t -> ''b t
+  val wrap : 'a -> 'b -> ('a, 'b) t
+  val unwrap : ('a, 'b) t -> 'a
+  val data : ('a, 'b) t -> 'b
+  val modify : ('a -> 'c) -> ('a, 'b) t -> ('c, 'b) t
 end

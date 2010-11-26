@@ -1,6 +1,11 @@
-open Grammar
+open MLBGrammar
 
 type comments = Source.Comments.t
+val join = Tree.join
+fun leaf c v = Tree.singleton $ c v
+
+type node = string node
+type tree = node Tree.t
 
 %%
 
@@ -16,15 +21,15 @@ type comments = Source.Comments.t
          ann of string
        | annPlus of string list
        | annStar of string list
-       | basbinds of basbinds
-       | basbinds' of basexp * basbinds
-       | basbinds'' of basbinds
-       | basdec of basdec
-       | basdecnode of basdec
-       | basdecs of basdecs
-       | basdecsnode of basdecs
-       | basexp of basexp
-       | basexpnode of basexp
+       | basbinds of tree list
+       | basbinds' of tree * tree list
+       | basbinds'' of tree list
+       | basdec of tree
+       | basdecnode of tree
+       | basdecs of tree list
+       | basdecsnode of tree list
+       | basexp of tree
+       | basexpnode of tree
        | basid of basid
        | basids of basids
        | fctbinds of fctbinds
@@ -32,7 +37,7 @@ type comments = Source.Comments.t
        | fctbinds'' of fctbinds
        | fctid of fctid
        | id of basid
-       | mlb of basdecs * comments
+       | mlb of tree * comments
        | sigbinds of sigbinds
        | sigbinds' of sigid * sigbinds
        | sigbinds'' of sigbinds
@@ -58,7 +63,7 @@ type comments = Source.Comments.t
 
 %%
 
-mlb : basdecs (basdecs, Source.Comments.get source)
+mlb : basdecs (join Basdecs basdecs, Source.Comments.get source)
 
 basdecs : basdecsnode (basdecsnode)
 
@@ -69,25 +74,27 @@ basdecsnode :                    (nil)
 basdec : basdecnode (basdecnode)
 
 basdecnode : BASIS basbinds
-                (Basis basbinds)
+                (join Dec_Basis basbinds)
            | LOCAL basdecs IN basdecs END
-                (Local (basdecs1, basdecs2))
+                (join Dec_Local
+                      [join Basdecs basdecs1,
+                       join Basdecs basdecs2])
            | OPEN basids
-                (Open basids)
+                (leaf Dec_Open basids)
            | FILE
-                (File FILE)
+                (leaf Dec_Source FILE)
            | STRING
-                (File STRING)
+                (leaf Dec_Source STRING)
            | ANN annPlus IN basdecs END
-                (Ann (annPlus, basdecs))
+                (join (Dec_Ann annPlus) basdecs)
            | STRUCTURE strbinds
-                (Structure strbinds)
+                (leaf Dec_Structure strbinds)
            | SIGNATURE sigbinds
-                (Signature sigbinds)
+                (leaf Dec_Signature sigbinds)
            | FUNCTOR fctbinds
-                (Functor fctbinds)
+                (leaf Dec_Functor fctbinds)
            | PRIM
-                (Prim)
+                (Tree.singleton Prim)
 
 fctbinds : fctid EQUALOP fctbinds'
                 (let
@@ -136,7 +143,7 @@ basbinds : basid EQUALOP basbinds'
                 (let
                      val (basexp, basbinds) = basbinds'
                  in
-                     (basid, basexp) :: basbinds
+                     join (Basbind basid) [basexp] :: basbinds
                  end)
 
 basbinds' : basexp basbinds''  (basexp, basbinds'')
@@ -146,9 +153,9 @@ basbinds'' :               (nil)
 
 basexp : basexpnode (basexpnode)
 
-basexpnode : BAS basdecs END           (Bas basdecs)
-           | basid                     (Var basid)
-           | LET basdecs IN basexp END (Let (basdecs, basexp))
+basexpnode : BAS basdecs END           (join Exp_Basis basdecs)
+           | basid                     (leaf Exp_Var basid)
+           | LET basdecs IN basexp END (join Exp_Let [join Basdecs basdecs, basexp])
 
 basid : id (id)
 basids : basid ([basid])

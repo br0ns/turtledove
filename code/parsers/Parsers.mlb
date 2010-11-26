@@ -4,6 +4,7 @@ $(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
 $(SML_LIB)/mylib/MyLib.mlb
 ../Basic.mlb
 
+Exns.sml
 Source.sig Source.sml
 LexUtils.sig LexUtils.sml
 in
@@ -11,7 +12,6 @@ in
 ../ast/ast.mlb
 
 local
-mlb/Grammar.sml
 mlb/MLB.yacc.sig mlb/MLB.yacc.sml
 mlb/MLB.lex.sml
 
@@ -23,6 +23,9 @@ end
 local
 sml/SML.yacc.sig sml/SML.yacc.sml
 sml/SML.lex.sml
+
+InfixStackFn.sml
+Infixing.sml
 
 sml/Parser.sml
 in

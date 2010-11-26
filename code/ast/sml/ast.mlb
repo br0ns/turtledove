@@ -2,6 +2,7 @@ local
 $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/mylib/MyLib.mlb
 ../../Basic.mlb
+../Comments.sig ../Comments.sml
 in
 Sigcon.sig Sigcon.sml
 Fixity.sig Fixity.sml

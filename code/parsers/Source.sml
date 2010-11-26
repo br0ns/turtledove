@@ -1,5 +1,3 @@
-exception LexError of Report.t
-
 structure Source :> Source =
 struct
     type start_pos = int
@@ -13,14 +11,13 @@ struct
     fun error ({T = st, ...} : t) pos msg =
         let
             val r = SourceText.showPos st pos
-            open Report
-            infix ++
+            open Layout infix &
         in
             raise LexError (
-                  text "Error:" ++
-                  indent (text msg) ++
-                  text "at" ++
-                  indent r
+                  txt "Error:" &
+                  indent 2 (txt msg) &
+                  txt "at" &
+                  indent 2 r
                   )
         end
     fun makeReader ({T = st, ...} : t) = SourceText.makeReader st

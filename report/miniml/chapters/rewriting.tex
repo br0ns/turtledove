@@ -687,7 +687,9 @@ We can now define the elimination of unused patterns.
 
 \end{example}
 
-\section{Generalisiation}
+\section{Generalisiation}\fixme{Fatal: This doesn't hold! But it isn't too hard
+  to fix. The problem is that generalising a pattern extends its domain: We can
+  only do that when all following patterns are confused or shadowed.}
 Sometimes patterns get unnecessary complex. If for example a pattern (or one of
 its subpatterns) is a constructor pattern whose subpatterns are all variables,
 and those variables are only used as arguments to the same constructor (in the

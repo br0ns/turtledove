@@ -1,10 +1,8 @@
 local
 $(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/mylib/MyLib.mlb
 ../../Basic.mlb
-
-(* Need  Source.Comments.t *)
-../../parsers/Source.sig ../../parsers/Source.sml
-
+../Comments.sig ../Comments.sml
 Grammar.sml
 in
 structure MLBGrammar = Grammar

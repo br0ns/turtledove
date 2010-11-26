@@ -17,10 +17,12 @@ fun toString' [s] = s
 fun toString (s, _) = toString' s
 
 fun show (s, f) =
+    Layout.txt (
     if f = Fixity.Op then
       "op " ^ toString' s
     else
       toString' s
+    )
 
 fun isQual (s, _) = length s > 1
 fun isUnqual id = not (isQual id)
@@ -31,7 +33,10 @@ fun isInfix (_, f) =
     | _ => false
 val isNonfix = not o isInfix
 fun fixity (_, f) = f
-fun explode (s, _) = s
+fun explode (s, _) =
+    case rev s of
+      id :: ids => (rev ids, id)
+    | _ => raise Domain
 
 fun setFixity (s, _) f = (s, f)
 fun opify i = setFixity i Fixity.Op
