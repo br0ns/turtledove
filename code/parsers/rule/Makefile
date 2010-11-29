@@ -33,3 +33,6 @@ clean :
 
 mlton : 
 	mlton Rule.mlb
+	# Just for show to see if it compiles. 
+	# Remove the executable again as it is useless
+	-rm Rule

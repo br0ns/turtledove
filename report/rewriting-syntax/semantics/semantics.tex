@@ -522,45 +522,99 @@ handle the structure of expressions and scheme expressions.
 
 
 
-
 \fixme{Find på bedre måde at opstille disse definitions... Evt ligesom det gamle
 uden definition environments.}
 
 \subsection{Scheme bodies}
 
-The grammar of $sexp$'s is given by
+The grammar of \synt{sexp} and \synt{spat} is given by
 
-\begin{nonfloatingfigure}
-
-\setlength{\grammarindent}{7.3em}
-\begin{grammar}
- 
-  <atsexp> ::= <scon> \alt "op" <longvid> \alt "{" <sexprow> "}" \alt "\#"
-  <lab> \alt "()" \alt "(" <sexp>, ..., <sexp> ")" \alt "let" <dec> "in"
-  <sexp> "end" \alt "(" <sexp> ")"
-  
-  <sexprow> ::= <lab> "=" <sexp> ["," <sexprow>] "\# fix correct meaning of this"
-  
-  <sexp> ::= <sexp> <atsexp> \alt <sexp> "andalso" <sexp> \alt <sexp> "orelse"
-  <sexp> \alt <sexp> "handle" <smatch> \alt "if" <sexp> "then" <sexp> "else"
-  <sexp> \alt "case" <sexp> "of" <smatch> \alt "fn" <smatch>
-  
-  <smatch> ::= <smrule> "<|" <smatch> ">" "\# fix wierd <|"
-  
-  <smrule> ::= <spat> "=>" <sexp>
-\end{grammar}
-  
-  \caption{Grammar for scheme expressions.}
-  \label{fig:scheme-expressions}
-\end{nonfloatingfigure}
-
-
-
-
+\fixme{This should go in the appendix with the other grammars, and then just a
+  brief explanation should be brought here?}
 
 \fixme{Add short comment about what this is: SML without types, added with ...}
 
 
+\begin{nonfloatingfigure}
+
+\setlength{\grammarindent}{7em}
+
+\newcommand{\cmt}[1]{\parbox{8em}{\small{#1}}}
+
+\begin{grammar}
+ 
+  <atsexp> ::= <scon>                                            \hfill \cmt{special constant}
+  \alt ["op"] <longvid>                                          \hfill \cmt{value identifier}
+  \alt "{" <sexprow> "}"                                         \hfill \cmt{record}
+  \alt "\#" <lab>                                                \hfill \cmt{record selector}
+  \alt "()"                                                      \hfill \cmt{$0$-tuple}
+  \alt "(" <sexp>$_1$, $\ldots$ , <sexp>$_n$ ")"                 \hfill \cmt{$n$-tuple, $n \geq 2$}
+  \alt "[" <sexp>$_1$, $\ldots$, <sexp>$_n$ "]"                  \hfill \cmt{list, $n \geq 0$}
+  \alt "(" <sexp>$_1$; $\ldots$; <sexp>$_n$ ")"                  \hfill \cmt{sequence, $n \geq 2$}  
+  \alt "let" <dec> "in" <sexp>$_1$ ; $\ldots$ ; <sexp>$_n$ "end" \hfill \cmt{local decl, $n \geq 1$}
+  \alt "(" <sexp> ")"
+  
+  <sexprow> ::= <lab> "=" <sexp> ["," <sexprow> ]          \hfill \cmt{expression row}
+
+  <appsexp> ::= <atsexp>
+  \alt <appsexp> <atsexp>                                  \hfill \cmt{application exp}
+
+  <infsexp> ::= <appsexp>
+  \alt <infsexp>$_1$ <vid> <infsexp>$_2$                   \hfill \cmt{infix expression}
+  
+  <sexp> ::= <infsexp>
+  \alt <sexp>$_1$ "andalso" <sexp>$_2$                     \hfill \cmt{conjunction}
+  \alt <sexp>$_1$ "orelse"  <sexp>$_2$                     \hfill \cmt{disjunction}
+  \alt <rule-self>                                         \hfill \cmt{rule self}
+  \alt <transformer>                                       \hfill \cmt{rule transformer}
+  \alt <meta-pattern-sexp>                                 \hfill \cmt{rule meta pattern}
+  \alt "if" <sexp>$_1$ "then" <sexp>$_2$ "else" <sexp>$_3$ \hfill \cmt{conditional}
+  \alt "case" <sexp> "of" <smatch>                         \hfill \cmt{case analysis}
+  \alt "fn" <smatch>                                       \hfill \cmt{function}
+  
+  <smatch> ::= <smrule> [ "|" <smatch> ]
+  
+  <smrule> ::= <spat> "=>" <sexp>
+\end{grammar}
+
+  \caption{Grammar for scheme expressions. This is the normal sml expression
+    grammar but without types, exceptions and \texttt{while}.  See \fref{fig:rule-grammar} for
+    the definition of \synt{rule-self}, \synt{transformer} and \synt{meta-pattern-sex}.}
+  \label{fig:scheme-expressions}
+\end{nonfloatingfigure}
+
+
+\begin{nonfloatingfigure}
+
+\setlength{\grammarindent}{7em}
+
+\newcommand{\cmt}[1]{\parbox{8em}{\small{#1}}}
+
+\begin{grammar}
+  <atspat> ::= $\_$                              \hfill \cmt{wildcard}
+  \alt <scon>                                    \hfill \cmt{special constant}
+  \alt ["op"] <longvid>                          \hfill \cmt{value identifier}
+  \alt "{" <spatrow> "}"                         \hfill \cmt{record}
+  \alt "()"                                      \hfill \cmt{$0$-tuple}
+  \alt "(" <spat>$_1$, $\ldots$, <spat>$_n$ ")"  \hfill \cmt{$n$-tuple, $n \geq  2$}
+  \alt "[" <spat>$_1$, $\ldots$, <spat>$_n$ "]"  \hfill \cmt{list, $n \geq 0$}
+  \alt "(" <spat> ")" 
+
+  <spatrow> ::= "..."                      \hfill \cmt{wildcard}
+  \alt <lab> "=" <spat> [, <spatrow>]      \hfill \cmt{pattern row}
+  \alt <vid> [ "as" <spat> ] [, <spatrow>] \hfill \cmt{label as variable}
+
+  <spat> ::= <atspat>                      \hfill \cmt{atomic}
+  \alt ["op"] <longvid> <atspat>           \hfill \cmt{constructed value}
+  \alt <meta-pattern-spat>                 \hfill \cmt{rule meta pattern}
+  \alt <spat>$_1$ <vid> <spat>$_2$         \hfill \cmt{constructed value (infix)}
+  \alt ["op"] <vid> "as" <pat>             \hfill \cmt{layered}
+\end{grammar}
+  
+  \caption{Grammar for scheme patterns. See \fref{fig:rule-grammar} for
+    the definition of \synt{meta-pattern-spat}.}
+  \label{fig:scheme-patterns}
+\end{nonfloatingfigure}
 
 %%% Local Variables: 
 %%% mode: latex
