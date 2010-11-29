@@ -1,21 +1,30 @@
+SML = mlton
+
 
 .PHONY : all
-all : turtledove tests
+all : parsers turtledove app test
 
 .PHONY : turtledove
 turtledove :
-	mlton Turtledove.mlb
+	$(SML) Turtledove.mlb
 
 
-.PHONY : tests
-tests :
-	make -C test/parsers/rule -f Makefile mlton
+.PHONY : test clean-test
+test :
+	make -C test -f Makefile all
+clean-test:
+	make -C test -f Makefile clean
 
 
-.PHONY : parsers
+.PHONY : app clean-app
+app : 
+	make -C app -f Makefile all
+clean-app :
+	make -C app -f Makefile clean
+
+.PHONY : parsers clean-parsers
 parsers :
 	make -C parsers -f Makefile all
-
-.PHONY : clean-parsers
 clean-parsers : 
 	make -C parsers -F Makefile clean
+
