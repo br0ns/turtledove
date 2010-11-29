@@ -24,7 +24,7 @@ sig
 
     val posToRowCol : t -> int -> {row : int, column : int}
     val posToString : t -> int -> string
-    val showPos : t -> int -> Report.t
+    val showPos : t -> int -> Layout.t
 
     val toString : t -> string
 end

@@ -6,15 +6,16 @@ fun id x = x
 
 We use the names given in \cite{SML97} for the different syntactic categories.
 
+In the following we assume a fixed SML environment $E = (S\!E, T\!E, V\!E)$ and
+a set of $n$-ary relations over $mpat$ (defined below), $\sigma$.
+
 \begin{definition}
   In the following we write $pat^\alpha$ to mean the subset of the term algebra
   \[
-  T(con)\ \text{over}\ \alpha
+  T(con, \alpha)
   \]
-  of the constructors of some fixed environment $E = (S\!E, T\!E, V\!E)$
-  (Structure Environment, Type Environment and Value Environment) and the set of
-  record constructors over $\alpha$, where each variable occurs at most
-  once. \fixme{And the identity?}
+  of the constructors of $E$ and the set of record constructors over $\alpha$,
+  where each variable occurs at most once. \fixme{And the identity?}
 
 \end{definition}
 
@@ -22,53 +23,12 @@ We use the names given in \cite{SML97} for the different syntactic categories.
 any kind of ``variables''. The constructors of datatypes are either constants or
 unary functions. The record constructors form a countably infinite set of
 functions with finite arity. To distinguish constructors from the surrounding
-program text we write them with at initial capital letter (with very few
-exceptions like \codeinline{::} \codeinline{nil}). We respect the infix status
-of the symbols given by $E$.
+program text we write them with an initial capital letter (with very few
+exceptions like \codeinline{::} and \codeinline{nil}). We respect the infix
+status of the symbols given by $E$.
 
-We write $\mathfrak{a}, \mathfrak{b}, \mathfrak{c}, \ldots$ for variables
-ranging over $con$.
-
-\fixme{Note about non-equality of wildcards.} 
-
-\begin{tabular}{lMlMlMl}
-  (SML) Variables & & var & ::= \mathtt{x} \mid \mathtt{y} \mid
-  \mathtt{xs} \mid \ldots \\
-  Holes & & hole & ::= \diamond \mid \diamond_1 \mid \diamond_2, \mid \ldots \\
-  Meta variables & a,\ b, \ldots & mvar & ::= var \mid \texttt{_} \\ 
-  Pattern variables & \overline{x},\ \overline{y},\ \ldots & pvar & ::=
-  pat^{var} \\
-  Transformers &  \mathbb{D},\ \mathbb{E},\ \ldots & trans & ::=
-  pat^{var \cup hole} = sexp \\
-  Meta patterns & \mathcal{A},\ \mathcal{B},\ \ldots & mpat &::= pat^{pvar \cup
-    holes} \\
-  Scheme patterns & \alpha,\ \beta,\ \ldots & spat & ::= pat^{mpat_0} \\
-  Scheme expressions & & sexp & \textrm{ (see \fref{fig:scheme-expressions})}
-  \\
-  Scheme clauses & & sclause & ::= spat \texttt{ => }
-  sexp \\
-  Schemes & & scheme & ::= caluse+ \\ 
-  (Rewriting) Rules & & rule & ::= scheme where
-  \Downarrow scheme \\
-  Matching condition & & where & ::= .... \\
-\end{tabular}
-
-
-\fixme{Klassedeling $mpat_k$}
-
-
-We fix some definitions and terminology for the rest of this chapter. Let T be a
-term algebra in some signature. A term rewriting system for T is a set of
-ordered pairs of elements of T of the form (l, r). Viewed as a set of relations,
-the rewriting system determines a presentation for a quotient algebra A of T.
-
-When we take into account the fact that the relations are expressed as ordered
-pairs, we have a way of reducing the elements of T. Suppose an element u of T
-has a subword l and (l,r) is a rule of the rewriting system, then we can replace
-the subterm l of u by the term r and obtain a new word v. We say that we have
-rewritten u as v. Note that u and v represent the same element of A. If u can
-not be rewritten using any rule of the rewriting system we sat that u is
-reduced.
+We regard all occurences of the specieal variable \texttt{\_} (``wildcard'') as
+different from any other variable.
 
 \begin{description}
 \item[Record constructors] The record constructor given by
@@ -80,69 +40,155 @@ reduced.
   Recall that the tuple constructors are just syntactic sugar for a subset of
   the record constructors. We write $\mathfrak{T}_n$ to mean
   $\mathfrak{R}_{\texttt{1},\ldots,\texttt{n}}$.
-
-
-\item[(SML) Variables] Is the set $var$ of all valid SML variables, which we
-  denote by any text in typewriter font as with any concrete SML. For example
-  $\mathtt{x},\ \mathtt{y},\ \mathtt{xs}$.
-
-
-  % \item[Simple (SML) expressions]
-  %   Is the set of $simp\_exp$ which is SML expressions without type annotation
-  %   and infix status. \fixme[inline, margin=false]{Is this ok or shoud it be
-  %     inlined down in the scheme body?}
-  % \end{definition}
-
-\item[Meta variables] Is the set of $mvar = \{x,\ y,\ xs,\ \ldots \}$. Meta
-  variable range over $var \cup \{\texttt{_}\}$.
-
-
-\item[Pattern variables] Is the set of $pvar = \{ \overline{x},\ \overline{y},\
-  \overline{xs} \}$. Pattern variables range over $pat^{var}$ .
-
-
-\item[Holes] Is the countably infinite set, $holes$, of constants named
-  $\diamond_1, \diamond_2, \ldots$, and we write $\diamond$ to mean
-  $\diamond_1$.
-
-
-\item[Meta patterns] Is the set of meta patterns $mpat = pat^{pvar \cup
-    holes}$. The subset $mpat_n \subset mpat$ is the meta patterns with exactly
-  $n$ holes. We write $\mathcal{A},\mathcal{B}, \mathcal{C}, \ldots$ for
-  variables ranging over $mpat$.
-
-
-\item[Scheme patterns] Is the set $spat = pat^{mpat_0} = \{\alpha, \beta, \ldots
-  \}$
-
-
-\item[Scheme bodies] Is the set $sexp$. The grammar and semantics is described
-  in the next section. We write $\alpha, \beta, \gamma, \ldots$ for variables
-  ranging over $sexp$.
-
-
-\item[Scheme clauses] Is the set $clauses = spat \times sexp$. We write $|\
-  \alpha => \beta$ for the pair $(\alpha, \beta)$
-
-
-\item[Schemes] Is the set $schemes = clauses^{+}$
-
-
-\item[(Rewriting) rules] Is set $rules = schemes \times sexp$. We write
-  \[
-  \shortstack[ccc]{$\alpha$ \\ $\Downarrow$ \\ $\beta$}
-  \]
-  for the pair $(\alpha, \beta)$.
-
-
-\item[Transformers] Is the set $trans = pat^{var \cup holes} \times sexp$. We
-  write $\mathbb{D}, \mathbb{E}, \ldots$ to range over transformers.
-  % Is the set $trans$ which is a subset of the partial functions
-  % \[
-  % pat^{var \cup holes} \rightharpoonup exp
-  % \]
-
 \end{description}
+
+\paragraph{Syntax}\ \\
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lMlMrMl}
+  \textbf{Kind} & \textbf{Category} & \textbf{Is}\\
+  (SML) Constructors & con & ::= & \mathtt{Node} \mid \mathtt{Leaf} \mid
+  \texttt{::} \mid \mathfrak{T}_{42} \mid \mathfrak{R}_{\mathtt{foo},
+      \mathtt{bar}, \mathtt{baz}} \mid \ldots\\
+  (SML) Variables & id & ::= & \mathtt{x} \mid \mathtt{y} \mid
+  \mathtt{xs} \mid \ldots \mid \mathtt{\_}\\
+  Pattern variables & patvar & ::= & \overline{x} \mid \overline{y} \mid \ldots\\
+  Holes & hole & ::= & \diamond \mid \diamond_1 \mid \diamond_2 \mid \ldots \\
+
+  Meta patterns & mpat & ::= & mpat[pat^{patvar \cup hole}]\\
+  & & \mid & mpatvar\\
+  Meta pattern variable & mpatvar & ::= & \mathcal{A} \mid \mathcal{B} \mid \ldots\\
+  % & & \mid & mpatvar\\
+
+  % Meta patterns & mpat & ::= & pat^{patvar \cup hole}\\
+  % & & \mid & mpat[mpat]\\
+  % & & \mid & \mathcal{A} \mid \mathcal{B} \mid \ldots\\
+
+  Scheme patterns & spat & ::= & pat^{mpat}\\
+  Scheme expressions & sexp & & \textrm{ (see \fref{fig:scheme-expressions})}
+  \\
+  Scheme clauses & sclause & ::= & spat => sexp \\
+  Schemes & scheme & ::= & sclause+\\
+  & & \mid & sclause+ \textsf{ where } cstrn, \ldots\\
+
+  Transformers & trans & ::= & trans[spat]\\
+  & & \mid & \mathbb{D} \mid \mathbb{E} \mid \ldots\\
+  % & & \mid & transvar\\
+
+  Constraint &  cstrn & ::= & rel(mpatvar, \ldots) \\
+  Relation & rel & ::= & \textsf{a} \mid \textsf{b} \mid \ldots\\
+  (Rewriting) Rules & rule & ::= & scheme \Downarrow sclause+\\
+\end{tabular}
+
+% \paragraph{Aliases}\ \\
+% \begin{tabular}{lMlMl}
+%   \textbf{Kind} & \textbf{Alias} & \textbf{Is}\\
+%   Patterns & pat & = pat^{id}\\
+%   % Meta patterns & mpat & = pat^{patvar \cup hole} \qquad (\dagger)\\
+%   Scheme patterns & spat & = pat^{mpat_0}
+% \end{tabular}\\
+% $(\dagger)$ We write $mpat_0$ for the subclass of meta patterns with no holes,
+% $mpat_1$ for the subclass with exactly one hole, etc.
+
+\paragraph{Environment.}
+An environment, $\sigma$, is constructed recursively. It is either empty,
+$\sigma = []$, or it has at least one binding, $\sigma = x \mapsto y, \sigma'$,
+where $x$ and $y$ are variables. There are a number of different kinds of
+variables, which are listed below. Thus as an example we could have $\sigma =
+\mathcal{A} \mapsto \ldots, \overline{x} \mapsto \ldots, \sigma'$.
+
+\paragraph{Variables}\ \\
+\begin{tabular}{lMlMlMl}
+  \textbf{Over} & \textbf{Category}& \textbf{Looks like} & \textbf{Domain}\\
+  Recursion & recvar & \textsf{self} & (id \times \mathbb{N}) \cup \textsf{undef}\\
+  % Constructors & convar & \mathfrak{a}, \mathfrak{b}, \ldots & con\\
+  Identifiers & idvar & a, b, \ldots & id\\
+  % Patterns & patvar & \overline{x}, \overline{y}, \ldots & pat^{id} \\
+  Transformers & transvar &  \mathbb{D}, \mathbb{E}, \ldots & pat \times exp\\
+  Meta patterns & mpatvar & \mathcal{A}, \mathcal{B}, \ldots & pat^{patvar \cup hole} \\
+  % Scheme patterns & spatvar & \alpha, \beta, \ldots & spat \\
+
+ % mpat+ \rightharpoonup
+ %  \{t\!t, f\!\!f\}\\
+%   & var & &
+% {
+%   \begin{array}{l}
+%     rec \cup vvar\\
+%     \cup pvar\\
+%     \cup tvar\\
+%     \cup mpvar\\
+%     \cup spvar\\
+%     \cup rvar
+% \end{array}
+% }
+
+\end{tabular}
+\renewcommand{\arraystretch}{1}
+\\
+
+\fixme{Klassedeling $mpat_k$}
+
+% \begin{description}
+% \item[(SML) Variables] Is the set $var$ of all valid SML variables, which we
+%   denote by any text in typewriter font as with any concrete SML. For example
+%   $\mathtt{x},\ \mathtt{y},\ \mathtt{xs}$.
+
+
+%   % \item[Simple (SML) expressions]
+%   %   Is the set of $simp\_exp$ which is SML expressions without type annotation
+%   %   and infix status. \fixme[inline, margin=false]{Is this ok or shoud it be
+%   %     inlined down in the scheme body?}
+%   % \end{definition}
+
+% \item[Meta variables] Is the set of $mvar = \{x,\ y,\ xs,\ \ldots \}$. Meta
+%   variable range over $var \cup \{\texttt{_}\}$.
+
+
+% \item[Pattern variables] Is the set of $pvar = \{ \overline{x},\ \overline{y},\
+%   \overline{xs} \}$. Pattern variables range over $pat^{var}$ .
+
+
+% \item[Holes] Is the countably infinite set, $holes$, of constants named
+%   $\diamond_1, \diamond_2, \ldots$, and we write $\diamond$ to mean
+%   $\diamond_1$.
+
+
+% \item[Meta patterns] Is the set of meta patterns $mpat = pat^{pvar \cup
+%     holes}$. The subset $mpat_n \subset mpat$ is the meta patterns with exactly
+%   $n$ holes. We write $\mathcal{A},\mathcal{B}, \mathcal{C}, \ldots$ for
+%   variables ranging over $mpat$.
+
+
+% \item[Scheme patterns] Is the set $spat = pat^{mpat_0} = \{\alpha, \beta, \ldots
+%   \}$
+
+
+% \item[Scheme bodies] Is the set $sexp$. The grammar and semantics is described
+%   in the next section. We write $\alpha, \beta, \gamma, \ldots$ for variables
+%   ranging over $sexp$.
+
+
+% \item[Scheme clauses] Is the set $clauses = spat \times sexp$. We write $|\
+%   \alpha => \beta$ for the pair $(\alpha, \beta)$
+
+
+% \item[Schemes] Is the set $schemes = clauses^{+}$
+
+
+% \item[(Rewriting) rules] Is set $rules = schemes \times sexp$. We write
+%   \[
+%   \shortstack[ccc]{$\alpha$ \\ $\Downarrow$ \\ $\beta$}
+%   \]
+%   for the pair $(\alpha, \beta)$.
+
+
+% \item[Transformers] Is the set $trans = pat^{var \cup holes} \times sexp$. We
+%   write $\mathbb{D}, \mathbb{E}, \ldots$ to range over transformers.
+%   % Is the set $trans$ which is a subset of the partial functions
+%   % \[
+%   % pat^{var \cup holes} \rightharpoonup exp
+%   % \]
+
+% \end{description}
 
 
 %%% Local Variables: 

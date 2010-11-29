@@ -22,22 +22,29 @@ struct
     *)
 
 open SMLGrammar Fixity
-infix or
+exception Error of int * string
 
 fun die s = Crash.die "Infixing" s
-val fail = Error.internal
+fun fail p s = raise Error (p, s)
 
 val join = Tree.join
-val wrap = Wrap.wrap
-val left = Wrap.left o Tree.this
-val right = Wrap.right o Tree.this
+fun wrap n l r = Wrap.wrap n {left = l, right = r}
+val data = Wrap.data o Tree.this
+fun left t =
+    case data t of
+      {left, right} => left
+fun right t =
+    case data t of
+      {left, right} => right
 val unwrap = Wrap.unwrap
 val node = Wrap.unwrap o Tree.this
 val children = Tree.children
-val fixity = Ident.fixity o unwrap
+
+(* This is wierd: why won't mlton allow a val here? *)
+fun fixity id = Ident.fixity $ unwrap id
 val isInfix = Ident.isInfix o unwrap
 val isNonfix = Ident.isNonfix o unwrap
-val isQual = Ident.isQual o unwrap
+fun isQual id = Ident.isQual $ unwrap id
 val isUnqual = Ident.isUnqual o unwrap
 val idToString = Ident.toString o unwrap
 
@@ -46,13 +53,13 @@ fun rightmost a b = Int.max (right a, right b)
 
 local
 fun pair n a b = join (wrap n (left a) (right b)) [a, b]
-fun toTree n i = join (wrap (n i) (Wrap.left i) (Wrap.right i)) nil
+fun toTree n i = join (Wrap.wrap (n i) (Wrap.data i)) nil
 fun asId f t = (SOME o f o node) t handle General.Match => NONE
 fun apply n a b = join (wrap n (leftmost a b) (rightmost a b)) [a, b]
 in
 structure Exp =
 struct
-type tree = tree
+type ast = ast
 type ident = ident
 val pair = pair Exp_Tuple
 val toTree = toTree Exp_Var
@@ -63,7 +70,7 @@ structure ExpStack = InfixStack (Exp)
 
 structure Pat =
 struct
-type tree = tree
+type ast = ast
 type ident = ident
 val pair = pair Pat_Tuple
 val toTree = toTree Pat_Var
@@ -76,7 +83,7 @@ end (* end local *)
 fun resolveArgs pats =
     let
       datatype category = Infixed of ident
-                        | Other of tree
+                        | Other of ast
 
       fun category pat =
           case Pat.asId pat of
@@ -112,7 +119,10 @@ fun resolveArgs pats =
             )
           | _ => fail (left pat) "function name missing."
         end
-      | Infixed id :: _ => fail (Wrap.left id) "put 'op' in front of identifier."
+      | Infixed id :: _ =>
+        (case Wrap.data id of
+           {left, right} => fail left "put 'op' in front of identifier."
+        )
       | _ => die "resolveArgs"
     end
 
@@ -164,7 +174,7 @@ fun resolve (t, bas) =
           in
             case Ident.fixity id' of
               Op => id
-            | _ => wrap (Ident.setFixity id' f) (Wrap.left id) (Wrap.right id)
+            | _  => Wrap.modify (fn id => Ident.setFixity id f) id
           end
       fun skip _ = (t, empty)
 

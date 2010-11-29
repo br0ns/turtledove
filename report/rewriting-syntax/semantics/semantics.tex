@@ -2,51 +2,325 @@
 A rewriting rule ``works'' on a list of SML-clauses. In SML clauses are found in
 function declarations, recursive value declarations, anonymous functions, case
 expressions and exception handlers. A rewriting rule works on a sublist (not
-necessarily proper) of such a list of clauses. In the following the regard a SML
-clause as a set of a pattern and an expression (and thus we can use the $\alpha
-=> \beta$ notation).
+necessarily proper) of such a list of clauses.
 
 \paragraph{Remark.} In the scheme bodies we allow the keyword \textsf{self},
 which we take to mean a recursive call.
 
-\subsection{Meta patterns}
-
-\subsection{Scheme bodies}
-
-The grammar of $sexp$'s is given by
-
-\begin{nonfloatingfigure}
-
-\setlength{\grammarindent}{7.3em}
-\begin{grammar}
- 
-  <atsexp> ::= <scon> \alt "op" <longvid> \alt "{" <sexprow> "}" \alt "\#"
-  <lab> \alt "()" \alt "(" <sexp>, ..., <sexp> ")" \alt "let" <dec> "in"
-  <sexp> "end" \alt "(" <sexp> ")"
-  
-  <sexprow> ::= <lab> "=" <sexp> ["," <sexprow>] "\# fix correct meaning of this"
-  
-  <sexp> ::= <sexp> <atsexp> \alt <sexp> "andalso" <sexp> \alt <sexp> "orelse"
-  <sexp> \alt <sexp> "handle" <smatch> \alt "if" <sexp> "then" <sexp> "else"
-  <sexp> \alt "case" <sexp> "of" <smatch> \alt "fn" <smatch>
-  
-  <smatch> ::= <smrule> "<|" <smatch> ">" "\# fix wierd <|"
-  
-  <smrule> ::= <spat> "=>" <sexp>
-\end{grammar}
-  
-  \caption{Grammar for scheme expressions.}
-  \label{fig:scheme-expressions}
-\end{nonfloatingfigure}
-
-
-
-
-
-\fixme{Add short comment about what this is: SML without types, added with ...}
-
-\subsection{Rules}
+\subsection{Inference rules}
 \newcommand{\becomesthrough}[3]{#1 \textsf{ becomes } #2 \textsf{ through } #3}
+
+Along with the judgement form we give ``type specifications'' for each variable,
+in the sense that any rule of the declared form has an implicit side condition
+requireing values to belong to the stated set.
+
+\paragraph{Judgement} \fbox{\becomesthrough{A}{B}{C}}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  A, B & exp\\
+  C & rule
+\end{tabular}
+\fixme{Reinsert $M''$ into $M$.}
+
+\[
+\inference
+{
+  M' \subseteq M &
+  \sigma[\textsf{self} \mapsto (f, 1)] |- M' : S &
+  \sigma[\textsf{self} \mapsto (f, 1)] |- M'' : R
+}
+{
+  \becomesthrough
+  {\texttt{val rec $f$ = fn $M$}}
+  {\texttt{val rec $f$ = fn $M''$}}
+  {S \Downarrow R}
+}
+\]
+
+\[
+\inference
+{
+  M' \subseteq M &
+  \sigma[\textsf{self} \mapsto (f, n)] |- M' : S &
+  \sigma[\textsf{self} \mapsto (f, n)] |- M'' : R
+}
+{
+  \begin{array}{c}
+    \begin{array}{l}
+      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
+      \texttt{case ($a_1$, $\ldots$, $a_n$) of $M$}
+    \end{array}\\
+    \textsf{becomes}\\
+    \begin{array}{l}
+      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
+      \texttt{case ($a_1$, $\ldots$, $a_n$) of $M''$}
+    \end{array}
+  \end{array}
+  \textsf{ through }
+  S \Downarrow R
+}
+\]
+
+\[
+\inference
+{
+  M' \subseteq M &
+  \sigma |- M' : S &
+  \sigma |- M'' : R
+}
+{
+  \becomesthrough
+  {\texttt{case $e$ of $M$}}
+  {\texttt{case $e$ of $M''$}}
+  {S \Downarrow R}
+}
+{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
+\]
+
+\[
+\inference
+{
+  M' \subseteq M &
+  \sigma |- M' : S &
+  \sigma |- M'' : R
+}
+{
+  \becomesthrough
+  {\texttt{handle $M$}}
+  {\texttt{handle $M''$}}
+  {S \Downarrow R}
+}
+{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
+\]
+
+\paragraph{Judgement} \fbox{$A <- B = C$}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  A, B, C & mpat
+\end{tabular}\\
+
+Insert $B$ in the hole in $A$ with the lowest index. The result is $C$.
+
+\paragraph{Judgement} \fbox{$\sigma(S) = M$}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  S & spat\\
+  M & mpat
+\end{tabular}\\
+
+\[
+\inference
+{
+  \sigma(S_0) = M_0 &
+  \cdots &
+  \sigma(S_n) = M_n
+}
+{
+  \sigma (\mathfrak{a} (S_0, \ldots, S_n)) =
+  \mathfrak{a} (M_0, \ldots, M_n)
+}
+\]
+
+\[
+\inference
+{
+  M'_0 <- M_1 = M'_1 &
+  \cdots &
+  M'_{n-1} <- M_n = M'_n
+}
+{
+  \sigma (\mathcal{C}[M_1]\cdots[M_n]) = M'_n
+}
+{
+  \sigma(\mathcal{C}) = M'_0
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  \sigma(\diamond_i) = \diamond_i
+}
+\]
+
+\paragraph{Judgement} \fbox{$\theta(M) = P$}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  M & mpat\\
+  P & pat
+\end{tabular}\\
+
+Replace all pattern variables by their image given by $\theta$.
+
+
+\paragraph{Judgement} \fbox{$\sigma, \theta |- S : E$}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  S & sexp\\
+  E & exp
+\end{tabular}\\
+
+We have omitted the rules that deal with the structure of expressions and scheme
+expressions.
+
+\[
+\inference
+{
+  \theta(\overline{a}) = P & \kappa(P) = E
+}
+{
+  \sigma, \theta |- \overline{a} : E
+}
+\]
+
+\[
+\inference
+{
+  \sigma(\mathcal{C}[M_0]\cdots[M_n]) = M & \theta(M) = P & \kappa(P) = E
+}
+{
+  \sigma, \theta |- \mathcal{C}[M_0]\cdots[M_n] : E
+}
+\]
+
+% \[
+% \inference
+% {
+%   \sigma |- \theta(S) = E'_0 \\
+%   \sigma |- \theta(S_0) = E_1 & \cdots & \sigma |- \theta(S_n) = E_{n+1} \\
+%   E'_0 <- E_1 = E'_1 & \cdots & E'_n <- E_{n+1} = E'_{n+1}
+% }
+% {
+%   \sigma |- \theta(\mathbb{E}[S_0]\cdots[S_n]) = E'_{n+1}
+% }
+% {
+%   \sigma(\mathbb{E}) = S
+% }
+% \]
+
+\[
+\inference
+{
+  \sigma(S_0) = M_0 & \ldots & \sigma(S_n) = M_n &
+  \theta(M) = P' & P' \equiv_T P &
+}
+{
+  \sigma, \theta |- \mathbb{E}[S_0]\cdots[S_n] = E[x_1/T(x_1)]\ldots[x_m/T(x_m)]
+}
+{
+  \begin{aligned}
+    & \mathfrak{T}_n(M_0, \ldots, M_n) = M\\
+    & \sigma(\mathbb{E}) = (P, E)\\
+    & dom(T) = \{x_1, \ldots, x_m\}
+  \end{aligned}
+}
+\]
+
+% \[
+% \inference
+% {
+% }
+% {
+%   \sigma |- \theta(\diamond_i) = \diamond_i
+% }
+% \]
+
+\paragraph{Judgement} \fbox{$A : \langle B, \theta \rangle$}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  A & pat\\
+  B & mpat
+\end{tabular}
+
+\[
+\inference
+{
+  p_0 : \langle \alpha_0, \theta_0 \rangle &
+  \cdots &
+  p_n : \langle \alpha_n, \theta_n \rangle &
+}
+{
+  \mathfrak{a} (p_0, \ldots, p_n) :
+  \langle \mathfrak{b} (\alpha_0, \ldots, \alpha_n), \theta_0 ++ \cdots ++
+  \theta_n \rangle
+}
+{
+  \mathfrak{a} = \mathfrak{b}
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  p : \langle \overline{a}, \overline{a} \mapsto p \rangle
+}
+\]
+
+\paragraph{Judgement} \fbox{$A \equiv_T B$}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  A, B & pat
+\end{tabular}\\
+
+See the MiniML paper for the definition of $\equiv_T$. It means that $A$ and $B$
+are equal modulo variable names, and that $T$ is the mapping from names in $A$
+to names in $B$.
+
+\paragraph{Judgement} \fbox{$\sigma |- A : B$}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  A & clause^{+}\\
+  B & sclause^{+}
+\end{tabular}\\
+
+\[
+\inference
+{
+  \sigma(sp) = M &
+  \sigma |- p : \langle M, \theta \rangle &
+  \sigma, \theta |- se : e &
+  \sigma |- m : S
+}
+{
+  \sigma |-
+  \begin{tabular}{c}
+    \texttt{| $p$ => $e$}\\
+    $m$
+  \end{tabular}
+  :
+  \begin{tabular}{c}
+    $\mid sp => se$\\
+    $S$
+  \end{tabular}
+}
+\]
+
+% \paragraph{Judgement} \fbox{$\sigma |- A \leadsto B$}\\
+% \indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+%   A & sclause^{+}\\
+%   B & clause^{+}
+% \end{tabular}\\
+
+% \[
+% \inference
+% {
+%   \sigma(S) = M' &
+%   \iota(M') = \langle p, \theta \rangle &
+%   \sigma, \theta |- E : e &
+%   \sigma |- M \leadsto m
+% }
+% {
+%   \sigma |-
+%   \begin{tabular}{c}
+%     $\mid S => E$\\
+%     $M$
+%   \end{tabular}
+%   \leadsto
+%   \begin{tabular}{c}
+%     \texttt{| $p$ => $e$}\\
+%     $m$
+%   \end{tabular}
+% }
+% \]
+
+\section{Here be junk}
+
 
 Below we give the semantics for applying rewriting rules. The set $id$ is the
 set of identifiers. Identifiers are used to index environments. The set $rid$ is
@@ -68,7 +342,7 @@ judgements:
   \Gamma \in id \rightharpoonup trans\\
   & T \in id \rightharpoonup pvar, b \in pat, \beta \in spat, \rho \in rid\\
   \\
-  \mathbb{D}(\alpha) = \beta & \mathbb{D} \in trans, \alpha \in pat, \beta \in var\\
+  \mathbb{D}(p) = e & \mathbb{D} \in trans, p \in pat, e \in exp\\
   \\
   \mathcal{C}[\alpha] = \mathcal{D} & \mathcal{C} \in mpat_n, \alpha \in
   pat^{pvar}, \mathcal{D} \in mpat_{n - 1}\\
@@ -150,16 +424,29 @@ m' =
 \]
 for some $1 \leq i < j \leq n$.
 
-\subsection{Schemes}
+\[
+\inference
+{
+  \Lambda, [] |- p : \langle \alpha, T \rangle&
+  \beta[x_1/T(x_1)]\cdots[x_n/T(x_n)]
+}
+{
+  \mathbb{D}(p) = b
+}
+{
+  \mathbb{D} = (\alpha, \beta), \text{dom } T = x_1, \ldots, x_n
+}
+\]
+
 We use the judgement $\Lambda, \Gamma |- m : s$ to mean that the list of clauses $m$ is
 an instance of the scheme $s$ in the meta pattern environment $\Lambda$ and the
 transformer environment $\Gamma$.
 
 \[
 \inference{\Lambda, [] |- p : \langle \alpha, T \rangle &
-  \Lambda, \Gamma, T |- b : \beta &
-\Lambda, \Gamma |- m : s}
-{\Lambda, \Gamma |- p => b, m : \alpha => \beta, s}
+  \rho, \Lambda, \Gamma, T |- b : \beta &
+\rho, \Lambda, \Gamma |- m : s}
+{\rho, \Lambda, \Gamma |- p => b, m : \alpha => \beta, s}
 \]
 
 The judgement $\Lambda, T |- p : \langle \alpha, T' \rangle$ means that the
@@ -180,14 +467,23 @@ resulting pattern variable environment $T'$.
 
 \[
 \inference
-{\Lambda, \Gamma |- p : \Lambda(\mathcal{C})}
-{\Lambda, \Gamma |- p : \mathcal{C}}
+{
+  \Lambda, T |- p : \langle \mathcal{D}, T' \rangle&
+  \mathcal{C}[\alpha] = \mathcal{D}
+}
+{
+  \Lambda, T |- p : \langle \mathcal{C}[\alpha], T' \rangle
+}
 \]
 
 \[
 \inference
-{\Lambda, \Gamma |- p : \sigma(\mathcal{C}, \alpha)}
-{\Lambda, \Gamma |- p : \mathcal{C}[\alpha]}
+{
+  \Lambda, T |- p : \langle \Lambda(\mathcal{C}), T' \rangle
+}
+{
+  \Lambda, T |- p : \langle \mathcal{C}, T' \rangle
+}
 \]
 
 \[
@@ -229,6 +525,42 @@ handle the structure of expressions and scheme expressions.
 
 \fixme{Find på bedre måde at opstille disse definitions... Evt ligesom det gamle
 uden definition environments.}
+
+\subsection{Scheme bodies}
+
+The grammar of $sexp$'s is given by
+
+\begin{nonfloatingfigure}
+
+\setlength{\grammarindent}{7.3em}
+\begin{grammar}
+ 
+  <atsexp> ::= <scon> \alt "op" <longvid> \alt "{" <sexprow> "}" \alt "\#"
+  <lab> \alt "()" \alt "(" <sexp>, ..., <sexp> ")" \alt "let" <dec> "in"
+  <sexp> "end" \alt "(" <sexp> ")"
+  
+  <sexprow> ::= <lab> "=" <sexp> ["," <sexprow>] "\# fix correct meaning of this"
+  
+  <sexp> ::= <sexp> <atsexp> \alt <sexp> "andalso" <sexp> \alt <sexp> "orelse"
+  <sexp> \alt <sexp> "handle" <smatch> \alt "if" <sexp> "then" <sexp> "else"
+  <sexp> \alt "case" <sexp> "of" <smatch> \alt "fn" <smatch>
+  
+  <smatch> ::= <smrule> "<|" <smatch> ">" "\# fix wierd <|"
+  
+  <smrule> ::= <spat> "=>" <sexp>
+\end{grammar}
+  
+  \caption{Grammar for scheme expressions.}
+  \label{fig:scheme-expressions}
+\end{nonfloatingfigure}
+
+
+
+
+
+\fixme{Add short comment about what this is: SML without types, added with ...}
+
+
 
 %%% Local Variables: 
 %%% mode: latex

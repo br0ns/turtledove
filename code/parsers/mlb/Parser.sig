@@ -1,6 +1,6 @@
 signature Parser =
 sig
-  exception Parse of Report.t
-  val fromFile : File.t -> {basdecs : File.t MLBGrammar.basdecs, comments : Source.Comments.t}
-(* val fromText : string -> Ast.MLB.node Tree.t *)
+  exception Parse of Layout.t
+  val fromFile : File.t -> {ast : File.t MLBGrammar.node Tree.t, comments : Comments.t}
+(* val fromText : string -> {ast : File.t MLBGrammar.node Tree.t, comments : Comments.t} *)
 end

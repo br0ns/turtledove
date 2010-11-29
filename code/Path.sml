@@ -10,13 +10,15 @@ structure P = OS.Path
 (* Invariant: Values of type t represent absolute canonical paths *)
 type t = string
 
-exception Path of Report.t
+exception Path of Layout.t
 
 val vars = Dictionary.fromList
              [("SML_LIB", "/usr/lib/mlton/sml"),
+              ("LIB_MLTON_DIR", "/usr/lib/mlton"),
               ("OBJPTR_REP", "objptr-rep32.sml"),
               ("HEADER_WORD", "header-word32.sml"),
               ("SEQINDEX_INT", "seqindex-int32.sml"),
+              ("TARGET", "self"),
               ("TARGET_ARCH", "x86"),
               ("TARGET_OS", "linux"),
               ("DEFAULT_CHAR", "default-char8.sml"),
@@ -34,12 +36,12 @@ fun expandVars f =
             val var = implode var
           in
             if StringSet.member seen var then
-              raise Path (Report.text ("Recursive path variable: " ^ var))
+              raise Path (Layout.txt ("Recursive path variable: " ^ var))
             else
               case Dictionary.lookup vars var of
                 SOME path => read (explode path, StringSet.insert seen var) @
                              read (cs, seen)
-              | NONE => raise Path (Report.text ("Unknown path variable: " ^ var))
+              | NONE => raise Path (Layout.txt ("Unknown path variable: " ^ var))
           end
         | read (c :: cs, seen) = c :: read (cs, seen)
         | read _ = nil
@@ -65,7 +67,7 @@ fun new f =
       if P.isAbsolute f then
         P.mkCanonical f
       else
-        raise Path (Report.text "Cannot create a relative path.")
+        raise Path (Layout.txt "Cannot create a relative path.")
     end
 
 fun new' f f' =
@@ -87,5 +89,5 @@ val extension = P.ext
 
 val sub = String.isPrefix
 
-val show = Report.text
+val show = Layout.txt
 end

@@ -9,8 +9,7 @@ structure MLBParser = JoinWithArg
 structure Lex = MLBLex
 structure LrParser = LrParser)
 
-structure X = Grammar
-structure Y = MLBGrammar
+open MLBGrammar
 
 structure Ord =
 struct
@@ -21,16 +20,20 @@ end
 structure Map = OrderedMapFn (Ord)
 structure Set = OrderedSetFn (Ord)
 
-exception Parse of Report.t
+exception Parse of Layout.t
 
 fun fromFile file =
     let
-      fun context r = Report.++ (r, Report.text ("while parsing " ^ Path.path file))
-      fun fail r = raise Parse (context r)
-      fun isX x f = List.exists (fn e =>
-                                    case Path.extension f of
-                                      NONE => false
-                                    | SOME e' => e = e') x
+      open Layout
+      infix ^^ ++ \ & \\ &&
+
+      fun fail e = raise Parse (txt "Error while parsing" & txt (Path.path file) && colon \ indent 2 e)
+      fun isX x f = List.exists
+                      (fn e =>
+                          case Path.extension f of
+                            NONE => false
+                          | SOME e' => e = e')
+                      x
       val isProg = isX ["ML", "sml", "sig", "fun"]
       val isMLB = isX ["mlb"]
       val parsed = ref Map.empty
@@ -40,76 +43,80 @@ fun fromFile file =
             SOME x => x before Crash.debug ("Avoided parsing " ^ Path.toString file)
           | NONE =>
             let
-              fun context' r =
-                  Report.++ (r, context (Report.text ("in " ^ Path.path file)))
-              fun fail' s = raise (Parse o context o Report.text) s
+              fun fail e = raise Parse (txt "Error in" & txt (Path.path file) && colon \ indent 2 e)
               val dir = Path.dir file
               val st = SourceText.fromFile file
               val source = Source.fromSourceText st
               val reader = Source.makeReader source
 
               (* The parser parses until EOF so the rest of the stream is always empty *)
-              val ((ds, comments), _) =
+              val ((ast, comments), _) =
                   MLBParser.parse (Constants.PARSE_LOOKAHEAD,
                                    MLBParser.makeLexer reader source,
                                 fn (s, l, r) => Source.error source l s,
                                    source)
 
-              fun basdecs ds = map basdec ds
-              and basdec d =
-                  case d of
-                    X.Basis bs => Y.Basis (basbinds bs)
-                  | X.Local (ds, ds') => Y.Local (basdecs ds, basdecs ds')
-                  | X.File f =>
+              open Tree
+
+              (* To make the type system happy *)
+              fun identity x =
+                  case x of
+                    Basdecs                => Basdecs
+                  | Basbind bid            => Basbind bid
+                  | Exp_Basis              => Exp_Basis
+                  | Exp_Let                => Exp_Let
+                  | Exp_Var bid            => Exp_Var bid
+                  | Dec_Basis              => Dec_Basis
+                  | Dec_Local              => Dec_Local
+                  | Dec_Open bids          => Dec_Open bids
+                  | Dec_Ann ss             => Dec_Ann ss
+                  | Dec_Structure strbinds => Dec_Structure strbinds
+                  | Dec_Signature sigbinds => Dec_Signature sigbinds
+                  | Dec_Functor fctbinds   => Dec_Functor fctbinds
+                  | Prim                   => Prim
+                  | _                      => Crash.impossible "MLBParser"
+
+              fun loop' t =
+                  case this t of
+                    Dec_Source f =>
                     let
                       val file = Path.new' dir f
-                          handle Path.Path r => raise Parse (context' r)
+                          handle Path.Path e => fail e
                     in
                       if isProg file then
-                        Y.Source file
+                        singleton $ Dec_Source file
                       else if isMLB file then
                         if Set.member seen file then
-                          fail' ("Recursive MLB file: " ^ Path.path file)
+                          fail (txt "Recursive MLB file:" & txt (Path.path file))
                         else
                           let
-                            val {basdecs, comments} = loop (file, Set.insert seen file)
+                            val {ast, comments} = loop (file, Set.insert seen file)
                           in
-                            Y.Include {file = file, basdecs = basdecs, comments = comments}
+                            singleton
+                              $ Dec_Include {file     = file,
+                                             ast      = ast,
+                                             comments = comments}
                           end
                       else
-                        fail' ("Unknown file type: " ^ Path.path file)
+                        fail (txt "Unknown file type:" & txt (Path.path file))
                     end
-                  | X.Open ids => Y.Open ids
-                  | X.Ann (anns, ds) => Y.Ann (anns, basdecs ds)
-                  | X.Structure bs => Y.Structure bs
-                  | X.Signature bs => Y.Signature bs
-                  | X.Functor bs => Y.Functor bs
-                  | X.Prim => Y.Prim
-              and basexp e =
-                  case e of
-                    X.Bas ds => Y.Bas (basdecs ds)
-                  | X.Let (ds, e) => Y.Let (basdecs ds, basexp e)
-                  | X.Var id => Y.Var id
-              and basbinds bs = map basbind bs
-              and basbind (id, e) = (id, basexp e)
-
-              val ds = basdecs ds
-              val this = {basdecs = ds, comments = comments}
+                  | n => join (identity n) $ List.map loop' $ children t
+              val this = {ast = loop' ast, comments = comments}
             in
               parsed := Map.update (!parsed) (file, this) ;
               this
             end
-            handle LexError r => fail r
-                 | Path.Path r => fail r
+            handle LexError e => fail e
+                 | Path.Path e => fail e
                  | IO.Io {name, cause = OS.SysErr (err, se), ...} =>
-                   fail (Report.text (
-                         (case se of
-                            NONE    => err
-                          | SOME m  => OS.errorMsg m
-                         ) ^ ": " ^ name)
+                   fail (txt
+                           (case se of
+                              NONE    => err
+                            | SOME m  => OS.errorMsg m
+                           ) && colon & txt name
                         )
                  | IO.Io {name, ...} =>
-                   fail (Report.text ("Failed to read file: " ^ name))
+                   fail (txt "Failed to read file:" & txt name)
     in
       loop (file, Set.empty)
     end

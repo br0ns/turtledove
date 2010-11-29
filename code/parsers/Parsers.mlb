@@ -4,14 +4,15 @@ local
   $(SML_LIB)/mylib/MyLib.mlb
   ../Basic.mlb
 
+  Exns.sml
   Source.sig Source.sml
   LexUtils.sig LexUtils.sml
+
 in
 
   ../ast/ast.mlb
 
   local
-    mlb/Grammar.sml
     mlb/MLB.yacc.sig mlb/MLB.yacc.sml
     mlb/MLB.lex.sml
 
@@ -29,13 +30,13 @@ in
     structure SMLParser = Parser
   end
 
-  local
-    rule2/SML.yacc.sig rule2/SML.yacc.sml
-    rule2/SML.lex.sml
+  (* local *)
+  (*   rule2/SML.yacc.sig rule2/SML.yacc.sml *)
+  (*   rule2/SML.lex.sml *)
 
-    rule2/Parser.sml
-  in
-  structure RuleParser = Parser
-  end
+  (*   rule2/Parser.sml *)
+  (* in *)
+  (*   structure RuleParser = Parser *)
+  (* end *)
 
 end

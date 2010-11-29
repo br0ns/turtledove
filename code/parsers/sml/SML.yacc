@@ -4,15 +4,23 @@ val dummypos = ~1
 
 val join = Tree.join
 
-val wrap = Wrap.wrap
-val left = Wrap.left o Tree.this
-val right = Wrap.right o Tree.this
+fun wrap n l r = Wrap.wrap n {left = l, right = r}
+
+type data = {left : int, right : int}
+val data = Wrap.data o Tree.this
+fun left t =
+    case data t of
+      {left, right} => left
+fun right t =
+    case data t of
+      {left, right} => right
 val unwrap = Wrap.unwrap
+
+val leftmost = left o List.hd
+val rightmost = right o List.last
 
 val node = Wrap.unwrap o Tree.this
 val children = Tree.children
-
-exception ParseError of int * string
 
 fun error p s = raise ParseError (p, s)
 fun die s = Crash.impossible s
@@ -38,7 +46,9 @@ fun reportDuplicates f p s xs =
 
 fun ensureUnqual i =
     if Ident.isQual (unwrap i) then
-      error (Wrap.left i) "Identifier must be unqualified"
+      case Wrap.data i of
+        {left, right} =>
+        error left "Identifier must be unqualified"
     else
       i
 
@@ -76,64 +86,64 @@ fun mkTyvar l r s =
     | PRIM
 
 %nonterm
-         aexp of t * tree list
-       | andspecs of tree list
-       | apat of tree
-       | apatnode of t * tree list
-       | apats of tree list
-       | app_exp of tree list
-       | app_exp1 of tree list
-       | arg_fct of tree
+         aexp of node * ast list
+       | andspecs of ast list
+       | apat of ast
+       | apatnode of node * ast list
+       | apats of ast list
+       | app_exp of ast list
+       | app_exp1 of ast list
+       | arg_fct of ast
        | ieattributes of unit
-       | clause of tree
-       | clauses of tree list
-       | clausesTop of tree
-       | commapats of tree list
+       | clause of ast
+       | clauses of ast list
+       | clausesTop of ast
+       | commapats of ast list
        | con of ident
        | const of SCon.t
        | const' of SCon.t
-       | constr of tree
-       | constraint of tree
-       | constrs of tree list
+       | constr of ast
+       | constraint of ast
+       | constrs of ast list
        | constOrBool of SCon.t
-       | datBind of tree list
-       | datBindNoWithtype of tree list
-       | datatypeRhs of t * tree list
-       | datatypeRhsNoWithtype of t * tree list
-       | datatypeRhsnode of t * tree list
-       | datatypeRhsnodeNoWithtype of t * tree list
-       | db of tree
-       | dbs of tree list
-       | dbs' of tree list
-       | dec of tree
-       | decnode of t * tree list
-       | decnolocal of t * tree list
-       | decs of tree list
+       | datBind of ast list
+       | datBindNoWithtype of ast list
+       | datatypeRhs of node * ast list
+       | datatypeRhsNoWithtype of node * ast list
+       | datatypeRhsnode of node * ast list
+       | datatypeRhsnodeNoWithtype of node * ast list
+       | db of ast
+       | dbs of ast list
+       | dbs' of ast list
+       | dec of ast
+       | decnode of node * ast list * pos * pos
+       | decnolocal of node * ast list * pos * pos
+       | decs of ast list
        | digit of int
-       | eb of tree
-       | ebrhs of int -> int -> ident -> tree
-       | ebrhsnode of int -> int -> ident -> tree
-       | ebs of tree list
-       | elabel of tree
-       | elabels of tree list
-       | exndesc of tree
-       | exndescs of tree list
-       | exp of tree
-       | exp_2c of tree list
-       | exp_list of tree list
-       | exp_ps of tree list
-       | expnode of t * tree list
-       | expsAndTopdecs of tree list
-       | fctarg of tree
+       | eb of ast
+       | ebrhs of int -> int -> ident -> ast
+       | ebrhsnode of int -> int -> ident -> ast
+       | ebs of ast list
+       | elabel of ast
+       | elabels of ast list
+       | exndesc of ast
+       | exndescs of ast list
+       | exp of ast
+       | exp_2c of ast list
+       | exp_list of ast list
+       | exp_ps of ast list
+       | expnode of node * ast list * pos * pos
+       | expsAndTopdecs of ast list
+       | fctarg of ast
        | fctid of ident
        | field of ident
        | fixity of Fixity.t
-       | funbinds of tree list
-       | funbinds' of tree * tree list
-       | funbinds'1 of tree list * tree list
-       | funbinds'1' of tree list * tree list
-       | funbinds'2 of tree list
-       | funs of tree list
+       | funbinds of ast list
+       | funbinds' of ast * ast list
+       | funbinds'1 of ast list * ast list
+       | funbinds'1' of ast list * ast list
+       | funbinds'2 of ast list
+       | funs of ast list
        | id of ident
        | idEqual of ident
        | idNoAsterisk of ident
@@ -150,89 +160,89 @@ fun mkTyvar l r s =
        | longvidands of ident list
        | longvid of ident
        | longvidNoEqual of ident
-       | match of tree
-       | opaspat of tree
+       | match of ast
+       | opaspat of ast
        | opcon of ident
-       | pat of tree
-       | patitem of tree
-       | patitems of tree list * bool
-       | patnode of t * tree list
-       | pats of tree list
+       | pat of ast
+       | patitem of ast
+       | patitems of ast list * bool
+       | patnode of node * ast list
+       | pats of ast list
        | priority of int option
-       | program of tree * comments
+       | program of ast * comments
        | repl of ident * ident
-       | rule of tree
-       | rules of tree list
-       | rvalbind of tree list
-       | rvalbindRest of tree list
-       | sharespec of t * tree list
-       | sigbinds of tree list
-       | sigbinds' of tree list * tree list
-       | sigbinds'' of tree list * tree list
-       | sigconst of tree
-       | sigexp of tree
-       | sigexp' of tree
-       | sigexp'node of t * tree list
+       | rule of ast
+       | rules of ast list
+       | rvalbind of ast list
+       | rvalbindRest of ast list
+       | sharespec of node * ast list
+       | sigbinds of ast list
+       | sigbinds' of ast list * ast list
+       | sigbinds'' of ast list * ast list
+       | sigconst of ast
+       | sigexp of ast
+       | sigexp' of ast
+       | sigexp'node of node * ast list
        | sigid of ident
        | sigids of ident list
-       | spec of tree
-       | specnode of t * tree list
-       | specs of tree list
-       | strbinds of tree list
-       | strbinds' of tree * tree list
-       | strbinds'1 of tree list * tree list
-       | strbinds'1' of tree list * tree list
-       | strbinds'2 of tree list
-       | strdec of tree
-       | strdecnode of t * tree list
-       | strdecs of tree list
-       | strdecsnode of tree list
-       | strdescs of tree list
-       | strdescs' of tree list * tree list
-       | strdescs'' of tree list * tree list
-       | strexp of tree
-       | strexp1 of tree * Sigcon.t * tree
-       | strexp2 of tree
-       | strexp2node of t * tree list
-       | strexpnode of t * tree list
+       | spec of ast
+       | specnode of node * ast list
+       | specs of ast list
+       | strbinds of ast list
+       | strbinds' of ast * ast list
+       | strbinds'1 of ast list * ast list
+       | strbinds'1' of ast list * ast list
+       | strbinds'2 of ast list
+       | strdec of ast
+       | strdecnode of node * ast list * pos * pos
+       | strdecs of ast list
+       | strdecsnode of ast list
+       | strdescs of ast list
+       | strdescs' of ast list * ast list
+       | strdescs'' of ast list * ast list
+       | strexp of ast
+       | strexp1 of ast * Sigcon.t * ast
+       | strexp2 of ast
+       | strexp2node of node * ast list
+       | strexpnode of node * ast list
        | strid of ident
        | string of string
        | symattributes of unit
-       | tlabel of tree
-       | tlabels  of tree list
-       | topdec of tree
-       | topdecnode of tree
-       | topdecs of tree list
-       | tuple_ty of tree list
-       | ty of tree
-       | ty' of tree
-       | ty'node of t * tree list
-       | ty0_pc of tree list
-       | tyOpt of tree option
+       | tlabel of ast
+       | tlabels  of ast list
+       | topdec of ast
+       | topdecnode of ast
+       | topdecs of ast list
+       | tuple_ty of ast list
+       | ty of ast
+       | ty' of ast
+       | ty'node of node * ast list
+       | ty0_pc of ast list
+       | tyOpt of ast option
        | tycon of ident
-       | tynode of t * tree list
-       | typBind of tree list
-       | typBind' of tree list
-       | typBind'' of tree list
-       | typdesc of tree
-       | typdescs of tree list
+       | tynode of node * ast list
+       | typBind of ast list
+       | typBind' of ast list
+       | typBind'' of ast list
+       | typdesc of ast
+       | typdescs of ast list
        | tyvar of ident
        | tyvar_pc of ident list
        | tyvars of ident list
        | tyvarseq of ident list
-       | valbind of tree list
-       | valbindRest of tree list
-       | valbindTop of tree list
-       | valdesc of tree
-       | valdescs of tree list
+       | valbind of ast list
+       | valbindRest of ast list
+       | valbindTop of ast list
+       | valdesc of ast
+       | valdescs of ast list
        | var of ident
        | vid of ident
        | vidNoEqual of ident
        | vids of ident list
-       | wherespec of tree
-       | wherespecs of tree list
-       | wherespecs' of tree list
-       | withtypes of tree list
+       | wherespec of ast
+       | wherespecs of ast list
+       | wherespecs' of ast list
+       | withtypes of ast list
        | word of string
 
 %verbose
@@ -279,11 +289,23 @@ fun mkTyvar l r s =
 
 %%
 
+(* Non-terminals with epsilon productions:
+ *  topdecs
+expsAndTopdecs
+strdecs
+strdecsnode
+strbinds'1
+strbinds'2
+sigbinds'
+sigbinds''
+sigconst
+ *)
+
 (* tree * comments *)
 program : expsAndTopdecs
                 ((join (wrap Topdecs
-                             expsAndTopdecsleft
-                             expsAndTopdecsright
+                             (leftmost expsAndTopdecs)
+                             (rightmost expsAndTopdecs)
                        )
                        expsAndTopdecs,
                   Source.Comments.get source
@@ -292,7 +314,7 @@ program : expsAndTopdecs
 (* tree list *)
 expsAndTopdecs :
     exp SEMICOLON expsAndTopdecs
-                ( exp :: expsAndTopdecs)
+                ( exp :: expsAndTopdecs )
   | topdecs
                 ( topdecs )
 
@@ -313,15 +335,15 @@ topdecnode :
                 ( strdec )
    | SIGNATURE sigbinds
                 ( join (wrap Sigdec_Sig
-                             SIGNATUREleft
-                             sigbindsright
+                              SIGNATUREleft
+                              (rightmost sigbinds)
                        )
-                       sigbinds
+                        sigbinds
                 )
    | FUNCTOR funbinds
                 ( join (wrap Fundec_Fun
                              FUNCTORleft
-                             funbindsright
+                             (rightmost funbinds)
                        )
                        funbinds
                 )
@@ -345,19 +367,30 @@ strdecsnode :
 (* tree *)
 strdec : strdecnode
                 (let
-                   val (node, children) = strdecnode
+                   val (node, children, l, r) = strdecnode
                  in
-                   join (wrap node strdecnodeleft strdecnoderight) children
+                   join (wrap node l r) children
                  end)
 
-(* t * tree list *)
+(* t * tree list * pos * pos *)
 strdecnode :
      STRUCTURE strbinds
-                ((Strdec_Str, strbinds))
+                ((Strdec_Str, strbinds, STRUCTUREleft, rightmost strbinds))
    | LOCAL strdecs IN strdecs END
                 ((Strdec_Local,
-                  [join (wrap Strdecs strdecs1left strdecs1right) strdecs1,
-                   join (wrap Strdecs strdecs2left strdecs2right) strdecs2]
+                  [join (wrap Strdecs
+                              (leftmost strdecs1)
+                              (rightmost strdecs1)
+                        )
+                        strdecs1,
+                   join (wrap Strdecs
+                              (leftmost strdecs2)
+                              (rightmost strdecs2)
+                        )
+                        strdecs2
+                  ],
+                  LOCALleft,
+                  ENDright
                 ))
    | decnolocal ( decnolocal )
 
@@ -384,15 +417,15 @@ strbinds' : strexp1 strbinds'1
                      nil => sigexp
                    | _   =>
                          let
-                           val leftmost = left (List.hd wherespecs)
-                           val rightmost = right (List.last wherespecs)
+                           val l = leftmost wherespecs
+                           val r = rightmost wherespecs
                          in
                            join (wrap Sigexp_Where
                                       (left sigexp)
-                                      rightmost
+                                      r
                                 )
                                 [sigexp,
-                                 join (wrap Wherespecs leftmost rightmost)
+                                 join (wrap Wherespecs l r)
                                       wherespecs
                                 ]
                          end
@@ -500,7 +533,10 @@ strexp2node
       ((Strexp_Fun longid, [arg_fct]))
   | LET strdecs IN strexp END
       ((Strexp_Let,
-        [join (wrap Strdecs strdecsleft strdecsright) strdecs,
+        [join (wrap Strdecs
+                    (leftmost strdecs)
+                    (rightmost strdecs)
+              ) strdecs,
          strexp]
       ))
 
@@ -509,7 +545,10 @@ arg_fct
   : LPAREN strexp RPAREN
       (strexp)
   | LPAREN strdecs RPAREN
-      (join (wrap Strdecs strdecsleft strdecsright) strdecs)
+      (join (wrap Strdecs
+                  (leftmost strdecs)
+                  (rightmost strdecs)
+            ) strdecs)
 
 (*---------------------------------------------------*)
 (*                    Signatures                     *)
@@ -898,36 +937,42 @@ decs :
 dec
   : decnode
       (let
-         val (node, children) = decnode
+         val (node, children, l, r) = decnode
        in
-         join (wrap node decnodeleft decnoderight)
+         join (wrap node l r)
               children
        end)
 
-(* t * tree list *)
+(* t * tree list * pos * pos *)
 decnode
   : decnolocal
       (decnolocal)
   | LOCAL decs IN decs END
       ((Dec_Local,
         [join (wrap Decs decs1left decs1right) decs1,
-         join (wrap Decs decs2left decs2right) decs2]
+         join (wrap Decs decs2left decs2right) decs2],
+        LOCALleft,
+        ENDright
       ))
 
-(* t * tree list *)
+(* t * tree list * pos * pos *)
 decnolocal
   : VAL valbindTop
-      ((Dec_Val nil, valbindTop))
+      ((Dec_Val nil, valbindTop, VALleft, rightmost valbindTop))
   | VAL tyvarseq valbindTop
-      ((Dec_Val tyvarseq, valbindTop))
+      ((Dec_Val tyvarseq, valbindTop, VALleft, rightmost valbindTop))
   | FUN funs
-      ((Dec_Fun nil, funs))
+      ((Dec_Fun nil, funs, FUNleft, rightmost funs))
   | FUN tyvarseq funs
-      ((Dec_Fun tyvarseq, funs))
+      ((Dec_Fun tyvarseq, funs, FUNleft, rightmost funs))
   | TYPE typBind
-      ((Dec_Type, typBind))
+      ((Dec_Type, typBind, TYPEleft, rightmost typBind))
   | DATATYPE datatypeRhs
-      (datatypeRhs)
+      (let
+         val (n, ts) = datatypeRhs
+       in
+         (n, ts, DATATYPEleft, datatypeRhsright)
+       end)
   | ABSTYPE datBind WITH decs END
       (case datBind of
          [datbinds, withtypes] =>
@@ -935,17 +980,22 @@ decnolocal
           [datbinds,
            withtypes,
            join (wrap Decs decsleft decsright) decs
-         ])
+          ],
+          ABSTYPEleft,
+          ENDright)
        | _ => die "decnolocal"
       )
   | EXCEPTION ebs
-      ((Dec_Exception, ebs))
+      ((Dec_Exception, ebs, EXCEPTIONleft, ebsright))
   | OPEN longstrids
-      ((Dec_Open longstrids, nil))
+      ((Dec_Open longstrids, nil, OPENleft, longstridsleft))
   | fixity vids
-      ((Dec_Fix (fixity, vids), nil))
+      ((Dec_Fix (fixity, vids), nil, fixityleft, vidsright))
   | OVERLOAD priority var COLON ty AS longvidands
-      ((Dec_Overload (priority, var, longvidands), [ty]))
+      ((Dec_Overload (priority, var, longvidands),
+        [ty],
+        OVERLOADleft,
+        longvidandsright))
 
 (* tree list *)
 valbindTop
@@ -996,7 +1046,7 @@ funs
 (* tree *)
 clausesTop
   : clauses
-      (join (wrap Match clausesleft clausesright) clauses)
+      (join (wrap Match clausesleft (rightmost clauses)) clauses)
 
 (* tree list *)
 clauses
@@ -1008,7 +1058,7 @@ clauses
 (* tree *)
 clause
   : apats constraint EQUALOP exp
-      (join (wrap FlatClause apatsleft expright)
+      (join (wrap FlatClause apatsleft (right exp))
             [join (wrap Pats apatsleft apatsright) apats, constraint, exp])
 
 (* tree list *)
@@ -1220,7 +1270,7 @@ longvidands
 (* tree *)
 match
   : rules
-      (join (wrap Match rulesleft rulesright) rules)
+      (join (wrap Match rulesleft (rightmost rules)) rules)
 
 (* tree list *)
 rules
@@ -1232,7 +1282,7 @@ rules
 (* tree *)
 rule
   : pat DARROW exp
-      (join (wrap Rule patleft expright) [pat, exp])
+      (join (wrap Rule patleft (right exp)) [pat, exp])
 
 (* tree *)
 elabel
@@ -1257,33 +1307,33 @@ exp_ps
 exp
   : expnode
       (let
-         val (node, children) = expnode
+         val (node, children, l, r) = expnode
        in
-         join (wrap node expnodeleft expnoderight) children
+         join (wrap node l r) children
        end)
 
-(* t * tree list *)
+(* t * tree list * pos * pos*)
 expnode
   : exp HANDLE match
-      ((Exp_Handle, [exp, match]))
+      ((Exp_Handle, [exp, match], left exp, right match))
   | exp ORELSE exp
-      ((Exp_Orelse, [exp1, exp2]))
+      ((Exp_Orelse, [exp1, exp2], left exp1, right exp2))
   | exp ANDALSO exp
-      ((Exp_Andalso, [exp1, exp2]))
+      ((Exp_Andalso, [exp1, exp2], left exp1, right exp2))
   | exp COLON ty
-      ((Exp_Typed, [exp, ty]))
+      ((Exp_Typed, [exp, ty], left exp, tyright))
   | app_exp
-      ((Exp_FlatApp, app_exp))
+      ((Exp_FlatApp, app_exp, leftmost app_exp, rightmost app_exp))
   | FN match
-      ((Exp_Fn, [match]))
+      ((Exp_Fn, [match], FNleft, right match))
   | CASE exp OF match
-      ((Exp_Case, [exp, match]))
+      ((Exp_Case, [exp, match], CASEleft, right match))
   | WHILE exp DO exp
-      ((Exp_While, [exp1, exp2]))
+      ((Exp_While, [exp1, exp2], WHILEleft, right exp))
   | IF exp THEN exp ELSE exp
-      ((Exp_If, [exp1, exp2, exp3]))
+      ((Exp_If, [exp1, exp2, exp3], IFleft, right exp))
   | RAISE exp
-      ((Exp_Raise, [exp]))
+      ((Exp_Raise, [exp], RAISEleft, right exp))
 
 (* tree list *)
 app_exp

@@ -2,7 +2,7 @@
 
 (* ;print "[Yeah baby!]"; *)
 
-fun die r = (Report.print r ; OS.Process.exit OS.Process.failure)
+fun die e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.failure)
 
 datatype orderby = Size
                  | Name
@@ -29,9 +29,9 @@ val orderby =
 (* ;Benchmark.start (); *)
 val basdecs =
     let
-      val {basdecs, ...} = MLBParser.fromFile mlbpath
+      val {ast, ...} = MLBParser.fromFile mlbpath
     in
-      basdecs
+      ast
     end
     handle MLBParser.Parse r => die r
          | Path.Path r => die r
@@ -45,9 +45,11 @@ structure Set = OrderedSetFn (
                 val toString = Path.toString
                 end)
 
-fun sources ds =
+fun sources ast =
     let
       open MLBGrammar Set
+      val this = Tree.this
+      val children = Tree.children
 
       val files = ref empty
       fun ignore file =
@@ -59,31 +61,21 @@ fun sources ds =
           file = Path.new "$(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb" orelse
           not (Path.sub (Path.dir mlbpath) file)
 
-      fun basdecs ds = List.app basdec ds
-      and basdec d =
-          case d of
-            Basis bs => basbinds bs
-          | Local (ds, ds') => (basdecs ds ; basdecs ds')
-          | Include {file = f, basdecs = ds, ...} =>
-            if ignore f then
+      fun loop t =
+          case this t of
+            Dec_Source file =>
+            if ignore file then
               ()
             else
-              basdecs ds
-          | Source f => if ignore f then
-                          ()
-                        else
-                          files := insert (!files) f
-          | Ann (_, ds) => basdecs ds
-          | _ => ()
-      and basexp e =
-          case e of
-            Bas ds => basdecs ds
-          | Let (ds, e) => (basdecs ds ; basexp e)
-          | Var _ => ()
-      and basbinds bs = List.app basbind bs
-      and basbind (_, e) = basexp e
+              files := insert (!files) file
+          | Dec_Include {file, ast, ...} =>
+            if ignore file then
+              ()
+            else
+              loop ast
+          | _ => List.app loop $ children t
     in
-      basdecs ds ; !files
+      loop ast ; !files
     end
 
 (* ;Benchmark.start (); *)

@@ -144,7 +144,7 @@ fun posToString st p =
       Path.toString f ^ ":" ^ Int.toString r ^ "." ^ Int.toString c
     end
 
-fun showPos st = Report.text o posToString st
+fun showPos st = Layout.txt o posToString st
 
 fun toString (_, ls) =
     String.concat (map (fn (_, l) => l) ls)

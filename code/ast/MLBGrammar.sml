@@ -1,4 +1,4 @@
-structure Grammar =
+structure MLBGrammar =
 struct
 type basid = string
 type basids = basid list
@@ -19,28 +19,52 @@ type strbinds = strbind list
 type sigbinds = sigbind list
 type fctbinds = fctbind list
 
-datatype 'a basexp = Bas of 'a basdecs
-                   | Let of 'a basdecs * 'a basexp
-                   | Var of basid
+datatype 'a node
+  = Basdecs (* Dec list *)
+  | Basbind of basid (* [Exp] *)
+  | Exp_Basis (* Basbind list *)
+  | Exp_Let (* [Basdecs, Exp] *)
+  | Exp_Var of basid
 
-     (* Basis is a list of bindings because of the 'and' keyword as in
-        basis foo = bas foo.sml end
-          and bar = bas bar.sml end
-      *)
-     and 'a basdec = Basis of 'a basbinds
-                   | Local of 'a basdecs * 'a basdecs
-                   | Include of {file     : file,
-                                 basdecs  : 'a basdecs,
-                                 comments : Source.Comments.t}
-                   | Source of 'a
-                   | Open of basids
-                   | Ann of string list * 'a basdecs
-                   | Structure of strbinds
-                   | Signature of sigbinds
-                   | Functor of fctbinds
-                   | Prim
-withtype 'a basdecs = 'a basdec list
-     and 'a basbinds = (basid * 'a basexp) list
+  (* Basis is a list of bindings because of the 'and' keyword as in
+   * basis foo = bas foo.sml end
+   * and bar = bas bar.sml end
+   *)
+  | Dec_Basis (* Basbind list *)
+  | Dec_Local (* [Basdecs, Basdecs] *)
+  | Dec_Include of {file     : file,
+                    ast      : 'a node Tree.t,
+                    comments : Comments.t}
+  | Dec_Source of 'a
+  | Dec_Open of basids
+  | Dec_Ann of string list (* Dec list *)
+  | Dec_Structure of strbinds
+  | Dec_Signature of sigbinds
+  | Dec_Functor of fctbinds
+  | Prim
+
+(* datatype 'a basexp = Bas of 'a basdecs *)
+(*                    | Let of 'a basdecs * 'a basexp *)
+(*                    | Var of basid *)
+
+(*      (\* Basis is a list of bindings because of the 'and' keyword as in *)
+(*         basis foo = bas foo.sml end *)
+(*           and bar = bas bar.sml end *)
+(*       *\) *)
+(*      and 'a basdec = Basis of 'a basbinds *)
+(*                    | Local of 'a basdecs * 'a basdecs *)
+(*                    | Include of {file     : file, *)
+(*                                  basdecs  : 'a basdecs, *)
+(*                                  comments : Source.Comments.t} *)
+(*                    | Source of 'a *)
+(*                    | Open of basids *)
+(*                    | Ann of string list * 'a basdecs *)
+(*                    | Structure of strbinds *)
+(*                    | Signature of sigbinds *)
+(*                    | Functor of fctbinds *)
+(*                    | Prim *)
+(* withtype 'a basdecs = 'a basdec list *)
+(*      and 'a basbinds = (basid * 'a basexp) list *)
 
 (* local *)
 (*   open Report *)

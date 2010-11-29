@@ -1,3 +1,6 @@
+(* TODO
+ * Phase out Report in favor of Layout.
+ *)
 
 (* NEARLY FINISHED *)
 

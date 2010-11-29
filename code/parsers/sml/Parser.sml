@@ -10,37 +10,43 @@ structure SMLParser = JoinWithArg
 structure Lex = SMLLex
 structure LrParser = LrParser)
 
-exception Parse of Report.t
+exception Parse of Layout.t
 
 fun fromSourceText st =
     let
+      open Layout
+      infix ^^ ++ \ & \\ &&
       val file = SourceText.getFile st
-      fun context r = Report.++ (r, Report.text ("while parsing " ^ Path.path file))
-      fun fail r = raise Parse (context r)
+      fun fail e = raise Parse (txt "Error while parsing" & txt (Path.path file) && colon \ indent 2 e)
     in
       let
         val source = Source.fromSourceText st
         val reader = Source.makeReader source
 
         (* The parser parses until EOF so the rest of the stream is always empty *)
-        val ((topdecs, comments), _) =
+        val ((ast, comments), _) =
             SMLParser.parse (Constants.PARSE_LOOKAHEAD,
                              SMLParser.makeLexer reader source,
                           fn (s, l, r) => Source.error source l s,
                              source)
       in
-        {topdecs = topdecs, comments = comments}
+        {ast = ast, comments = comments}
       end handle LexError r => fail r
                | Path.Path r => fail r
                | IO.Io {name, cause = OS.SysErr (err, se), ...} =>
-                 fail (Report.text (
-                       (case se of
-                          NONE    => err
-                        | SOME m  => OS.errorMsg m
-                       ) ^ ": " ^ name)
-                      )
+                   fail (txt
+                           (case se of
+                              NONE    => err
+                            | SOME m  => OS.errorMsg m
+                           ) && colon & txt name
+                        )
                | IO.Io {name, ...} =>
-                 fail (Report.text ("Failed to read file: " ^ name))
+                 fail (txt "Failed to read file:" & txt name)
+               | ParseError (p, s) =>
+                 raise Parse (
+                       txt "Error at" &
+                           SourceText.showPos st p && colon \ indent 2 (txt s)
+                       )
     end
 
 val fromFile = fromSourceText o SourceText.fromFile

@@ -1,10 +1,10 @@
 functor InfixStack (
-type tree = SMLGrammar.tree
+type ast = SMLGrammar.ast
 type ident = SMLGrammar.ident
-val pair : tree -> tree -> tree
-val asId : tree -> ident option
-val toTree : ident -> tree
-val apply : tree -> tree -> tree
+val pair : ast -> ast -> ast
+val asId : ast -> ident option
+val toTree : ident -> ast
+val apply : ast -> ast -> ast
 ) =
 struct
 
