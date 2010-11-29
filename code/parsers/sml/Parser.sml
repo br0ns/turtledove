@@ -1,5 +1,5 @@
 (* TODO: empty productions mess with the position information. Fix that. *)
-structure Parser =
+structure Parser :> Parser =
 struct
 structure SMLLrVals = SMLLrValsFun
                         (structure Token = LrParser.Token)
@@ -12,12 +12,15 @@ structure LrParser = LrParser)
 
 exception Parse of Layout.t
 
+type ast = Grammar.ast
+
 fun fromSourceText st =
     let
       open Layout
       infix ^^ ++ \ & \\ &&
       val file = SourceText.getFile st
-      fun fail e = raise Parse (txt "Error while parsing" & txt (Path.path file) && colon \ indent 2 e)
+      fun fail e = raise Parse (txt "Error while parsing" & txt (Path.path file) 
+                                    && colon \ indent 2 e)
     in
       let
         val source = Source.fromSourceText st

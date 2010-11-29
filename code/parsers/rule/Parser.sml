@@ -1,5 +1,5 @@
 (* TODO: empty productions mess with the position information. Fix that. *)
-structure Parser =
+structure Parser :> Parser =
 struct
 
 structure RuleLrVals = RuleLrValsFun
@@ -16,6 +16,8 @@ structure RuleParser = JoinWithArg
 
 exception Parse of Layout.t
 
+type ast = Grammar.ast
+
 fun fromSourceText st =
     let
       open Layout
@@ -28,7 +30,7 @@ fun fromSourceText st =
         val reader = Source.makeReader source
 
         (* The parser parses until EOF so the rest of the stream is always empty *)
-        val ((rules, comments), _) =
+        val ((ast, comments), _) =
             RuleParser.parse (Constants.PARSE_LOOKAHEAD,
                              RuleParser.makeLexer reader source,
                           fn (s, l, r) => Source.error source l s,
