@@ -373,7 +373,7 @@ ruleScheme :
 (* tree list *)
 ruleClauses :
     ruleClause
-                (nil)
+                ([ruleClause])
   | ruleClause ruleClauses
                 (ruleClause :: ruleClauses)
 
