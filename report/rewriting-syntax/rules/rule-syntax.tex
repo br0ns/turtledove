@@ -1,52 +1,51 @@
 \subsection{Rewriting rule syntax}
 
-$\{ \ldots \}$ means zero or more occurances.
-$+$ means 1 or more occurances.
-
 When specifying rewriting rules we 
 
-\fixme{Add pattern variables to the grammer as using..}
-\fixme{This should go in the appendix}
+\begin{nonfloatingfigure}
 
-\setlength{\grammarindent}{7.3em}
-\begin{grammar} 
- 
-%  <rules> ::= <rule>+
+  \setlength{\grammarindent}{7.3em}
+  \begin{grammar} 
+    
+    <rule-program> ::= <rule>$^{*}$
+    
+    <rule> ::= "rule" <rule-header> <scheme> "becomes" <clause>$^{+}$ "end"
+    
+    <rule-header> ::= <rule-type> <rule-name>
+    
+    <rule-type> ::= "clauses" 
+    \alt "expression" 
+    
+    <rule-name> ::= <longid>
+    
+    <rule-self> ::= "self" <sexp>
+    
+    <scheme> ::= <clause>$^{+}$ [<cstrns>]
+    
+    <clause> ::= "|" <spat> "=>" <sexp>
+    
+    <cstrns> ::= "where" <cstrn-body> 
+    
+    <cstrn-body> ::= <cstrn-rel> 
+    \alt <cstrn-rel> "," <cstrn-body>
+    
+    <cstrn-rel> ::= <longid> "(" <cstrn-rel-body>$^{+}$ ")"
+    
+    <cstrn-rel-body> ::= <spat>   
+    
+    <transformer> ::= "£" <longid> <sexp>
 
-  <rule> ::= "rule" <rule-header> <scheme> "becomes" <clause>+
-  "end"
+    <meta-pattern-sexp> ::= "§" <longid>  <sexp>$^{*}$
+    
+    <meta-pattern-spat> ::= "§" <longid>  <spat>$^{*}$
 
-  <rule-header> ::= <rule-type> <rule-name>
-
-  <rule-type> ::= "clauses" | "expression" 
-
-  <rule-name> ::= <letter>+ \hfill "\# No spaces allowed in rule-names"
-
-  <scheme> ::= <clause>+ [<cstrn>]
-
-%  <clauses> ::= <clause>+
-
-  <clause> ::= "|" <spat> "=>" <sexp>
-
-  <cstrn> ::= "where" <cstrn-body> 
-
-  <cstrn-body> ::= <cstrn-rel> | <cstrn-rel> "," <cstrn-body>
-
-  <cstrn-rel> ::= .... to be defined.
-
-  <spat> ::= <sml-identifier> | <meta-pattern>
+  \end{grammar}
   
-  <sexp>   ::= <sml-identifier> | <meta-pattern> | <transformer>
-
-  <transformer> ::= "£" <upper-letter> <transformer-input> \hfill "\# Fix the input"
-
-  <transformer-input> ::= <pat>
-
-  <meta-pattern> ::= "§" <upper-letter>+  <meta-pattern-input>*
-
-  <meta-pattern-input> ::= "[" <meta-pattern> "]" \hfill "\# Fix the input" 
-
-\end{grammar}
+  \caption{Complete rule grammar. See \fref{fig:scheme-expressions} for the
+    \synt{sexp} grammar and \fref{fig:scheme-patterns} for the \synt{spat}
+    grammar which uses the transformers and meta patterns}
+  \label{fig:rule-grammar}
+\end{nonfloatingfigure}
 
 
 %%% Local Variables:
