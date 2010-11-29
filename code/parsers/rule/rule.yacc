@@ -4,15 +4,23 @@ val dummypos = ~1
 
 val join = Tree.join
 
-val wrap = Wrap.wrap
-val left = Wrap.left o Tree.this
-val right = Wrap.right o Tree.this
+fun wrap n l r = Wrap.wrap n {left = l, right = r}
+
+type data = {left : int, right : int}
+val data = Wrap.data o Tree.this
+fun left t =
+    case data t of
+      {left, right} => left
+fun right t =
+    case data t of
+      {left, right} => right
 val unwrap = Wrap.unwrap
+
+val leftmost = left o List.hd
+val rightmost = right o List.last
 
 val node = Wrap.unwrap o Tree.this
 val children = Tree.children
-
-exception ParseError of int * string
 
 fun error p s = raise ParseError (p, s)
 fun die s = Crash.impossible s
@@ -34,11 +42,13 @@ fun reportDuplicates f p s xs =
         xs
       else
         error p s
-    end 
+    end
 
 fun ensureUnqual i =
     if Ident.isQual (unwrap i) then
-      error (Wrap.left i) "Identifier must be unqualified"
+      case Wrap.data i of
+        {left, right} =>
+        error left "Identifier must be unqualified"
     else
       i
 
@@ -53,7 +63,6 @@ fun mkTyvar l r s =
     else
       error l "Type variable must start with a pling (')"
 
-
   %%
   %term
     (* Rule *)
@@ -67,7 +76,7 @@ fun mkTyvar l r s =
     | REAL of string
     | STRING of string
     | TYVAR of string
-    | WORD of string              
+    | WORD of string
     | ABSTYPE | AND | ANDALSO | ARROW | AS | ASTERISK | BAR | CASE | COLON
     | COLONGT | COMMA | DATATYPE | DOTDOTDOT | ELSE | END | EOF | EQUALOP
     | EQTYPE | EXCEPTION | DO | DARROW | FN | FUN | FUNCTOR | HANDLE | HASH
@@ -80,86 +89,86 @@ fun mkTyvar l r s =
     | ADDRESS | EXPORT | IMPORT | SYMBOL
     | PRIM
 
-%nonterm ruleProgram of tree * comments
-       | ruleRules of tree list
-       | ruleRule of tree
-       | ruleTypeClauses of tree
-       | ruleScheme of tree
-       | ruleClauses of tree list
-       | ruleClause of tree
-       | ruleSpat of tree
-       | ruleSexp of tree
-       | ruleCstrns of tree list
-       | ruleCstrnBody of tree list
-       | ruleCstrnRel of tree
-       | ruleCstrnRelBody of tree list
-       | transformerNode of t * tree list
-       | metaPatExpNode of t * tree list
-       | metaPatExpInputs of tree list
-       | metaPatExpInput of tree
-       | metaPatPatNode of t * tree list
-       | metaPatPatInputs of tree list
-       | metaPatPatInput of tree
-       | ruleSelfNode of t * tree list
+%nonterm ruleProgram of ast * comments
+       | ruleRules of ast list
+       | ruleRule of ast
+       | ruleTypeClauses of ast
+       | ruleScheme of ast
+       | ruleClauses of ast list
+       | ruleClause of ast
+       | ruleSpat of ast
+       | ruleSexp of ast
+       | ruleCstrns of ast list
+       | ruleCstrnBody of ast list
+       | ruleCstrnRel of ast
+       | ruleCstrnRelBody of ast list
+       | transformerNode of node * ast list
+       | metaPatExpNode of node * ast list
+       | metaPatExpInputs of ast list
+       | metaPatExpInput of ast
+       | metaPatPatNode of node * ast list
+       | metaPatPatInputs of ast list
+       | metaPatPatInput of ast
+       | ruleSelfNode of node * ast list
          (* Normal sml nonterms *)
-       | aexp of t * tree list
-       | andspecs of tree list
-       | apat of tree
-       | apatnode of t * tree list
-       | apats of tree list
-       | app_exp of tree list
-       | app_exp1 of tree list
-       | arg_fct of tree
+       | aexp of node * ast list
+       | andspecs of ast list
+       | apat of ast
+       | apatnode of node * ast list
+       | apats of ast list
+       | app_exp of ast list
+       | app_exp1 of ast list
+       | arg_fct of ast
        | ieattributes of unit
-       | clause of tree
-       | clauses of tree list
-       | clausesTop of tree
-       | commapats of tree list
+       | clause of ast
+       | clauses of ast list
+       | clausesTop of ast
+       | commapats of ast list
        | con of ident
        | const of SCon.t
        | const' of SCon.t
-       | constr of tree
-       | constraint of tree
-       | constrs of tree list
+       | constr of ast
+       | constraint of ast
+       | constrs of ast list
        | constOrBool of SCon.t
-       | datBind of tree list
-       | datBindNoWithtype of tree list
-       | datatypeRhs of t * tree list
-       | datatypeRhsNoWithtype of t * tree list
-       | datatypeRhsnode of t * tree list
-       | datatypeRhsnodeNoWithtype of t * tree list
-       | db of tree
-       | dbs of tree list
-       | dbs' of tree list
-       | dec of tree
-       | decnode of t * tree list
-       | decnolocal of t * tree list
-       | decs of tree list
+       | datBind of ast list
+       | datBindNoWithtype of ast list
+       | datatypeRhs of node * ast list
+       | datatypeRhsNoWithtype of node * ast list
+       | datatypeRhsnode of node * ast list
+       | datatypeRhsnodeNoWithtype of node * ast list
+       | db of ast
+       | dbs of ast list
+       | dbs' of ast list
+       | dec of ast
+       | decnode of node * ast list
+       | decnolocal of node * ast list
+       | decs of ast list
        | digit of int
-       | eb of tree
-       | ebrhs of int -> int -> ident -> tree
-       | ebrhsnode of int -> int -> ident -> tree
-       | ebs of tree list
-       | elabel of tree
-       | elabels of tree list
-       | exndesc of tree
-       | exndescs of tree list
-       | exp of tree
-       | exp_2c of tree list
-       | exp_list of tree list
-       | exp_ps of tree list
-       | expnode of t * tree list
-       | expsAndTopdecs of tree list
-       | fctarg of tree
+       | eb of ast
+       | ebrhs of int -> int -> ident -> ast
+       | ebrhsnode of int -> int -> ident -> ast
+       | ebs of ast list
+       | elabel of ast
+       | elabels of ast list
+       | exndesc of ast
+       | exndescs of ast list
+       | exp of ast
+       | exp_2c of ast list
+       | exp_list of ast list
+       | exp_ps of ast list
+       | expnode of node * ast list
+       | expsAndTopdecs of ast list
+       | fctarg of ast
        | fctid of ident
        | field of ident
        | fixity of Fixity.t
-       | funbinds of tree list
-       | funbinds' of tree * tree list
-       | funbinds'1 of tree list * tree list
-       | funbinds'1' of tree list * tree list
-       | funbinds'2 of tree list
-       | funs of tree list
+       | funbinds of ast list
+       | funbinds' of ast * ast list
+       | funbinds'1 of ast list * ast list
+       | funbinds'1' of ast list * ast list
+       | funbinds'2 of ast list
+       | funs of ast list
        | id of ident
        | idEqual of ident
        | idNoAsterisk of ident
@@ -176,89 +185,89 @@ fun mkTyvar l r s =
        | longvidands of ident list
        | longvid of ident
        | longvidNoEqual of ident
-       | match of tree
-       | opaspat of tree
+       | match of ast
+       | opaspat of ast
        | opcon of ident
-       | pat of tree
-       | patitem of tree
-       | patitems of tree list * bool
-       | patnode of t * tree list
-       | pats of tree list
+       | pat of ast
+       | patitem of ast
+       | patitems of ast list * bool
+       | patnode of node * ast list
+       | pats of ast list
        | priority of int option
-       | program of tree * comments
+       | program of ast * comments
        | repl of ident * ident
-       | rule of tree
-       | rules of tree list
-       | rvalbind of tree list
-       | rvalbindRest of tree list
-       | sharespec of t * tree list
-       | sigbinds of tree list
-       | sigbinds' of tree list * tree list
-       | sigbinds'' of tree list * tree list
-       | sigconst of tree
-       | sigexp of tree
-       | sigexp' of tree
-       | sigexp'node of t * tree list
+       | rule of ast
+       | rules of ast list
+       | rvalbind of ast list
+       | rvalbindRest of ast list
+       | sharespec of node * ast list
+       | sigbinds of ast list
+       | sigbinds' of ast list * ast list
+       | sigbinds'' of ast list * ast list
+       | sigconst of ast
+       | sigexp of ast
+       | sigexp' of ast
+       | sigexp'node of node * ast list
        | sigid of ident
        | sigids of ident list
-       | spec of tree
-       | specnode of t * tree list
-       | specs of tree list
-       | strbinds of tree list
-       | strbinds' of tree * tree list
-       | strbinds'1 of tree list * tree list
-       | strbinds'1' of tree list * tree list
-       | strbinds'2 of tree list
-       | strdec of tree
-       | strdecnode of t * tree list
-       | strdecs of tree list
-       | strdecsnode of tree list
-       | strdescs of tree list
-       | strdescs' of tree list * tree list
-       | strdescs'' of tree list * tree list
-       | strexp of tree
-       | strexp1 of tree * Sigcon.t * tree
-       | strexp2 of tree
-       | strexp2node of t * tree list
-       | strexpnode of t * tree list
+       | spec of ast
+       | specnode of node * ast list
+       | specs of ast list
+       | strbinds of ast list
+       | strbinds' of ast * ast list
+       | strbinds'1 of ast list * ast list
+       | strbinds'1' of ast list * ast list
+       | strbinds'2 of ast list
+       | strdec of ast
+       | strdecnode of node * ast list
+       | strdecs of ast list
+       | strdecsnode of ast list
+       | strdescs of ast list
+       | strdescs' of ast list * ast list
+       | strdescs'' of ast list * ast list
+       | strexp of ast
+       | strexp1 of ast * Sigcon.t * ast
+       | strexp2 of ast
+       | strexp2node of node * ast list
+       | strexpnode of node * ast list
        | strid of ident
        | string of string
        | symattributes of unit
-       | tlabel of tree
-       | tlabels  of tree list
-       | topdec of tree
-       | topdecnode of tree
-       | topdecs of tree list
-       | tuple_ty of tree list
-       | ty of tree
-       | ty' of tree
-       | ty'node of t * tree list
-       | ty0_pc of tree list
-       | tyOpt of tree option
+       | tlabel of ast
+       | tlabels  of ast list
+       | topdec of ast
+       | topdecnode of ast
+       | topdecs of ast list
+       | tuple_ty of ast list
+       | ty of ast
+       | ty' of ast
+       | ty'node of node * ast list
+       | ty0_pc of ast list
+       | tyOpt of ast option
        | tycon of ident
-       | tynode of t * tree list
-       | typBind of tree list
-       | typBind' of tree list
-       | typBind'' of tree list
-       | typdesc of tree
-       | typdescs of tree list
+       | tynode of node * ast list
+       | typBind of ast list
+       | typBind' of ast list
+       | typBind'' of ast list
+       | typdesc of ast
+       | typdescs of ast list
        | tyvar of ident
        | tyvar_pc of ident list
        | tyvars of ident list
        | tyvarseq of ident list
-       | valbind of tree list
-       | valbindRest of tree list
-       | valbindTop of tree list
-       | valdesc of tree
-       | valdescs of tree list
+       | valbind of ast list
+       | valbindRest of ast list
+       | valbindTop of ast list
+       | valdesc of ast
+       | valdescs of ast list
        | var of ident
        | vid of ident
        | vidNoEqual of ident
        | vids of ident list
-       | wherespec of tree
-       | wherespecs of tree list
-       | wherespecs' of tree list
-       | withtypes of tree list
+       | wherespec of ast
+       | wherespecs of ast list
+       | wherespecs' of ast list
+       | withtypes of ast list
        | word of string
 
 %verbose
