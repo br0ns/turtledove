@@ -33,10 +33,12 @@ alphanum=[A-Za-z'_0-9]*;
 alphanumId=[A-Za-z]{alphanum};
 sym=[-!%&$+/:<=>?@~`^|#*]|"\\";
 symId={sym}+;
+
 sec="\194\167";
 secId = {sec}[A-Z]{alphanum};
 pound="\194\163";
 poundId = {pound}[A-Z]{alphanum};
+
 id={alphanumId}|{symId};
 longid={id}("."{id})*;
 ws=("\012"|[\t\ ])*;
@@ -70,8 +72,21 @@ hexnum={hexDigit}+;
 <INITIAL>"expression"          => ( T.RULE_TYPE_EXPRESSION (yypos, yypos + 10) );
 <INITIAL>"becomes"             => ( T.BECOMES (yypos, yypos + 7) );
 <INITIAL>"self"                => ( T.SELF (yypos, yypos + 4) );
-<INITIAL>{secId}               => ( tok T.META (String.extract(yytext, 2, NONE)) yypos );
-<INITIAL>{poundId}             => ( tok T.TRANS (String.extract(yytext, 2, NONE)) yypos );
+
+<INITIAL>{secId}               => ( tok T.META (String.extract(yytext, 2, NONE))
+                                        ((* As the section character is actually "two utf8 chars"
+                                            it is counted as two, but we want it to be counted 
+                                            as one as most editors shows and count it as one *)
+                                         yygone := YYPosInt.-(!yygone, YYPosInt.fromInt 1);
+                                         yypos) 
+                                  );
+<INITIAL>{poundId}             => ( tok T.TRANS (String.extract(yytext, 2, NONE))
+                                        ((* As the pound character is actually "two utf8 chars"
+                                            it is counted as two, but we want it to be counted 
+                                            as one as most editors shows and count it as one *)
+                                         yygone := YYPosInt.-(!yygone, YYPosInt.fromInt 1);
+                                         yypos) 
+                                  );
 
 
 <INITIAL>"_"                   => ( T.WILD (yypos, yypos + 1) );
