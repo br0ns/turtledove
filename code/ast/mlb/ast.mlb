@@ -1,9 +1,0 @@
-local
-$(SML_LIB)/basis/basis.mlb
-$(SML_LIB)/mylib/MyLib.mlb
-../../Basic.mlb
-../Comments.sig ../Comments.sml
-Grammar.sml
-in
-structure MLBGrammar = Grammar
-end

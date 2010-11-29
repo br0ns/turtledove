@@ -1,4 +1,4 @@
-structure Grammar =
+structure SMLGrammar =
 struct
 fun die s = Crash.die "SMLGrammar" s
 type 'a wrapped = ('a, {left : int, right : int}) Wrap.t

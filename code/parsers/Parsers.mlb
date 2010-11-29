@@ -30,13 +30,13 @@ in
     structure SMLParser = Parser
   end
 
-  local
-    rule2/SML.yacc.sig rule2/SML.yacc.sml
-    rule2/SML.lex.sml
+  (* local *)
+  (*   rule2/SML.yacc.sig rule2/SML.yacc.sml *)
+  (*   rule2/SML.lex.sml *)
 
-    rule2/Parser.sml
-  in
-    structure RuleParser = Parser
-  end
+  (*   rule2/Parser.sml *)
+  (* in *)
+  (*   structure RuleParser = Parser *)
+  (* end *)
 
 end
