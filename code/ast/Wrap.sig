@@ -1,9 +1,10 @@
 signature Wrap =
 sig
-  type ('a, 'b) t = {node: 'a, data: 'b}
+  type ('a, 'b) t = {node: 'a, left: 'b, right: 'b}
 
-  val wrap : 'a -> 'b -> ('a, 'b) t
+  val wrap : 'a -> 'b -> 'b -> ('a, 'b) t
   val unwrap : ('a, 'b) t -> 'a
-  val data : ('a, 'b) t -> 'b
+  val left : ('a, 'b) t -> 'b
+  val right : ('a, 'b) t -> 'b
   val modify : ('a -> 'c) -> ('a, 'b) t -> ('c, 'b) t
 end

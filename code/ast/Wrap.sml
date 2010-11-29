@@ -1,9 +1,11 @@
 structure Wrap :> Wrap =
 struct
-type ('a, 'b) t = {node: 'a, data: 'b}
+type ('a, 'b) t = {node: 'a, left: 'b, right: 'b}
 
-fun wrap n d = {node = n, data = d}
+fun wrap n l r = {node = n, left = l, right = r}
 fun unwrap ({node, ...} : ('a, 'b) t) = node
-fun data ({data, ...} : ('a, 'b) t) = data
-fun modify f {node, data} = {node = f node, data = data}
+fun left ({left, ...} : ('a, 'b) t) = left
+fun right ({right, ...} : ('a, 'b) t) = right
+fun modify f {node, left, right} =
+    {node = f node, left = left, right = right}
 end

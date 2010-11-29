@@ -11,6 +11,5 @@ Ident.sig Ident.sml
 Wrap.sig Wrap.sml
 
 MLBGrammar.sml
-SMLGrammar.sml
-RuleGrammar.sml
+Grammar.sml
 end

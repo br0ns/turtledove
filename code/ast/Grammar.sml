@@ -24,10 +24,10 @@ datatype node =
        | Rule_Clauses (* Rule_Clause list *)
 
        (* Rule_Clause *)
-       | Rule_Clause (*  *)             
+       | Rule_Clause (*  *)
 
        (* Rule_Cstrns *)
-       | Rule_Cstrns (* Rule_Cstrn_Rel list *)  
+       | Rule_Cstrns (* Rule_Cstrn_Rel list *)
 
        (* Rule_Cstrn_Rel *)
        | Rule_Cstrn_Rel of ident (* Meta_Pattern list *)
