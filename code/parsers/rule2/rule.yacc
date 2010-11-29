@@ -94,9 +94,12 @@ fun mkTyvar l r s =
        | ruleCstrnRel of tree
        | ruleCstrnRelBody of tree list
        | transformerNode of t * tree list
-       | metaPatNode of t * tree list
-       | metaPatInputs of tree list
-       | metaPatInput of tree
+       | metaPatExpNode of t * tree list
+       | metaPatExpInputs of tree list
+       | metaPatExpInput of tree
+       | metaPatPatNode of t * tree list
+       | metaPatPatInputs of tree list
+       | metaPatPatInput of tree
        | ruleSelfNode of t * tree list
          (* Normal sml nonterms *)
        | aexp of t * tree list
@@ -431,11 +434,11 @@ ruleCstrnRelBody :
 
 (* t * tree list *)
 transformerNode : 
-    TRANS ruleSpat
+    TRANS ruleSexp
                 (let
                    val ident = mkIdent TRANSleft TRANSright Fixity.Nonfix TRANS
                  in
-                   (Rule_Trans ident,  [ruleSpat])
+                   (Rule_Trans ident,  [ruleSexp])
                  end)
 
 
@@ -444,22 +447,46 @@ transformerNode :
 (*---------------------------------------------------*)
 
 (* t * tree list *)
-metaPatNode :
-    META metaPatInputs
+metaPatExpNode :
+    META metaPatExpInputs
                 (let
                    val ident = mkIdent METAleft METAright Fixity.Nonfix META
                  in
-                   (Rule_Meta_Pat ident, metaPatInputs)
+                   (Rule_Meta_Pat ident, metaPatExpInputs)
                  end)
 
 (* tree list *)
-metaPatInputs :
+metaPatExpInputs :
                 (nil)
-  | metaPatInput metaPatInputs
-                (metaPatInput :: metaPatInputs)
+  | metaPatExpInput metaPatExpInputs
+                (metaPatExpInput :: metaPatExpInputs)
 
 (* tree *)
-metaPatInput :
+metaPatExpInput :
+    LBRACKET ruleSexp RBRACKET
+                (ruleSexp)
+
+(*---------------------------------------------------*)
+(*                    Metapatterns                   *)
+(*---------------------------------------------------*)
+
+(* t * tree list *)
+metaPatPatNode :
+    META metaPatPatInputs
+                (let
+                   val ident = mkIdent METAleft METAright Fixity.Nonfix META
+                 in
+                   (Rule_Meta_Pat ident, metaPatPatInputs)
+                 end)
+
+(* tree list *)
+metaPatPatInputs :
+                (nil)
+  | metaPatPatInput metaPatPatInputs
+                (metaPatPatInput :: metaPatPatInputs)
+
+(* tree *)
+metaPatPatInput :
     LBRACKET ruleSpat RBRACKET
                 (ruleSpat)
 
@@ -1482,8 +1509,8 @@ expnode :
       ((Exp_FlatApp, app_exp))
   | ruleSelfNode 
                 (ruleSelfNode)
-  | metaPatNode
-                (metaPatNode)
+  | metaPatExpNode
+                (metaPatExpNode)
   | transformerNode
                 (transformerNode)
   | FN match
@@ -1622,8 +1649,8 @@ patnode
       )
 (*  | pat COLON ty
       ((Pat_Typed, [pat, ty])) *)
-  | metaPatNode
-                (metaPatNode)
+  | metaPatPatNode
+                (metaPatPatNode)
   | apats
       ((Pat_FlatApp, apats))
 
