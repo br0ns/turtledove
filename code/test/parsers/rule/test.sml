@@ -4,9 +4,9 @@ fun test () =
     in
       if length args = 1 then  
         let
-          val {rules, comments} = RuleParser.fromFile $ Path.new (hd args)
+          val {ast, comments} = RuleParser.fromFile $ Path.new (hd args)
         in
-         Layout.println NONE $ RuleGrammar.show rules
+         Layout.println NONE $ Grammar.show ast
         end
       else
         print "Must be called with 1 argument, namely a path of a rule file to parse\n"

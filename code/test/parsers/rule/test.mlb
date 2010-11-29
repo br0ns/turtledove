@@ -4,8 +4,8 @@ local
     $(SML_LIB)/mylib/MyLib.mlb      
 
     ../../../Basic.mlb
-
-    ../../../parsers/rule/Rule.mlb
+    ../../../ast/ast.mlb
+    ../../../parsers/Parsers.mlb
 
 in
     test.sml

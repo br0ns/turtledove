@@ -1,6 +1,8 @@
 (* TODO: empty productions mess with the position information. Fix that. *)
-structure Parser :> Parser =
+structure Parser : Parser =
 struct
+type ast = int Grammar.ast
+
 structure SMLLrVals = SMLLrValsFun
                         (structure Token = LrParser.Token)
 structure SMLLex    = SMLLexFun
@@ -11,8 +13,6 @@ structure Lex = SMLLex
 structure LrParser = LrParser)
 
 exception Parse of Layout.t
-
-type ast = int Grammar.ast
 
 fun fromSourceText st =
     let

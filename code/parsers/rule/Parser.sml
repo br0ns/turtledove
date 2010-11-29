@@ -1,6 +1,7 @@
 (* TODO: empty productions mess with the position information. Fix that. *)
-structure Parser :> Parser =
+structure Parser : Parser =
 struct
+type ast = int Grammar.ast
 
 structure RuleLrVals = RuleLrValsFun
                         (structure Token = LrParser.Token)
@@ -16,7 +17,6 @@ structure RuleParser = JoinWithArg
 
 exception Parse of Layout.t
 
-type ast = int Grammar.ast
 
 fun fromSourceText st =
     let

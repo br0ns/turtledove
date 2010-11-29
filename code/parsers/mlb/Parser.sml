@@ -1,5 +1,7 @@
-structure Parser :> Parser =
+structure Parser : Parser =
 struct
+type ast = MLBGrammar.ast
+
 structure MLBLrVals = MLBLrValsFun
                         (structure Token = LrParser.Token)
 structure MLBLex    = MLBLexFun
@@ -23,14 +25,12 @@ structure Set = OrderedSetFn (Ord)
 
 exception Parse of Layout.t
 
-type ast = MLBGrammar.ast
-
 fun fromFile file =
     let
       open Layout
       infix ^^ ++ \ & \\ &&
 
-      fun fail e = raise Parse (txt "Error while parsing" & txt (Path.path file) 
+      fun fail e = raise Parse (txt "Error while parsing" & txt (Path.path file)
                                     && colon \ indent 2 e)
       fun isX x f = List.exists
                       (fn e =>
