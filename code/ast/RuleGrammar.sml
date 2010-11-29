@@ -334,7 +334,7 @@ fun show t =
           in
             case Tree.children t of
               nil => s
-            | ts => s & (indent 2 o vsep o map show) ts
+            | ts => s \ (indent 4 o vsep o map show) ts
           end
       fun show id =
           let
@@ -395,7 +395,7 @@ fun show t =
       | Rule_Clause => next "Rule_Clause"
       | Rule_Cstrns => next "Rule_Cstrns"
       | Rule_Cstrn_Rel id => next ("Rule_Cstrn_Rel: " ^ show id)
-      | Rule_Trans id => next ("Rule_Cstrn_Rel: " ^ show id)
+      | Rule_Trans id => next ("Rule_Trans: " ^ show id)
       | Rule_Meta_Pat id => next ("Rule_Meta_Pat: " ^ show id)
       | Rule_Self => next "Rule_Self"
       (* SML *)
