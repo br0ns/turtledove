@@ -1,5 +1,7 @@
 $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/mylib/MyLib.mlb
+
+ast/ast.mlb
 parsers/Parsers.mlb
 Basic.mlb
 
