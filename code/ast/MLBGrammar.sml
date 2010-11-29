@@ -43,6 +43,8 @@ datatype 'a node
   | Dec_Functor of fctbinds
   | Prim
 
+type ast = file node Tree.t
+
 (* datatype 'a basexp = Bas of 'a basdecs *)
 (*                    | Let of 'a basdecs * 'a basexp *)
 (*                    | Var of basid *)
