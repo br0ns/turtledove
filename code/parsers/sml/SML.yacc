@@ -1,4 +1,4 @@
-open SMLGrammar
+open Grammar
 type comments = Source.Comments.t
 val dummypos = ~1
 
