@@ -9,8 +9,8 @@ val mlbpath = Path.new' here
               )
 
 val basdecs = #basdecs (MLBParser.fromFile mlbpath)
-    handle MLBParser.Parse r => (Report.print r ; nil)
-         | Path.Path r => (Report.print r ; nil)
+    handle MLBParser.Parse r => (Layout.println NONE r ; nil)
+         | Path.Path r => (Layout.println NONE r ; nil)
 
 fun todos ds =
     let
