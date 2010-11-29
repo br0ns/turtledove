@@ -11,12 +11,13 @@ local
 in
 
   ../ast/ast.mlb
+  Parser.sig
 
   local
     mlb/MLB.yacc.sig mlb/MLB.yacc.sml
     mlb/MLB.lex.sml
 
-    mlb/Parser.sig mlb/Parser.sml
+    mlb/Parser.sml
   in
     structure MLBParser = Parser
   end

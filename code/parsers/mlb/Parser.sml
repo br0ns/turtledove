@@ -6,28 +6,32 @@ structure MLBLex    = MLBLexFun
                         (structure Tokens = MLBLrVals.Tokens)
 structure MLBParser = JoinWithArg
                         (structure ParserData = MLBLrVals.ParserData
-structure Lex = MLBLex
-structure LrParser = LrParser)
+                         structure Lex = MLBLex
+                         structure LrParser = LrParser)
 
 open MLBGrammar
 
 structure Ord =
 struct
-type t = File.t
-fun compare p p' = String.compare (Path.toString p, Path.toString p')
-val toString = Path.toString
+  type t = File.t
+  fun compare p p' = String.compare (Path.toString p, Path.toString p')
+  val toString = Path.toString
 end
+
 structure Map = OrderedMapFn (Ord)
 structure Set = OrderedSetFn (Ord)
 
 exception Parse of Layout.t
+
+type ast = MLBGrammar.ast
 
 fun fromFile file =
     let
       open Layout
       infix ^^ ++ \ & \\ &&
 
-      fun fail e = raise Parse (txt "Error while parsing" & txt (Path.path file) && colon \ indent 2 e)
+      fun fail e = raise Parse (txt "Error while parsing" & txt (Path.path file) 
+                                    && colon \ indent 2 e)
       fun isX x f = List.exists
                       (fn e =>
                           case Path.extension f of

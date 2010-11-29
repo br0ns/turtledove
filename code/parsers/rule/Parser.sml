@@ -36,7 +36,7 @@ fun fromSourceText st =
                           fn (s, l, r) => Source.error source l s,
                              source)
       in
-        {rules = rules, comments = comments}
+        {ast = ast, comments = comments}
       end handle LexError r => fail r
                | Path.Path r => fail r
                | IO.Io {name, cause = OS.SysErr (err, se), ...} =>
