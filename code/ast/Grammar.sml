@@ -1,8 +1,7 @@
-structure RuleGrammar =
+structure Grammar =
 struct
-fun die s = Crash.die "SMLGrammar" s
-type 'a wrapped = ('a, {left : int, right : int}) Wrap.t
-type ident = Ident.t wrapped
+fun die s = Crash.die "Grammar" s
+type ident = (Ident.t, int) Wrap.t
 
 (*
  Topdec = Strdec U Sigdec U Fundec U Dec U Exp
@@ -229,7 +228,7 @@ datatype node =
        | Unparsed
 
 
-type ast = node wrapped Tree.t
+type 'a ast = (node, 'a) Wrap.t Tree.t
 
 fun node t = Wrap.unwrap $ Tree.this t
 

@@ -12,7 +12,7 @@ structure LrParser = LrParser)
 
 exception Parse of Layout.t
 
-type ast = Grammar.ast
+type ast = int Grammar.ast
 
 fun fromSourceText st =
     let

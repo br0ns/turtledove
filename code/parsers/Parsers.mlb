@@ -4,15 +4,14 @@ local
   $(SML_LIB)/mylib/MyLib.mlb
   ../Basic.mlb
 
+  ../ast/ast.mlb
   Exns.sml
   Source.sig Source.sml
   LexUtils.sig LexUtils.sml
-
+  ParserUtils.sml
 in
 
-  ../ast/ast.mlb
   Parser.sig
-
   local
     mlb/MLB.yacc.sig mlb/MLB.yacc.sml
     mlb/MLB.lex.sml
