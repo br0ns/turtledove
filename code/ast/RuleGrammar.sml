@@ -1,338 +1,340 @@
-structure Grammar =
+structure RuleGrammar =
 struct
 fun die s = Crash.die "SMLGrammar" s
-type ident = Ident.t Wrap.t
+type 'a wrapped = ('a, {left : int, right : int}) Wrap.t
+type ident = Ident.t wrapped
 
 (*
  Topdec = Strdec U Sigdec U Fundec U Dec U Exp
  Strdec' = Strdec U Dec U Exp
  *)
 
-datatype t = 
-           (* Rules *)
-             Rule_Rules (* Rule_Type list *)
+datatype node =
+         (* Rules *)
+         Rule_Rules (* Rule_Type list *)
 
-           (* Rule_Type *)
-           | Rule_Type_Clauses of ident (* [Rule_Scheme, Rule_Clauses] *)
-           | Rule_Type_Expressions of ident (* who knows? *)
+       (* Rule_Type *)
+       | Rule_Type_Clauses of ident (* [Rule_Scheme, Rule_Clauses] *)
+       | Rule_Type_Expressions of ident (* who knows? *)
 
-           (* Rule_Scheme *)
-           | Rule_Scheme (* [Rule_Clauses, Cstrns] *)
+       (* Rule_Scheme *)
+       | Rule_Scheme (* [Rule_Clauses, Cstrns] *)
 
-           (* Rule_Clauses *)
-           | Rule_Clauses (* Rule_Clause list *)
+       (* Rule_Clauses *)
+       | Rule_Clauses (* Rule_Clause list *)
 
-           (* Rule_Clause *)
-           | Rule_Clause (*  *)             
+       (* Rule_Clause *)
+       | Rule_Clause (*  *)             
 
-           (* Rule_Cstrns *)
-           | Rule_Cstrns (* Rule_Cstrn_Rel list *)  
+       (* Rule_Cstrns *)
+       | Rule_Cstrns (* Rule_Cstrn_Rel list *)  
 
-           (* Rule_Cstrn_Rel *)
-           | Rule_Cstrn_Rel of ident (* Meta_Pattern list *)
+       (* Rule_Cstrn_Rel *)
+       | Rule_Cstrn_Rel of ident (* Meta_Pattern list *)
 
-           (* Rule_Transformer *)
-           | Rule_Trans of ident (* [spat] *)
+       (* Rule_Transformer *)
+       | Rule_Trans of ident (* [spat] *)
 
-           (* Rule_Meta_Pat *)
-           | Rule_Meta_Pat of ident (* spat list | [] *)
+       (* Rule_Meta_Pat *)
+       | Rule_Meta_Pat of ident (* spat list | [] *)
 
-           (* Rule_Self *)
-           | Rule_Self (* [sexp] *)
-
-
-           (****************************)
-           (* Normal SML types follows *)
-           (****************************)
-
-           | Topdecs (* Topdec list *)
-
-           (* Strdecs *)
-           | Strdecs (* Strdec' list *)
-           (* Strdec *)
-           | Strdec_Str   (* Strbind list *)
-           | Strdec_Local (* [Strdecs, Strdecs] *)
-
-           (* Sigdec *)
-           | Sigdec_Sig (* Sigbind list *)
-
-           (* Fundec *)
-           | Fundec_Fun (* Funbind list *)
-
-           (* Strbind *)
-           | Strbind of ident (* [Strexp, Sigcon] *)
-
-           (* Sigbind *)
-           | Sigbind of ident (* [Sigexp] *)
-
-           (* Funbind *)
-           | Funbind of ident (* [Funarg, Strexp, Sigcon] *)
-
-           (* Funarg *)
-           | Funarg_Structure of ident (* [Sigexp] *)
-           | Funarg_Spec (* Spec list *)
-
-           (* Strexp *)
-           | Strexp_Struct (* Strdec' list *)
-           | Strexp_Let (* [Strdecs, Strexp] *)
-           | Strexp_Con (* [Strexp, Sigcon] *)
-           | Strexp_Fun of ident (* [Strexp | Strdecs] *)
-           | Strexp_Var of ident
-
-           (* Sigcon *)
-           | Sigcon of Sigcon.t (* [Sigexp] | [] *)
-
-           (* Sigexp *)
-           | Sigexp_Where (* [Sigexp, Wherespecs] *)
-           | Sigexp_Spec (* Spec list *)
-           | Sigexp_Var of ident
-
-           (* Wherespecs *)
-           | Wherespecs (* Wherespec list *)
-           (* Wherespec *)
-           | Wherespec of ident list * ident (* [Ty] *)
-
-           (* Spec *)
-           | Spec_Val (* Valdesc list *)
-           | Spec_Type (* Tydesc list *)
-           | Spec_Typedef (* Tybind list *)
-           | Spec_EqType (* Tydesc list *)
-           | Spec_Datatype (* Datdesc list *)
-           | Spec_Replication of ident * ident (* [] *)
-           | Spec_Exception (* Exndesc list *)
-           | Spec_Structure (* Strdesc list *)
-           | Spec_Include (* [Sigexp] *)
-           | Spec_IncludeSigids of ident list
-           | Spec_Sharing of ident list
-           | Spec_SharingStructure of ident list
-
-           (* Strdesc *)
-           | Strdesc of ident (* [Sigexp] *)
-
-           (* Tydesc *)
-           | Tydesc of ident list * ident
-
-           (* Valdesc *)
-           | Valdesc of ident (* [Ty] *)
-
-           (* Exndesc *)
-           | Exndesc of ident (* [MaybeTy] *)
-
-           (* Datatypes *)
-           | Datatypes (* Datatype list *)
-           (* Datatype *)
-           | Datatype of ident list * ident (* Constructor list] *)
-           (* Constructor *)
-           | Constructor of ident (* [MaybeTy] *)
-           (* Replication *)
-           | Replication of ident * ident
-
-           (* MaybeTy *)
-           | MaybeTy (* [Ty] | [] *)
-
-           (* Decs *)
-           | Decs (* Dec list *)
-           (* Dec *)
-           | Dec_Local (* [Decs, Decs] *)
-           | Dec_Val of ident list (* Valbind list *)
-           | Dec_Fun of ident list (* Match list (Clause) *)
-           | Dec_Type (* Tybind list *)
-           | Dec_Datatype (* [Datatypes, Withtypes] *)
-           | Dec_Replication of ident * ident (* [] *)
-           | Dec_Abstype (* [Datbinds, Withtypes, Decs] *)
-           | Dec_Exception (* (Constructor | Replication) list *)
-           | Dec_Open of ident list
-           | Dec_Fix of Fixity.t * ident list
-           | Dec_Overload of int option * ident * ident list (* [Ty] *)
-
-           (* Valbinds *)
-           | Valbinds (* Valbind list *)
-
-           (* Valbind *)
-           | Valbind_Plain (* [Pat, Exp] *)
-           | Valbind_Rec (* [Pat, Match] *)
-
-           (* Match *)
-           | Match (* (Clause | Rule) list *)
-           (* Clause *)
-           | Clause of ident (* [Pats, MaybeTy, Exp] *)
-           | FlatClause (* [Pats, MaybeTy, Exp] *)
-           | Rule (* [Pat, Exp] *)
-
-           (* Datbinds *)
-           | Datbinds (* Datatype list *)
-
-           (* Withtypes *)
-           | Withtypes (* Tybind list *)
-           (* Tybind *)
-           | Tybind of ident list * ident (* [Ty] *)
-
-           (* Exps *)
-           | Exps (* Exp list *)
-           (* Exp *)
-           | Exp_Handle (* [Exp, Match] *)
-           | Exp_Orelse (* [Exp, Exp] *)
-           | Exp_Andalso (* [Exp, Exp] *)
-           | Exp_Typed (* [Exp, Ty] *)
-           | Exp_App (* [Exp, Exp] *)
-           | Exp_FlatApp (* Exp list *)
-           | Exp_Fn (* [Match] *)
-           | Exp_Case (* [Exp, Match] *)
-           | Exp_While (* [Exp, Exp] *)
-           | Exp_If (* [Exp, Exp, Exp] *)
-           | Exp_Raise (* [Exp] *)
-           | Exp_Var of ident
-           | Exp_SCon of SCon.t
-           | Exp_Selector of ident
-           | Exp_Record (* Label list *)
-           | Exp_Unit
-           | Exp_Par (* [Exp] *)
-           | Exp_Seq (* Exp list *)
-           | Exp_Tuple (* Exp list *)
-           | Exp_List (* Exp list *)
-           | Exp_Let (* [Decs, Exp] *)
-           | Exp_LetSeq (* [Decs, Exps] *)
-
-           (* Label *)
-           | Label_Plain of ident (* [Exp | Pat | Ty] *)
-           | Label_Short of ident (* [MaybeTy, MaybePat] *)
-
-           (* MaybePat *)
-           | MaybePat (* [Pat] | [] *)
-           (* Pats *)
-           | Pats (* Pat list *)
-           (* Pat *)
-           | Pat_Layered of ident
-           | Pat_Typed
-           | Pat_App
-           | Pat_FlatApp
-           | Pat_Var of ident
-           | Pat_SCon of SCon.t
-           | Pat_Wild
-           | Pat_Tuple
-           | Pat_List
-           | Pat_Record
-           | Pat_FlexibleRecord
-           | Pat_Par (* [Pat] *)
-
-           (* Tys *)
-           | Tys (* Ty list *)
-           (* Ty *)
-           | Ty_Tuple
-           | Ty_Record (* Label list *)
-           | Ty_Var of ident
-           | Ty_Con of ident (* Ty list *)
-           | Ty_Par (* [Ty] *)
-           | Ty_Arrow (* [Ty, Ty] *)
-
-           | Unparsed
+       (* Rule_Self *)
+       | Rule_Self (* [sexp] *)
 
 
-type wrapped = t Wrap.t
+       (****************************)
+       (* Normal SML types follows *)
+       (****************************)
 
-type tree = wrapped Tree.t
+       | Topdecs (* Topdec list *)
 
-val node = Wrap.unwrap o Tree.this
+       (* Strdecs *)
+       | Strdecs (* Strdec' list *)
+       (* Strdec *)
+       | Strdec_Str   (* Strbind list *)
+       | Strdec_Local (* [Strdecs, Strdecs] *)
 
-fun find' reject pred t =
-    let
-      val n = node t
-    in
-      if pred n then
-        [t]
-      else
-        if reject n then
-          nil
-        else
-          List.concat (map (find' reject pred) (Tree.children t))
-    end
+       (* Sigdec *)
+       | Sigdec_Sig (* Sigbind list *)
 
-val find = find' (fn _ => false)
+       (* Fundec *)
+       | Fundec_Fun (* Funbind list *)
 
-fun uimp s _ = raise Fail ("Unimplemented: " ^ s)
-val isStrdec : tree -> bool = uimp "isStrdec"
-val isSigdec : tree -> bool = uimp "isSigdec"
-val isFundec : tree -> bool = uimp "isFundec"
-val isStrbind : tree -> bool = uimp "isStrbind"
-val isSigbind : tree -> bool = uimp "isSigbind"
-val isFunbind : tree -> bool = uimp "isFunbind"
-val isFunarg : tree -> bool = uimp "isFunarg"
-val isStrexp : tree -> bool = uimp "isStrexp"
-val isSigcon : tree -> bool = uimp "isSigcon"
-val isSigexp : tree -> bool = uimp "isSigexp"
-val isWherespec : tree -> bool = uimp "isWherespec"
-val isSpec : tree -> bool = uimp "isSpec"
-val isStrdesc : tree -> bool = uimp "isStrdesc"
-val isTydesc : tree -> bool = uimp "isTydesc"
-val isValdesc : tree -> bool = uimp "isValdesc"
-val isExndesc : tree -> bool = uimp "isExndesc"
-val isDec : tree -> bool = uimp "isDec"
-val isLabel : tree -> bool = uimp "isLabel"
+       (* Strbind *)
+       | Strbind of ident (* [Strexp, Sigcon] *)
 
-fun isExp t =
-    case node t of
-      Exp_Handle => true
-    | Exp_Orelse => true
-    | Exp_Andalso => true
-    | Exp_Typed => true
-    | Exp_App => true
-    | Exp_FlatApp => true
-    | Exp_Fn => true
-    | Exp_Case => true
-    | Exp_While => true
-    | Exp_If => true
-    | Exp_Raise => true
-    | Exp_Var _ => true
-    | Exp_SCon _ => true
-    | Exp_Selector _ => true
-    | Exp_Record => true
-    | Exp_Unit => true
-    | Exp_Par => true
-    | Exp_Seq => true
-    | Exp_Tuple => true
-    | Exp_List => true
-    | Exp_Let => true
-    | Exp_LetSeq => true
-    | _ => false
+       (* Sigbind *)
+       | Sigbind of ident (* [Sigexp] *)
 
-fun isPat t =
-    case node t of
-      Pat_Layered _ => true
-    | Pat_Typed => true
-    | Pat_App => true
-    | Pat_FlatApp => true
-    | Pat_Var _ => true
-    | Pat_SCon _ => true
-    | Pat_Wild => true
-    | Pat_Tuple => true
-    | Pat_List => true
-    | Pat_Record => true
-    | Pat_FlexibleRecord => true
-    | Pat_Par => true
-    | _ => false
+       (* Funbind *)
+       | Funbind of ident (* [Funarg, Strexp, Sigcon] *)
 
-fun isTy t =
-    case node t of
-      Ty_Tuple => true
-    | Ty_Record => true
-    | Ty_Var _ => true
-    | Ty_Con _ => true
-    | Ty_Par => true
-    | Ty_Arrow => true
-    | _ => false
+       (* Funarg *)
+       | Funarg_Structure of ident (* [Sigexp] *)
+       | Funarg_Spec (* Spec list *)
 
-fun or (p, p') t = p t orelse p' t
+       (* Strexp *)
+       | Strexp_Struct (* Strdec' list *)
+       | Strexp_Let (* [Strdecs, Strexp] *)
+       | Strexp_Con (* [Strexp, Sigcon] *)
+       | Strexp_Fun of ident (* [Strexp | Strdecs] *)
+       | Strexp_Var of ident
+
+       (* Sigcon *)
+       | Sigcon of Sigcon.t (* [Sigexp] | [] *)
+
+       (* Sigexp *)
+       | Sigexp_Where (* [Sigexp, Wherespecs] *)
+       | Sigexp_Spec (* Spec list *)
+       | Sigexp_Var of ident
+
+       (* Wherespecs *)
+       | Wherespecs (* Wherespec list *)
+       (* Wherespec *)
+       | Wherespec of ident list * ident (* [Ty] *)
+
+       (* Spec *)
+       | Spec_Val (* Valdesc list *)
+       | Spec_Type (* Tydesc list *)
+       | Spec_Typedef (* Tybind list *)
+       | Spec_EqType (* Tydesc list *)
+       | Spec_Datatype (* Datdesc list *)
+       | Spec_Replication of ident * ident (* [] *)
+       | Spec_Exception (* Exndesc list *)
+       | Spec_Structure (* Strdesc list *)
+       | Spec_Include (* [Sigexp] *)
+       | Spec_IncludeSigids of ident list
+       | Spec_Sharing of ident list
+       | Spec_SharingStructure of ident list
+
+       (* Strdesc *)
+       | Strdesc of ident (* [Sigexp] *)
+
+       (* Tydesc *)
+       | Tydesc of ident list * ident
+
+       (* Valdesc *)
+       | Valdesc of ident (* [Ty] *)
+
+       (* Exndesc *)
+       | Exndesc of ident (* [MaybeTy] *)
+
+       (* Datatypes *)
+       | Datatypes (* Datatype list *)
+       (* Datatype *)
+       | Datatype of ident list * ident (* Constructor list] *)
+       (* Constructor *)
+       | Constructor of ident (* [MaybeTy] *)
+       (* Replication *)
+       | Replication of ident * ident
+
+       (* MaybeTy *)
+       | MaybeTy (* [Ty] | [] *)
+
+       (* Decs *)
+       | Decs (* Dec list *)
+       (* Dec *)
+       | Dec_Local (* [Decs, Decs] *)
+       | Dec_Val of ident list (* Valbind list *)
+       | Dec_Fun of ident list (* Match list (Clause) *)
+       | Dec_Type (* Tybind list *)
+       | Dec_Datatype (* [Datatypes, Withtypes] *)
+       | Dec_Replication of ident * ident (* [] *)
+       | Dec_Abstype (* [Datbinds, Withtypes, Decs] *)
+       | Dec_Exception (* (Constructor | Replication) list *)
+       | Dec_Open of ident list
+       | Dec_Fix of Fixity.t * ident list
+       | Dec_Overload of int option * ident * ident list (* [Ty] *)
+
+       (* Valbinds *)
+       | Valbinds (* Valbind list *)
+
+       (* Valbind *)
+       | Valbind_Plain (* [Pat, Exp] *)
+       | Valbind_Rec (* [Pat, Match] *)
+
+       (* Match *)
+       | Match (* (Clause | Rule) list *)
+       (* Clause *)
+       | Clause of ident (* [Pats, MaybeTy, Exp] *)
+       | FlatClause (* [Pats, MaybeTy, Exp] *)
+       | Rule (* [Pat, Exp] *)
+
+       (* Datbinds *)
+       | Datbinds (* Datatype list *)
+
+       (* Withtypes *)
+       | Withtypes (* Tybind list *)
+       (* Tybind *)
+       | Tybind of ident list * ident (* [Ty] *)
+
+       (* Exps *)
+       | Exps (* Exp list *)
+       (* Exp *)
+       | Exp_Handle (* [Exp, Match] *)
+       | Exp_Orelse (* [Exp, Exp] *)
+       | Exp_Andalso (* [Exp, Exp] *)
+       | Exp_Typed (* [Exp, Ty] *)
+       | Exp_App (* [Exp, Exp] *)
+       | Exp_FlatApp (* Exp list *)
+       | Exp_Fn (* [Match] *)
+       | Exp_Case (* [Exp, Match] *)
+       | Exp_While (* [Exp, Exp] *)
+       | Exp_If (* [Exp, Exp, Exp] *)
+       | Exp_Raise (* [Exp] *)
+       | Exp_Var of ident
+       | Exp_SCon of SCon.t
+       | Exp_Selector of ident
+       | Exp_Record (* Label list *)
+       | Exp_Unit
+       | Exp_Par (* [Exp] *)
+       | Exp_Seq (* Exp list *)
+       | Exp_Tuple (* Exp list *)
+       | Exp_List (* Exp list *)
+       | Exp_Let (* [Decs, Exp] *)
+       | Exp_LetSeq (* [Decs, Exps] *)
+
+       (* Label *)
+       | Label_Plain of ident (* [Exp | Pat | Ty] *)
+       | Label_Short of ident (* [MaybeTy, MaybePat] *)
+
+       (* MaybePat *)
+       | MaybePat (* [Pat] | [] *)
+       (* Pats *)
+       | Pats (* Pat list *)
+       (* Pat *)
+       | Pat_Layered of ident
+       | Pat_Typed
+       | Pat_App
+       | Pat_FlatApp
+       | Pat_Var of ident
+       | Pat_SCon of SCon.t
+       | Pat_Wild
+       | Pat_Tuple
+       | Pat_List
+       | Pat_Record
+       | Pat_FlexibleRecord
+       | Pat_Par (* [Pat] *)
+
+       (* Tys *)
+       | Tys (* Ty list *)
+       (* Ty *)
+       | Ty_Tuple
+       | Ty_Record (* Label list *)
+       | Ty_Var of ident
+       | Ty_Con of ident (* Ty list *)
+       | Ty_Par (* [Ty] *)
+       | Ty_Arrow (* [Ty, Ty] *)
+
+       | Unparsed
+
+
+type ast = node wrapped Tree.t
+
+fun node t = Wrap.unwrap $ Tree.this t
+
+(* val node = Wrap.unwrap o Tree.this *)
+
+(* fun find' reject pred t = *)
+(*     let *)
+(*       val n = node t *)
+(*     in *)
+(*       if pred n then *)
+(*         [t] *)
+(*       else *)
+(*         if reject n then *)
+(*           nil *)
+(*         else *)
+(*           List.concat (map (find' reject pred) (Tree.children t)) *)
+(*     end *)
+
+(* val find = find' (fn _ => false) *)
+
+(* fun uimp s _ = raise Fail ("Unimplemented: " ^ s) *)
+(* val isStrdec : tree -> bool = uimp "isStrdec" *)
+(* val isSigdec : tree -> bool = uimp "isSigdec" *)
+(* val isFundec : tree -> bool = uimp "isFundec" *)
+(* val isStrbind : tree -> bool = uimp "isStrbind" *)
+(* val isSigbind : tree -> bool = uimp "isSigbind" *)
+(* val isFunbind : tree -> bool = uimp "isFunbind" *)
+(* val isFunarg : tree -> bool = uimp "isFunarg" *)
+(* val isStrexp : tree -> bool = uimp "isStrexp" *)
+(* val isSigcon : tree -> bool = uimp "isSigcon" *)
+(* val isSigexp : tree -> bool = uimp "isSigexp" *)
+(* val isWherespec : tree -> bool = uimp "isWherespec" *)
+(* val isSpec : tree -> bool = uimp "isSpec" *)
+(* val isStrdesc : tree -> bool = uimp "isStrdesc" *)
+(* val isTydesc : tree -> bool = uimp "isTydesc" *)
+(* val isValdesc : tree -> bool = uimp "isValdesc" *)
+(* val isExndesc : tree -> bool = uimp "isExndesc" *)
+(* val isDec : tree -> bool = uimp "isDec" *)
+(* val isLabel : tree -> bool = uimp "isLabel" *)
+
+(* fun isExp t = *)
+(*     case node t of *)
+(*       Exp_Handle => true *)
+(*     | Exp_Orelse => true *)
+(*     | Exp_Andalso => true *)
+(*     | Exp_Typed => true *)
+(*     | Exp_App => true *)
+(*     | Exp_FlatApp => true *)
+(*     | Exp_Fn => true *)
+(*     | Exp_Case => true *)
+(*     | Exp_While => true *)
+(*     | Exp_If => true *)
+(*     | Exp_Raise => true *)
+(*     | Exp_Var _ => true *)
+(*     | Exp_SCon _ => true *)
+(*     | Exp_Selector _ => true *)
+(*     | Exp_Record => true *)
+(*     | Exp_Unit => true *)
+(*     | Exp_Par => true *)
+(*     | Exp_Seq => true *)
+(*     | Exp_Tuple => true *)
+(*     | Exp_List => true *)
+(*     | Exp_Let => true *)
+(*     | Exp_LetSeq => true *)
+(*     | _ => false *)
+
+(* fun isPat t = *)
+(*     case node t of *)
+(*       Pat_Layered _ => true *)
+(*     | Pat_Typed => true *)
+(*     | Pat_App => true *)
+(*     | Pat_FlatApp => true *)
+(*     | Pat_Var _ => true *)
+(*     | Pat_SCon _ => true *)
+(*     | Pat_Wild => true *)
+(*     | Pat_Tuple => true *)
+(*     | Pat_List => true *)
+(*     | Pat_Record => true *)
+(*     | Pat_FlexibleRecord => true *)
+(*     | Pat_Par => true *)
+(*     | _ => false *)
+
+(* fun isTy t = *)
+(*     case node t of *)
+(*       Ty_Tuple => true *)
+(*     | Ty_Record => true *)
+(*     | Ty_Var _ => true *)
+(*     | Ty_Con _ => true *)
+(*     | Ty_Par => true *)
+(*     | Ty_Arrow => true *)
+(*     | _ => false *)
+
+(* fun or (p, p') t = p t orelse p' t *)
 
 fun show t =
     let
-      open Report infix ++
+      open Layout
+      infix ^^ ++ \ & \\ &&
       fun next s =
           let
-            val s = text s
+            val s = txt s
           in
             case Tree.children t of
               nil => s
-            | ts => s ++ (indent o column o map show) ts
+            | ts => s & (indent 2 o vsep o map show) ts
           end
       fun show id =
           let
@@ -354,6 +356,35 @@ fun show t =
           | SCon.Int i => i
           | SCon.Real r => r
           | SCon.Word w => w
+      (* open Report infix ++ *)
+      (* fun next s = *)
+      (*     let *)
+      (*       val s = text s *)
+      (*     in *)
+      (*       case Tree.children t of *)
+      (*         nil => s *)
+      (*       | ts => s ++ (indent o column o map show) ts *)
+      (*     end *)
+      (* fun show id = *)
+      (*     let *)
+      (*       val id = Wrap.unwrap id *)
+      (*       fun iopt (SOME n) = Int.toString n *)
+      (*         | iopt NONE = "" *)
+      (*     in *)
+      (*       (case Ident.fixity id of *)
+      (*          Fixity.InfixL n => "(L" ^ iopt n ^ ") " *)
+      (*        | Fixity.InfixR n => "(R" ^ iopt n ^ ") " *)
+      (*        | Fixity.Nonfix => "" *)
+      (*        | Fixity.Op => "(op)" *)
+      (*       ) ^ Ident.toString id *)
+      (*     end *)
+      (* fun showSCon scon = *)
+      (*     case scon of *)
+      (*       SCon.String s => "\"" ^ s ^ "\"" *)
+      (*     | SCon.Char c => "#\"" ^ c ^ "\"" *)
+      (*     | SCon.Int i => i *)
+      (*     | SCon.Real r => r *)
+      (*     | SCon.Word w => w *)
     in
       case node t of
         Rule_Rules => next "Rule_Rules"

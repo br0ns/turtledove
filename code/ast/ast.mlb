@@ -12,5 +12,5 @@ Wrap.sig Wrap.sml
 
 MLBGrammar.sml
 SMLGrammar.sml
-(* RuleGrammar.sml *)
+RuleGrammar.sml
 end
