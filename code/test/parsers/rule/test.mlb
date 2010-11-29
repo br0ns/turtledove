@@ -3,7 +3,7 @@ local
     $(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
     $(SML_LIB)/mylib/MyLib.mlb      
 
-    ../../Basic.mlb
+    ../../../Basic.mlb
 
     ../../../parsers/rule/Rule.mlb
 
