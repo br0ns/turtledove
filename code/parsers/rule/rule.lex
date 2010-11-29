@@ -77,14 +77,14 @@ hexnum={hexDigit}+;
                                         ((* As the section character is actually "two utf8 chars"
                                             it is counted as two, but we want it to be counted 
                                             as one as most editors shows and count it as one *)
-                                         yygone := YYPosInt.-(!yygone, YYPosInt.fromInt 1);
+                                         yygone := !yygone - 1;
                                          yypos) 
                                   );
 <INITIAL>{poundId}             => ( tok T.TRANS (String.extract(yytext, 2, NONE))
                                         ((* As the pound character is actually "two utf8 chars"
                                             it is counted as two, but we want it to be counted 
                                             as one as most editors shows and count it as one *)
-                                         yygone := YYPosInt.-(!yygone, YYPosInt.fromInt 1);
+                                         yygone := !yygone - 1;
                                          yypos) 
                                   );
 
