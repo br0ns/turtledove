@@ -54,28 +54,25 @@ fun todos ast =
                   |-- many graph
                   |-- spaces
                   |-- Text.line
-            val prefix =
+            val rest =
                 spaces
                   |-- maybe (Symb.asterisk --- spaces)
-            val rest =
-                prefix
                   |-- Text.line
-            val last =
-                prefix
-                  |-- many any >>> implode
-            val p = first --- many rest --- last
+            val p = first --- many rest
           in
             Option.map
-              (fn ((f, r), l) =>
+              (fn (f, r) =>
                   (if empty f then
                      nil
                    else
                      [f]) @
-                  r @
-                  (if empty l then
-                     nil
-                   else
-                     [l])
+                  (case rev r of
+                     l :: rr =>
+                     if empty l then
+                       rev rr
+                     else
+                       r
+                   | _ => r)
               )
               (Parse.string p s)
           end
