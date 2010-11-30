@@ -1,3 +1,7 @@
+(* TODO: Update the project and start use this in stead of any "die", "unimp" or
+   other kind of locally defined functions with the same kind of functionality
+ *)
+
 (* Handle different kind of errors. Mostly for debugging. *)
 
 signature Crash =
