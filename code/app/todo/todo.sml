@@ -1,6 +1,8 @@
-val print = fn s => print (s ^ "\n")
+(* val print = fn s => print (s ^ "\n") *)
 
-;print "[Yeah baby!]";
+(* ;print "[Yeah baby!]"; *)
+
+fun die e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.failure)
 
 val here = Path.new (OS.FileSys.getDir ())
 val mlbpath = Path.new' here
@@ -8,100 +10,113 @@ val mlbpath = Path.new' here
                handle _ => "Turtledove.mlb"
               )
 
-val basdecs = #basdecs (MLBParser.fromFile mlbpath)
-    handle MLBParser.Parse r => (Layout.println NONE r ; nil)
-         | Path.Path r => (Layout.println NONE r ; nil)
-
-fun todos ds =
+val ast =
     let
-      open MLBGrammar
+      val {ast, ...} = MLBParser.fromFile mlbpath
+    in
+      ast
+    end
+    handle MLBParser.Parse r => die r
+         | Path.Path r => die r
 
-      val visited = ref Set.empty
+fun todos ast =
+    let
+      open MLBGrammar Set
+      val this = Tree.this
+      val children = Tree.children
 
+      val visited = ref empty
+      fun visit file = visited := insert (!visited) file
       fun ignore file =
-          String.isSuffix "MLB.lex.sml" (Path.path file) orelse
-          String.isSuffix "MLB.yacc.sig" (Path.path file) orelse
-          String.isSuffix "MLB.yacc.sml" (Path.path file) orelse
-          String.isSuffix "SML.lex.sml" (Path.path file) orelse
-          String.isSuffix "SML.yacc.sig" (Path.path file) orelse
-          String.isSuffix "SML.yacc.sml" (Path.path file) orelse
+          String.isSuffix ".lex.sml" (Path.path file) orelse
+          String.isSuffix ".yacc.sig" (Path.path file) orelse
+          String.isSuffix ".yacc.sml" (Path.path file) orelse
           file = Path.new "$(SML_LIB)/basis/basis.mlb" orelse
           file = Path.new "$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb" orelse
           file = Path.new "$(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb" orelse
-          not (Path.sub (Path.dir mlbpath) file)
+          not (Path.sub (Path.dir mlbpath) file) orelse
+          member (!visited) file
 
-      fun basdecs ds = List.app basdec ds
-      and basdec d =
-          case d of
-            Basis bs => basbinds bs
-          | Local (ds, ds') => (basdecs ds ; basdecs ds')
-          | Include {file = f,
-                     basdecs = ds,
-                     comments = _
-                    } => if ignore f then
-                           ()
-                         else
-                           basdecs ds
-          | Source f =>
-            if ignore f orelse Set.member (!visited) f then
-              ()
+      fun totodo s =
+          let
+            open Scanner
+            infix 0 |||
+            infix 1 --- |-- --|
+            infix 2 >>> --> ??? produce underlies
+            fun empty s =
+                List.all Char.isSpace $ explode s
+
+            val spaces = many $ Text.char #" "
+            val graph = predicate Char.isGraph
+            val first =
+                spaces
+                  |-- Text.string "TODO"
+                  |-- many graph
+                  |-- spaces
+                  |-- Text.line
+            val prefix =
+                spaces
+                  |-- maybe (Symb.asterisk --- spaces)
+            val rest =
+                prefix
+                  |-- Text.line
+            val last =
+                prefix
+                  |-- many any >>> implode
+            val p = first --- many rest --- last
+          in
+            Option.map
+              (fn ((f, r), l) =>
+                  (if empty f then
+                     nil
+                   else
+                     [f]) @
+                  r @
+                  (if empty l then
+                     nil
+                   else
+                     [l])
+              )
+              (Parse.string p s)
+          end
+
+      fun loop t =
+          case this t of
+            Dec_Source file =>
+            if ignore file then
+              nil
             else
-              (* files := insert (!files) (explode (Path.path f)) *)
-              (* files := insert (!files) f *)
               let
-                val _ = visited := Set.insert (!visited) f
-                open Report infix ++ ||
-                val {comments, ...} = SMLParser.fromFile f
-                fun isTodo s =
-                    let
-                      fun doit (#"T" :: #"O" :: #"D" :: #"O" :: _) = true
-                        | doit (c :: cs) = Char.isSpace c andalso doit cs
-                        | doit _ = false
-                    in
-                      doit (explode s)
-                    end
-                fun spaces 0 = ""
-                  | spaces n = " " ^ spaces (n - 1)
-                fun flush ls =
-                    let
-                      val infty = 10000
-                      fun space (#" " :: cs) = 1 + space cs
-                        | space nil = infty
-                        | space _ = 0
-                      fun strip n s = String.extract (s, n, NONE) handle Subscript => ""
-                    in
-                      map (strip (foldl Int.min infty (map (space o explode) ls))) ls
-                    end
-                fun ctor (p, c) =
-                    let
-                      open SourceText
-                      val st = fromFile f
-                      val {column = pcol, row = prow} = posToRowCol st p
-                      val lines = String.fields (fn c => c = #"\n") (spaces pcol ^ c)
-                    in
-                      text (posToString st p) ++
-                      (indent o column o map text o flush) lines
-                    end
-                val comments = List.filter (fn (_, c) => isTodo c) comments
+                open Layout SourceText
+                infix ^^ ++ \ & \\ &&
+
+                val {comments, ...} = SMLParser.fromFile file
+                val ts =
+                    List.mapPartial
+                    (fn (p, c) =>
+                        Option.map
+                          (fn ls =>
+                              (txt $ posToString (fromFile file) p)
+                                       \ (indent 2 $ vsep $ List.map txt ls)
+                          )
+                          (totodo c)
+                    ) comments
               in
-                case comments of
-                  nil => ()
-                | _ => app (Report.print o ctor) comments
+                visit file ;
+                ts
               end
-          | Ann (_, ds) => basdecs ds
-          | _ => ()
-      and basexp e =
-          case e of
-            Bas ds => basdecs ds
-          | Let (ds, e) => (basdecs ds ; basexp e)
-          | Var _ => ()
-      and basbinds bs = List.app basbind bs
-      and basbind (_, e) = basexp e
+          | Dec_Include {file, ast, ...} =>
+            if ignore file then
+              nil
+            else
+              loop ast
+          | _ => List.concatMap loop $ children t
     in
-      basdecs ds
+      loop ast
     end
 
-val _ = todos basdecs
-
-
-
+val ts = todos ast
+val _ =
+    let open Layout in
+      println NONE $ vsep $ punctuate ln $ ts
+    end
