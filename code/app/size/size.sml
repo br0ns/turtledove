@@ -27,7 +27,7 @@ val orderby =
        Size) handle Subscript => Size
 
 (* ;Benchmark.start (); *)
-val basdecs =
+val ast =
     let
       val {ast, ...} = MLBParser.fromFile mlbpath
     in
@@ -79,17 +79,16 @@ fun sources ast =
     end
 
 (* ;Benchmark.start (); *)
-val srcs = sources basdecs
+val srcs = sources ast
 val dirs = Set.map Path.dir srcs
 
-fun lexAndYacc dir =
+fun extra p dir =
     let
       val dirstream = OS.FileSys.openDir (Path.path dir)
       fun loop () =
           case OS.FileSys.readDir dirstream of
             SOME file =>
-            if String.isSuffix ".lex" file orelse
-               String.isSuffix ".yacc" file then
+            if p file then
               Path.new (Path.path dir ^ "/" ^ file) :: loop ()
             else
               loop ()
@@ -98,8 +97,20 @@ fun lexAndYacc dir =
       loop ()
     end
 
+val lexAndYacc =
+    extra
+      (fn file =>
+          String.isSuffix ".lex" file orelse
+          String.isSuffix ".yacc" file
+      )
+
+val makefile =
+    extra
+      (fn file => file = "Makefile")
+
 val files = Set.toList srcs @
-            (List.concat o map lexAndYacc o Set.toList) dirs
+            (List.concat o map lexAndYacc o Set.toList) dirs @
+            (List.concat o map makefile o Set.toList) dirs
 (* ;Benchmark.stop (); *)
 (* ;Benchmark.print "Collecting source files:"; *)
 
@@ -114,30 +125,26 @@ val files = List.sort compare files
 
 val sz = foldl (fn ((_, s), a) => a + s) 0 files
 
-val maxwidth = (size o
-                Show.int o
-                foldl (fn ((_, s), a) => Int.max (a, s)) 0
-               ) files
-fun spaces n = CharVector.tabulate (n, fn _ => #" ")
-
-val r = Report.++ (
-        Report.itemize
-          (map (fn (f, s) =>
-                   let
-                     val ss = Show.int s
-                   in
-                     Report.text
-                       (ss ^ " " ^
-                        spaces (maxwidth - size ss) ^
-                        Path.path' (Path.dir mlbpath) f)
-                   end
-               ) files
-          ),
-        Report.text (Int.toString (sz div 1000) ^
-                     "KB in " ^
-                     Int.toString (length files) ^ " files.")
-        )
-
-;Report.print r;
+val _ =
+    let
+      open Layout infix ^^ \ \\ & && ++
+      val (fs, ss) = ListPair.unzip files
+      val path = txt o Path.path' (Path.dir mlbpath)
+      fun size s = int s ^^ txt "B"
+      val ls =
+          besides
+            2
+            (vsep $ List.map path fs,
+             vsep $ List.map size ss)
+      val s = indent 2 ls \
+                     txt "Total"
+                     ++ size sz
+                     ++ txt "in"
+                     ++ int (List.length files)
+                     ++ txt "files."
+    in
+      (* println (SOME 80) s *)
+      println NONE s
+    end
 
 
