@@ -1,3 +1,4 @@
+
 \section{Semantics}
 A rewriting rule ``works'' on a list of SML-clauses. In SML clauses are found in
 function declarations, recursive value declarations, anonymous functions, case
@@ -529,13 +530,11 @@ uden definition environments.}
 
 The grammar of \synt{sexp} and \synt{spat} is given by
 
-\fixme{This should go in the appendix with the other grammars, and then just a
-  brief explanation should be brought here?}
 
 \fixme{Add short comment about what this is: SML without types, added with ...}
 
 
-\begin{nonfloatingfigure}
+\begin{nonfloatingtable}
 
 \setlength{\grammarindent}{7em}
 
@@ -578,13 +577,13 @@ The grammar of \synt{sexp} and \synt{spat} is given by
 \end{grammar}
 
   \caption{Grammar for scheme expressions. This is the normal sml expression
-    grammar but without types, exceptions and \texttt{while}.  See \fref{fig:rule-grammar} for
+    grammar but without types, exceptions and \texttt{while}.  See \fref{tab:rule-grammar} for
     the definition of \synt{rule-self}, \synt{transformer} and \synt{meta-pattern-sex}.}
-  \label{fig:scheme-expressions}
-\end{nonfloatingfigure}
+  \label{tab:scheme-expressions}
+\end{nonfloatingtable}
 
 
-\begin{nonfloatingfigure}
+\begin{nonfloatingtable}
 
 \setlength{\grammarindent}{7em}
 
@@ -611,10 +610,11 @@ The grammar of \synt{sexp} and \synt{spat} is given by
   \alt ["op"] <vid> "as" <pat>             \hfill \cmt{layered}
 \end{grammar}
   
-  \caption{Grammar for scheme patterns. See \fref{fig:rule-grammar} for
+  \caption{Grammar for scheme patterns. See \fref{tab:rule-grammar} for
     the definition of \synt{meta-pattern-spat}.}
-  \label{fig:scheme-patterns}
-\end{nonfloatingfigure}
+  \label{tab:scheme-patterns}
+\end{nonfloatingtable}
+
 
 %%% Local Variables: 
 %%% mode: latex
