@@ -1,0 +1,17 @@
+local
+  $(SML_LIB)/basis/basis.mlb
+  $(SML_LIB)/mylib/MyLib.mlb
+
+  ../path/Path.mlb
+  ../file/File.mlb
+
+  ../crash/Crash.mlb
+
+  ../../Constants.sml
+
+in
+
+  SourceText.sig
+  SourceText.sml
+
+end

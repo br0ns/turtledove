@@ -1,0 +1,11 @@
+local
+  $(SML_LIB)/basis/basis.mlb
+  $(SML_LIB)/mylib/MyLib.mlb
+
+  ../path/Path.mlb
+in
+
+  File.sig
+  File.sml
+
+end

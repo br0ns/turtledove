@@ -1,19 +1,19 @@
 local
-$(SML_LIB)/basis/basis.mlb
-$(SML_LIB)/mylib/MyLib.mlb
+  $(SML_LIB)/basis/basis.mlb
+  $(SML_LIB)/mylib/MyLib.mlb
 in
 
-Constants.sml
-Flags.sig FlagsFn.sml Flags.sml
-Crash.sig Crash.sml
-UniqId.sig UniqId.sml
+  Constants.sml
 
-Report.mlb
+  utils/flags/Flags.mlb 
+  utils/crash/Crash.mlb
+  utils/uniqid/UniqId.mlb
 
-Path.sig Path.sml
-File.sig File.sml
-SourceText.sig SourceText.sml
 
-Error.sig Error.sml
+  utils/path/Path.mlb 
+  utils/file/File.mlb
+  utils/sourcetext/SourceText.mlb 
+
+  utils/error/Error.mlb
 
 end
