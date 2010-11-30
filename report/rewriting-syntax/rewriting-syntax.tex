@@ -1,25 +1,42 @@
-\documentclass[oneside]{memoir}
+\documentclass[a4paper, oneside, final]{memoir}
+% Fixes "No room for a new \xxx" error by extending the default 256 fixed size
+% LaTeX arrays and other weird stuff
+\usepackage{etex}
+\reserveinserts{28}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[british]{babel}
 
-\usepackage[draft]{fixme}
 
+% bedre orddeling Gør at der som minimum skal blive to tegn på linien ved
+% orddeling og minimum flyttes to tegn ned på næste linie. Desværre er værdien
+% anvendt af babel »12«, hvilket kan give orddelingen »h-vor«.
+\renewcommand{\britishhyphenmins}{22} 
+
+% Fix of fancyref to work with memoir. Makes references look
+% nice. Redefines memoir \fref and \Fref to \refer and \Refer.
+% \usepackage{refer}             %
 % As we dont really have any use for \fref and \Fref we just undefine what
 % memoir defined them as, so fancyref can define what it wants.
 \let\fref\undefined
 \let\Fref\undefined
 \usepackage{fancyref} % Better reference. 
 
-\usepackage{mdwtab}
+\usepackage{pdflscape} % Gør landscape-environmentet tilgængeligt
+\usepackage[draft]{fixme}     % Indsæt "fixme" noter i drafts.
+\usepackage{hyperref}  % Indsæter links (interne og eksterne) i PDF
+
 \usepackage[rounded]{syntax} % Part of the mdwtools package
+
+\usepackage{mdwtab}
 \usepackage{mathenv}
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{semantic} % for the \mathlig function
+
 
 \usepackage[final]{listings} % Make sure we show the listing even though we are
                              % making a final report.
@@ -68,9 +85,6 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 {\lstset{xleftmargin=3em}} % starting code, ex a lstset that is more specific;
 {} % ending code
 
-
-
-
 \newcommand{\floor}[1]{\ensuremath{\lfloor #1 \rfloor}}
 \newcommand{\codeinline}[1]{\texttt{#1}}
 
@@ -111,7 +125,10 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 }
 
 \mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
+
 \begin{document}
+
+\tableofcontents*{}
 
 \chapter{Rewriting syntax}
 
