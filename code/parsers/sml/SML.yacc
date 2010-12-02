@@ -241,11 +241,15 @@ sigconst
 
 (* tree * comments *)
 program : expsAndTopdecs
-                ((join (wrap Topdecs
-                             (leftmost expsAndTopdecs)
-                             (rightmost expsAndTopdecs)
-                       )
-                       expsAndTopdecs,
+                ((join
+                    (
+                     case expsAndTopdecs of
+                       nil => wrap Topdecs 0 0
+                     | _   => wrap Topdecs
+                                   (leftmost expsAndTopdecs)
+                                   (rightmost expsAndTopdecs)
+                    )
+                    expsAndTopdecs,
                   Source.Comments.get source
                 ))
 
@@ -317,13 +321,13 @@ strdecnode :
    | LOCAL strdecs IN strdecs END
                 ((Strdec_Local,
                   [join (wrap Strdecs
-                              (leftmost strdecs1)
-                              (rightmost strdecs1)
+                              LOCALright
+                              INleft
                         )
                         strdecs1,
                    join (wrap Strdecs
-                              (leftmost strdecs2)
-                              (rightmost strdecs2)
+                              INright
+                              ENDleft
                         )
                         strdecs2
                   ],
@@ -887,8 +891,8 @@ decnode
       (decnolocal)
   | LOCAL decs IN decs END
       ((Dec_Local,
-        [join (wrap Decs decs1left decs1right) decs1,
-         join (wrap Decs decs2left decs2right) decs2],
+        [join (wrap Decs LOCALright INleft) decs1,
+         join (wrap Decs INright ENDleft) decs2],
         LOCALleft,
         ENDright
       ))
@@ -1321,37 +1325,51 @@ aexp
                      join (wrap Exps exp_psleft exp_psright) exp_ps]
       ))
   | ADDRESS string COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error ADDRESSleft "ADDRESS") *)
   | BUILD_CONST string COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error BUILD_CONSTleft "BUILD_CONST") *)
   | COMMAND_LINE_CONST string COLON ty EQUALOP constOrBool SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error COMMAND_LINE_CONSTleft "COMMAND_LINE_CONST") *)
   | CONST string COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error CONSTleft "CONST") *)
   | EXPORT string ieattributes COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error EXPORTleft "EXPORT") *)
   | IMPORT string ieattributes COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error IMPORTleft "IMPORT") *)
   | IMPORT ASTERISK ieattributes COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error IMPORTleft "IMPORT") *)
   | PRIM string COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error PRIMleft "PRIM") *)
   | SYMBOL string symattributes COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error SYMBOLleft "SYMBOL") *)
   | SYMBOL ASTERISK COLON ty SEMICOLON
-      (die "aexp")
+      ((Unparsed, nil))
+      (* (error SYMBOLleft "SYMBOL") *)
 
 ieattributes
   :
-      (die "ieattributes")
+      (())
+      (* (die "ieattributes") *)
   | id ieattributes
-      (die "ieattributes")
+      (())
+      (* (die "ieattributes") *)
 
 symattributes
   :
-      (die "symattributes")
+      (())
+      (* (die "symattributes") *)
   | id symattributes
-      (die "symattributes")
+      (())
+      (* (die "symattributes") *)
 
 (* tree list *)
 exp_2c

@@ -21,21 +21,17 @@ struct
       of what we actually consider an identifier).
     *)
 
-open SMLGrammar Fixity
+open Grammar Fixity
+type ast = int Grammar.ast
 exception Error of int * string
 
 fun die s = Crash.die "Infixing" s
-fun fail p s = raise Error (p, s)
+fun fail p s = (println (s ^ " at " ^ Int.toString p) ; raise Error (p, s))
 
 val join = Tree.join
-fun wrap n l r = Wrap.wrap n {left = l, right = r}
-val data = Wrap.data o Tree.this
-fun left t =
-    case data t of
-      {left, right} => left
-fun right t =
-    case data t of
-      {left, right} => right
+val wrap = Wrap.wrap
+val left = Wrap.left o Tree.this
+val right = Wrap.right o Tree.this
 val unwrap = Wrap.unwrap
 val node = Wrap.unwrap o Tree.this
 val children = Tree.children
@@ -53,8 +49,8 @@ fun rightmost a b = Int.max (right a, right b)
 
 local
 fun pair n a b = join (wrap n (left a) (right b)) [a, b]
-fun toTree n i = join (Wrap.wrap (n i) (Wrap.data i)) nil
-fun asId f t = (SOME o f o node) t handle General.Match => NONE
+fun toTree n i = join (wrap (n i) (Wrap.left i) (Wrap.right i)) nil
+fun asId f t = f $ node t
 fun apply n a b = join (wrap n (leftmost a b) (rightmost a b)) [a, b]
 in
 structure Exp =
@@ -64,7 +60,8 @@ type ident = ident
 val pair = pair Exp_Tuple
 val toTree = toTree Exp_Var
 val apply = apply Exp_App
-val asId = asId (fn Exp_Var i => i | _ => raise General.Match)
+val asId = asId (fn Exp_Var i => SOME i
+                  | _         => NONE)
 end
 structure ExpStack = InfixStack (Exp)
 
@@ -75,7 +72,8 @@ type ident = ident
 val pair = pair Pat_Tuple
 val toTree = toTree Pat_Var
 val apply = apply Pat_App
-val asId = asId (fn Pat_Var i => i | _ => raise General.Match)
+val asId = asId (fn Pat_Var i => SOME i
+                  | _         => NONE)
 end
 structure PatStack = InfixStack (Pat)
 end (* end local *)
@@ -105,29 +103,39 @@ fun resolveArgs pats =
         in
           case node pat of
             Pat_Par =>
-            (case map category (children pat) of
-               [Other a, Infixed id, Other b] => (* Succes: Case 3 *)
-               (id, Pat.pair a b :: rest)
-             | _ => fail (left pat) "function name missing."
+            (case map (fn t => (node t, map category $ children t))
+                      $ children pat of
+               [(Pat_App, [Infixed id, Other tup])] =>
+               (id, tup :: rest)
+             | _ => fail (left pat)
+                         "must have the form {fun (a b c) d e ...}"
             )
+            (* (case map category (children pat) of *)
+            (*    [Other a, Infixed id, Other b] => (\* Succes: Case 3 *\) *)
+            (*    (id, Pat.pair a b :: rest) *)
+            (*  | _ => fail (left pat) "function name missing" *)
+            (*              (\* ("function name missing " ^ *\) *)
+            (*              (\*  (Layout.pretty NONE $ Grammar.show pat) *\) *)
+            (*              (\* ) *\) *)
+            (* ) *)
           | Pat_Var id => (* Success: Case 1 or 2 *)
             (case (isNonfix id, isUnqual id, rest) of
                (true, true, _ :: _) => (id, rest)
-             | (_, _, nil) => fail (left pat) "no argument(s) in function declaration."
-             | (false, _, _) => fail (left pat) "identifier has infix status."
-             | (_, false, _) => fail (left pat) "qualified identifier in declaration."
+             | (_, _, nil) => fail (left pat) "no argument(s) in function declaration"
+             | (false, _, _) => fail (left pat) "identifier has infix status"
+             | (_, false, _) => fail (left pat) "qualified identifier in declaration"
             )
-          | _ => fail (left pat) "function name missing."
+          | _ => fail (left pat) "function name missing"
         end
       | Infixed id :: _ =>
-        (case Wrap.data id of
-           {left, right} => fail left "put 'op' in front of identifier."
-        )
+        fail (Wrap.left id) "put 'op' in front of identifier"
       | _ => die "resolveArgs"
     end
 
 (* Takes a tree and a basis. Returns the new tree and the infixes declared by
    the tree *)
+val empty = Dictionary.empty
+val plus = Dictionary.plus
 fun resolve (t, bas) =
     let
       fun ++ (a, b) = Dictionary.plus a b
@@ -173,7 +181,10 @@ fun resolve (t, bas) =
             val id' = unwrap id
           in
             case Ident.fixity id' of
-              Op => id
+              Op => if f = Nonfix then
+                      die "op in front of nonfix identifier"
+                    else
+                      id
             | _  => Wrap.modify (fn id => Ident.setFixity id f) id
           end
       fun skip _ = (t, empty)
@@ -191,7 +202,19 @@ fun resolve (t, bas) =
           end
     in
       case node t of
-        Topdecs => continue ()
+        Rule_Rules => continue ()
+      | Rule_Type_Clauses _ => continue ()
+      | Rule_Type_Expressions _ => continue ()
+      | Rule_Scheme => continue ()
+      | Rule_Clauses => continue ()
+      | Rule_Clause => continue ()
+      | Rule_Cstrns => continue ()
+      | Rule_Cstrn_Rel _ => continue ()
+      | Rule_Trans _ => continue ()
+      | Rule_Meta_Pat _ => continue ()
+      | Rule_Self => continue ()
+
+      | Topdecs => continue ()
       | Strdecs => continue ()
       | Strdec_Str => continue ()
       | Strdec_Local => localize ()
@@ -283,8 +306,22 @@ fun resolve (t, bas) =
             in
               correct (Clause id) (join (Tree.this pats) pats' :: rest)
             end
-          | _ => die "No patterns in FlatClause."
+          | _ => die "no patterns in FlatClause"
+          (* (t, empty) *)
         end
+        (* (case children t of *)
+        (*    [pats, tyop, exp] => *)
+        (*    let *)
+        (*      val (id, pats') = resolveArgs (children pats) *)
+
+        (*      (\* tyop doesn't need to know about infixing *\) *)
+        (*      val (pats, _) = resolve (join (Tree.this pats) pats', bas) *)
+        (*      val (exp, _) = resolve (exp, bas) *)
+        (*    in *)
+        (*      correct (Clause id) [pats, tyop, exp] *)
+        (*    end *)
+        (*  | _ => die "illformed FlatClause" *)
+        (* ) *)
       | Rule => continue ()
       | Datbinds => skip ()
       | Withtypes => skip ()

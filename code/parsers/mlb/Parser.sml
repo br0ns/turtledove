@@ -63,22 +63,22 @@ fun fromFile file =
               open Tree
 
               (* To make the type system happy *)
-              fun identity x =
-                  case x of
-                    Basdecs                => Basdecs
-                  | Basbind bid            => Basbind bid
-                  | Exp_Basis              => Exp_Basis
-                  | Exp_Let                => Exp_Let
-                  | Exp_Var bid            => Exp_Var bid
-                  | Dec_Basis              => Dec_Basis
-                  | Dec_Local              => Dec_Local
-                  | Dec_Open bids          => Dec_Open bids
-                  | Dec_Ann ss             => Dec_Ann ss
-                  | Dec_Structure strbinds => Dec_Structure strbinds
-                  | Dec_Signature sigbinds => Dec_Signature sigbinds
-                  | Dec_Functor fctbinds   => Dec_Functor fctbinds
-                  | Prim                   => Prim
-                  | _                      => Crash.impossible "MLBParser"
+              (* fun identity x = *)
+              (*     case x of *)
+              (*       Basdecs                => Basdecs *)
+              (*     | Basbind bid            => Basbind bid *)
+              (*     | Exp_Basis              => Exp_Basis *)
+              (*     | Exp_Let                => Exp_Let *)
+              (*     | Exp_Var bid            => Exp_Var bid *)
+              (*     | Dec_Basis              => Dec_Basis *)
+              (*     | Dec_Local              => Dec_Local *)
+              (*     | Dec_Open bids          => Dec_Open bids *)
+              (*     | Dec_Ann ss             => Dec_Ann ss *)
+              (*     | Dec_Structure strbinds => Dec_Structure strbinds *)
+              (*     | Dec_Signature sigbinds => Dec_Signature sigbinds *)
+              (*     | Dec_Functor fctbinds   => Dec_Functor fctbinds *)
+              (*     | Prim                   => Prim *)
+              (*     | _                      => Crash.impossible "MLBParser" *)
 
               fun loop' t =
                   case this t of

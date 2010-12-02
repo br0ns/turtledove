@@ -189,6 +189,11 @@ hexnum={hexDigit}+;
                                          (Source.error source yypos) ;
                      continue ()
                    );
+<S>\\U{hexDigit}{8}
+                => ( S.appendUnicodeChar source yytext
+                                         (Source.error source yypos) ;
+                     continue ()
+                   );
 <S>\\{nrws}     => ( YYBEGIN F ; continue () );
 <S>\\{eol}      => ( YYBEGIN F ; continue () );
 <S>\\           => ( Source.error source yypos "Illegal string escape" ;
@@ -244,6 +249,11 @@ hexnum={hexDigit}+;
                      continue ()
                    );
 <CH>\\u{hexDigit}{4}
+                => ( S.appendUnicodeChar source yytext
+                                         (Source.error source yypos) ;
+                     continue ()
+                   );
+<CH>\\U{hexDigit}{8}
                 => ( S.appendUnicodeChar source yytext
                                          (Source.error source yypos) ;
                      continue ()
