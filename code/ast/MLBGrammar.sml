@@ -22,13 +22,13 @@ type fctbinds = fctbind list
 datatype 'a node
   = Basdecs (* Dec list *)
   | Basbind of basid (* [Exp] *)
-  | Exp_Basis (* Basbind list *)
+  | Exp_Basis (* Basdec list *)
   | Exp_Let (* [Basdecs, Exp] *)
   | Exp_Var of basid
 
   (* Basis is a list of bindings because of the 'and' keyword as in
    * basis foo = bas foo.sml end
-   * and bar = bas bar.sml end
+   *   and bar = bas bar.sml end
    *)
   | Dec_Basis (* Basbind list *)
   | Dec_Local (* [Basdecs, Basdecs] *)
@@ -44,6 +44,35 @@ datatype 'a node
   | Prim
 
 type ast = file node Tree.t
+
+fun identity x =
+    case x of
+      Basdecs                => Basdecs
+    | Basbind bid            => Basbind bid
+    | Exp_Basis              => Exp_Basis
+    | Exp_Let                => Exp_Let
+    | Exp_Var bid            => Exp_Var bid
+    | Dec_Basis              => Dec_Basis
+    | Dec_Local              => Dec_Local
+    | Dec_Open bids          => Dec_Open bids
+    | Dec_Ann ss             => Dec_Ann ss
+    | Dec_Structure strbinds => Dec_Structure strbinds
+    | Dec_Signature sigbinds => Dec_Signature sigbinds
+    | Dec_Functor fctbinds   => Dec_Functor fctbinds
+    | Prim                   => Prim
+    | _                      => Crash.impossible "MLBGrammar.identity"
+
+fun map f t =
+    Tree.map
+    (fn Dec_Include {file, ast, comments} =>
+        Dec_Include {file = file,
+                     ast = map f ast,
+                     comments = comments}
+      | Dec_Source x =>
+        Dec_Source $ f x
+      | n => identity n
+    )
+    t
 
 (* datatype 'a basexp = Bas of 'a basdecs *)
 (*                    | Let of 'a basdecs * 'a basexp *)

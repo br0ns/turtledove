@@ -94,7 +94,7 @@ struct
                     val c = charsToInt 10 [c1, c2, c3]
                 in
                     if c > 255 then
-                        (fail "Illegal ASCII escape" ;
+                        (fail ("Illegal ASCII escape: " ^ Int.toString c) ;
                          #" " (* Dummy *)
                         )
                     else
@@ -103,19 +103,21 @@ struct
               | _ => die "asAsciiChar"
 
         fun asUnicodeChar s fail =
-            case explode s of
-                [#"\\", #"u", c1, c2, c3, c4] =>
-                let
-                    val c = charsToInt 16 [c1, c2, c3, c4]
-                in
-                    if c > 255 then
-                        (fail "Illegal unicode escape (characters 0--255 supported)" ;
-                         #" " (* Dummy *)
-                        )
-                    else
-                        chr c
-                end
-              | _ => die "asUnicodeChar"
+            let
+              val c =
+                  case explode s of
+                    #"\\" :: #"u" :: cs => charsToInt 16 cs
+                  | #"\\" :: #"U" :: cs => charsToInt 32 cs
+                  | _ => die "asUnicodeChar"
+            in
+              if c > 255 then
+                (* TODO: Some unicode thingie. Migrate to WideString maybe. *)
+                (Crash.debug "Unicode escape > 255. Returned #\"X\"." ;
+                 #"X"
+                )
+              else
+                chr c
+            end
 
         fun appendControlChar s c fail = appendChar s (asControlChar c fail)
         fun appendAsciiChar s c fail = appendChar s (asAsciiChar c fail)

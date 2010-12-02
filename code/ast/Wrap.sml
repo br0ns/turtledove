@@ -8,4 +8,6 @@ fun left ({left, ...} : ('a, 'b) t) = left
 fun right ({right, ...} : ('a, 'b) t) = right
 fun modify f {node, left, right} =
     {node = f node, left = left, right = right}
+fun rewrap f {node, left, right} =
+    {node = node, left = f left, right = f right}
 end

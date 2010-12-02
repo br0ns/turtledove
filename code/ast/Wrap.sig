@@ -7,4 +7,5 @@ sig
   val left : ('a, 'b) t -> 'b
   val right : ('a, 'b) t -> 'b
   val modify : ('a -> 'c) -> ('a, 'b) t -> ('c, 'b) t
+  val rewrap : ('b -> 'c) -> ('a, 'b) t -> ('a, 'c) t
 end
