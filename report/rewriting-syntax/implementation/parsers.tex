@@ -63,7 +63,7 @@ up the language into different data types are based heavily on the BNF. This way
 of representing the AST gives integrity safety for free, as for example an
 \synt{exp} would not be able to contain an \synt{atpat}, which is most likely
 the main motivation of doing it this way. However various examples are given in
-\cite{brøns-pedersen08} of how this way of representing the AST blows up code
+\cite{mbp08} of how this way of representing the AST blows up code
 vise when working with it as lots of almost identical functions are needed to
 work on all the different data types making up the AST. Because of this we have
 chosen a dramatical new approach\footnote{Compared to how all the SML
