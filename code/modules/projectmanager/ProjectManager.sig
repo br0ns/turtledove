@@ -23,7 +23,7 @@ sig
   (* Returns the path of the project *)
   val getProjectPath : t -> string                  
 
-  val getFileNames : t -> StringOrderedSet.t
+  val getFileNames : t -> StringSet.t
 
   (* project, parrent group name, filename, resulting project  *)
   val addFile : t -> string -> string -> t
@@ -39,7 +39,7 @@ sig
 
   val getProjectGroupNameStr : t -> string
 
-  val getGroupNames : t -> StringOrderedSet.t
+  val getGroupNames : t -> StringSet.t
 
   (* project, parrent group name, new group name, resulting project *)
   val addGroup : t -> string -> string -> t
@@ -52,9 +52,9 @@ sig
   val renameGroup : t -> string -> string -> string -> t
 
 
-  (* project, dictionary with project name as key and StringOrderedSet of
+  (* project, dictionary with project name as key and StringSet of
      dependencys as values *)
-  val getDependencies: t -> StringOrderedSet.t Dictionary.t
+  val getDependencies: t -> StringSet.t Dictionary.t
 
   (* project, dependency from, dependency to, resulting project *)
   val addDependency : t -> string -> string -> t
@@ -64,7 +64,7 @@ sig
 
 
 
-  val getExposes : t -> StringOrderedSet.t Dictionary.t
+  val getExposes : t -> StringSet.t Dictionary.t
                                                   
   (* project, parrent group that exposes this file/group, group/file that are to
   be exposed, resulting project *)

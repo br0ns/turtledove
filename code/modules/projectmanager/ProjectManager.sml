@@ -173,10 +173,10 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
         val node = locateParrentGroup parrentGroupStr (getProjectNodeFromProject project)
 
        fun extractFiles ((node as JSON.Object _), res) = JSON.fold extractFiles res ((getNodesFromValue o getValueFromNode) node)
-         | extractFiles ((JSON.String s), res) = StringOrderedSet.insert res s
+         | extractFiles ((JSON.String s), res) = StringSet.insert res s
          | extractFiles (x,res) = die ("Only JSON.Object and JSON.String are allowed in the 'Nodes' list: " ^ JSON.write x)
       in
-        extractFiles (node, StringOrderedSet.empty)     
+        extractFiles (node, StringSet.empty)     
       end          
  
   fun getFileNames (r as {project, ...}: t)  = getFileNamesInGroup r (getProjectGroupNameStr r)                                   
@@ -187,7 +187,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
   fun addFile (r as {project, ...}: t) parrentGroupStr filenameStr = 
       let
         val files = getFileNames r
-        val _ = StringOrderedSet.member files filenameStr andalso die ("The file: '" ^ filenameStr ^  "' is already present in this project")
+        val _ = StringSet.member files filenameStr andalso die ("The file: '" ^ filenameStr ^  "' is already present in this project")
 
         fun addFileToNodes nodes = (true, JSON.++(JSON.String filenameStr, nodes))
               
@@ -244,20 +244,20 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
               (* The returned field is a JSON.String so writ it to a ordinary string *)              
               val name = JSON.stringOf (getNameFromNode node)
             in
-              JSON.fold parseNode (StringOrderedSet.insert res name) ((getNodesFromValue o getValueFromNode) node)
+              JSON.fold parseNode (StringSet.insert res name) ((getNodesFromValue o getValueFromNode) node)
             end
           (* As group names are only located in the JSON Objects we skip anything else*)
           | parseNode (_,  res) = res
 
       in
-        parseNode ((getProjectNodeFromProject project), StringOrderedSet.empty)
+        parseNode ((getProjectNodeFromProject project), StringSet.empty)
       end;
 
 
   fun addGroup (r as {project, ...}: t) parrentGroupStr newGroupStr = 
       let
         val groups = getGroupNames r
-        val _ = StringOrderedSet.member groups newGroupStr andalso die ("The group: '" ^ newGroupStr ^  "' is already present in this project")
+        val _ = StringSet.member groups newGroupStr andalso die ("The group: '" ^ newGroupStr ^  "' is already present in this project")
 
         fun addGroupToNodes nodes =
             let
@@ -319,7 +319,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
   fun getDependencies ({project, ...}: t) =
       let
 
-        fun extractDepend ((JSON.String s), res) = StringOrderedSet.insert res s
+        fun extractDepend ((JSON.String s), res) = StringSet.insert res s
           | extractDepend (x, _) = die ("Expected a JSON String as 'Depends' constraint, but got: " ^ JSON.write x)
 
         fun extractDependency ((node as JSON.Object dict), res) =
@@ -331,7 +331,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
               if isSome dep then
                 Dictionary.update res (nameStr, JSON.fold extractDepend (valOf dep) depends)
               else
-                Dictionary.update res (nameStr, JSON.fold extractDepend (StringOrderedSet.empty) depends)
+                Dictionary.update res (nameStr, JSON.fold extractDepend (StringSet.empty) depends)
             end
           | extractDependency (x, _) = die ("Expected a JSON Object as dependency to lookup in, but got: " ^ JSON.write x)
 
@@ -345,11 +345,11 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
         val groups = getGroupNames r
                      
         (* Make sure that the depFrom is a valid group or file in the project *)
-        val _ = not (StringOrderedSet.member files depFrom orelse StringOrderedSet.member groups depFrom)
+        val _ = not (StringSet.member files depFrom orelse StringSet.member groups depFrom)
                 andalso die ("The dependency from ('"^ depFrom ^"') is not a valid file or group in the project")
 
         (* Make sure that the depTo is a valid group or file in the project *)
-        val _ = not (StringOrderedSet.member files depTo orelse StringOrderedSet.member groups depTo)
+        val _ = not (StringSet.member files depTo orelse StringSet.member groups depTo)
                 andalso die ("The dependency to ('"^ depTo ^"') is not a valid file or group in the project")
 
         (* Make sure the new dependency is not from the project group as this
@@ -436,7 +436,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
   fun getExposes (r as {project, ...}: t) = 
       let
         (* res is a stringorderedset of group- and filenames *)
-        fun extractExposes (JSON.String s, res) = StringOrderedSet.insert res s
+        fun extractExposes (JSON.String s, res) = StringSet.insert res s
           | extractExposes (x, res) = die ("Expected a JSON String as the group- or filename to be exposed, but got: " ^ JSON.write x)
 
         (* res is dictionary of groupname and stringorderedset of exposed group- and filenames *)
@@ -450,7 +450,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
               (* As it is not allowed to have multiple groups with same name, we
               can blindly insert/update the list of exposed group- and filenames for
               each group we find *)
-              val res' = Dictionary.update res (nameStr, JSON.fold extractExposes StringOrderedSet.empty exposes)
+              val res' = Dictionary.update res (nameStr, JSON.fold extractExposes StringSet.empty exposes)
             in
               (* get all the exposes from the sub groups contained in this group before returning the resulting dictionary *)
               JSON.fold extractExposesFromNode res' nodes
@@ -468,7 +468,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
         val exposes = getExposes r
         val parrentGroupExposes = Dictionary.lookup exposes parrentGroupStr
         val _ = isSome parrentGroupExposes andalso
-                StringOrderedSet.member (valOf parrentGroupExposes) exposeStr andalso
+                StringSet.member (valOf parrentGroupExposes) exposeStr andalso
                 die ("The group- or filename '"^ exposeStr ^"' is already exposed in the group '"^ parrentGroupStr ^"'.")
 
         fun addExposeToNode node =
@@ -636,10 +636,10 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
               (* if this depend is in the list of groups, then it must be a group (obviously) *)
               if isGroup dependStr then
                 let
-                  (* StringOrderedSet of filenames contained in this group *)
+                  (* StringSet of filenames contained in this group *)
                   val files = getFileNamesInGroup r dependStr
                 in
-                  (StringOrderedSet.toList files) @ res
+                  (StringSet.toList files) @ res
                 end
               else
                 dependStr :: res
@@ -651,7 +651,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
               val newDepFromsLst = expandGroupInDepend(depFrom, [])
 
               (* expand any groups in the depends list. *)
-              val newDependsLst = List.foldl expandGroupInDepend [] (StringOrderedSet.toList depends)
+              val newDependsLst = List.foldl expandGroupInDepend [] (StringSet.toList depends)
             in
               (Utils.pairOneFromEach newDepFromsLst newDependsLst) @ res
             end
@@ -659,7 +659,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
         fun getGroupToGroupDependencies (dependency as (depFrom, depends), res) = 
               if isGroup depFrom then (* only look at dependencies from groups  *)
                 let
-                  val newDependsLst = List.filter isGroup (StringOrderedSet.toList depends)
+                  val newDependsLst = List.filter isGroup (StringSet.toList depends)
                 in
                   (Utils.pairOneFromEach [depFrom] newDependsLst) @ res
                 end
@@ -771,7 +771,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
 
               (* If something is exposed it is also always defined and by the
               topology sort we know that it has already been placed in the *)
-              val thisGroupExposesBasisLst = List.map (fn expose => valOf (Dictionary.lookup basisMapping expose)) (StringOrderedSet.toList thisGroupExposes)
+              val thisGroupExposesBasisLst = List.map (fn expose => valOf (Dictionary.lookup basisMapping expose)) (StringSet.toList thisGroupExposes)
 
               val dependsStr = List.foldl (fn (a,b) => b ^ " " ^ a) "open" thisGroupDepsOnLst
               val exposesStr = List.foldl (fn (a,b) => b ^ " " ^ a) "open" thisGroupExposesBasisLst
@@ -803,7 +803,7 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
         (* Again, every group has an , possibly empty, list of exposes *)
         val (_, exposes) = valOf (List.find (fn (group, _) => group = projectGroupStr) exposesLst)
 
-        val exposesBasisLst = List.map (fn expose => valOf (Dictionary.lookup basisMapping expose)) (StringOrderedSet.toList exposes)
+        val exposesBasisLst = List.map (fn expose => valOf (Dictionary.lookup basisMapping expose)) (StringSet.toList exposes)
                               
       in
         List.foldl (fn (a,b) => b ^ " " ^ a) "open" exposesBasisLst
@@ -819,13 +819,13 @@ fun updateObject obj key value = JSON.Object (Dictionary.update (JSON.dictionary
       
   fun description (r as {project, ...}: t) =
       let
-        (* list of (depFrom, StringOrderedSet of depends)  *)
+        (* list of (depFrom, StringSet of depends)  *)
         val dependenciesLst = Dictionary.toList (getDependencies r)
-        (* list of (group, StringOrderedSet of exposes) *)
+        (* list of (group, StringSet of exposes) *)
         val exposesLst = Dictionary.toList (getExposes r)
 
-        val filesLst = StringOrderedSet.toList (getFileNames r)
-        val groupsLst = StringOrderedSet.toList (getGroupNames r)
+        val filesLst = StringSet.toList (getFileNames r)
+        val groupsLst = StringSet.toList (getGroupNames r)
 
         val (sortedFiles, fileToFileDepsLst, sortedGroups, groupToGroupDepsLst) = sortFilesAndGroups r filesLst groupsLst dependenciesLst exposesLst
 

@@ -1,0 +1,63 @@
+
+\section{Parsers}
+
+The SML and Rule parsers are both implemented in SML-Lex and SML-Yacc. We say
+SML-Lex/Yacc as both the sml/nj version ml-lex/ml-yacc and mlton version
+mllex/mlyacc works, but the mosml version mosmllex and mosmlyac are having
+problems.
+
+\fixme{fix the above gibberish}
+
+\subsection{Standard ML}
+
+A fine note about whete the grammar was stolen from and possibly some other
+clever stuff.
+
+\subsection{Rule}
+
+The Rule parser is based on the SML parser with some added tokens to the lexer
+and rules to the grammar to handle the rule syntax (see
+\fref{tab:rule-grammar}). 
+
+
+\subsubsection{Unicode}
+
+The rule syntax uses the symbols \texttt{£} and \texttt{§} to denote
+transformers and meta patterns respectively. These were a bit tricky to
+implement as they are not ASCII characters. By default SML-Lex\cite{ml-lex-yacc}
+only supports 8-bit characters and thus if the upper parts of UTF-8 characters
+are needed they must be specially handled. One way to handle it would be to
+convert the input file into some fixed length encoding (i.e., UTF-32), but as
+SML only uses ASCII chars that would demand a total remake of the Rule lexer
+definition. Instead we went with a UTF-8 solution which only need to be
+specially fitted for the transformer and meta patterns as it seems that most
+editors now a days use UTF-8 as default encoding (seems to be the case for emacs
+on linux). Implementing the two UTF-8 values in the lexer was then just a matter
+of defining a named expression containing the conjunction of the two decimal
+values making up each of the UTF-8 values (see \fref{tab:utf8-rule-values}).
+
+\begin{table}
+  \centering
+  \begin{tabular}{|l|c|c|c|}
+    \hline
+    \textbf{Letter} & \textbf{UTF-8} & \textbf{Hex} & \textbf{Decimal} \\ \hline
+    Pound sign (£)   & U+00A3 & 0xC2 0xA3 &  $194$ $163$ \\ \hline
+    Section sign (§) & U+00A7 & 0xC2 0xA7 & $194$ $167$ \\ \hline
+  \end{tabular}
+
+  \caption{Table of UTF-8 and hex values of \texttt{£} and \texttt{§}}
+  \label{tab:utf8-rule-values}
+\end{table}
+
+As we are using the internal SML-Lex position feature \texttt{yypos} we have to
+decrement it by one each time a transformer or meta pattern is encountered as it
+is counted as two characters, where it actually is just one (composite)
+character.
+
+\subsection{Abstract syntax tree}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../rewriting-syntax"
+%%% End: 
