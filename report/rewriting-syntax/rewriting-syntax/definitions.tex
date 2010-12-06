@@ -67,8 +67,8 @@ different from any other variable.
   Scheme expressions & sexp & & \textrm{ (see \fref{tab:scheme-expressions})}
   \\
   Scheme clauses & sclause & ::= & spat => sexp \\
-  Schemes & scheme & ::= & sclause+\\
-  & & \mid & sclause+ \textsf{ where } cstrn, \ldots\\
+  Schemes & scheme & ::= & sclause^{+}\\
+  & & \mid & sclause^{+} \textsf{ where } cstrn, \ldots\\
 
   Transformers & trans & ::= & trans[spat]\\
   & & \mid & \mathbb{D} \mid \mathbb{E} \mid \ldots\\
@@ -76,7 +76,7 @@ different from any other variable.
 
   Constraint &  cstrn & ::= & rel(mpatvar, \ldots) \\
   Relation & rel & ::= & \textsf{a} \mid \textsf{b} \mid \ldots\\
-  (Rewriting) Rules & rule & ::= & scheme \Downarrow sclause+\\
+  (Rewriting) Rules & rule & ::= & scheme \Downarrow sclause^{+}\\
 \end{tabular}
 
 % \paragraph{Aliases}\ \\
@@ -107,7 +107,7 @@ variables, which are listed below. Thus as an example we could have $\sigma =
   Meta patterns & mpatvar & \mathcal{A}, \mathcal{B}, \ldots & pat^{patvar \cup hole} \\
   % Scheme patterns & spatvar & \alpha, \beta, \ldots & spat \\
 
- % mpat+ \rightharpoonup
+ % mpat^{+} \rightharpoonup
  %  \{t\!t, f\!\!f\}\\
 %   & var & &
 % {
