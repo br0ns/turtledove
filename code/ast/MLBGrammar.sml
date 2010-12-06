@@ -19,7 +19,7 @@ type strbinds = strbind list
 type sigbinds = sigbind list
 type fctbinds = fctbind list
 
-datatype 'a node
+datatype ('a, 'b) node
   = Basdecs (* Dec list *)
   | Basbind of basid (* [Exp] *)
   | Exp_Basis (* Basdec list *)
@@ -33,7 +33,7 @@ datatype 'a node
   | Dec_Basis (* Basbind list *)
   | Dec_Local (* [Basdecs, Basdecs] *)
   | Dec_Include of {file     : file,
-                    ast      : 'a node Tree.t,
+                    ast      : ('a, 'b) ast,
                     comments : Comments.t}
   | Dec_Source of 'a
   | Dec_Open of basids
@@ -42,37 +42,44 @@ datatype 'a node
   | Dec_Signature of sigbinds
   | Dec_Functor of fctbinds
   | Prim
+withtype ('a, 'b) ast = (('a, 'b) node, 'b) Wrap.t Tree.t
 
-type ast = file node Tree.t
+local
+  fun id x =
+      case x of
+        Basdecs                => Basdecs
+      | Basbind bid            => Basbind bid
+      | Exp_Basis              => Exp_Basis
+      | Exp_Let                => Exp_Let
+      | Exp_Var bid            => Exp_Var bid
+      | Dec_Basis              => Dec_Basis
+      | Dec_Local              => Dec_Local
+      | Dec_Open bids          => Dec_Open bids
+      | Dec_Ann ss             => Dec_Ann ss
+      | Dec_Structure strbinds => Dec_Structure strbinds
+      | Dec_Signature sigbinds => Dec_Signature sigbinds
+      | Dec_Functor fctbinds   => Dec_Functor fctbinds
+      | Prim                   => Prim
+      | _                      => Crash.impossible "MLBGrammar.identity"
+in
 
-fun identity x =
-    case x of
-      Basdecs                => Basdecs
-    | Basbind bid            => Basbind bid
-    | Exp_Basis              => Exp_Basis
-    | Exp_Let                => Exp_Let
-    | Exp_Var bid            => Exp_Var bid
-    | Dec_Basis              => Dec_Basis
-    | Dec_Local              => Dec_Local
-    | Dec_Open bids          => Dec_Open bids
-    | Dec_Ann ss             => Dec_Ann ss
-    | Dec_Structure strbinds => Dec_Structure strbinds
-    | Dec_Signature sigbinds => Dec_Signature sigbinds
-    | Dec_Functor fctbinds   => Dec_Functor fctbinds
-    | Prim                   => Prim
-    | _                      => Crash.impossible "MLBGrammar.identity"
+fun identity x = Wrap.modify id x
 
 fun map f t =
     Tree.map
-    (fn Dec_Include {file, ast, comments} =>
-        Dec_Include {file = file,
-                     ast = map f ast,
-                     comments = comments}
-      | Dec_Source x =>
-        Dec_Source $ f x
-      | n => identity n
-    )
-    t
+      (Wrap.modify
+         (fn Dec_Include {file, ast, comments} =>
+             Dec_Include {file     = file,
+                          ast      = map f ast,
+                          comments = comments
+                         }
+           | Dec_Source x =>
+             Dec_Source $ f x
+           | n => id n
+         )
+      )
+      t
+end
 
 (* datatype 'a basexp = Bas of 'a basdecs *)
 (*                    | Let of 'a basdecs * 'a basexp *)

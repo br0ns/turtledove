@@ -2,7 +2,20 @@ structure Resolve =
 struct
 exception Error of string
 
-fun resolve (envfuns as {empty, plus, resolve}) ast =
+structure Map =
+OrderedMapFn (
+struct
+type t = Path.t
+fun compare x y = String.compare (Path.path x, Path.path y)
+val toString = Path.toString
+end
+)
+
+fun resolve (envfuns as {empty,
+                         plus,
+                         resolve,
+                         rewrap}
+            ) ast =
     let
       val eplus = plus
       val eenv = empty
@@ -11,11 +24,18 @@ fun resolve (envfuns as {empty, plus, resolve}) ast =
 
       open MLBGrammar
       val this = Tree.this
+      fun node t = Wrap.unwrap $ this t
+      fun wrap n l r = identity $ Wrap.extend rewrap n l r
       val children = Tree.children
       val join = Tree.join
-      val node = identity o this
+      fun left t = Wrap.left $ this t
+      fun right t = Wrap.right $ this t
 
       fun fail s = raise Error s
+
+      val mlbs = ref Map.empty
+      fun mlblookup f = Map.lookup (!mlbs) f
+      fun mlbinsert (x, y) = (mlbs := Map.update (!mlbs) (x, y) ; y)
 
       fun loop (t, bas, env) =
           let
@@ -39,9 +59,9 @@ fun resolve (envfuns as {empty, plus, resolve}) ast =
                       in
                         (t' :: ts', nbas', nenv')
                       end
-                  val (ts, bas, env) = loop' (children t, ebas, eenv)
+                  val (ts, nbas, nenv) = loop' (children t, ebas, eenv)
                 in
-                  (join (node t) ts, bas, env)
+                  (join (wrap (this t) env nenv) ts, nbas, nenv)
                 end
 
             fun localize _ =
@@ -52,12 +72,12 @@ fun resolve (envfuns as {empty, plus, resolve}) ast =
                     val (b', nbas, nenv) =
                         loop (b, bplus bas nbas, eplus env nenv)
                   in
-                    (join (node t) [a', b'], nbas, nenv)
+                    (join (wrap (this t) env nenv) [a', b'], nbas, nenv)
                   end
                 | _ => fail
                          "Must have exactly two children in localization"
           in
-            case this t of
+            case node t of
               Basdecs => continue ()
             | Basbind id =>
               let
@@ -71,32 +91,60 @@ fun resolve (envfuns as {empty, plus, resolve}) ast =
             | Dec_Basis => continue ()
             | Dec_Local => localize ()
             | Dec_Include {file, ast, comments} =>
-              let
-                val (ast', bas', env') = loop (ast, ebas, eenv)
-              in
-                (join
-                   (Dec_Include
-                      {file     = file,
-                       ast      = ast',
-                       comments = comments
-                      }
-                   )
-                   nil,
-                 ebas,
-                 env'
-                )
-              end
+              (case mlblookup file of
+                 SOME x => x
+               | NONE =>
+                 let
+                   val _ = Crash.debug ("Resolving " ^ Path.toString file)
+                   val (ast', bas', env') = loop (ast, ebas, eenv)
+                   val _ = Crash.debug "Done!"
+                 in
+                   mlbinsert
+                     (file,
+                      (join
+                         (Wrap.wrap
+                            (Dec_Include
+                               {file     = file,
+                                ast      = ast',
+                                comments = comments
+                               }
+                            )
+                            (rewrap (left t) env)
+                            (rewrap (right t) env')
+                         )
+
+                         (* (modify *)
+                         (*    (Dec_Include *)
+                         (*       {file     = file, *)
+                         (*        ast      = ast', *)
+                         (*        comments = comments *)
+                         (*       } *)
+                         (*    ) *)
+                         (*    {left = env, right = env'} *)
+                         (* ) *)
+
+                         nil,
+                       ebas,
+                       env'
+                      )
+                     )
+                 end
+              )
             | Dec_Source {file, ast, comments} =>
               (let
-                val (ast', env') = resolve (ast, env)
-              in
-                (join
-                   (Dec_Source {file = file, ast = ast', comments = comments})
-                   nil,
-                 ebas,
-                 env'
-                )
-              end handle _ => fail $ Path.toString file)
+                 val (ast', env') = resolve (ast, env)
+               in
+                 (join
+                    (Wrap.wrap
+                       (Dec_Source {file = file, ast = ast', comments = comments})
+                       (rewrap (left t) env)
+                       (rewrap (right t) env')
+                    )
+                    nil,
+                  ebas,
+                  env'
+                 )
+               end handle _ => fail $ Path.toString file)
             | Dec_Open ids =>
               List.foldl
                 (fn (id, a) => openbas id a)
@@ -110,13 +158,31 @@ fun resolve (envfuns as {empty, plus, resolve}) ast =
           end
       val (ast, bas, env) = loop (ast, ebas, eenv)
     in
+      Dictionary.appi
+        (fn (id, f) =>
+            let
+              fun iopt (SOME n) = Int.toString n
+                | iopt NONE = ""
+            in
+              println
+                (
+                 (case f of
+                    Fixity.InfixL n => "(L" ^ iopt n ^ ") "
+                  | Fixity.InfixR n => "(R" ^ iopt n ^ ") "
+                  | Fixity.Nonfix => ""
+                  | Fixity.Op => "(op)"
+                 ) ^ id
+                )
+            end
+        ) env ;
       (* {ast = ast, env = env} *)
       ast
     end
 
 val infixing = resolve {empty   = Infixing.empty,
                         plus    = Infixing.plus,
-                        resolve = Infixing.resolve}
+                        resolve = Infixing.resolve,
+                        rewrap  = fn n => const n}
 end
 
 (* val f = Path.new "/home/morten/studie/turtledove/code/resolve/foo.sml" *)
