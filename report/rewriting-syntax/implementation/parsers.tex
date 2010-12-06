@@ -6,12 +6,22 @@ SML-Lex/Yacc as both the sml/nj version ml-lex/ml-yacc and mlton version
 mllex/mlyacc works, but the mosml version mosmllex and mosmlyac are having
 problems.
 
-\fixme{fix the above gibberish}
+\fixme{fix the above gibberish, add something about the MLB}
+
+\subsection{ML Basis files}
+
+The MLB parser parses the files in two steps, First is a regular parse and the
+second parse pulls out information about which files were included, etc. so any
+MLB files referenced may also be parsed and their AST inserted.  ... bla blah
+
+\fixme{Write this section}
 
 \subsection{Standard ML}
 
-A fine note about whete the grammar was stolen from and possibly some other
+A fine note about where the grammar was stolen from and possibly some other
 clever stuff.
+
+\fixme {Write this section}
 
 \subsection{Rule}
 
@@ -63,7 +73,7 @@ up the language into different data types are based heavily on the BNF. This way
 of representing the AST gives integrity safety for free, as for example an
 \synt{exp} would not be able to contain an \synt{atpat}, which is most likely
 the main motivation of doing it this way. However various examples are given in
-\cite{brøns-pedersen08} of how this way of representing the AST blows up code
+\cite{mbp08} of how this way of representing the AST blows up code
 vise when working with it as lots of almost identical functions are needed to
 work on all the different data types making up the AST. Because of this we have
 chosen a dramatical new approach\footnote{Compared to how all the SML

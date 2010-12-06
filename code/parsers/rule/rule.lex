@@ -19,10 +19,6 @@ fun eof source =
 
 fun tok t s p = t (s, p, p + size s)
 
-(* Positioning of the £ and § chars introduces off by one for each, as they are
-composed of two 8bit chars, but is handled as one, thus the yypos counts two
-chars where as it ought to count only one.*)
-
 %%
 %reject
 %full
@@ -74,16 +70,18 @@ hexnum={hexDigit}+;
 <INITIAL>"self"                => ( T.SELF (yypos, yypos + 4) );
 
 <INITIAL>{secId}               => ( tok T.META (String.extract(yytext, 2, NONE))
-                                        ((* As the section character is actually "two utf8 chars"
-                                            it is counted as two, but we want it to be counted 
-                                            as one as most editors shows and count it as one *)
+                                        ((* As the section character is actually
+                                            two ASCII chars (one UTF-8) it is
+                                            counted as such, but we only want it
+                                            to be counted as one (UTF-8) *)
                                          yygone := !yygone - 1;
                                          yypos) 
                                   );
 <INITIAL>{poundId}             => ( tok T.TRANS (String.extract(yytext, 2, NONE))
-                                        ((* As the pound character is actually "two utf8 chars"
-                                            it is counted as two, but we want it to be counted 
-                                            as one as most editors shows and count it as one *)
+                                        ((* As the pound character is actually
+                                            two ASCII chars (one UTF-8) it is
+                                            counted as such, but we only want it
+                                            to be counted as one (UTF-8) *)
                                          yygone := !yygone - 1;
                                          yypos) 
                                   );
