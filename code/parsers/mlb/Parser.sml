@@ -1,6 +1,17 @@
 structure Parser : Parser =
 struct
-type ast = MLBGrammar.ast
+open MLBGrammar
+
+structure Ord =
+struct
+  type t = File.t
+  fun compare p p' = String.compare (Path.toString p, Path.toString p')
+  val toString = Path.toString
+end
+structure Map = OrderedMapFn (Ord)
+structure Set = OrderedSetFn (Ord)
+
+type ast = (File.t, unit) MLBGrammar.ast
 
 structure MLBLrVals = MLBLrValsFun
                         (structure Token = LrParser.Token)
@@ -11,19 +22,12 @@ structure MLBParser = JoinWithArg
                          structure Lex = MLBLex
                          structure LrParser = LrParser)
 
-open MLBGrammar
-
-structure Ord =
-struct
-  type t = File.t
-  fun compare p p' = String.compare (Path.toString p, Path.toString p')
-  val toString = Path.toString
-end
-
-structure Map = OrderedMapFn (Ord)
-structure Set = OrderedSetFn (Ord)
-
 exception Parse of Layout.t
+
+fun node t = Wrap.unwrap $ Tree.this t
+fun wrap n = Wrap.wrap n () ()
+fun join n ts = Tree.join (wrap n) ts
+fun leaf n = Tree.singleton $ wrap $ n
 
 fun fromFile file =
     let
@@ -62,33 +66,15 @@ fun fromFile file =
 
               open Tree
 
-              (* To make the type system happy *)
-              (* fun identity x = *)
-              (*     case x of *)
-              (*       Basdecs                => Basdecs *)
-              (*     | Basbind bid            => Basbind bid *)
-              (*     | Exp_Basis              => Exp_Basis *)
-              (*     | Exp_Let                => Exp_Let *)
-              (*     | Exp_Var bid            => Exp_Var bid *)
-              (*     | Dec_Basis              => Dec_Basis *)
-              (*     | Dec_Local              => Dec_Local *)
-              (*     | Dec_Open bids          => Dec_Open bids *)
-              (*     | Dec_Ann ss             => Dec_Ann ss *)
-              (*     | Dec_Structure strbinds => Dec_Structure strbinds *)
-              (*     | Dec_Signature sigbinds => Dec_Signature sigbinds *)
-              (*     | Dec_Functor fctbinds   => Dec_Functor fctbinds *)
-              (*     | Prim                   => Prim *)
-              (*     | _                      => Crash.impossible "MLBParser" *)
-
               fun loop' t =
-                  case this t of
+                  case node t of
                     Dec_Source f =>
                     let
                       val file = Path.new' dir f
                           handle Path.Path e => fail e
                     in
                       if isProg file then
-                        singleton $ Dec_Source file
+                        leaf $ Dec_Source file
                       else if isMLB file then
                         if Set.member seen file then
                           fail (txt "Recursive MLB file:" & txt (Path.path file))
@@ -96,7 +82,7 @@ fun fromFile file =
                           let
                             val {ast, comments} = loop (file, Set.insert seen file)
                           in
-                            singleton
+                            leaf
                               $ Dec_Include {file     = file,
                                              ast      = ast,
                                              comments = comments}
@@ -104,7 +90,7 @@ fun fromFile file =
                       else
                         fail (txt "Unknown file type:" & txt (Path.path file))
                     end
-                  | n => join (identity n) $ List.map loop' $ children t
+                  | n => join (identity $ Tree.this t) $ List.map loop' $ children t
               val this = {ast = loop' ast, comments = comments}
             in
               parsed := Map.update (!parsed) (file, this) ;
