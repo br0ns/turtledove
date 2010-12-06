@@ -1,0 +1,187 @@
+\documentclass[a4, oneside]{article}
+
+
+\usepackage{mdwtab}
+\usepackage{mathenv}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{semantic} % for the \mathlig function
+
+\usepackage[usenames,dvipsnames]{color}
+
+\def\TheTrueColour{NavyBlue}
+\newcommand{\becomesthrough}[3]{\ensuremath{#1}\textsf{\color{\TheTrueColour}\ becomes\ }\ensuremath{#2}\textsf{\color{\TheTrueColour}\ through\ }\ensuremath{#3}}
+
+\begin{document}
+\section{Here be junk}
+
+
+Below we give the semantics for applying rewriting rules. The set $id$ is the
+set of identifiers. Identifiers are used to index environments. The set $rid$ is
+$(var \times \mathbb{N}) \cup \{\textsf{undefined}\}$. These are the relevant
+judgements:
+\begin{eqnarray*}[l@{\quad\quad\quad}l]
+  \becomesthrough{\alpha}{\beta}{\gamma} &\alpha, \beta \in exp, \gamma
+  \in rules\\
+  \\
+  \rho, \Lambda, \Gamma |- m : s & \Lambda \in id \rightharpoonup mpat, \Gamma \in id
+  \rightharpoonup trans\\
+  & m \in match, s \in smatch, \rho \in var rid\\
+  \\
+  \Lambda, T |- p : \langle \alpha, T' \rangle & \Lambda \in id \rightharpoonup
+  mpat, T, T' \in id \rightharpoonup pat\\
+  & p \in pat, \alpha \in spat\\
+  \\
+  \rho, \Lambda, \Gamma, T |- b : \beta & \Lambda \in id \rightharpoonup mpat,
+  \Gamma \in id \rightharpoonup trans\\
+  & T \in id \rightharpoonup pvar, b \in pat, \beta \in spat, \rho \in rid\\
+  \\
+  \mathbb{D}(p) = e & \mathbb{D} \in trans, p \in pat, e \in exp\\
+  \\
+  \mathcal{C}[\alpha] = \mathcal{D} & \mathcal{C} \in mpat_n, \alpha \in
+  pat^{pvar}, \mathcal{D} \in mpat_{n - 1}\\
+  &\text{for some $n \in
+    \mathbb{N}$}\\
+  \rho, \Lambda, \Gamma |- \beta \leadsto b & \Lambda \in id \rightharpoonup mpat,
+  \Gamma \in id \rightharpoonup trans,\\
+  & \beta \in sexp, b \in exp, \rho \in rid\\
+  \\
+\end{eqnarray*}
+
+\[
+\inference{ (f, 1), \Lambda, \Gamma |- m' : \gamma & (f, 1), \Lambda, \Gamma |-
+  \delta \leadsto b }{\becomesthrough{\texttt{val rec $f$ = fn $m$}}{b}{
+    \begin{array}{c}
+      \gamma\\
+      \Downarrow\\
+      \delta
+    \end{array}
+  }}
+\]
+\[
+\inference{ (f, n), \Lambda, \Gamma |- m' : \gamma & (f, n), \Lambda, \Gamma |-
+  \delta \leadsto b }{\becomesthrough{
+    \begin{array}{l}
+      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
+      \texttt{  case ($a_1$, $\ldots$, $a_n$) of $m$}
+    \end{array}
+  }{b}{
+    \begin{array}{c}
+      \gamma\\
+      \Downarrow\\
+      \delta
+    \end{array}
+  }}
+\]
+\[
+\inference{ \textsf{undefined}, \Lambda, \Gamma |- m' : \gamma &
+  \textsf{undefined}, \Lambda, \Gamma |- \delta \leadsto b } {
+  \becomesthrough{\texttt{case $m$ of}}{b}{
+    \begin{array}{c}
+      \gamma\\
+      \Downarrow\\
+      \delta
+    \end{array}
+  } }
+\]
+
+where in the above three rules if
+\[
+m =
+\begin{array}{lll}
+  p_1 &=>& e_1\\
+  &\vdots&\\
+  p_i &=>& e_i\\
+  &\vdots&\\
+  p_j &=>& e_j\\
+  &\vdots&\\
+  p_n &=>& e_n
+\end{array}
+\]
+then
+\[
+m' =
+\begin{array}{lll}
+  p_i &=>& e_i\\
+  &\vdots&\\
+  p_j &=>& e_j\\
+\end{array}
+\]
+for some $1 \leq i < j \leq n$.
+
+\[
+\inference { \Lambda, [] |- p : \langle \alpha, T \rangle&
+  \beta[x_1/T(x_1)]\cdots[x_n/T(x_n)] } { \mathbb{D}(p) = b } { \mathbb{D} =
+  (\alpha, \beta), \text{dom } T = x_1, \ldots, x_n }
+\]
+
+We use the judgement $\Lambda, \Gamma |- m : s$ to mean that the list of clauses
+$m$ is an instance of the scheme $s$ in the meta pattern environment $\Lambda$
+and the transformer environment $\Gamma$.
+
+\[
+\inference{\Lambda, [] |- p : \langle \alpha, T \rangle & \rho, \Lambda, \Gamma,
+  T |- b : \beta & \rho, \Lambda, \Gamma |- m : s} {\rho, \Lambda, \Gamma |- p
+  => b, m : \alpha => \beta, s}
+\]
+
+The judgement $\Lambda, T |- p : \langle \alpha, T' \rangle$ means that the
+pattern $p$ is an instance of the scheme pattern $\alpha$ in the meta pattern
+environment $\Lambda$ and the pattern variable environment $T$ with the
+resulting pattern variable environment $T'$.
+
+\[
+\inference{\Lambda, T |- p_0 : \langle \alpha_0, T_o \rangle & \Lambda, T_0 |-
+  p_1 : \langle \alpha_1, T_1 \rangle & \cdots & \Lambda, T_{i-1} |- p_i :
+  \langle \alpha_i, T' \rangle } {\Lambda, T |- \mathfrak{a}(p_0, \ldots p_i) :
+  \langle \mathfrak{b}(\alpha_0, \ldots, \alpha_i), T' \rangle} {\mathfrak{a} =
+  \mathfrak{b}}
+\]
+
+\[
+\inference { \Lambda, T |- p : \langle \mathcal{D}, T' \rangle&
+  \mathcal{C}[\alpha] = \mathcal{D} } { \Lambda, T |- p : \langle
+  \mathcal{C}[\alpha], T' \rangle }
+\]
+
+\[
+\inference { \Lambda, T |- p : \langle \Lambda(\mathcal{C}), T' \rangle } {
+  \Lambda, T |- p : \langle \mathcal{C}, T' \rangle }
+\]
+
+\[
+\inference{} {\Lambda, T |- p : \langle \overline{a}, T[\overline{a} \mapsto p]
+  \rangle}
+\]
+
+The judgement $\Lambda, \Gamma, T |- b : \beta$ means that the expression $b$ is
+an instance of the scheme expression $\beta$. We have left out the rules that
+handle the structure of expressions and scheme expressions.
+
+\[
+\inference{e = T(\overline{a})} {\Lambda, \Gamma, T |- e : \overline{a}}
+\]
+
+\[
+\inference{\Lambda, \Gamma, T |- e : \Lambda(\mathcal{C})} {\Lambda, \Gamma, T
+  |- e : \mathcal{C}}
+\]
+
+\[
+\inference {\Lambda, \Gamma, T |- e : \sigma(\mathcal{C}, \alpha)} {\Lambda,
+  \Gamma, T |- e : \mathcal{C}[\alpha]}
+\]
+
+\[
+\inference{\Lambda, \Gamma, T |- e' : \beta} {\Lambda, \Gamma, T |- e :
+  \mathbb{E}(\beta)}{\Gamma(\mathbb{E})(e') = e}
+\]
+\end{document}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
