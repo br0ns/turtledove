@@ -16,160 +16,26 @@ Along with the judgement form we give ``type specifications'' for each variable,
 in the sense that any rule of the declared form has an implicit side condition
 requireing values to belong to the stated set.
 
-\paragraph{Judgement} \fbox{\becomesthrough{A}{B}{C}}\\
+\fixme{Explain what $\sigma$ and $\theta$ are}
+
+\paragraph{Judgement} \fbox{$A \equiv_T B$}\\
 \indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  A, B & exp\\
-  C & rule
-\end{tabular}
-\fixme{Reinsert $M''$ into $M$.}
+  A, B & pat
+\end{tabular}\\
 
-\[
-\inference
-{
-  M' \subseteq M &
-  \sigma[\textsf{self} \mapsto (f, 1)] |- M' : S &
-  \sigma[\textsf{self} \mapsto (f, 1)] |- M'' : R
-}
-{
-  \becomesthrough
-  {\texttt{val rec $f$ = fn $M$}}
-  {\texttt{val rec $f$ = fn $M''$}}
-  {S \Downarrow R}
-}
-\]
+See the MiniML paper for the definition of $\equiv_T$. It means that $A$ and $B$
+are equal modulo variable names, and that $T$ is the mapping from names in $A$
+to names in $B$.
 
-\[
-\inference
-{
-  M' \subseteq M &
-  \sigma[\textsf{self} \mapsto (f, n)] |- M' : S &
-  \sigma[\textsf{self} \mapsto (f, n)] |- M'' : R
-}
-{
-  \begin{array}{c}
-    \begin{array}{l}
-      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
-      \texttt{case ($a_1$, $\ldots$, $a_n$) of $M$}
-    \end{array}\\
-    \textsf{becomes}\\
-    \begin{array}{l}
-      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
-      \texttt{case ($a_1$, $\ldots$, $a_n$) of $M''$}
-    \end{array}
-  \end{array}
-  \textsf{ through }
-  S \Downarrow R
-}
-\]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\[
-\inference
-{
-  M' \subseteq M &
-  \sigma |- M' : S &
-  \sigma |- M'' : R
-}
-{
-  \becomesthrough
-  {\texttt{case $e$ of $M$}}
-  {\texttt{case $e$ of $M''$}}
-  {S \Downarrow R}
-}
-{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
-\]
+\paragraph{Equality}
 
-\[
-\inference
-{
-  M' \subseteq M &
-  \sigma |- M' : S &
-  \sigma |- M'' : R
-}
-{
-  \becomesthrough
-  {\texttt{handle $M$}}
-  {\texttt{handle $M''$}}
-  {S \Downarrow R}
-}
-{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
-\]
+\paragraph{Judgement} \fbox{$pat_1 \equiv_T pat_2$}\\
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Judgement} \fbox{\becomesthrough{exp_1}{exp_2}{rule}}\\
-
-\fixme[inline, margin=false]{Reinsert $M''$ into $M$ : $M'' = match_2, M = match_0$.}
-
-\[
-\inference
-{
-  match_1 \subseteq match_0 &
-  \sigma[\textsf{self} \mapsto (id, 1)] |- match_1 : scheme &
-  \sigma[\textsf{self} \mapsto (id, 1)] |- match_2 : R
-}
-{
-  \becomesthrough
-  {\texttt{val rec $id$ = fn $match_0$}}
-  {\texttt{val rec $id$ = fn $match_2$}}
-  {scheme \Downarrow R}
-}
-\]
-
-\[
-\inference
-{
-  match_1 \subseteq match_0 &
-  \sigma[\textsf{self} \mapsto (id, n)] |- match_1 : scheme &
-  \sigma[\textsf{self} \mapsto (id, n)] |- match_2 : R
-}
-{
-  \begin{array}{c}
-    \begin{array}{l}
-      \texttt{val rec $id$ = fn $pat_1$ => $\ldots$ fn $pat_n$ =>}\\
-      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $match_0$}
-    \end{array}\\
-    \textsf{\color{\TheTrueColour}\ becomes\ }\\
-    \begin{array}{l}
-      \texttt{val rec $id$ = fn $pat_1$ => $\ldots$ fn $pat_n$ =>}\\
-      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $match_2$}
-    \end{array}
-  \end{array}
-  \textsf{\color{\TheTrueColour}\ through\ }
-  scheme \Downarrow R
-}
-\]
-
-\[
-\inference
-{
-  match_1 \subseteq match_0 &
-  \sigma |- match_1 : scheme &
-  \sigma |- match_2 : R
-}
-{
-  \becomesthrough
-  {\texttt{case $exp$ of $match_0$}}
-  {\texttt{case $exp$ of $match_2$}}
-  {scheme \Downarrow R}
-}
-{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
-\]
-
-\[
-\inference
-{
-  match_1 \subseteq match_0 &
-  \sigma |- match_1 : scheme &
-  \sigma |- match_2 : R
-}
-{
-  \becomesthrough
-  {\texttt{handle $match_0$}}
-  {\texttt{handle $match_2$}}
-  {scheme \Downarrow R}
-}
-{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
-\]
+See the MiniML paper for the definition of $\equiv_T$. It means that $pat_1$ and $pat_2$
+are equal modulo variable names, and that $T$ is the mapping from names in $pat_1$
+to names in $pat_2$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%
@@ -185,6 +51,8 @@ requireing values to belong to the stated set.
 Insert $B$ in the hole in $A$ with the lowest index. The result is $C$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Simplify}
 
 \paragraph{Judgement} \fbox{$mpat_1 <- mpat_2 = mpat_3$}\\
 
@@ -243,6 +111,8 @@ $mpat_3$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\paragraph{Lookup}
+
 \paragraph{Judgement} \fbox{$\sigma(spat) = mpat$}\\
 
 Replace all scheme patterns with the meta patterns they are bound to by
@@ -299,6 +169,8 @@ $\sigma$. This is extended to also work on trees of scheme patterns.
 Replace all pattern variables by their image given by $\theta$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Lookup}
 
 \paragraph{Judgement} \fbox{$\theta(mpat) = pat$}\\
 
@@ -395,12 +267,16 @@ expressions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+\paragraph{Reduce}
+
 \paragraph{Judgement} \fbox{$\sigma, \theta |- sexp : exp$}\\
 
 We have omitted the rules that deal with the structure of expressions and scheme
 expressions.
 
 \fixme{Explain why we omitted them, why is it stupid?}
+
 
 \[
 \inference
@@ -496,7 +372,14 @@ expressions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\paragraph{Produce}
+
 \paragraph{Judgement} \fbox{$pat : \langle mpat, \theta \rangle$}\\
+
+The judgement $pat : \langle mpat, \theta \rangle$ means that the pattern is an
+instance of the pair of meta pattern $mpat$ and pattern variable environment
+$\theta$ in the environment $\sigma$.
+
 
 \[
 \inference
@@ -520,28 +403,6 @@ expressions.
   pat : \langle mpat, mpat \mapsto pat \rangle
 }
 \]
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Judgement} \fbox{$A \equiv_T B$}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  A, B & pat
-\end{tabular}\\
-
-See the MiniML paper for the definition of $\equiv_T$. It means that $A$ and $B$
-are equal modulo variable names, and that $T$ is the mapping from names in $A$
-to names in $B$.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Judgement} \fbox{$pat_1 \equiv_T pat_2$}\\
-
-See the MiniML paper for the definition of $\equiv_T$. It means that $pat_1$ and $pat_2$
-are equal modulo variable names, and that $T$ is the mapping from names in $pat_1$
-to names in $pat_2$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%
@@ -607,9 +468,13 @@ to names in $pat_2$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\paragraph{Match}
+
 \paragraph{Judgement} \fbox{$\sigma |- clause^{+} : sclause^{+}$}\\
 
-Matching of SML clauses to scheme clauses.
+
+We use the judgement $\sigma |- clause^{+} : sclause^{+}$ to mean that the list
+of clauses is an instance of the scheme clauses in the environment $\sigma$.
 
 \[
 \inference
@@ -631,6 +496,168 @@ Matching of SML clauses to scheme clauses.
     $sclause^{+}$
   \end{tabular}
 }
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Judgement} \fbox{\becomesthrough{A}{B}{C}}\\
+\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
+  A, B & exp\\
+  C & rule
+\end{tabular}
+\fixme{Reinsert $M''$ into $M$.}
+
+\[
+\inference
+{
+  M' \subseteq M &
+  \sigma[\textsf{self} \mapsto (f, 1)] |- M' : S &
+  \sigma[\textsf{self} \mapsto (f, 1)] |- M'' : R
+}
+{
+  \becomesthrough
+  {\texttt{val rec $f$ = fn $M$}}
+  {\texttt{val rec $f$ = fn $M''$}}
+  {S \Downarrow R}
+}
+\]
+
+\[
+\inference
+{
+  M' \subseteq M &
+  \sigma[\textsf{self} \mapsto (f, n)] |- M' : S &
+  \sigma[\textsf{self} \mapsto (f, n)] |- M'' : R
+}
+{
+  \begin{array}{c}
+    \begin{array}{l}
+      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
+      \texttt{case ($a_1$, $\ldots$, $a_n$) of $M$}
+    \end{array}\\
+    \textsf{becomes}\\
+    \begin{array}{l}
+      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
+      \texttt{case ($a_1$, $\ldots$, $a_n$) of $M''$}
+    \end{array}
+  \end{array}
+  \textsf{ through }
+  S \Downarrow R
+}
+\]
+
+\[
+\inference
+{
+  M' \subseteq M &
+  \sigma |- M' : S &
+  \sigma |- M'' : R
+}
+{
+  \becomesthrough
+  {\texttt{case $e$ of $M$}}
+  {\texttt{case $e$ of $M''$}}
+  {S \Downarrow R}
+}
+{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
+\]
+
+\[
+\inference
+{
+  M' \subseteq M &
+  \sigma |- M' : S &
+  \sigma |- M'' : R
+}
+{
+  \becomesthrough
+  {\texttt{handle $M$}}
+  {\texttt{handle $M''$}}
+  {S \Downarrow R}
+}
+{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Rewrite}
+
+\paragraph{Judgement} \fbox{\becomesthrough{exp_1}{exp_2}{rule}}\\
+
+\fixme[inline, margin=false]{Reinsert $M''$ into $M$ : $M'' = match_2, M = match_0$.}
+
+\[
+\inference
+{
+  match_1 \subseteq match_0 &
+  \sigma[\textsf{self} \mapsto (id, 1)] |- match_1 : scheme &
+  \sigma[\textsf{self} \mapsto (id, 1)] |- match_2 : R
+}
+{
+  \becomesthrough
+  {\texttt{val rec $id$ = fn $match_0$}}
+  {\texttt{val rec $id$ = fn $match_2$}}
+  {scheme \Downarrow R}
+}
+\]
+
+\[
+\inference
+{
+  match_1 \subseteq match_0 &
+  \sigma[\textsf{self} \mapsto (id, n)] |- match_1 : scheme &
+  \sigma[\textsf{self} \mapsto (id, n)] |- match_2 : R
+}
+{
+  \begin{array}{c}
+    \begin{array}{l}
+      \texttt{val rec $id$ = fn $pat_1$ => $\ldots$ fn $pat_n$ =>}\\
+      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $match_0$}
+    \end{array}\\
+    \textsf{\color{\TheTrueColour}\ becomes\ }\\
+    \begin{array}{l}
+      \texttt{val rec $id$ = fn $pat_1$ => $\ldots$ fn $pat_n$ =>}\\
+      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $match_2$}
+    \end{array}
+  \end{array}
+  \textsf{\color{\TheTrueColour}\ through\ }
+  scheme \Downarrow R
+}
+\]
+
+\[
+\inference
+{
+  match_1 \subseteq match_0 &
+  \sigma |- match_1 : scheme &
+  \sigma |- match_2 : R
+}
+{
+  \becomesthrough
+  {\texttt{case $exp$ of $match_0$}}
+  {\texttt{case $exp$ of $match_2$}}
+  {scheme \Downarrow R}
+}
+{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
+\]
+
+\[
+\inference
+{
+  match_1 \subseteq match_0 &
+  \sigma |- match_1 : scheme &
+  \sigma |- match_2 : R
+}
+{
+  \becomesthrough
+  {\texttt{handle $match_0$}}
+  {\texttt{handle $match_2$}}
+  {scheme \Downarrow R}
+}
+{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
 \]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
