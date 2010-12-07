@@ -10,7 +10,14 @@ which we take to mean a recursive call.
 
 \subsection{Inference rules}
 \def\TheTrueColour{Maroon}
-\newcommand{\becomesthrough}[3]{\ensuremath{#1}\textsf{\color{\TheTrueColour}\ becomes\ }\ensuremath{#2}\textsf{\color{\TheTrueColour}\ through\ }\ensuremath{#3}}
+\newcommand{\cc}[1]{{\color{Maroon}#1}}
+\newcommand{\subspat}[3]{\ensuremath{#1\cc{(}#2\cc{)}\mathrel{\cc{=}}#3}}
+\newcommand{\matchpat}[3]{\ensuremath{#1\mathrel{\cc{:}}\cc{\langle}#2\cc{,}\mathrel{ }#3\cc{\rangle}}}
+\newcommand{\matchbody}[4]{\ensuremath{#1\cc{,}\mathrel{ }#2\mathrel{\cc{|-}}#3\mathrel{\cc{:}}#4}}
+\newcommand{\matchclause}[3]{\ensuremath{#1\mathrel{\cc{|-}}#2\mathrel{\cc{:}}#3}}
+\newcommand{\rewrite}[4]{\ensuremath{#1\mathrel{\cc{,}}#2\mathrel{\cc{|-}}#3\mathrel{\cc{\curvearrowright}}#4}}
+\newcommand{\becomesthrough}[3]{\ensuremath{#1\mathrel{\textsf{\cc{becomes}}}#2\mathrel{\textsf{\cc{through}}}#3}}
+
 
 Along with the judgement form we give ``type specifications'' for each variable,
 in the sense that any rule of the declared form has an implicit side condition
@@ -18,20 +25,7 @@ requireing values to belong to the stated set.
 
 \fixme{Explain what $\sigma$ and $\theta$ are}
 
-% \paragraph{Judgement} \fbox{$pat_1 \equiv_T pat_2$}\\
-
-% See the MiniML paper for the definition of $\equiv_T$. It means that $pat_1$ and
-% $pat_2$ are equal modulo variable names, and that $T$ is the (bijective) mapping
-% from names in $pat_1$ to names in $pat_2$.
-
-% \paragraph{Judgement} \fbox{$mpat_1 <- mpat_2 = mpat_3$}\\
-
-% \fixme[inline,margin=false]{A more formal definition}
-
-% Insert $mpat_2$ in the hole in $mpat_1$ with the lowest index. The result is
-% $mpat_3$.
-
-\paragraph{Judgement} \fbox{$\sigma(spat) = mpat$}\\
+\paragraph{Judgement} \fbox{\subspat{\sigma}{spat}{mpat}} \\
 
 Substitute leafs of a scheme pattern according to the environment $\sigma$. Note
 how holes are handled (rule 2 and 3).
@@ -39,13 +33,15 @@ how holes are handled (rule 2 and 3).
 \[
 \inference
 {
-  \sigma(spat_1) = mpat_1 &
+  \subspat{\sigma}{spat_1}{mpat_1} &
   \cdots &
-  \sigma(spat_n) = mpat_n
+  \subspat{\sigma}{spat_n}{mpat_n}
 }
 {
-  \sigma (con_1 (spat_1, \ldots, spat_n)) =
-  con_2 (mpat_1, \ldots, mpat_n)
+  \subspat
+  {\sigma}
+  {con_1 (spat_1, \ldots, spat_n)}
+  {con_2 (mpat_1, \ldots, mpat_n)}
 }
 {
   con_1 = con_2
@@ -57,11 +53,12 @@ how holes are handled (rule 2 and 3).
 {
 }
 {
-  \sigma (\mathcal{C}[mpat_1]\cdots[mpat_n]) =
-  mpat[mpat_1/\diamond_1]\cdots[mpat_n/\diamond_n]
+  \subspat{\sigma}
+  {\mathcal{C}[mpat_1]\cdots[mpat_n]}
+  {mpat[mpat_1/\diamond_1]\cdots[mpat_n/\diamond_n]}
 }
 {
-  \sigma(\mathcal{C}) = mpat
+  \subspat{\sigma}{\mathcal{C}}{mpat}
 }
 \]
 
@@ -70,46 +67,12 @@ how holes are handled (rule 2 and 3).
 {
 }
 {
-  \sigma(\diamond_i) = \diamond_i
+  \subspat{\sigma}{\diamond_i}{\diamond_i}
 }
 \]
 
-% \paragraph{Judgement} \fbox{$\theta(mpat) = pat$}\\
+\paragraph{Judgement} \fbox{\matchpat{pat}{mpat}{\theta}} \\
 
-% Substitute all pattern variables by their image given by $\theta$, in the usual
-% way. For completeness we present the rules below.
-
-% Note that only hole free meta patterns are considered.
-
-% \[
-% \inference
-% {
-%   \theta(mpat_1) = pat_1 &
-%   \cdots &
-%   \theta(mpat_n) = pat_n
-% }
-% {
-%   \theta (con_1 (mpat_1, \ldots, mpat_n)) =
-%   con_2 (pat_1, \ldots, pat_n)
-% }
-% {
-%   con_1 = con_2
-% }
-% \]
-
-% \[
-% \inference
-% {
-% }
-% {
-%   \theta(\overline{x}) = pat
-% }
-% {
-%   \theta(\overline{x}) = pat
-% }
-% \]
-
-\paragraph{Judgement} \fbox{$pat : \langle mpat, \theta \rangle$}\\
 
 % The judgement $pat : \langle mpat, \theta \rangle$ means that the pattern is an
 % instance of the pair of meta pattern $mpat$ and pattern variable environment
@@ -119,14 +82,18 @@ how holes are handled (rule 2 and 3).
 \[
 \inference
 {
-  pat_1 : \langle mpat_1, \theta_1 \rangle &
+  \matchpat{pat_1}{mpat_1}{\theta_1} &
   \cdots &
-  pat_n : \langle mpat_n, \theta_n \rangle &
+  \matchpat{pat_n}{mpat_n}{\theta_n} &
 }
 {
-  con (pat_1, \ldots, pat_n) :
-  \langle con (mpat_1, \ldots, mpat_n), \theta_1 ++ \cdots ++
-  \theta_n \rangle
+  \matchpat
+  {con_1 (pat_1, \ldots, pat_n)}
+  {con_2 (mpat_1, \ldots, mpat_n)}
+  {\theta_1 ++ \cdots ++ \theta_n}
+}
+{
+  con_1 = con_2
 }
 \]
 
@@ -135,11 +102,15 @@ how holes are handled (rule 2 and 3).
 {
 }
 {
-  pat : \langle \overline{x}, \overline{x} \mapsto pat \rangle
+  \matchpat
+  {pat}
+  {\overline{x}}
+  {\overline{x} \mapsto pat}
 }
 \]
 
-\paragraph{Judgement} \fbox{$\sigma, \theta |- sexp : exp$}\\
+\paragraph{Judgement} \fbox{\matchbody{\sigma}{\theta}{sexp}{exp}} \\
+
 
 We have omitted the rules that deal with the structure of expressions and scheme
 expressions.
@@ -155,7 +126,11 @@ the following we call that mapping $\kappa$.
 {
 }
 {
-  \sigma, \theta |- \textsf{self} : \texttt{(fn ($x_1$, $\ldots$, $x_n$) => $id$ $x_1$ $\cdots$ $x_n$)}
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\textsf{self}}
+  {\texttt{(fn ($x_1$, $\ldots$, $x_n$) => $id$ $x_1$ $\cdots$ $x_n$)}}
 }
 {
   (id, n) = \sigma(\textsf{self})
@@ -167,7 +142,11 @@ the following we call that mapping $\kappa$.
 {
 }
 {
-  \sigma, \theta |- \overline{x} : \texttt{x}
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\overline{x}}
+  {\texttt{x}}
 }
 {
   \theta(\overline{x}) = \texttt{x}
@@ -177,10 +156,18 @@ the following we call that mapping $\kappa$.
 \[
 \inference
 {
-  \sigma, \theta |- sexp[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n] : exp
+  \matchbody
+  {\sigma}
+  {\theta}
+  {sexp[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n]}
+  {exp}
 }
 {
-  \sigma, \theta |- \mathcal{C}[sexp_1]\cdots[sexp_n] : exp
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\mathcal{C}[sexp_1]\cdots[sexp_n]}
+  {exp}
 }
 {
   sexp = \kappa(\sigma(\mathcal{C}))
@@ -190,83 +177,96 @@ the following we call that mapping $\kappa$.
 \[
 \inference
 {
-  \sigma, \theta |- sexp_1 : exp_1 &
+  \matchbody{\sigma}{\theta}{sexp_1}{exp_1} &
   \cdots &
-  \sigma, \theta |- sexp_n : exp_n
+  \matchbody{\sigma}{\theta}{sexp_n}{exp_n}
 }
 {
-  \sigma, \theta |- \mathbb{E}(sexp_1, \ldots, sexp_n) :
-  \texttt{(fn $pat$ => $exp$)($exp_1$, $\ldots$, $exp_n$)}
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\mathbb{E}(sexp_1, \ldots, sexp_n)}
+  {\texttt{(fn $pat$ => $exp$)($exp_1$, $\ldots$, $exp_n$)}}
 }
 {
   (pat, exp) = \sigma(\mathbb{E})
 }
 \]
 
-\paragraph{Judgement} \fbox{$\sigma |- clause : sclause$}\\
+\paragraph{Judgement} \fbox{\matchclause{\sigma}{clause}{sclause}} \\
 
-% foobar
 
 \[
 \inference
 {
-  \sigma(spat) = mpat &
-  \sigma |- pat : \langle mpat, \theta \rangle &
-  \sigma, \theta |- sexp : exp
+  \subspat{\sigma}{spat}{mpat} &
+  \matchpat{pat}{mpat}{\theta} &
+  \matchbody{\sigma}{\theta}{sexp}{exp}
 }
 {
-  \sigma |- pat \texttt{ => } exp : spat => sexp
+  \matchclause{\sigma}{pat \texttt{ => } exp}{spat => sexp}
 }
 \]
 
-\paragraph{Judgement} \fbox{$\sigma |- clause^{+} : sclause^{+}$}\\
+\paragraph{Judgement} \fbox{\matchclause{\sigma}{clause^{+}}{sclause^{+}}} \\
+
 
 \[
 \inference
 {
-  \sigma |- clause_1 : sclause_1 &
+  \matchclause{\sigma}{clause_1}{sclause_1} &
   \cdots &
-  \sigma |- clause_n : sclause_n
+  \matchclause{\sigma}{clause_n}{sclause_n}
 }
 {
-  \begin{tabular}{Mc}
-    clause_1\\
-    \vdots\\
-    clause_n\\
-  \end{tabular}
-  :
-  \begin{tabular}{Mc}
-    sclause_1\\
-    \vdots\\
-    sclause_n\\
-  \end{tabular}
+  \matchclause
+  {\sigma}
+  {
+    \begin{tabular}{Mc}
+      clause_1\\
+      \vdots\\
+      clause_n\\
+    \end{tabular}
+  }
+  {
+    \begin{tabular}{Mc}
+      sclause_1\\
+      \vdots\\
+      sclause_n\\
+    \end{tabular}
+  }
 }
 \]
 
-\paragraph{Judgement} \fbox{$\sigma{\color{\TheTrueColour},}\ rule\ {\color{\TheTrueColour}|-}\ clause^{+}\ {\color{\TheTrueColour}\curvearrowright}\ clause^{+}$}\\
+\paragraph{Judgement} \fbox{\rewrite{\sigma}{rule}{clause^{+}}{clause^{+}}} \\
 
 \fixme{Remember to take account of constrains in rules}
-baz
+
 
 \[
 \inference
 {
-  \sigma |- clause^{+}_2 : sclause^{+}_1 &
-  \sigma |- clause'^{+}_2 : sclause^{+}_2
+  \matchclause{\sigma}{clause^{+}_2}{sclause^{+}_1} &
+  \matchclause{\sigma}{clause'^{+}_2}{sclause^{+}_2}
 }
 {
-  \sigma, sclause^{+}_1 \Downarrow sclause^{+}_2 |-
-  \begin{tabular}{Ml}
-    clause^{*}_1\\
-    clause^{+}_2\\
-    clause^{*}_3\\
-  \end{tabular}
-  \curvearrowright
-  \begin{tabular}{Ml}
-    clause^{*}_1\\
-    clause'^{+}_2\\
-    clause^{*}_3\\
-  \end{tabular}
+  \rewrite
+  {\sigma}
+  {sclause^{+}_1 \Downarrow sclause^{+}_2}
+  {
+    \begin{tabular}{Ml}
+      clause^{*}_1\\
+      clause^{+}_2\\
+      clause^{*}_3\\
+    \end{tabular}
+  }
+  {
+    \begin{tabular}{Ml}
+      clause^{*}_1\\
+      clause'^{+}_2\\
+      clause^{*}_3\\
+    \end{tabular}
+  }
 }
 \]
 

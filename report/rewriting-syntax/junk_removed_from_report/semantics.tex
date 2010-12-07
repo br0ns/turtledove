@@ -15,6 +15,58 @@
 \newcommand{\becomesthrough}[3]{\ensuremath{#1}\textsf{\color{\TheTrueColour}\ becomes\ }\ensuremath{#2}\textsf{\color{\TheTrueColour}\ through\ }\ensuremath{#3}}
 
 \begin{document}
+
+\section{New Rules removed}
+
+\paragraph{Judgement} \fbox{$pat_1 \equiv_T pat_2$}\\
+
+See the MiniML paper for the definition of $\equiv_T$. It means that $pat_1$ and
+$pat_2$ are equal modulo variable names, and that $T$ is the (bijective) mapping
+from names in $pat_1$ to names in $pat_2$.
+
+\paragraph{Judgement} \fbox{$mpat_1 <- mpat_2 = mpat_3$}\\
+
+\fixme[inline,margin=false]{A more formal definition}
+
+Insert $mpat_2$ in the hole in $mpat_1$ with the lowest index. The result is
+$mpat_3$.
+
+\paragraph{Judgement} \fbox{$\theta(mpat) = pat$}\\
+
+Substitute all pattern variables by their image given by $\theta$, in the usual
+way. For completeness we present the rules below.
+
+Note that only hole free meta patterns are considered.
+
+\[
+\inference
+{
+  \theta(mpat_1) = pat_1 &
+  \cdots &
+  \theta(mpat_n) = pat_n
+}
+{
+  \theta (con_1 (mpat_1, \ldots, mpat_n)) =
+  con_2 (pat_1, \ldots, pat_n)
+}
+{
+  con_1 = con_2
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  \theta(\overline{x}) = pat
+}
+{
+  \theta(\overline{x}) = pat
+}
+\]
+
+
 \section{Here be junk}
 
 
