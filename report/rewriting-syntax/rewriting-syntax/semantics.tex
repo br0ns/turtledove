@@ -9,7 +9,7 @@ necessarily proper) of such a list of clauses.
 which we take to mean a recursive call.
 
 \subsection{Inference rules}
-\def\TheTrueColour{NavyBlue}
+\def\TheTrueColour{Maroon}
 \newcommand{\becomesthrough}[3]{\ensuremath{#1}\textsf{\color{\TheTrueColour}\ becomes\ }\ensuremath{#2}\textsf{\color{\TheTrueColour}\ through\ }\ensuremath{#3}}
 
 Along with the judgement form we give ``type specifications'' for each variable,
@@ -18,131 +18,50 @@ requireing values to belong to the stated set.
 
 \fixme{Explain what $\sigma$ and $\theta$ are}
 
-\paragraph{Judgement} \fbox{$A \equiv_T B$}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  A, B & pat
-\end{tabular}\\
+% \paragraph{Judgement} \fbox{$pat_1 \equiv_T pat_2$}\\
 
-See the MiniML paper for the definition of $\equiv_T$. It means that $A$ and $B$
-are equal modulo variable names, and that $T$ is the mapping from names in $A$
-to names in $B$.
+% See the MiniML paper for the definition of $\equiv_T$. It means that $pat_1$ and
+% $pat_2$ are equal modulo variable names, and that $T$ is the (bijective) mapping
+% from names in $pat_1$ to names in $pat_2$.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \paragraph{Judgement} \fbox{$mpat_1 <- mpat_2 = mpat_3$}\\
 
-\paragraph{Equality}
+% \fixme[inline,margin=false]{A more formal definition}
 
-\paragraph{Judgement} \fbox{$pat_1 \equiv_T pat_2$}\\
-
-See the MiniML paper for the definition of $\equiv_T$. It means that $pat_1$ and $pat_2$
-are equal modulo variable names, and that $T$ is the mapping from names in $pat_1$
-to names in $pat_2$.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\paragraph{Judgement} \fbox{$A <- B = C$}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  A, B, C & mpat
-\end{tabular}\\
-
-Insert $B$ in the hole in $A$ with the lowest index. The result is $C$.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Simplify}
-
-\paragraph{Judgement} \fbox{$mpat_1 <- mpat_2 = mpat_3$}\\
-
-\fixme[inline,margin=false]{A more formal definition}
-
-Insert $mpat_2$ in the hole in $mpat_1$ with the lowest index. The result is
-$mpat_3$.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Judgement} \fbox{$\sigma(S) = M$}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  S & spat\\
-  M & mpat
-\end{tabular}\\
-
-\[
-\inference
-{
-  \sigma(S_0) = M_0 &
-  \cdots &
-  \sigma(S_n) = M_n
-}
-{
-  \sigma (\mathfrak{a} (S_0, \ldots, S_n)) =
-  \mathfrak{a} (M_0, \ldots, M_n)
-}
-\]
-
-\[
-\inference
-{
-  M'_0 <- M_1 = M'_1 &
-  \cdots &
-  M'_{n-1} <- M_n = M'_n
-}
-{
-  \sigma (\mathcal{C}[M_1]\cdots[M_n]) = M'_n
-}
-{
-  \sigma(\mathcal{C}) = M'_0
-}
-\]
-
-\[
-\inference
-{
-}
-{
-  \sigma(\diamond_i) = \diamond_i
-}
-\]
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Lookup}
+% Insert $mpat_2$ in the hole in $mpat_1$ with the lowest index. The result is
+% $mpat_3$.
 
 \paragraph{Judgement} \fbox{$\sigma(spat) = mpat$}\\
 
-Replace all scheme patterns with the meta patterns they are bound to by
-$\sigma$. This is extended to also work on trees of scheme patterns.
+Substitute leafs of a scheme pattern according to the environment $\sigma$. Note
+how holes are handled (rule 2 and 3).
 
 \[
 \inference
 {
-  \sigma(spat_0) = mpat_0 &
+  \sigma(spat_1) = mpat_1 &
   \cdots &
   \sigma(spat_n) = mpat_n
 }
 {
-  \sigma (con (spat_0, \ldots, spat_n)) =
-  con (mpat_0, \ldots, mpat_n)
+  \sigma (con_1 (spat_1, \ldots, spat_n)) =
+  con_2 (mpat_1, \ldots, mpat_n)
+}
+{
+  con_1 = con_2
 }
 \]
 
 \[
 \inference
 {
-  mpat'_0 <- mpat_1 = mpat'_1 &
-  \cdots &
-  mpat'_{n-1} <- mpat_n = mpat'_n
 }
 {
-  \sigma (\mathcal{C}[mpat_1]\cdots[mpat_n]) = mpat'_n
+  \sigma (\mathcal{C}[mpat_1]\cdots[mpat_n]) =
+  mpat[mpat_1/\diamond_1]\cdots[mpat_n/\diamond_n]
 }
 {
-  \sigma(\mathcal{C}) = mpat'_0
+  \sigma(\mathcal{C}) = mpat
 }
 \]
 
@@ -155,515 +74,268 @@ $\sigma$. This is extended to also work on trees of scheme patterns.
 }
 \]
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \paragraph{Judgement} \fbox{$\theta(mpat) = pat$}\\
 
-\paragraph{Judgement} \fbox{$\theta(M) = P$}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  M & mpat\\
-  P & pat
-\end{tabular}\\
+% Substitute all pattern variables by their image given by $\theta$, in the usual
+% way. For completeness we present the rules below.
 
-Replace all pattern variables by their image given by $\theta$.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Lookup}
-
-\paragraph{Judgement} \fbox{$\theta(mpat) = pat$}\\
-
-\fixme[inline, margin=false]{More formal argument}
-
-Replace all pattern variables by their image given by $\theta$.
-
-\[
-\inference
-{
-}
-{
-  \theta(\diamond_i) = \diamond_i
-}
-\]
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\paragraph{Judgement} \fbox{$\sigma, \theta |- S : E$}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  S & sexp\\
-  E & exp
-\end{tabular}\\
-
-We have omitted the rules that deal with the structure of expressions and scheme
-expressions.
-
-\[
-\inference
-{
-  \theta(\overline{a}) = P & \kappa(P) = E
-}
-{
-  \sigma, \theta |- \overline{a} : E
-}
-\]
-
-\[
-\inference
-{
-  \sigma(\mathcal{C}[M_0]\cdots[M_n]) = M & \theta(M) = P & \kappa(P) = E
-}
-{
-  \sigma, \theta |- \mathcal{C}[M_0]\cdots[M_n] : E
-}
-\]
+% Note that only hole free meta patterns are considered.
 
 % \[
 % \inference
 % {
-%   \sigma |- \theta(S) = E'_0 \\
-%   \sigma |- \theta(S_0) = E_1 & \cdots & \sigma |- \theta(S_n) = E_{n+1} \\
-%   E'_0 <- E_1 = E'_1 & \cdots & E'_n <- E_{n+1} = E'_{n+1}
+%   \theta(mpat_1) = pat_1 &
+%   \cdots &
+%   \theta(mpat_n) = pat_n
 % }
 % {
-%   \sigma |- \theta(\mathbb{E}[S_0]\cdots[S_n]) = E'_{n+1}
+%   \theta (con_1 (mpat_1, \ldots, mpat_n)) =
+%   con_2 (pat_1, \ldots, pat_n)
 % }
 % {
-%   \sigma(\mathbb{E}) = S
+%   con_1 = con_2
 % }
 % \]
-
-\[
-\inference
-{
-  \sigma(S_0) = M_0 & \ldots & \sigma(S_n) = M_n &
-  \theta(M) = P' & P' \equiv_T P &
-}
-{
-  \sigma, \theta |- \mathbb{E}[S_0]\cdots[S_n] = E[x_1/T(x_1)]\ldots[x_m/T(x_m)]
-}
-{
-  \begin{aligned}
-    & \mathfrak{T}_n(M_0, \ldots, M_n) = M\\
-    & \sigma(\mathbb{E}) = (P, E)\\
-    & dom(T) = \{x_1, \ldots, x_m\}
-  \end{aligned}
-}
-\]
 
 % \[
 % \inference
 % {
 % }
 % {
-%   \sigma |- \theta(\diamond_i) = \diamond_i
+%   \theta(\overline{x}) = pat
+% }
+% {
+%   \theta(\overline{x}) = pat
 % }
 % \]
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Judgement} \fbox{$pat : \langle mpat, \theta \rangle$}\\
+
+% The judgement $pat : \langle mpat, \theta \rangle$ means that the pattern is an
+% instance of the pair of meta pattern $mpat$ and pattern variable environment
+% $\theta$ in the environment $\sigma$.
 
 
-\paragraph{Reduce}
+\[
+\inference
+{
+  pat_1 : \langle mpat_1, \theta_1 \rangle &
+  \cdots &
+  pat_n : \langle mpat_n, \theta_n \rangle &
+}
+{
+  con (pat_1, \ldots, pat_n) :
+  \langle con (mpat_1, \ldots, mpat_n), \theta_1 ++ \cdots ++
+  \theta_n \rangle
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  pat : \langle \overline{x}, \overline{x} \mapsto pat \rangle
+}
+\]
 
 \paragraph{Judgement} \fbox{$\sigma, \theta |- sexp : exp$}\\
 
 We have omitted the rules that deal with the structure of expressions and scheme
 expressions.
 
+Since the set of meta patterns is a subset of the set of scheme expressions
+there exists a canonical mapping from meta patterns to scheme expressions. In
+the following we call that mapping $\kappa$.
+
 \fixme{Explain why we omitted them, why is it stupid?}
 
-
 \[
 \inference
 {
-  \theta(sexp) = pat & \kappa(pat) = exp
 }
 {
-  \sigma, \theta |- sexp : exp
+  \sigma, \theta |- \textsf{self} : \texttt{(fn ($x_1$, $\ldots$, $x_n$) => $id$ $x_1$ $\cdots$ $x_n$)}
+}
+{
+  (id, n) = \sigma(\textsf{self})
 }
 \]
 
 \[
 \inference
 {
-  \sigma(\mathcal{C}[mpat_0]\cdots[mpat_n]) = mpat & \theta(mpat) = pat & \kappa(pat) = exp
 }
 {
-  \sigma, \theta |- \mathcal{C}[mpat_0]\cdots[mpat_n] : exp
+  \sigma, \theta |- \overline{x} : \texttt{x}
+}
+{
+  \theta(\overline{x}) = \texttt{x}
 }
 \]
-
-% \[
-% \inference
-% {
-%   \sigma |- \theta(S) = E'_0 \\
-%   \sigma |- \theta(S_0) = E_1 & \cdots & \sigma |- \theta(S_n) = E_{n+1} \\
-%   E'_0 <- E_1 = E'_1 & \cdots & E'_n <- E_{n+1} = E'_{n+1}
-% }
-% {
-%   \sigma |- \theta(\mathbb{E}[S_0]\cdots[S_n]) = E'_{n+1}
-% }
-% {
-%   \sigma(\mathbb{E}) = S
-% }
-% \]
-
-\fixme[inline,margin=false]{\small Below inference rule doesn't follow the
-  judgement of sexp : exp, but are sexp = exp?}
-\[
-\inference
-{
-  \sigma(S_0) = M_0 & \ldots & \sigma(S_n) = M_n &
-  \theta(M) = P' & P' \equiv_T P &
-}
-{
-  \sigma, \theta |- \mathbb{E}[S_0]\cdots[S_n] = E[x_1/T(x_1)]\ldots[x_m/T(x_m)]
-}
-{
-  \begin{aligned}
-    & \mathfrak{T}_n(M_0, \ldots, M_n) = M\\
-    & \sigma(\mathbb{E}) = (P, E)\\
-    & dom(T) = \{x_1, \ldots, x_m\}
-  \end{aligned}
-}
-\]
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Judgement} \fbox{$A : \langle B, \theta \rangle$}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  A & pat\\
-  B & mpat
-\end{tabular}
 
 \[
 \inference
 {
-  p_0 : \langle \alpha_0, \theta_0 \rangle &
+  \sigma, \theta |- sexp[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n] : exp
+}
+{
+  \sigma, \theta |- \mathcal{C}[sexp_1]\cdots[sexp_n] : exp
+}
+{
+  sexp = \kappa(\sigma(\mathcal{C}))
+}
+\]
+
+\[
+\inference
+{
+  \sigma, \theta |- sexp_1 : exp_1 &
   \cdots &
-  p_n : \langle \alpha_n, \theta_n \rangle &
+  \sigma, \theta |- sexp_n : exp_n
 }
 {
-  \mathfrak{a} (p_0, \ldots, p_n) :
-  \langle \mathfrak{b} (\alpha_0, \ldots, \alpha_n), \theta_0 ++ \cdots ++
-  \theta_n \rangle
+  \sigma, \theta |- \mathbb{E}(sexp_1, \ldots, sexp_n) :
+  \texttt{(fn $pat$ => $exp$)($exp_1$, $\ldots$, $exp_n$)}
 }
 {
-  \mathfrak{a} = \mathfrak{b}
+  (pat, exp) = \sigma(\mathbb{E})
 }
 \]
 
-\[
-\inference
-{
-}
-{
-  p : \langle \overline{a}, \overline{a} \mapsto p \rangle
-}
-\]
+\paragraph{Judgement} \fbox{$\sigma |- clause : sclause$}\\
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Produce}
-
-\paragraph{Judgement} \fbox{$pat : \langle mpat, \theta \rangle$}\\
-
-The judgement $pat : \langle mpat, \theta \rangle$ means that the pattern is an
-instance of the pair of meta pattern $mpat$ and pattern variable environment
-$\theta$ in the environment $\sigma$.
-
-
-\[
-\inference
-{
-  pat_0 : \langle mpat_0, \theta_0 \rangle &
-  \cdots &
-  pat_n : \langle mpat_n, \theta_n \rangle &
-}
-{
-  con (pat_0, \ldots, pat_n) :
-  \langle con (mpat_0, \ldots, mpat_n), \theta_0 ++ \cdots ++
-  \theta_n \rangle
-}
-\]
-
-\[
-\inference
-{
-}
-{
-  pat : \langle mpat, mpat \mapsto pat \rangle
-}
-\]
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Judgement} \fbox{$\sigma |- A : B$}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  A & clause^{+}\\
-  B & sclause^{+}
-\end{tabular}\\
-
-\[
-\inference
-{
-  \sigma(sp) = M &
-  \sigma |- p : \langle M, \theta \rangle &
-  \sigma, \theta |- se : e &
-  \sigma |- m : S
-}
-{
-  \sigma |-
-  \begin{tabular}{c}
-    \texttt{| $p$ => $e$}\\
-    $m$
-  \end{tabular}
-  :
-  \begin{tabular}{c}
-    $\mid sp => se$\\
-    $S$
-  \end{tabular}
-}
-\]
-
-% \paragraph{Judgement} \fbox{$\sigma |- A \leadsto B$}\\
-% \indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-%   A & sclause^{+}\\
-%   B & clause^{+}
-% \end{tabular}\\
-
-% \[
-% \inference
-% {
-%   \sigma(S) = M' &
-%   \iota(M') = \langle p, \theta \rangle &
-%   \sigma, \theta |- E : e &
-%   \sigma |- M \leadsto m
-% }
-% {
-%   \sigma |-
-%   \begin{tabular}{c}
-%     $\mid S => E$\\
-%     $M$
-%   \end{tabular}
-%   \leadsto
-%   \begin{tabular}{c}
-%     \texttt{| $p$ => $e$}\\
-%     $m$
-%   \end{tabular}
-% }
-% \]
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Match}
-
-\paragraph{Judgement} \fbox{$\sigma |- clause^{+} : sclause^{+}$}\\
-
-
-We use the judgement $\sigma |- clause^{+} : sclause^{+}$ to mean that the list
-of clauses is an instance of the scheme clauses in the environment $\sigma$.
+% foobar
 
 \[
 \inference
 {
   \sigma(spat) = mpat &
-  \sigma |- pat : \langle mpat, \theta \rangle \\
-  \sigma, \theta |- sexp : exp &
-  \sigma |- clause^{+} : sclause^{+}
+  \sigma |- pat : \langle mpat, \theta \rangle &
+  \sigma, \theta |- sexp : exp
 }
 {
-  \sigma |-
-  \begin{tabular}{c}
-    \texttt{| $pat$ => $exp$}\\
-    $clause^{+}$
+  \sigma |- pat \texttt{ => } exp : spat => sexp
+}
+\]
+
+\paragraph{Judgement} \fbox{$\sigma |- clause^{+} : sclause^{+}$}\\
+
+\[
+\inference
+{
+  \sigma |- clause_1 : sclause_1 &
+  \cdots &
+  \sigma |- clause_n : sclause_n
+}
+{
+  \begin{tabular}{Mc}
+    clause_1\\
+    \vdots\\
+    clause_n\\
   \end{tabular}
   :
-  \begin{tabular}{c}
-    $\mid spat => sexp$\\
-    $sclause^{+}$
+  \begin{tabular}{Mc}
+    sclause_1\\
+    \vdots\\
+    sclause_n\\
   \end{tabular}
 }
 \]
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Judgement} \fbox{$\sigma{\color{\TheTrueColour},}\ rule\ {\color{\TheTrueColour}|-}\ clause^{+}\ {\color{\TheTrueColour}\curvearrowright}\ clause^{+}$}\\
 
-\paragraph{Judgement} \fbox{\becomesthrough{A}{B}{C}}\\
-\indent\begin{tabular}{Ml@{$\ \in\ $}Ml}
-  A, B & exp\\
-  C & rule
-\end{tabular}
-\fixme{Reinsert $M''$ into $M$.}
+\fixme{Remember to take account of constrains in rules}
+baz
 
 \[
 \inference
 {
-  M' \subseteq M &
-  \sigma[\textsf{self} \mapsto (f, 1)] |- M' : S &
-  \sigma[\textsf{self} \mapsto (f, 1)] |- M'' : R
+  \sigma |- clause^{+}_2 : sclause^{+}_1 &
+  \sigma |- clause'^{+}_2 : sclause^{+}_2
 }
 {
-  \becomesthrough
-  {\texttt{val rec $f$ = fn $M$}}
-  {\texttt{val rec $f$ = fn $M''$}}
-  {S \Downarrow R}
+  \sigma, sclause^{+}_1 \Downarrow sclause^{+}_2 |-
+  \begin{tabular}{Ml}
+    clause^{*}_1\\
+    clause^{+}_2\\
+    clause^{*}_3\\
+  \end{tabular}
+  \curvearrowright
+  \begin{tabular}{Ml}
+    clause^{*}_1\\
+    clause'^{+}_2\\
+    clause^{*}_3\\
+  \end{tabular}
 }
 \]
-
-\[
-\inference
-{
-  M' \subseteq M &
-  \sigma[\textsf{self} \mapsto (f, n)] |- M' : S &
-  \sigma[\textsf{self} \mapsto (f, n)] |- M'' : R
-}
-{
-  \begin{array}{c}
-    \begin{array}{l}
-      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
-      \texttt{case ($a_1$, $\ldots$, $a_n$) of $M$}
-    \end{array}\\
-    \textsf{becomes}\\
-    \begin{array}{l}
-      \texttt{val rec $f$ = fn $a_1$ => $\ldots$ fn $a_n$ =>}\\
-      \texttt{case ($a_1$, $\ldots$, $a_n$) of $M''$}
-    \end{array}
-  \end{array}
-  \textsf{ through }
-  S \Downarrow R
-}
-\]
-
-\[
-\inference
-{
-  M' \subseteq M &
-  \sigma |- M' : S &
-  \sigma |- M'' : R
-}
-{
-  \becomesthrough
-  {\texttt{case $e$ of $M$}}
-  {\texttt{case $e$ of $M''$}}
-  {S \Downarrow R}
-}
-{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
-\]
-
-\[
-\inference
-{
-  M' \subseteq M &
-  \sigma |- M' : S &
-  \sigma |- M'' : R
-}
-{
-  \becomesthrough
-  {\texttt{handle $M$}}
-  {\texttt{handle $M''$}}
-  {S \Downarrow R}
-}
-{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
-\]
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\paragraph{Rewrite}
 
 \paragraph{Judgement} \fbox{\becomesthrough{exp_1}{exp_2}{rule}}\\
 
-\fixme[inline, margin=false]{Reinsert $M''$ into $M$ : $M'' = match_2, M = match_0$.}
-
 \[
 \inference
 {
-  match_1 \subseteq match_0 &
-  \sigma[\textsf{self} \mapsto (id, 1)] |- match_1 : scheme &
-  \sigma[\textsf{self} \mapsto (id, 1)] |- match_2 : R
+  \sigma[\textsf{self} \mapsto (id, 1)], rule |-
+  clause^{+} \curvearrowright clause'^{+}
 }
 {
   \becomesthrough
-  {\texttt{val rec $id$ = fn $match_0$}}
-  {\texttt{val rec $id$ = fn $match_2$}}
-  {scheme \Downarrow R}
+  {\texttt{val rec $id$ = fn $clause^{+}$}}
+  {\texttt{val rec $id$ = fn $clause'^{+}$}}
+  {rule}
 }
 \]
 
 \[
 \inference
 {
-  match_1 \subseteq match_0 &
-  \sigma[\textsf{self} \mapsto (id, n)] |- match_1 : scheme &
-  \sigma[\textsf{self} \mapsto (id, n)] |- match_2 : R
+  \sigma[\textsf{self} \mapsto (id, n)], rule |-
+  clause^{+} \curvearrowright clause'^{+}
 }
 {
   \begin{array}{c}
     \begin{array}{l}
       \texttt{val rec $id$ = fn $pat_1$ => $\ldots$ fn $pat_n$ =>}\\
-      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $match_0$}
+      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $clause^{+}$}
     \end{array}\\
     \textsf{\color{\TheTrueColour}\ becomes\ }\\
     \begin{array}{l}
       \texttt{val rec $id$ = fn $pat_1$ => $\ldots$ fn $pat_n$ =>}\\
-      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $match_2$}
+      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $clause'^{+}$}
     \end{array}
   \end{array}
   \textsf{\color{\TheTrueColour}\ through\ }
-  scheme \Downarrow R
+  rule
 }
 \]
 
 \[
 \inference
 {
-  match_1 \subseteq match_0 &
-  \sigma |- match_1 : scheme &
-  \sigma |- match_2 : R
+  \sigma[\textsf{self} \mapsto \textsf{undef}], rule |-
+  clause^{+} \curvearrowright clause'^{+}
 }
 {
   \becomesthrough
-  {\texttt{case $exp$ of $match_0$}}
-  {\texttt{case $exp$ of $match_2$}}
-  {scheme \Downarrow R}
+  {\texttt{case $exp$ of $clause^{+}$}}
+  {\texttt{case $exp$ of $clause'^{+}$}}
+  {rule}
 }
-{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
 \]
 
 \[
 \inference
 {
-  match_1 \subseteq match_0 &
-  \sigma |- match_1 : scheme &
-  \sigma |- match_2 : R
+  \sigma[\textsf{self} \mapsto \textsf{undef}], rule |-
+  clause^{+} \curvearrowright clause'^{+}
 }
 {
   \becomesthrough
-  {\texttt{handle $match_0$}}
-  {\texttt{handle $match_2$}}
-  {scheme \Downarrow R}
+  {\texttt{handle $exp$ of $clause^{+}$}}
+  {\texttt{handle $exp$ of $clause'^{+}$}}
+  {rule}
 }
-{\sigma = \textsf{self} \mapsto \textsf{undef}, \sigma'}
 \]
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
-\clearpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Transformers}
 
