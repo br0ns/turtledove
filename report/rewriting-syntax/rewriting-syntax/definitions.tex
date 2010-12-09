@@ -44,38 +44,36 @@ different from any other variable.
 
 \paragraph{Syntax}\ \\
 \renewcommand{\arraystretch}{1.5}
-\begin{tabular}{lMlMrMl}
+\begin{tabular}{lMlMcMl}
   \textbf{Kind} & \textbf{Category} & \textbf{Is}\\
   (SML) Constructors & con & ::= & \mathtt{Node} \mid \mathtt{Leaf} \mid
   \texttt{::} \mid \mathfrak{T}_{42} \mid \mathfrak{R}_{\mathtt{foo},
       \mathtt{bar}, \mathtt{baz}} \mid \ldots\\
-  (SML) Variables & id & ::= & \mathtt{x} \mid \mathtt{y} \mid
-  \mathtt{xs} \mid \ldots \mid \mathtt{\_}\\
+  (SML) Variables & id & ::= & \mathtt{\_} \mid \mathtt{x} \mid \mathtt{y} \mid
+  \mathtt{xs} \mid \ldots \\
   Pattern variables & patvar & ::= & \overline{x} \mid \overline{y} \mid \ldots\\
   Holes & hole & ::= & \diamond \mid \diamond_1 \mid \diamond_2 \mid \ldots \\
 
   Meta patterns & mpat & ::= & mpat[pat^{patvar \cup hole}]\\
   & & \mid & mpatvar\\
-  Meta pattern variable & mpatvar & ::= & \mathcal{A} \mid \mathcal{B} \mid \ldots\\
-  % & & \mid & mpatvar\\
-
-  % Meta patterns & mpat & ::= & pat^{patvar \cup hole}\\
-  % & & \mid & mpat[mpat]\\
-  % & & \mid & \mathcal{A} \mid \mathcal{B} \mid \ldots\\
+  Meta expressions & mexp & ::= & mexp[exp^{patvar \cup hole}]\\
+  & & \mid & mpatvar\\
+  Meta pattern variable & mpatvar & ::= & \mathcal{A} \mid \mathcal{B} \mid
+  \ldots\\
 
   Scheme patterns & spat & ::= & pat^{mpat}\\
-  Scheme expressions & sexp & & \textrm{ (see \fref{tab:scheme-expressions})}
+  Scheme expressions & sexp & ::= & \textrm{ (see \fref{tab:scheme-expressions})}
   \\
   Scheme clauses & sclause & ::= & spat => sexp \\
   Schemes & scheme & ::= & sclause^{+}\\
-  & & \mid & sclause^{+} \textsf{ where } cstrn, \ldots\\
+  & & \mid & sclause^{+} \textsf{ where } cstrn^{+}\\
 
-  Transformers & trans & ::= & trans[spat]\\
-  & & \mid & \mathbb{D} \mid \mathbb{E} \mid \ldots\\
-  % & & \mid & transvar\\
+  Transformers & trans & ::= & transvar(sexp)\\
+  Transformer variables & transvar & ::= & \mathbb{D} \mid \mathbb{E} \mid \ldots\\
 
-  Constraint &  cstrn & ::= & rel(mpatvar, \ldots) \\
+  Constraint &  cstrn & ::= & rel(mpatvar^{+}) \\
   Relation & rel & ::= & \textsf{a} \mid \textsf{b} \mid \ldots\\
+
   (Rewriting) Rules & rule & ::= & scheme \Downarrow sclause^{+}\\
 \end{tabular}
 
