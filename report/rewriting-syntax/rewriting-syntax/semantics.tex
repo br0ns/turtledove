@@ -133,7 +133,7 @@ the following we call that mapping $\kappa$.
   {\texttt{(fn ($x_1$, $\ldots$, $x_n$) => $id$ $x_1$ $\cdots$ $x_n$)}}
 }
 {
-  (id, n) = \sigma(\textsf{self})
+  \sigma(\textsf{self}) = (id, n)
 }
 \]
 
@@ -189,12 +189,11 @@ the following we call that mapping $\kappa$.
   {\texttt{(fn $pat$ => $exp$)($exp_1$, $\ldots$, $exp_n$)}}
 }
 {
-  (pat, exp) = \sigma(\mathbb{E})
+  \sigma(\mathbb{E}) = (pat, exp)
 }
 \]
 
 \paragraph{Judgement} \fbox{\matchclause{\sigma}{clause}{sclause}} \\
-
 
 \[
 \inference
@@ -209,7 +208,6 @@ the following we call that mapping $\kappa$.
 \]
 
 \paragraph{Judgement} \fbox{\matchclause{\sigma}{clause^{+}}{sclause^{+}}} \\
-
 
 \[
 \inference
@@ -238,21 +236,43 @@ the following we call that mapping $\kappa$.
 }
 \]
 
-\paragraph{Judgement} \fbox{\rewrite{\sigma}{rule}{clause^{+}}{clause^{+}}} \\
+\paragraph{Judgement} \fbox{\matchclause{\sigma}{clause^{+}}{sclause^{+} \texttt{ where } cstrn^{+}}} \\
 
 \fixme{Remember to take account of constrains in rules}
-
 
 \[
 \inference
 {
-  \matchclause{\sigma}{clause^{+}_2}{sclause^{+}_1} &
-  \matchclause{\sigma}{clause'^{+}_2}{sclause^{+}_2}
+  \matchclause{\sigma}{clause^{+}}{sclause^{+}}
+}
+{
+  \matchclause
+  {\sigma}
+  {clause^{+}}  
+  {sclause^{+} \texttt{ where } cstrn^{+}}
+}
+\]
+
+\paragraph{Judgement} \fbox{\rewrite{\sigma}{rule}{clause^{+}}{clause^{+}}} \\
+
+There may be zero or more initial clauses $clause^{*}_1$ before the clauses
+$clause^{+}_2$ that match a scheme $scheme$ and then zero or more preceding
+clauses $clause^{*}_3$ afterwards. The number of clauses in $clause^{+}_2$ and
+$scheme$ needs to be the same as required by
+$\matchclause{\sigma}{clause^{+}_2}{scheme}$.
+
+\fixme{Reference to miniml where this is explained.}
+
+\[
+\inference
+{
+  \matchclause{\sigma}{clause^{+}_2}{scheme} &
+  \matchclause{\sigma}{clause'^{+}_2}{sclause^{+}}
 }
 {
   \rewrite
   {\sigma}
-  {sclause^{+}_1 \Downarrow sclause^{+}_2}
+  {scheme \Downarrow sclause^{+}}
   {
     \begin{tabular}{Ml}
       clause^{*}_1\\
