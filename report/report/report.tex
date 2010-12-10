@@ -38,6 +38,8 @@
 \usepackage{amsthm}
 \usepackage{semantic} % for the \mathlig function
 
+\usepackage[usenames,dvipsnames]{color}
+
 \usepackage[format=hang]{caption,subfig}
 \usepackage{graphicx}
 \usepackage{stmaryrd}
@@ -65,6 +67,13 @@ basewidth=0.5em,
 % breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
 escapeinside={(@}{@)}          % if you want to add a comment within your code
 }
+
+\lstnewenvironment{sml}
+{\lstset{xleftmargin=3em}} % starting code, ex a lstset that is more specific;
+{} % ending code
+
+\newcommand{\floor}[1]{\ensuremath{\lfloor #1 \rfloor}}
+\newcommand{\codeinline}[1]{\texttt{#1}}
 
 \renewcommand{\ttdefault}{txtt} % Bedre typewriter font
 %\usepackage[sc]{mathpazo}     % Palatino font
@@ -205,6 +214,7 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 % ~>e or ~>g conflicts with the \cite command for some reason.
 \mathlig{->e}{\stackrel{elim}{\leadsto}}
 \mathlig{->g}{\stackrel{gen}{\leadsto}}
+\mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	    	     Forside
@@ -268,7 +278,7 @@ Jesper Reenberg \footnotesize{(jesper.reenberg@gmail.com)}}
 \chapter*{Preface}
 This report is a 22.5 ECTS masters project at the Department of Computer
 Science, University of Copenhagen (DIKU). The authors are Morten Brøns-Pedersen
-and Jesper Reenberg. The project is supervised by Jakob Grue Simonsen, assistant
+and Jesper Reenberg. The project is supervised by Jakob Grue Simonsen, associate
 professor at DIKU.
 
 \clearpage
@@ -277,34 +287,34 @@ professor at DIKU.
 
 \mainmatter
 
-%\chapter{Introduction}
-
-%\input{miniml/chapters/introduction}
-
-%\section{Structure outline}
-
+\input{introduction/introduction}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\input{term-rewriting/term-rewriting}
+\input{sml-normalform/sml-normalform}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{rewriting-syntax/rewriting-syntax}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{rewriting-examples/rewriting-examples}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{rewriting-rules/rewriting-rules}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{design-decisions/design-decisions}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\input{implementation/implementation}
-
-%\chapter{...}
-%...
+\input{implementation/implementation}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\input{evaluation/evaluation}
+\input{evaluation/evaluation}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\input{conclusions/conclusions}
+\input{conclusions/conclusions}
 
 
 \bibliographystyle{bibliography/theseurl}
@@ -314,7 +324,7 @@ professor at DIKU.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{appendix/figures/figures}
+\input{appendix/appendix}
 
 
 \end{document}

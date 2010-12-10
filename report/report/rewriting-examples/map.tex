@@ -1,0 +1,130 @@
+\section{Map}
+
+\begin{example}[\textsf{map}-instans]\
+\begin{sml}
+fun foo (nil, f)     = nil
+  | foo ([x], g)     = [g x]
+  | foo (x :: xs, f) = f x :: foo (xs, f)
+\end{sml}
+
+bliver normaliseret til
+
+\begin{sml}
+fun foo ([x], g)     = [g x]
+  | foo (x :: xs, f) = f x :: foo (xs, f)
+  | foo _            = nil
+\end{sml}
+
+De to sidste to klausuler er en instans af \textsf{map}-reglen med
+\begin{eqnarray*}[rl]
+\mathcal{C} &\mapsto \texttt{($\diamond$, $\overline{y}$)}\\
+\overline{x} &\mapsto \texttt{x}\\
+\overline{xs} &\mapsto \texttt{xs}\\
+\mathbb{D}(\texttt{($\overline{a}$, $\overline{b}$)}) &= \kappa(\overline{b})\
+\kappa(\overline{a})\\
+\mathcal{D} &\mapsto \texttt{\_}
+\end{eqnarray*}
+
+Så de skrives om til
+  \begin{eqnarray*}[c]
+    \texttt{$\mathcal{C}[xs]$ => map (fn $m$ =>
+      $\mathbb{D}(\mathcal{C}[m])$) $xs$}\\
+    =\\
+    \texttt{(a, b) => map (fn a => b a) a}
+  \end{eqnarray*}
+  
+Og det endelige resultat er
+
+\begin{sml}
+fun foo ([x], g) = [g x]
+  | foo (a, b)   = map (fn a => b a) a
+\end{sml}
+
+\end{example}
+
+\begin{example}[\textsf{map}-instans]\
+\begin{sml}
+fun foo nil       = nil
+  | foo (x :: xs) = x + 1 :: foo xs
+\end{sml}
+
+bliver normaliseret til
+
+\begin{sml}
+fun foo (x :: xs) = x + 1 :: foo xs
+  | foo _         = nil
+\end{sml}
+
+Resultatet bliver
+
+\begin{sml}
+fun foo a = map (fn a => a + 1) a
+\end{sml}
+
+
+% \begin{eqnarray*}
+%     (\mathsf{nil}) &=>& \mathsf{nil} \\
+%     (x::xs) &=>& x+1 :: \mathsf{foo} xs
+%   \end{eqnarray*}
+  
+%   Bliver normaliseret til 
+
+%   \begin{eqnarray*}
+%     (x::xs) &=>& x+1 :: \mathsf{foo} xs \\
+%     x &=>& \mathsf{nil}
+%   \end{eqnarray*}
+
+%   \begin{enumerate}
+%   \item Antal klausuler matcher.
+    
+%   \item Funktions kroppe kan matche med tilsvarende klausuls kroppe.
+    
+%   \item $\mathcal{C}$ instantieres til $\diamond$
+    
+%     \begin{description}
+%     \item[Klausul 1] 
+%       \begin{itemize}
+%       \item På venstresiden bindes $\overline{x} \mapsto x, \overline{xs} \mapsto xs$.
+        
+%       \item På højresiden fås derfor $\mathcal{C}[\overline{x}] = x$ og
+%         $\mathcal{C}[\overline{xs}] = xs$        
+%       \end{itemize}
+        
+      
+%     \item[Klausul 2]
+%       \begin{itemize}
+%       \item På venstresiden bindes $\overline{x} \mapsto
+%         x$.
+        
+%       \item På højresiden er der ikke brugt nogle patvars så der sker ikke
+%         noget.
+%       \end{itemize}
+      
+%     \end{description}
+      
+%   \item $\mathbb{D}$ genererer funktionen der for input
+%     $\mathcal{C}[\overline{x}] = x$ returnerer $x + 1$ da dette er udtrykket i
+%     funktionen som matcher $\mathbb{D}\left( \mathcal{C}[\overline{x}] \right)$
+%     i skabelonen. Altså $\mathbb{D}(\overline{x}) = \kappa(\overline{x}) + 1$ 
+%   \end{enumerate}
+
+%   Vi har altså nu at funktionen matcher skabelonen og derfor kan omskrives til
+%   følgende ud fra skabelonenes omskrivning regel
+
+%   \begin{eqnarray*}[c]
+%       \mathcal{C}|[\mathcal{X\!S}|] => \textsf{map } \left( \textsf{fn } m =>
+%     \mathbf{D}\left( \mathcal{C}|[m|] \right) \right) \mathcal{X\!S} \\
+%   %
+%   \Downarrow \\
+%   %
+%   xs => \textsf{map } \left( \textsf{fn } m =>
+%     \left( \textsf{fn } x => x + 1 \right) m \right) xs \\
+%   \end{eqnarray*}
+
+\end{example}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 

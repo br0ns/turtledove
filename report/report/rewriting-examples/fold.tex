@@ -1,0 +1,88 @@
+\section{Fold}
+
+\begin{example}[\textsf{fold}-instans]\
+\begin{sml}
+fun sum nil       = 0
+  | sum (x :: xs) = sum xs + x
+\end{sml}
+
+normaliseres til
+
+\begin{sml}
+fun sum (x :: xs) = sum xs + x
+  | sum _         = 0
+\end{sml}
+
+De to klausuler er en instans af \textsf{foldl}-reglen med
+
+\begin{eqnarray*}[rl]
+  \mathcal{C} &\mapsto \diamond\\
+  \overline{x} &\mapsto \texttt{x}\\
+  \overline{xs} &\mapsto \texttt{xs}\\
+  \mathbb{D}(\texttt{($\overline{a}$, $\overline{b}$)}) &=
+  \kappa(\overline{b}) \texttt{ + } \kappa(\overline{a})\\
+  \mathcal{D} &\mapsto \texttt{\_}\\
+  \mathbb{E}(\overline{a}) &= \texttt{0}
+\end{eqnarray*}
+
+Så de skrives om til
+  \begin{eqnarray*}[c]
+    \texttt{$\mathcal{C}[xs]$ => foldl (fn ($a$, $b$) =>
+      $\mathbb{D}($($\mathcal{C}[a]$, $b$)$)$) $\mathbb{E}(\mathcal{C}[$nil$])$
+      $xs$}\\
+    =\\
+    \texttt{a => foldl (fn (a, b) => b + a) 0 a}
+  \end{eqnarray*}
+
+Og det endelige resultat er
+
+\begin{sml}
+fun sum a = foldl (fn (a, b) => b + a) 0 a
+\end{sml}
+
+
+  % \begin{eqnarray*}
+  %   (y::ys) &=>& y + \mathtt{self} \left( ys \right) \\
+  %   nil &=>& 0
+  % \end{eqnarray*}
+
+  % Hvilket er normaliseret så det bliver ikke omskrevet.
+
+  % \begin{enumerate}
+  % \item Antal klausuler matcher.
+
+  % \item 
+
+  % \item $\mathcal{C}$ instantieres til $\diamond$ og $\mathcal{G} = 0$
+
+  %   \begin{description}
+  %   \item[Klausul 1] $\overline{x} \mapsto y, \overline{xs} \mapsto ys$
+      
+  %   \item[Klausul 2] $\overline{x} \mapsto nil$
+  %   \end{description}
+    
+    
+  % \item $\mathbb{D}(\overline{n}, \overline{m}) = \kappa(\overline{n}) +
+  %   \kappa(\overline{m})$
+  % \end{enumerate}
+
+  % Vi kan derfor anvende denne skabelon og lave omskrivningen, hvor der haves
+  % $\floor{\mathcal{C}} = \diamond, \floor{\mathcal{G}} = 0$
+
+  % \begin{eqnarray*}[c]
+  %    \floor{\mathcal{C}} [xs]  => \textsf{fold } \left( \textsf{fn } (a,b) =>
+  %     \mathbb{D}\left( \floor{\mathcal{C}}[a],\ b \right) \right) \
+  %   \floor{\mathcal{G}} \ xs \\
+  %   %
+  %   \Downarrow \\
+  %   % 
+  %   xs => \textsf{fold } \left( \textsf{fn } (a,b) => a+b
+  %   \right) \ 0 \ xs
+  % \end{eqnarray*}
+  
+\end{example}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 

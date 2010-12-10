@@ -1,0 +1,358 @@
+\section{Examples}
+
+
+
+\newcommand{\patexp}[2]{#1 \texttt{.} #2}
+\newcommand{\fargs}[2]{#1 \texttt{ | } #2}
+\newcommand{\cargs}[2]{#1 \texttt{,} #2}
+\newcommand{\con}[2]{#1 \texttt{(} #2 \texttt{)}}
+\newcommand{\fcall}[2]{#1 \texttt{(} #2 \texttt{)}}
+\newcommand{\pipe}{\phantom{\ttt{fu}}\ttt{|}}
+
+
+% assume nil < ::
+
+% Totally ordered (and thus partially due to lemma \fref{tot-imp-part}):
+% fun sum nil = 0
+%   | sum (x :: xs) = x + sum xs
+
+% or
+
+% fun sum nil = 0
+%   | sum (x :: xs) = x + sum xs
+%   | sum _ = raise Fail "Unused pattern"
+
+% Partially but not totally ordered:
+% fun sum (x :: xs) = x + sum xs
+%   | sum nil = 0
+
+\fixme{Fyld på med tekst}
+
+\subsection{Auxiliary definitions}
+
+\begin{example}[Suppattern, $\subseteq$]
+  \label{ex:suppattern1}
+  \begin{eqnarray*}
+    \ttt{x} &\subseteq& \ttt{A(x,y)} \\
+    \ttt{y} &\subseteq& \ttt{A(x,y)}
+\end{eqnarray*}
+Whereas this is not a suppattern
+\begin{eqnarray*}
+  \ttt{z} \not \subseteq \ttt{A(x,y)}
+\end{eqnarray*}
+\end{example}
+
+\begin{example}[Pattern equivalence, $==_{\pi}$]
+  \label{ex:pattern-equiv1}
+  \begin{eqnarray*}
+    \ttt{A(x,y)} &==_{\pi}& \ttt{A(f,g)}\\
+    \ttt{A(f,g)} &==_{\pi'}& \ttt{A(x,y)}
+  \end{eqnarray*}
+with
+  \begin{eqnarray*}
+    \pi &=& [x\mapsto f, y \mapsto g] \\
+    \pi' &=& [f \mapsto x, g \mapsto y]
+\end{eqnarray*}
+
+Whereas these patterns are not equivalent
+
+  \begin{eqnarray*}
+    \ttt{A(x,y)} &\not ==& \ttt{B(h,j)} \\
+    \ttt{1} &\not ==& \ttt{2}
+  \end{eqnarray*}
+\end{example}
+
+\begin{example}[Free variables, $\mrm{FV}$]
+\label{ex:free-variables1}
+\begin{eqnarray*}[c]
+  \FV_{exp} \left(
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\ttt{f}, \ttt{g} \} \\
+%
+  \FV_{match} \left( 
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (Nil, Nil) . Cons(Nil, Nil)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\} \\
+%
+  \FV_{pat} \left( 
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \right) = \{\ttt{x}, \ttt{xs}\} \\
+\end{eqnarray*}
+\end{example}
+
+
+\begin{example}[Substitution]
+\label{ex:substituation1}
+
+\begin{eqnarray*}[c]
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+  | y . x
+\end{lstlisting}
+  \end{eqnalign}
+\right) \left[ \ttt{z}/\ttt{x} \right] \quad = \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+  | y . z
+\end{lstlisting}
+  \end{eqnalign} \\
+%
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . Cons (1, x)
+\end{lstlisting}
+  \end{eqnalign}
+\right) \left[ \ttt{z}/\ttt{Cons (1, x)} \right] \quad = \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . z
+\end{lstlisting}
+  \end{eqnalign} \\
+\end{eqnarray*}
+
+whereas this is not
+
+\begin{eqnarray*}
+\left(
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun x . x
+\end{lstlisting}
+  \end{eqnalign}
+\right) [ \ttt{z}/\ttt{x} ] \quad \neq \quad
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun z . z
+\end{lstlisting}
+  \end{eqnalign}
+\end{eqnarray*}
+\end{example}
+
+\begin{example}[Alpha equivalence, $==a$]
+\label{ex:alpha-equivalence1}
+
+\begin{eqnarray*}[c]
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  ==a
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (y, ys) . Cons(f y, g ys)
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+
+
+whereas the example below is not, as the free variables are not the same
+\begin{eqnarray*}[c]
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (x, xs) . Cons(f x, g xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \not ==a
+  \begin{eqnalign}[Tl]
+\begin{lstlisting}
+fun Nil . Nil
+  | Cons (y, ys) . Cons(h y, j ys)
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+\end{example}
+
+
+\subsection{Ordering}
+\paragraph{Note.} In the following the ordering $\lessdot$ on variables and
+constructors is normal lexicographic ordering.
+
+\begin{example}[Strict total ordering on patterns, $<$]
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (y, z)
+\end{lstlisting}
+    \end{eqnalign}
+    <
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, z)
+\end{lstlisting}
+    \end{eqnalign}
+    <
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Snoc (a, b)
+\end{lstlisting}
+    \end{eqnalign}
+    <
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+a
+\end{lstlisting}
+    \end{eqnalign}
+    <
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+b
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+\end{example}
+
+\begin{example}[Strict partial ordering on patterns, $<'$]
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (y, Nil)
+\end{lstlisting}
+    \end{eqnalign}
+    <'
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, z)
+\end{lstlisting}
+    \end{eqnalign}
+    <'
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+b
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+  Keeping in mind that the exact names of the variables are unimportant.
+\end{example}
+
+\begin{example}[Elimination, $->e$]
+  The first two patterns make a cover so the last pattern is eliminated.
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+  Cons(x, xs) . Cons (x, xs)
+| Nil . Nil
+| x . x
+\end{lstlisting}
+    \end{eqnalign}
+    ->e
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+  Cons(x, xs) . Cons (x, xs)
+| Nil . Nil
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+
+  The second pattern in the example below is shadowed by the first pattern and is thus eliminated.
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+  Cons (x, y) . Cons (x, y)
+| Cons (Cons (x, y), z) . Cons (Cons (x, y), z)
+| Nil
+\end{lstlisting}
+    \end{eqnalign}
+    ->e
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+  Cons (x, y) . Cons (x, y)
+| Nil
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+
+\end{example}
+
+\begin{example}[Generalisation of single pattern-body pairs, $|>$]
+  This example shows a match with an unnecessary complex pattern that reverses
+  the components of a pair.
+
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Pair (Cons (x, xs), zs) . Pair (zs, Cons (x, xs))
+\end{lstlisting}
+    \end{eqnalign}
+    |>
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Pair (xs, zs) . Pair (zs, xs)
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+\end{example}
+
+
+\begin{example}[Reduction relation, $->g$]
+Consider
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
+    | addodd Nil . Nil
+    | addodd x . x
+\end{lstlisting}
+Assume that the constructor environment is $C = \{\mathtt{Cons}, \mathtt{Nil},
+\mathtt{Pair}\}$, and that there exists a function \texttt{+}.
+
+As the match is not in partially ordered form (due to the pattern \texttt{x})
+our only choice is to eliminate. Luckily we can, because the three first
+patterns forms a cover, so we can eliminate the fourth. We get
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
+    | addodd Nil . Nil
+\end{lstlisting}
+which is in partially ordered form. The second clause can be generalised to
+\texttt{x . x}. This means that the clause \texttt{Nil . Nil} should be moved
+up. We get
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Nil . Nil
+    | addodd x . x
+\end{lstlisting}
+Next we can generalise \texttt{Nil . Nil} to \texttt{x . x} which coincide with
+the third clause, so we remove it.
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd x . x
+\end{lstlisting}
+The first clause can be generalised to \texttt{
+  Cons (Cons (x, y), xs) . Cons (Cons (x, + y), addodd xs)
+} (by generalising the two \texttt{Pair} patterns), so we get
+\begin{lstlisting}
+      addodd Cons (Cons (x, y), xs) .
+               Cons (Cons (x, + y), addodd xs)
+    | addodd x . x
+\end{lstlisting}
+which cannot be generalised or eliminated upon. So it is a normal form.
+
+\end{example}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 
