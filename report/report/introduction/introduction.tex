@@ -9,79 +9,81 @@
 Suppose that we want to find code that could be written shorter using the
 \texttt{map} function.
 Here is an obvious example:
-\begin{lstlisting}
+\begin{sml}
 fun add (x :: xs) = x + 1 :: add xs
   | add nil       = nil
-\end{lstlisting}
+\end{sml}
 can be rewritten to
-\begin{lstlisting}
+\begin{sml}
 val add = map (fn x => x + 1)
-\end{lstlisting}
+\end{sml}
 
 But suppose that the first function was instead
-\begin{lstlisting}
+\begin{sml}
 fun add nil       = nil
   | add (x :: xs) = x + 1 :: add xs
-\end{lstlisting}
+\end{sml}
 or even\footnote{We have seen novice SML programmers write functions similar to
   this.}
-\begin{lstlisting}
+\begin{sml}
 fun add (x :: xs) = x + 1 :: add xs
   | add [x]       = x + 1 :: add nil
   | add nil       = nil
-\end{lstlisting}
+\end{sml}
 Of course all three examples can be rewritten to the same form. So should we
 have three rewriting rules? Infinitely many? No.
 
 Our problem here is that equivalent matches (a match is a list of pairs of
 patterns and expressions) can take many forms.
 
-In this paper we define a little language similar to Core SML. We define a
+In this paper we define a language similar to Core SML. We define a
 normal form for matches. We then show how to obtain an equivalent normal form
 from an arbitrary match.
 
 \paragraph{Further work.}
 The reader might find it odd that the second line in the last example above ends
-in \texttt{:: add nil}. Novice programmer or not, real code probably does not
-look like this. The reason is that if \texttt{:: add nil} is left out, the three
-versions of the function \texttt{add} does not have the same normal form.
+in \smlinline{:: add nil}. Novice programmer or not, real code probably does not
+look like this. The reason is that if \smlinline{:: add nil} is left out, the three
+versions of the function \smlinline{add} does not have the same normal form.
 
 We would like to determine that
-\begin{lstlisting}
+\begin{sml}
 fun add (x :: xs) = x + 1 :: add xs
   | add [x]       = [x + 1]
   | add nil       = nil
-\end{lstlisting}
+\end{sml}
 is indeed equivalent to
-\begin{lstlisting}
+\begin{sml}
 fun add (x :: xs) = x + 1 :: add xs
   | add nil       = nil
-\end{lstlisting}
-In the first function the patterns in line one and two is \texttt{x :: xs} and
-\texttt{x :: nil}, so we can try to instantiate \texttt{xs} to \texttt{nil} in
-the first function body, to try to eliminate the second line of the function.
+\end{sml}
+In the first function the patterns in line one and two is \smlinline{x :: xs}
+and \smlinline{x :: nil}, so we can try to instantiate \smlinline{xs} to
+\smlinline{nil} in the first function body, to try to eliminate the second line
+of the function.
 
-The first body becomes \texttt{x + 1 :: add nil} which is not equal to the
-second which is \texttt{x + 1 :: nil}. But if we inline the definition of
-\texttt{add} in the first body we get \texttt{x + 1 :: nil}. And so the second
-line of the body can be eliminated.
+The first body becomes \smlinline{x + 1 :: add nil} which is not equal to the
+second which is \smlinline{x + 1 :: nil}. But if we inline the definition of
+\smlinline{add} in the first body we get \smlinline{x + 1 :: nil}. And so the
+second line of the body can be eliminated.
 
 Of course inlining function definitions to find a normal form, makes the
 reduction to normal forms an undecidable problem.
 
 For this reason we have decided to define a normal form that can always be
-found, and then build on top of that.\\[1em]
+found, and then build on top of that.
 
 Consider this other example:
-\begin{lstlisting}
+\begin{sml}
 fun add (x :: xs, b) = x + b :: add xs
   | add (nil, _)     = nil
-\end{lstlisting}
-That too can be written using \texttt{map}. But again we would need a new
+\end{sml}
+That too can be written using \smlinline{map}. But again we would need a new
 rewriting rule for that. A solution could be to use meta patterns in rewriting
 rules.
 
-[Ok, I'm just ranting here. Keeping the example for further brainstorm later on.]
+\fixme[inline,margin=false]{Ok, I'm just ranting here. Keeping the example for
+  further brainstorm later on.}
 
 \section{Readers prerequisites}
 
