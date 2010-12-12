@@ -1,6 +1,7 @@
 open Grammar
 open ParserUtils
-type ast = int Grammar.ast
+type ast = (ident, int) Grammar.ast
+type node = ident node
 
   %%
   %term
@@ -231,7 +232,7 @@ type ast = int Grammar.ast
 
 %name Rule
 
-%keyword RULE RULE_TYPE_CLAUSES RULE_TYPE_EXPRESSION BECOMES 
+%keyword RULE RULE_TYPE_CLAUSES RULE_TYPE_EXPRESSION BECOMES
   SELF
   ABSTYPE AND AS CASE DATATYPE DOTDOTDOT ELSE END
   EQTYPE EXCEPTION  DO  DARROW  FN  FUN  FUNCTOR  HANDLE
@@ -262,12 +263,12 @@ type ast = int Grammar.ast
 (* tree * comments *)
 ruleProgram :
     ruleRules
-                ((join (wrap Rule_Rules 
-                             ruleRulesleft 
-                             ruleRulesright) 
+                ((join (wrap Rule_Rules
+                             ruleRulesleft
+                             ruleRulesright)
                        ruleRules,
                   Source.Comments.get source))
-                
+
 (* tree list *)
 ruleRules :
                 (nil)
@@ -283,21 +284,21 @@ ruleRule :
 *)
 
 (* tree *)
-ruleTypeClauses : 
-    RULE RULE_TYPE_CLAUSES longidNoAsterisk ruleScheme BECOMES ruleClauses END
-                (join (wrap (Rule_Type_Clauses longidNoAsterisk)
-                            RULEleft 
-                            ENDright) 
+ruleTypeClauses :
+    RULE RULE_TYPE_CLAUSES LONGID ruleScheme BECOMES ruleClauses END
+                (join (wrap (Rule_Type_Clauses LONGID)
+                            RULEleft
+                            ENDright)
                       [ruleScheme,
-                       join (wrap Rule_Clauses 
-                                  ruleClausesleft 
-                                  ruleClausesright) 
+                       join (wrap Rule_Clauses
+                                  ruleClausesleft
+                                  ruleClausesright)
                             ruleClauses])
 
-(* Missing expRule for expression rules 
+(* Missing expRule for expression rules
 ruleTypeExpression :
     RULE RULE_TYPE_EXPRESSION scheme BECOMES clauses END
-                () 
+                ()
 
 *)
 
@@ -306,17 +307,17 @@ ruleTypeExpression :
 (*                    Schemes                        *)
 (*---------------------------------------------------*)
 
-(* tree *)               
-ruleScheme : 
+(* tree *)
+ruleScheme :
     ruleClauses ruleCstrns (* sctrn may be empty *)
-                (join (wrap Rule_Scheme ruleClausesleft ruleCstrnsright) 
-                      [join (wrap Rule_Clauses 
-                                  ruleClausesleft 
-                                  ruleClausesright) 
-                            ruleClauses, 
-                       join (wrap Rule_Cstrns 
-                                  ruleCstrnsleft 
-                                  ruleCstrnsright) 
+                (join (wrap Rule_Scheme ruleClausesleft ruleCstrnsright)
+                      [join (wrap Rule_Clauses
+                                  ruleClausesleft
+                                  ruleClausesright)
+                            ruleClauses,
+                       join (wrap Rule_Cstrns
+                                  ruleCstrnsleft
+                                  ruleCstrnsright)
                             ruleCstrns])
 (* tree list *)
 ruleClauses :
@@ -326,11 +327,11 @@ ruleClauses :
                 (ruleClause :: ruleClauses)
 
 (* tree *)
-ruleClause : 
+ruleClause :
     BAR ruleSpat DARROW ruleSexp
-                (join (wrap Rule_Clause 
+                (join (wrap Rule_Clause
                             BARleft
-                            ruleSexpright) 
+                            ruleSexpright)
                       [ruleSpat, ruleSexp])
 
 (* tree *)
@@ -349,23 +350,23 @@ ruleSexp :
 (*---------------------------------------------------*)
 
 (* tree list *)
-ruleCstrns : 
-                (nil) 
+ruleCstrns :
+                (nil)
   | WHERE ruleCstrnBody
-                (ruleCstrnBody) 
+                (ruleCstrnBody)
 
 (* tree list *)
-ruleCstrnBody :   
+ruleCstrnBody :
     ruleCstrnRel
-                ([ruleCstrnRel]) 
+                ([ruleCstrnRel])
   | ruleCstrnRel COMMA ruleCstrnBody
                 (ruleCstrnRel :: ruleCstrnBody)
 
 (* tree *)
 ruleCstrnRel :
-    longidNoAsterisk LPAREN ruleCstrnRelBody RPAREN
-                (join (wrap (Rule_Cstrn_Rel longidNoAsterisk)
-                            longidNoAsteriskleft
+    LONGID LPAREN ruleCstrnRelBody RPAREN
+                (join (wrap (Rule_Cstrn_Rel LONGID)
+                            LONGIDleft
                             RPARENright)
                       ruleCstrnRelBody)
 
@@ -381,13 +382,9 @@ ruleCstrnRelBody :
 (*---------------------------------------------------*)
 
 (* t * tree list *)
-transformerNode : 
+transformerNode :
     TRANS ruleSexp
-                (let
-                   val ident = mkIdent TRANSleft TRANSright Fixity.Nonfix TRANS
-                 in
-                   (Rule_Trans ident,  [ruleSexp])
-                 end)
+                (Rule_Trans TRANS, [ruleSexp])
 
 
 (*---------------------------------------------------*)
@@ -397,11 +394,7 @@ transformerNode :
 (* t * tree list *)
 metaPatExpNode :
     META metaPatExpInputs
-                (let
-                   val ident = mkIdent METAleft METAright Fixity.Nonfix META
-                 in
-                   (Rule_Meta_Pat ident, metaPatExpInputs)
-                 end)
+                (Rule_Meta_Pat META, metaPatExpInputs)
 
 (* tree list *)
 metaPatExpInputs :
@@ -421,11 +414,7 @@ metaPatExpInput :
 (* t * tree list *)
 metaPatPatNode :
     META metaPatPatInputs
-                (let
-                   val ident = mkIdent METAleft METAright Fixity.Nonfix META
-                 in
-                   (Rule_Meta_Pat ident, metaPatPatInputs)
-                 end)
+                (Rule_Meta_Pat META, metaPatPatInputs)
 
 (* tree list *)
 metaPatPatInputs :
@@ -444,7 +433,7 @@ metaPatPatInput :
 
 (* t * tree list *)
 ruleSelfNode :
-    SELF ruleSexp 
+    SELF ruleSexp
                 ((Rule_Self, [ruleSexp]))
 
 
@@ -1455,7 +1444,7 @@ expnode :
 *)
   | app_exp
       ((Exp_FlatApp, app_exp))
-  | ruleSelfNode 
+  | ruleSelfNode
                 (ruleSelfNode)
   | metaPatExpNode
                 (metaPatExpNode)
@@ -1955,4 +1944,3 @@ longstrids
       ([longstrid])
   | longstrid longstrids
       (longstrid :: longstrids)
-

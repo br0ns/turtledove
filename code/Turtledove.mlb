@@ -4,4 +4,7 @@ $(SML_LIB)/mylib/MyLib.mlb
 ast/ast.mlb
 parsers/Parsers.mlb
 Basic.mlb
-resolve/Resolve.mlb
+
+(* resolve/Resolve.mlb *)
+
+Main.sml

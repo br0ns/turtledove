@@ -1,7 +1,7 @@
 (* TODO: empty productions mess with the position information. Fix that. *)
 structure Parser : Parser =
 struct
-type ast = int Grammar.ast
+type ast = (Grammar.ident, int) Grammar.ast
 
 structure SMLLrVals = SMLLrValsFun
                         (structure Token = LrParser.Token)

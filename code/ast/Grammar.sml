@@ -8,13 +8,13 @@ type ident = (Ident.t, int) Wrap.t
  Strdec' = Strdec U Dec U Exp
  *)
 
-datatype node =
+datatype 'a node =
          (* Rules *)
          Rule_Rules (* Rule_Type list *)
 
        (* Rule_Type *)
-       | Rule_Type_Clauses of ident (* [Rule_Scheme, Rule_Clauses] *)
-       | Rule_Type_Expressions of ident (* who knows? *)
+       | Rule_Type_Clauses of string (* [Rule_Scheme, Rule_Clauses] *)
+       | Rule_Type_Expressions of string (* who knows? *)
 
        (* Rule_Scheme *)
        | Rule_Scheme (* [Rule_Clauses, Cstrns] *)
@@ -29,13 +29,13 @@ datatype node =
        | Rule_Cstrns (* Rule_Cstrn_Rel list *)
 
        (* Rule_Cstrn_Rel *)
-       | Rule_Cstrn_Rel of ident (* Meta_Pattern list *)
+       | Rule_Cstrn_Rel of string (* Meta_Pattern list *)
 
        (* Rule_Transformer *)
-       | Rule_Trans of ident (* [spat] *)
+       | Rule_Trans of string (* [spat] *)
 
        (* Rule_Meta_Pat *)
-       | Rule_Meta_Pat of ident (* spat list | [] *)
+       | Rule_Meta_Pat of string (* spat list | [] *)
 
        (* Rule_Self *)
        | Rule_Self (* [sexp] *)
@@ -60,24 +60,24 @@ datatype node =
        | Fundec_Fun (* Funbind list *)
 
        (* Strbind *)
-       | Strbind of ident (* [Strexp, Sigcon] *)
+       | Strbind of 'a (* [Strexp, Sigcon] *)
 
        (* Sigbind *)
-       | Sigbind of ident (* [Sigexp] *)
+       | Sigbind of 'a (* [Sigexp] *)
 
        (* Funbind *)
-       | Funbind of ident (* [Funarg, Strexp, Sigcon] *)
+       | Funbind of 'a (* [Funarg, Strexp, Sigcon] *)
 
        (* Funarg *)
-       | Funarg_Structure of ident (* [Sigexp] *)
+       | Funarg_Structure of 'a (* [Sigexp] *)
        | Funarg_Spec (* Spec list *)
 
        (* Strexp *)
        | Strexp_Struct (* Strdec' list *)
        | Strexp_Let (* [Strdecs, Strexp] *)
        | Strexp_Con (* [Strexp, Sigcon] *)
-       | Strexp_Fun of ident (* [Strexp | Strdecs] *)
-       | Strexp_Var of ident
+       | Strexp_Fun of 'a (* [Strexp | Strdecs] *)
+       | Strexp_Var of 'a
 
        (* Sigcon *)
        | Sigcon of Sigcon.t (* [Sigexp] | [] *)
@@ -85,12 +85,12 @@ datatype node =
        (* Sigexp *)
        | Sigexp_Where (* [Sigexp, Wherespecs] *)
        | Sigexp_Spec (* Spec list *)
-       | Sigexp_Var of ident
+       | Sigexp_Var of 'a
 
        (* Wherespecs *)
        | Wherespecs (* Wherespec list *)
        (* Wherespec *)
-       | Wherespec of ident list * ident (* [Ty] *)
+       | Wherespec of 'a list * 'a (* [Ty] *)
 
        (* Spec *)
        | Spec_Val (* Valdesc list *)
@@ -98,34 +98,34 @@ datatype node =
        | Spec_Typedef (* Tybind list *)
        | Spec_EqType (* Tydesc list *)
        | Spec_Datatype (* Datdesc list *)
-       | Spec_Replication of ident * ident (* [] *)
+       | Spec_Replication of 'a * 'a (* [] *)
        | Spec_Exception (* Exndesc list *)
        | Spec_Structure (* Strdesc list *)
        | Spec_Include (* [Sigexp] *)
-       | Spec_IncludeSigids of ident list
-       | Spec_Sharing of ident list
-       | Spec_SharingStructure of ident list
+       | Spec_IncludeSigids of 'a list
+       | Spec_Sharing of 'a list
+       | Spec_SharingStructure of 'a list
 
        (* Strdesc *)
-       | Strdesc of ident (* [Sigexp] *)
+       | Strdesc of 'a (* [Sigexp] *)
 
        (* Tydesc *)
-       | Tydesc of ident list * ident
+       | Tydesc of 'a list * 'a
 
        (* Valdesc *)
-       | Valdesc of ident (* [Ty] *)
+       | Valdesc of 'a (* [Ty] *)
 
        (* Exndesc *)
-       | Exndesc of ident (* [MaybeTy] *)
+       | Exndesc of 'a (* [MaybeTy] *)
 
        (* Datatypes *)
        | Datatypes (* Datatype list *)
        (* Datatype *)
-       | Datatype of ident list * ident (* Constructor list] *)
+       | Datatype of 'a list * 'a (* Constructor list] *)
        (* Constructor *)
-       | Constructor of ident (* [MaybeTy] *)
+       | Constructor of 'a (* [MaybeTy] *)
        (* Replication *)
-       | Replication of ident * ident
+       | Replication of 'a * 'a
 
        (* MaybeTy *)
        | MaybeTy (* [Ty] | [] *)
@@ -134,16 +134,16 @@ datatype node =
        | Decs (* Dec list *)
        (* Dec *)
        | Dec_Local (* [Decs, Decs] *)
-       | Dec_Val of ident list (* Valbind list *)
-       | Dec_Fun of ident list (* Match list (Clause) *)
+       | Dec_Val of 'a list (* Valbind list *)
+       | Dec_Fun of 'a list (* Match list (Clause) *)
        | Dec_Type (* Tybind list *)
        | Dec_Datatype (* [Datatypes, Withtypes] *)
-       | Dec_Replication of ident * ident (* [] *)
+       | Dec_Replication of 'a * 'a (* [] *)
        | Dec_Abstype (* [Datbinds, Withtypes, Decs] *)
        | Dec_Exception (* (Constructor | Replication) list *)
-       | Dec_Open of ident list
-       | Dec_Fix of Fixity.t * ident list
-       | Dec_Overload of int option * ident * ident list (* [Ty] *)
+       | Dec_Open of 'a list
+       | Dec_Fix of Fixity.t * 'a list
+       | Dec_Overload of int option * 'a * 'a list (* [Ty] *)
 
        (* Valbinds *)
        | Valbinds (* Valbind list *)
@@ -155,7 +155,7 @@ datatype node =
        (* Match *)
        | Match (* (Clause | Rule) list *)
        (* Clause *)
-       | Clause of ident (* [Pats, MaybeTy, Exp] *)
+       | Clause of 'a (* [Pats, MaybeTy, Exp] *)
        | FlatClause (* [Pats, MaybeTy, Exp] *)
        | Rule (* [Pat, Exp] *)
 
@@ -165,7 +165,7 @@ datatype node =
        (* Withtypes *)
        | Withtypes (* Tybind list *)
        (* Tybind *)
-       | Tybind of ident list * ident (* [Ty] *)
+       | Tybind of 'a list * 'a (* [Ty] *)
 
        (* Exps *)
        | Exps (* Exp list *)
@@ -181,9 +181,9 @@ datatype node =
        | Exp_While (* [Exp, Exp] *)
        | Exp_If (* [Exp, Exp, Exp] *)
        | Exp_Raise (* [Exp] *)
-       | Exp_Var of ident
+       | Exp_Var of 'a
        | Exp_SCon of SCon.t
-       | Exp_Selector of ident
+       | Exp_Selector of 'a
        | Exp_Record (* Label list *)
        | Exp_Unit
        | Exp_Par (* [Exp] *)
@@ -194,19 +194,19 @@ datatype node =
        | Exp_LetSeq (* [Decs, Exps] *)
 
        (* Label *)
-       | Label_Plain of ident (* [Exp | Pat | Ty] *)
-       | Label_Short of ident (* [MaybeTy, MaybePat] *)
+       | Label_Plain of 'a (* [Exp | Pat | Ty] *)
+       | Label_Short of 'a (* [MaybeTy, MaybePat] *)
 
        (* MaybePat *)
        | MaybePat (* [Pat] | [] *)
        (* Pats *)
        | Pats (* Pat list *)
        (* Pat *)
-       | Pat_Layered of ident
+       | Pat_Layered of 'a
        | Pat_Typed
        | Pat_App
        | Pat_FlatApp
-       | Pat_Var of ident
+       | Pat_Var of 'a
        | Pat_SCon of SCon.t
        | Pat_Wild
        | Pat_Tuple
@@ -220,17 +220,15 @@ datatype node =
        (* Ty *)
        | Ty_Tuple
        | Ty_Record (* Label list *)
-       | Ty_Var of ident
-       | Ty_Con of ident (* Ty list *)
+       | Ty_Var of 'a
+       | Ty_Con of 'a (* Ty list *)
        | Ty_Par (* [Ty] *)
        | Ty_Arrow (* [Ty, Ty] *)
 
        | Unparsed
 
 
-type 'a ast = (node, 'a) Wrap.t Tree.t
-
-fun node t = Wrap.unwrap $ Tree.this t
+type ('a, 'b) ast = ('a node, 'b) Wrap.t Tree.t
 
 (* val node = Wrap.unwrap o Tree.this *)
 
@@ -327,6 +325,7 @@ fun show t =
     let
       open Layout
       infix ^^ ++ \ & \\ &&
+      fun node t = Wrap.unwrap $ Tree.this t
       fun next s =
           let
             val s = txt s
@@ -387,15 +386,15 @@ fun show t =
     in
       case node t of
         Rule_Rules => next "Rule_Rules"
-      | Rule_Type_Clauses id => next ("Rule_Type_Clauses: " ^ show id)
-      | Rule_Type_Expressions id => next ("Rule_Type_Expressions: " ^ show id)
+      | Rule_Type_Clauses id => next ("Rule_Type_Clauses: " ^ id)
+      | Rule_Type_Expressions id => next ("Rule_Type_Expressions: " ^ id)
       | Rule_Scheme => next "Rule_Scheme>"
       | Rule_Clauses => next "Rule_Clauses"
       | Rule_Clause => next "Rule_Clause"
       | Rule_Cstrns => next "Rule_Cstrns"
-      | Rule_Cstrn_Rel id => next ("Rule_Cstrn_Rel: " ^ show id)
-      | Rule_Trans id => next ("Rule_Trans: " ^ show id)
-      | Rule_Meta_Pat id => next ("Rule_Meta_Pat: " ^ show id)
+      | Rule_Cstrn_Rel id => next ("Rule_Cstrn_Rel: " ^ id)
+      | Rule_Trans id => next ("Rule_Trans: " ^ id)
+      | Rule_Meta_Pat id => next ("Rule_Meta_Pat: " ^ id)
       | Rule_Self => next "Rule_Self"
       (* SML *)
       | Topdecs => next "Topdecs"

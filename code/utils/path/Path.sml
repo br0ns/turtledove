@@ -10,6 +10,9 @@ structure P = OS.Path
 (* Invariant: Values of type t represent absolute canonical paths *)
 type t = string
 
+structure Map = Dictionary
+structure Set = StringSet
+
 exception Path of Layout.t
 
 val vars = Dictionary.fromList

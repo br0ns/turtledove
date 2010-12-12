@@ -81,6 +81,52 @@ fun map f t =
       t
 end
 
+fun show d follow showa t =
+    let
+      open Layout
+      infix ^^ ++ \ & \\ &&
+      val d = Option.map (1 \> op-) d
+      fun node t = Wrap.unwrap $ Tree.this t
+      fun next s =
+          let
+            val s = txt s
+          in
+            case (Tree.children t, d) of
+              (nil, _)    => s
+            | (_, SOME 0) => s
+            | (ts, _)     => s \ (indent 2 o
+                                  enumerate ("", Number, "") NONE o
+                                  List.map (show d follow showa)) ts
+          end
+      val showbinds = Show.list (fn (x, y) => x ^ " => " ^ y)
+    in
+      case node t of
+        Basdecs => next "Basdecs"
+      | Basbind basid => next ("Basbind: " ^ basid)
+      | Exp_Basis => next "Exp_Basis"
+      | Exp_Let => next "Exp_Let"
+      | Exp_Var basid => next ("Exp_Var: " ^ basid)
+
+      | Dec_Basis => next "Dec_Basis"
+      | Dec_Local => next "Dec_Local"
+      | Dec_Include {file, ast, comments} =>
+        let
+          val s = txt ("Dec_Include '" ^ Path.toString file ^ "'")
+        in
+          if follow then
+            s \ indent 2 (show d follow showa ast)
+          else
+            s
+        end
+      | Dec_Source x => txt "Dec_Source:" ++ showa x
+      | Dec_Open basids => next ("Dec_Open: " ^ Show.list id basids)
+      | Dec_Ann anns => next ("Dec_Ann: " ^ Show.list id anns)
+      | Dec_Structure strbinds => next ("Dec_Structure: " ^ showbinds strbinds)
+      | Dec_Signature sigbinds => next ("Dec_Signature: " ^ showbinds sigbinds)
+      | Dec_Functor fctbinds => next ("Dec_Functor: " ^ showbinds fctbinds)
+      | Prim => next "Prim"
+    end
+
 (* datatype 'a basexp = Bas of 'a basdecs *)
 (*                    | Let of 'a basdecs * 'a basexp *)
 (*                    | Var of basid *)

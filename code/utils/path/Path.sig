@@ -27,4 +27,7 @@ sig
   val sub : t -> t -> bool
 
   val show : t -> Layout.t
+
+  structure Set : OrderedSet where type element = t
+  structure Map : OrderedMap where type key = t
 end
