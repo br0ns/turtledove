@@ -1,0 +1,55 @@
+\section{Rule syntax}
+
+Rewriting rules are defined by the syntax in 
+
+\begin{nonfloatingtable}
+
+  \setlength{\grammarindent}{7.3em}
+  \begin{grammar} 
+    
+    <rule-program> ::= <rule>$^{*}$
+    
+    <rule> ::= "rule" <rule-header> <scheme> "becomes" <clause>$^{+}$ "end"
+    
+    <rule-header> ::= <rule-type> <rule-name>
+    
+    <rule-type> ::= "clauses" 
+    \alt "expression" 
+    
+    <rule-name> ::= <longid>
+    
+    <rule-self> ::= "self" <sexp>
+    
+    <scheme> ::= <clause>$^{+}$ [<cstrns>]
+    
+    <clause> ::= "|" <spat> "=>" <sexp>
+    
+    <cstrns> ::= "where" <cstrn-body> 
+    
+    <cstrn-body> ::= <cstrn-rel> 
+    \alt <cstrn-rel> "," <cstrn-body>
+    
+    <cstrn-rel> ::= <longid> "(" <cstrn-rel-body>$^{+}$ ")"
+    
+    <cstrn-rel-body> ::= <spat>   
+    
+    <transformer> ::= "£" <longid> <sexp>
+
+    <meta-pattern-sexp> ::= "§" <longid>  <sexp>$^{*}$
+    
+    <meta-pattern-spat> ::= "§" <longid>  <spat>$^{*}$
+
+  \end{grammar}
+  
+  \caption{Complete rule grammar. See \fref{tab:scheme-expressions} for the
+    \synt{sexp} grammar and \fref{tab:scheme-patterns} for the \synt{spat}
+    grammar which uses the transformers and meta patterns}
+  \label{tab:rule-grammar}
+
+\end{nonfloatingtable}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 

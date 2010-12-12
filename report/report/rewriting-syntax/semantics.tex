@@ -1,0 +1,462 @@
+
+\section{Semantics}
+A rewriting rule ``works'' on a list of SML-clauses. SML clauses are found in
+function declarations, recursive value declarations, anonymous functions, case
+expressions and exception handlers. A rewriting rule works on a sublist (not
+necessarily proper) of such a list of clauses.
+
+\paragraph{Remark.} In the scheme bodies we allow the keyword \textsf{self},
+which we take to mean a recursive call.
+
+\subsection{Inference rules}
+\def\TheTrueColour{Maroon}
+\newcommand{\cc}[1]{{\color{Maroon}#1}}
+\newcommand{\subspat}[3]{\ensuremath{#1\cc{(}#2\cc{)}\mathrel{\cc{=}}#3}}
+\newcommand{\matchpat}[3]{\ensuremath{#1\mathrel{\cc{:}}\cc{\langle}#2\cc{,}\mathrel{ }#3\cc{\rangle}}}
+\newcommand{\matchbody}[4]{\ensuremath{#1\cc{,}\mathrel{ }#2\mathrel{\cc{|-}}#3\mathrel{\cc{:}}#4}}
+\newcommand{\matchclause}[3]{\ensuremath{#1\mathrel{\cc{|-}}#2\mathrel{\cc{:}}#3}}
+\newcommand{\rewrite}[4]{\ensuremath{#1\mathrel{\cc{,}}#2\mathrel{\cc{|-}}#3\mathrel{\cc{\curvearrowright}}#4}}
+\newcommand{\becomesthrough}[3]{\ensuremath{#1\mathrel{\textsf{\cc{becomes}}}#2\mathrel{\textsf{\cc{through}}}#3}}
+
+
+Along with the judgement form we give ``type specifications'' for each variable,
+in the sense that any rule of the declared form has an implicit side condition
+requireing values to belong to the stated set.
+
+\fixme{Explain what $\sigma$ and $\theta$ are}
+
+\paragraph{Judgement} \fbox{\subspat{\sigma}{spat}{mpat}} \\
+
+Substitute leafs of a scheme pattern according to the environment $\sigma$. Note
+how holes are handled (rule 2 and 3).
+
+\[
+\inference
+{
+  \subspat{\sigma}{spat_1}{mpat_1} &
+  \cdots &
+  \subspat{\sigma}{spat_n}{mpat_n}
+}
+{
+  \subspat
+  {\sigma}
+  {con_1 (spat_1, \ldots, spat_n)}
+  {con_2 (mpat_1, \ldots, mpat_n)}
+}
+{
+  con_1 = con_2
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  \subspat{\sigma}
+  {\mathcal{C}[mpat_1]\cdots[mpat_n]}
+  {mpat[mpat_1/\diamond_1]\cdots[mpat_n/\diamond_n]}
+}
+{
+  \sigma ( \mathcal{C} ) = mpat
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  \subspat{\sigma}{\diamond_i}{\diamond_i}
+}
+\]
+
+\paragraph{Judgement} \fbox{\matchpat{pat}{mpat}{\theta}} \\
+
+
+% The judgement $pat : \langle mpat, \theta \rangle$ means that the pattern is an
+% instance of the pair of meta pattern $mpat$ and pattern variable environment
+% $\theta$ in the environment $\sigma$.
+
+
+\[
+\inference
+{
+  \matchpat{pat_1}{mpat_1}{\theta_1} &
+  \cdots &
+  \matchpat{pat_n}{mpat_n}{\theta_n} &
+}
+{
+  \matchpat
+  {con_1 (pat_1, \ldots, pat_n)}
+  {con_2 (mpat_1, \ldots, mpat_n)}
+  {\theta_1 ++ \cdots ++ \theta_n}
+}
+{
+  con_1 = con_2
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  \matchpat
+  {pat}
+  {\overline{x}}
+  {\overline{x} \mapsto pat}
+}
+\]
+
+\paragraph{Judgement} \fbox{\matchbody{\sigma}{\theta}{sexp}{exp}} \\
+
+
+We have omitted the rules that deal with the structure of expressions and scheme
+expressions.
+
+Since the set of meta patterns is a subset of the set of scheme expressions
+there exists a canonical mapping from meta patterns to scheme expressions. In
+the following we call that mapping $\kappa$.
+
+\fixme{Explain why we omitted them, why is it stupid?}
+
+\[
+\inference
+{
+}
+{
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\textsf{self}}
+  {\texttt{(fn ($x_1$, $\ldots$, $x_n$) => $id$ $x_1$ $\cdots$ $x_n$)}}
+}
+{
+  \sigma(\textsf{self}) = (id, n)
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\overline{x}}
+  {\texttt{x}}
+}
+{
+  \theta(\overline{x}) = \texttt{x}
+}
+\]
+
+\[
+\inference
+{
+  \matchbody
+  {\sigma}
+  {\theta}
+  {sexp[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n]}
+  {exp}
+}
+{
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\mathcal{C}[sexp_1]\cdots[sexp_n]}
+  {exp}
+}
+{
+  sexp = \kappa(\sigma(\mathcal{C}))
+}
+\]
+
+\[
+\inference
+{
+  \matchbody{\sigma}{\theta}{sexp_1}{exp_1} &
+  \cdots &
+  \matchbody{\sigma}{\theta}{sexp_n}{exp_n}
+}
+{
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\mathbb{E}(sexp_1, \ldots, sexp_n)}
+  {\texttt{(fn $pat$ => $exp$)($exp_1$, $\ldots$, $exp_n$)}}
+}
+{
+  \sigma(\mathbb{E}) = (pat, exp)
+}
+\]
+
+\paragraph{Judgement} \fbox{\matchclause{\sigma}{clause}{sclause}} \\
+
+\[
+\inference
+{
+  \subspat{\sigma}{spat}{mpat} &
+  \matchpat{pat}{mpat}{\theta} &
+  \matchbody{\sigma}{\theta}{sexp}{exp}
+}
+{
+  \matchclause{\sigma}{pat \texttt{ => } exp}{spat => sexp}
+}
+\]
+
+\paragraph{Judgement} \fbox{\matchclause{\sigma}{clause^{+}}{sclause^{+}}} \\
+
+\[
+\inference
+{
+  \matchclause{\sigma}{clause_1}{sclause_1} &
+  \cdots &
+  \matchclause{\sigma}{clause_n}{sclause_n}
+}
+{
+  \matchclause
+  {\sigma}
+  {
+    \begin{tabular}{Mc}
+      clause_1\\
+      \vdots\\
+      clause_n\\
+    \end{tabular}
+  }
+  {
+    \begin{tabular}{Mc}
+      sclause_1\\
+      \vdots\\
+      sclause_n\\
+    \end{tabular}
+  }
+}
+\]
+
+\paragraph{Judgement} \fbox{\matchclause{\sigma}{clause^{+}}{sclause^{+} \texttt{ where } cstrn^{+}}} \\
+
+\fixme{Remember to take account of constrains in rules}
+
+\[
+\inference
+{
+  \matchclause{\sigma}{clause^{+}}{sclause^{+}}
+}
+{
+  \matchclause
+  {\sigma}
+  {clause^{+}}  
+  {sclause^{+} \texttt{ where } cstrn^{+}}
+}
+\]
+
+\paragraph{Judgement} \fbox{\rewrite{\sigma}{rule}{clause^{+}}{clause^{+}}} \\
+
+There may be zero or more initial clauses $clause^{*}_1$ before the clauses
+$clause^{+}_2$ that match a scheme $scheme$ and then zero or more preceding
+clauses $clause^{*}_3$ afterwards. The number of clauses in $clause^{+}_2$ and
+$scheme$ needs to be the same as required by
+$\matchclause{\sigma}{clause^{+}_2}{scheme}$.
+
+\fixme{Reference to miniml where this is explained.}
+
+\[
+\inference
+{
+  \matchclause{\sigma}{clause^{+}_2}{scheme} &
+  \matchclause{\sigma}{clause'^{+}_2}{sclause^{+}}
+}
+{
+  \rewrite
+  {\sigma}
+  {scheme \Downarrow sclause^{+}}
+  {
+    \begin{tabular}{Ml}
+      clause^{*}_1\\
+      clause^{+}_2\\
+      clause^{*}_3\\
+    \end{tabular}
+  }
+  {
+    \begin{tabular}{Ml}
+      clause^{*}_1\\
+      clause'^{+}_2\\
+      clause^{*}_3\\
+    \end{tabular}
+  }
+}
+\]
+
+\paragraph{Judgement} \fbox{\becomesthrough{exp_1}{exp_2}{rule}}\\
+
+\[
+\inference
+{
+  \sigma[\textsf{self} \mapsto (id, 1)], rule |-
+  clause^{+} \curvearrowright clause'^{+}
+}
+{
+  \becomesthrough
+  {\texttt{val rec $id$ = fn $clause^{+}$}}
+  {\texttt{val rec $id$ = fn $clause'^{+}$}}
+  {rule}
+}
+\]
+
+\[
+\inference
+{
+  \sigma[\textsf{self} \mapsto (id, n)], rule |-
+  clause^{+} \curvearrowright clause'^{+}
+}
+{
+  \begin{array}{c}
+    \begin{array}{l}
+      \texttt{val rec $id$ = fn $pat_1$ => $\ldots$ fn $pat_n$ =>}\\
+      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $clause^{+}$}
+    \end{array}\\
+    \textsf{\color{\TheTrueColour}\ becomes\ }\\
+    \begin{array}{l}
+      \texttt{val rec $id$ = fn $pat_1$ => $\ldots$ fn $pat_n$ =>}\\
+      \texttt{case ($pat_1$, $\ldots$, $pat_n$) of $clause'^{+}$}
+    \end{array}
+  \end{array}
+  \textsf{\color{\TheTrueColour}\ through\ }
+  rule
+}
+\]
+
+\[
+\inference
+{
+  \sigma[\textsf{self} \mapsto \textsf{undef}], rule |-
+  clause^{+} \curvearrowright clause'^{+}
+}
+{
+  \becomesthrough
+  {\texttt{case $exp$ of $clause^{+}$}}
+  {\texttt{case $exp$ of $clause'^{+}$}}
+  {rule}
+}
+\]
+
+\[
+\inference
+{
+  \sigma[\textsf{self} \mapsto \textsf{undef}], rule |-
+  clause^{+} \curvearrowright clause'^{+}
+}
+{
+  \becomesthrough
+  {\texttt{handle $exp$ of $clause^{+}$}}
+  {\texttt{handle $exp$ of $clause'^{+}$}}
+  {rule}
+}
+\]
+
+\subsection{Transformers}
+
+\subsection{Rules}
+
+
+
+\fixme{Find på bedre måde at opstille disse definitions... Evt ligesom det gamle
+uden definition environments.}
+
+\subsection{Scheme bodies}
+
+The grammar of \synt{sexp} and \synt{spat} is given by
+
+
+\fixme{Add short comment about what this is: SML without types, added with ...}
+
+
+\begin{nonfloatingtable}
+
+\setlength{\grammarindent}{7em}
+
+\newcommand{\cmt}[1]{\parbox{8em}{\small{#1}}}
+
+\begin{grammar}
+ 
+  <atsexp> ::= <scon>                                            \hfill \cmt{special constant}
+  \alt ["op"] <longvid>                                          \hfill \cmt{value identifier}
+  \alt "{" <sexprow> "}"                                         \hfill \cmt{record}
+  \alt "\#" <lab>                                                \hfill \cmt{record selector}
+  \alt "()"                                                      \hfill \cmt{$0$-tuple}
+  \alt "(" <sexp>$_1$, $\ldots$ , <sexp>$_n$ ")"                 \hfill \cmt{$n$-tuple, $n \geq 2$}
+  \alt "[" <sexp>$_1$, $\ldots$, <sexp>$_n$ "]"                  \hfill \cmt{list, $n \geq 0$}
+  \alt "(" <sexp>$_1$; $\ldots$; <sexp>$_n$ ")"                  \hfill \cmt{sequence, $n \geq 2$}  
+  \alt "let" <dec> "in" <sexp>$_1$ ; $\ldots$ ; <sexp>$_n$ "end" \hfill \cmt{local decl, $n \geq 1$}
+  \alt "(" <sexp> ")"
+  
+  <sexprow> ::= <lab> "=" <sexp> ["," <sexprow> ]          \hfill \cmt{expression row}
+
+  <appsexp> ::= <atsexp>
+  \alt <appsexp> <atsexp>                                  \hfill \cmt{application exp}
+
+  <infsexp> ::= <appsexp>
+  \alt <infsexp>$_1$ <vid> <infsexp>$_2$                   \hfill \cmt{infix expression}
+  
+  <sexp> ::= <infsexp>
+  \alt <sexp>$_1$ "andalso" <sexp>$_2$                     \hfill \cmt{conjunction}
+  \alt <sexp>$_1$ "orelse"  <sexp>$_2$                     \hfill \cmt{disjunction}
+  \alt <rule-self>                                         \hfill \cmt{rule self}
+  \alt <transformer>                                       \hfill \cmt{rule transformer}
+  \alt <meta-pattern-sexp>                                 \hfill \cmt{rule meta pattern}
+  \alt "if" <sexp>$_1$ "then" <sexp>$_2$ "else" <sexp>$_3$ \hfill \cmt{conditional}
+  \alt "case" <sexp> "of" <smatch>                         \hfill \cmt{case analysis}
+  \alt "fn" <smatch>                                       \hfill \cmt{function}
+  
+  <smatch> ::= <smrule> [ "|" <smatch> ]
+  
+  <smrule> ::= <spat> "=>" <sexp>
+\end{grammar}
+
+  \caption{Grammar for scheme expressions. This is the normal sml expression
+    grammar but without types, exceptions and \texttt{while}.  See \fref{tab:rule-grammar} for
+    the definition of \synt{rule-self}, \synt{transformer} and \synt{meta-pattern-sex}.}
+  \label{tab:scheme-expressions}
+\end{nonfloatingtable}
+
+
+\begin{nonfloatingtable}
+
+\setlength{\grammarindent}{7em}
+
+\newcommand{\cmt}[1]{\parbox{8em}{\small{#1}}}
+
+\begin{grammar}
+  <atspat> ::= $\_$                              \hfill \cmt{wildcard}
+  \alt <scon>                                    \hfill \cmt{special constant}
+  \alt ["op"] <longvid>                          \hfill \cmt{value identifier}
+  \alt "{" <spatrow> "}"                         \hfill \cmt{record}
+  \alt "()"                                      \hfill \cmt{$0$-tuple}
+  \alt "(" <spat>$_1$, $\ldots$, <spat>$_n$ ")"  \hfill \cmt{$n$-tuple, $n \geq  2$}
+  \alt "[" <spat>$_1$, $\ldots$, <spat>$_n$ "]"  \hfill \cmt{list, $n \geq 0$}
+  \alt "(" <spat> ")" 
+
+  <spatrow> ::= "..."                      \hfill \cmt{wildcard}
+  \alt <lab> "=" <spat> [, <spatrow>]      \hfill \cmt{pattern row}
+  \alt <vid> [ "as" <spat> ] [, <spatrow>] \hfill \cmt{label as variable}
+
+  <spat> ::= <atspat>                      \hfill \cmt{atomic}
+  \alt ["op"] <longvid> <atspat>           \hfill \cmt{constructed value}
+  \alt <meta-pattern-spat>                 \hfill \cmt{rule meta pattern}
+  \alt <spat>$_1$ <vid> <spat>$_2$         \hfill \cmt{constructed value (infix)}
+  \alt ["op"] <vid> "as" <pat>             \hfill \cmt{layered}
+\end{grammar}
+  
+  \caption{Grammar for scheme patterns. See \fref{tab:rule-grammar} for
+    the definition of \synt{meta-pattern-spat}.}
+  \label{tab:scheme-patterns}
+\end{nonfloatingtable}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 

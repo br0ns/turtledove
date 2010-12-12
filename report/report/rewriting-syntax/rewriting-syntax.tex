@@ -1,0 +1,40 @@
+\chapter{Rewriting syntax}
+
+\paragraph{Fixmes.} \ \\
+\fixme[inline, margin=false]{Udvid normalform til at tage højde for datatyper. Specielt har vi brug
+  for en funktion alá $dom$, som afgør et mønsters domæne.} \ \\
+
+\fixme[inline, margin=false]{Indledning} \ \\
+
+Patterns in SML can be thought of as trees with constructors as nodes and
+variables as liefs where nullary constructors is not seen as liefs.
+
+In the following chapter we will be generalising patterns to be parameterised
+over their liefs, meaning that SML patterns are patterns over (SML) variables.
+
+We follow the convention that constants can be thought of as being nullary
+constructors\footnote{as in the ``Mini-ML'' document}. It is also assumed, for
+all code we will match, that
+
+\begin{enumerate}
+\item All \texttt{as}-patterns has been removed (this can be done by
+  substitution).
+
+\item All infix functions has been turned into their nonfix counterparts.
+
+\item ... Most likely something else \fixme{More to the list of stuff that is
+    assumed of the code we will work on}
+\end{enumerate}
+
+
+\input{rewriting-syntax/definitions}
+
+\input{rewriting-syntax/semantics}
+
+\input{rewriting-syntax/intuition}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 

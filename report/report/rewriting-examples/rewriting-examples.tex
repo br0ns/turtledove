@@ -1,0 +1,22 @@
+\chapter{Concrete Examples}
+
+\fixme{Needs an owehaul}
+
+Følgende eksempler definerer forskellige varianter af funktionen $\texttt{foo}$
+som implementerer forskellige varianter af SML's $\texttt{map}$ funktion.
+
+\input{rewriting-examples/map}
+
+% \begin{example}
+%   \begin{eqnarray*}
+%     (nil, \_) &=>& nil\\
+%     (x::xs, n) &=>& F\ (x * n) :: \mathsf{foo} (xs, n)\\
+%   \end{eqnarray*}
+% \end{example}
+
+\input{rewriting-examples/fold}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 
