@@ -1,2 +1,2 @@
-exception LexError of Layout.t
-exception ParseError of int * string
+exception LexError of int * string
+exception YaccError of int * string

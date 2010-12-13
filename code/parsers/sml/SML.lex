@@ -1,21 +1,21 @@
 structure T = Tokens
-structure C = Source.Comments
-structure S = Source.String
+structure C = SourceData.Comments
+structure S = SourceData.String
 
 type pos = int
 type svalue = T.svalue
 type ('a,'b) token = ('a,'b) T.token
 type lexresult = (svalue, pos) token
-type lexarg = Source.t
+type lexarg = SourceData.t
 type arg = lexarg
 
-fun eof source =
-    if C.depth source = 0 then
+fun fail p s = raise LexError (p, s)
+
+fun eof data =
+    if C.depth data = 0 then
         T.EOF (~1, ~1)
     else
-        Source.error source
-                        (C.start source)
-                        "Unclosed comment"
+      fail (C.start data) "Unclosed comment"
 
 fun tok t s p = t (s, p, p + size s)
 
@@ -23,7 +23,7 @@ fun tok t s p = t (s, p, p + size s)
 %reject
 %s C S CH F;
 %header (functor SMLLexFun (structure Tokens : SML_TOKENS));
-%arg (source : UserDeclarations.arg);
+%arg (data : UserDeclarations.arg);
 alphanum=[A-Za-z'_0-9]*;
 alphanumId=[A-Za-z]{alphanum};
 sym=[-!%&$+/:<=>?@~`^|#*]|"\\";
@@ -129,84 +129,84 @@ hexnum={hexDigit}+;
 <INITIAL>"0wx"{hexnum}  => ( tok T.WORD yytext yypos );
 
 <INITIAL>\"     => ( YYBEGIN S ;
-                     S.new source yypos ;
+                     S.new data yypos ;
                      continue ()
                    );
 <INITIAL>\#\"   => ( YYBEGIN CH ;
-                     S.new source yypos ;
+                     S.new data yypos ;
                      continue ()
                    );
 
 <INITIAL>"(*"   => ( YYBEGIN C ;
-                     C.new source (yypos + 2) ;
+                     C.new data (yypos + 2) ;
                      continue ()
                    );
-<INITIAL>.      => ( Source.error source yypos "Illegal token" ;
+<INITIAL>.      => ( fail yypos "Illegal token" ;
                      continue ()
                    );
 
-<C>"(*"         => ( C.inc source ;
+<C>"(*"         => ( C.inc data ;
                      continue ()
                    );
-<C>"*)"         => ( C.dec source ;
-                     (if C.depth source = 0 then
+<C>"*)"         => ( C.dec data ;
+                     (if C.depth data = 0 then
                         YYBEGIN INITIAL
                       else
                         ()
                      ) ;
                      continue ()
                    );
-<C>.            => ( C.append source yytext ;
+<C>.            => ( C.append data yytext ;
                      continue ()
                    );
-<C>\n           => ( C.append source yytext ;
+<C>\n           => ( C.append data yytext ;
                      continue ()
                    );
 
 <S>\"           => ( YYBEGIN INITIAL ;
-                     T.STRING (S.get source, S.start source, yypos)
+                     T.STRING (S.get data, S.start data, yypos)
                    );
 
-<S>\\a          => ( S.appendChar source #"\a"; continue () );
-<S>\\b          => ( S.appendChar source #"\b"; continue () );
-<S>\\f          => ( S.appendChar source #"\f"; continue () );
-<S>\\n          => ( S.appendChar source #"\n"; continue () );
-<S>\\r          => ( S.appendChar source #"\r"; continue () );
-<S>\\t          => ( S.appendChar source #"\t"; continue () );
-<S>\\v          => ( S.appendChar source #"\v"; continue () );
-<S>\\\"         => ( S.appendChar source #"\\"; continue () );
-<S>\\\\         => ( S.appendChar source #"\""; continue () );
-<S>\\\^.        => ( S.appendControlChar source yytext
-                                         (Source.error source yypos) ;
+<S>\\a          => ( S.appendChar data #"\a"; continue () );
+<S>\\b          => ( S.appendChar data #"\b"; continue () );
+<S>\\f          => ( S.appendChar data #"\f"; continue () );
+<S>\\n          => ( S.appendChar data #"\n"; continue () );
+<S>\\r          => ( S.appendChar data #"\r"; continue () );
+<S>\\t          => ( S.appendChar data #"\t"; continue () );
+<S>\\v          => ( S.appendChar data #"\v"; continue () );
+<S>\\\"         => ( S.appendChar data #"\\"; continue () );
+<S>\\\\         => ( S.appendChar data #"\""; continue () );
+<S>\\\^.        => ( S.appendControlChar data yytext
+                                         (fail yypos) ;
                      continue ()
                    );
-<S>\\[0-9]{3}   => ( S.appendAsciiChar source yytext
-                                       (Source.error source yypos) ;
+<S>\\[0-9]{3}   => ( S.appendAsciiChar data yytext
+                                       (fail yypos) ;
                      continue ()
                    );
 <S>\\u{hexDigit}{4}
-                => ( S.appendUnicodeChar source yytext
-                                         (Source.error source yypos) ;
+                => ( S.appendUnicodeChar data yytext
+                                         (fail yypos) ;
                      continue ()
                    );
 <S>\\U{hexDigit}{8}
-                => ( S.appendUnicodeChar source yytext
-                                         (Source.error source yypos) ;
+                => ( S.appendUnicodeChar data yytext
+                                         (fail yypos) ;
                      continue ()
                    );
 <S>\\{nrws}     => ( YYBEGIN F ; continue () );
 <S>\\{eol}      => ( YYBEGIN F ; continue () );
-<S>\\           => ( Source.error source yypos "Illegal string escape" ;
+<S>\\           => ( fail yypos "Illegal string escape" ;
                      continue ()
                    );
-<S>{eol}        => ( Source.error source yypos "Unclosed string" ;
+<S>{eol}        => ( fail yypos "Unclosed string" ;
                      continue ()
                    );
 <S>" "|[\033-\126]
-                => ( S.append source yytext ;
+                => ( S.append data yytext ;
                      continue ()
                    );
-<S>.            => ( Source.error source (yypos + 1) "Illegal character in string" ;
+<S>.            => ( fail (yypos + 1) "Illegal character in string" ;
                      continue ()
                    );
 
@@ -215,59 +215,59 @@ hexnum={hexDigit}+;
 <F>\\           => ( YYBEGIN S ;
                      continue ()
                    );
-<F>.            => ( Source.error source yypos "Unclosed string" ;
+<F>.            => ( fail yypos "Unclosed string" ;
                      continue ()
                    );
 
 <CH>\"          => ( YYBEGIN INITIAL ;
                      let
-                       val s = S.get source
-                       val p = S.start source
+                       val s = S.get data
+                       val p = S.start data
                      in
                        if size s <> 1 then
-                         Source.error source p "Character string not of length 1"
+                         fail p "Character string not of length 1"
                        else
                          T.CHAR (s, p, yypos)
                      end
                    );
 
-<CH>\\a         => ( S.appendChar source #"\a"; continue () );
-<CH>\\b         => ( S.appendChar source #"\b"; continue () );
-<CH>\\f         => ( S.appendChar source #"\f"; continue () );
-<CH>\\n         => ( S.appendChar source #"\n"; continue () );
-<CH>\\r         => ( S.appendChar source #"\r"; continue () );
-<CH>\\t         => ( S.appendChar source #"\t"; continue () );
-<CH>\\v         => ( S.appendChar source #"\v"; continue () );
-<CH>\\\"        => ( S.appendChar source #"\\"; continue () );
-<CH>\\\\        => ( S.appendChar source #"\""; continue () );
-<CH>\\\^.       => ( S.appendControlChar source yytext
-                                         (Source.error source yypos) ;
+<CH>\\a         => ( S.appendChar data #"\a"; continue () );
+<CH>\\b         => ( S.appendChar data #"\b"; continue () );
+<CH>\\f         => ( S.appendChar data #"\f"; continue () );
+<CH>\\n         => ( S.appendChar data #"\n"; continue () );
+<CH>\\r         => ( S.appendChar data #"\r"; continue () );
+<CH>\\t         => ( S.appendChar data #"\t"; continue () );
+<CH>\\v         => ( S.appendChar data #"\v"; continue () );
+<CH>\\\"        => ( S.appendChar data #"\\"; continue () );
+<CH>\\\\        => ( S.appendChar data #"\""; continue () );
+<CH>\\\^.       => ( S.appendControlChar data yytext
+                                         (fail yypos) ;
                      continue ()
                    );
-<CH>\\[0-9]{3}  => ( S.appendAsciiChar source yytext
-                                       (Source.error source yypos) ;
+<CH>\\[0-9]{3}  => ( S.appendAsciiChar data yytext
+                                       (fail yypos) ;
                      continue ()
                    );
 <CH>\\u{hexDigit}{4}
-                => ( S.appendUnicodeChar source yytext
-                                         (Source.error source yypos) ;
+                => ( S.appendUnicodeChar data yytext
+                                         (fail yypos) ;
                      continue ()
                    );
 <CH>\\U{hexDigit}{8}
-                => ( S.appendUnicodeChar source yytext
-                                         (Source.error source yypos) ;
+                => ( S.appendUnicodeChar data yytext
+                                         (fail yypos) ;
                      continue ()
                    );
-<CH>\\          => ( Source.error source yypos "Illegal string escape" ;
+<CH>\\          => ( fail yypos "Illegal string escape" ;
                      continue ()
                    );
-<CH>{eol}       => ( Source.error source yypos "Unclosed string" ;
+<CH>{eol}       => ( fail yypos "Unclosed string" ;
                      continue ()
                    );
 <CH>" "|[\033-\126]
-                => ( S.append source yytext ;
+                => ( S.append data yytext ;
                      continue ()
                    );
-<CH>.           => ( Source.error source (yypos + 1) "Illegal character in string" ;
+<CH>.           => ( fail (yypos + 1) "Illegal character in string" ;
                      continue ()
                    );

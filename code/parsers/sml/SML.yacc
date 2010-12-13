@@ -3,8 +3,11 @@ open ParserUtils
 type node = ident node
 type ast = (ident, int) Grammar.ast
 
-  %%
-  %term
+%%
+
+%pure
+
+%term
       CHAR of string
     | INT of string
     | LONGID of string
@@ -189,7 +192,7 @@ type ast = (ident, int) Grammar.ast
 %eop EOF
 %noshift EOF
 
-%arg (source) : Source.t
+%arg (data) : SourceData.t
 
 %nonassoc WITHTYPE
 %right AND
@@ -251,7 +254,7 @@ program : expsAndTopdecs
                                    (rightmost expsAndTopdecs)
                     )
                     expsAndTopdecs,
-                  Source.Comments.get source
+                  SourceData.Comments.get data
                 ))
 
 (* tree list *)
@@ -1132,7 +1135,7 @@ digit
   : INT
       (case (Int.fromString INT, String.size INT) of
          (SOME n, 1) => n
-       | _ => Source.error source INTleft "Invalid digit in infix declaration."
+       | _ => fail INTleft "Invalid digit in infix declaration."
       )
 
 (* t * tree list *)
@@ -1165,7 +1168,7 @@ repl
       (if List.length tyvars = 0 then
          (tycon, longtycon)
        else
-         Source.error source tyvarsleft "Type variables in datatype replication."
+         fail tyvarsleft "Type variables in datatype replication."
       )
 
 (* tree list *)
@@ -1406,8 +1409,7 @@ patnode
          (Pat_FlatApp, [Pat_Var i]) =>
          (Pat_Layered i, [pat2])
        | _ =>
-         Source.error
-           source
+         fail
            patleft
            "Left side of layered pattern must be an identifier."
       )
@@ -1441,8 +1443,7 @@ apatnode
   | const
       ((Pat_SCon (case const of
                     SCon.Real _ =>
-                    Source.error
-                      source
+                    fail
                       constleft
                       "Real constants are not allowed in patterns."
                   | _ => const),
@@ -1660,8 +1661,7 @@ longid
 (* ident *)
 longidNoAsterisk
   : LONGID
-      (mkLongIdent LONGIDleft LONGIDright LONGID
-       handle ParseError (p, s) => Source.error source p s)
+      (mkLongIdent LONGIDleft LONGIDright LONGID)
 
 (* ident *)
 longidEqual
@@ -1705,16 +1705,14 @@ tycon
 (* ident *)
 tyvar
   : TYVAR
-      (mkTyvar TYVARleft TYVARright TYVAR
-       handle ParseError (p, s) => Source.error source p s)
+      (mkTyvar TYVARleft TYVARright TYVAR)
 
 (* ident *)
 field
   : id
       (id)
   | int
-      (mkIdent intleft intright Fixity.Nonfix int
-      handle ParseError (p, s) => Source.error source p s)
+      (mkIdent intleft intright Fixity.Nonfix int)
 
 (* ident *)
 strid

@@ -6,11 +6,10 @@ local
 
   ../ast/ast.mlb
   Exns.sml
-  Source.sig Source.sml
+  SourceData.sig SourceData.sml
   LexUtils.sig LexUtils.sml
-  ParserUtils.sml
+  ParserUtils.sig ParserUtils.sml
 in
-
   Parser.sig
   local
     mlb/MLB.yacc.sig mlb/MLB.yacc.sml
@@ -30,13 +29,13 @@ in
     structure SMLParser = Parser
   end
 
-  local
-    rule/rule.yacc.sig rule/rule.yacc.sml
-    rule/rule.lex.sml
+  (* local *)
+  (*   rule/rule.yacc.sig rule/rule.yacc.sml *)
+  (*   rule/rule.lex.sml *)
 
-    rule/Parser.sml
-  in
-    structure RuleParser = Parser
-  end
+  (*   rule/Parser.sml *)
+  (* in *)
+  (*   structure RuleParser = Parser *)
+  (* end *)
 
 end

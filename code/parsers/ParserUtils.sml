@@ -1,7 +1,7 @@
 structure ParserUtils =
 struct
 open Grammar
-type comments = Source.Comments.t
+type comments = SourceData.Comments.t
 val dummypos = ~1
 
 val join = Tree.join
@@ -17,7 +17,7 @@ fun rightmost ts = right $ List.last ts
 fun node t = Wrap.unwrap $ Tree.this t
 val children = Tree.children
 
-fun error p s = raise ParseError (p, s)
+fun fail p s = raise YaccError (p, s)
 fun die s = Crash.impossible s
 
 fun opify t = Wrap.modify Ident.opify t
@@ -36,12 +36,12 @@ fun reportDuplicates f p s xs =
       if loop (map f xs) then
         xs
       else
-        error p s
+        fail p s
     end
 
 fun ensureUnqual i =
     if Ident.isQual (unwrap i) then
-      error (Wrap.left i) "Identifier must be unqualified"
+      fail (Wrap.left i) "Identifier must be unqualified"
     else
       i
 
@@ -54,5 +54,5 @@ fun mkTyvar l r s =
     if String.sub (s, 0) = #"'" then
       mkIdent' l r Fixity.Nonfix s
     else
-      error l "Type variable must start with a pling (')"
+      fail l "Type variable must start with a pling (')"
 end

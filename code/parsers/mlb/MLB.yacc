@@ -1,6 +1,6 @@
 open MLBGrammar
 
-type comments = Source.Comments.t
+type comments = SourceData.Comments.t
 fun wrap n = Wrap.wrap n () ()
 fun join n ts = Tree.join (wrap n) ts
 fun leaf n = Tree.singleton $ wrap $ n
@@ -48,7 +48,7 @@ type ast = (string, unit) MLBGrammar.ast
        | strid of strid
 
 %pos int
-%arg (source) : Source.t
+%arg (data) : SourceData.t
 %eop EOF
 %noshift EOF
 %verbose
@@ -63,7 +63,7 @@ type ast = (string, unit) MLBGrammar.ast
 
 %%
 
-mlb : basdecs (join Basdecs basdecs, Source.Comments.get source)
+mlb : basdecs (join Basdecs basdecs, SourceData.Comments.get data)
 
 basdecs : basdecsnode (basdecsnode)
 

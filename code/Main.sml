@@ -66,6 +66,10 @@ fun init path =
                | NONE =>
                  let
                    val {ast, comments} = SMLParser.fromFile file
+                       handle
+                       SMLParser.LexError (p, e) => fail $ Layout.txt "Lex"
+                     | SMLParser.YaccError (p, e) => fail $ Layout.txt "Yacc"
+
                    val dep' = Path.Set.singleton file
                    val t' =
                        join
@@ -144,9 +148,7 @@ fun init path =
     in
       {file = path, ast = t, comments = comments}
     end
-    handle MLBParser.Parse r => fail r
-         | SMLParser.Parse r => fail r
-         | Path.Path r => fail r
-
+    (* handle IO.Io {name, cause = OS.SysErr (err, se), ...} => *)
+         (* | IO.Io {name, ...} => *)
 
 end

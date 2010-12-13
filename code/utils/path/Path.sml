@@ -13,7 +13,7 @@ type t = string
 structure Map = Dictionary
 structure Set = StringSet
 
-exception Path of Layout.t
+exception Path of string
 
 val vars = Dictionary.fromList
              [("SML_LIB", "/usr/lib/mlton/sml"),
@@ -39,12 +39,12 @@ fun expandVars f =
             val var = implode var
           in
             if StringSet.member seen var then
-              raise Path (Layout.txt ("Recursive path variable: " ^ var))
+              raise Path ("Recursive path variable: " ^ var)
             else
               case Dictionary.lookup vars var of
                 SOME path => read (explode path, StringSet.insert seen var) @
                              read (cs, seen)
-              | NONE => raise Path (Layout.txt ("Unknown path variable: " ^ var))
+              | NONE => raise Path ("Unknown path variable: " ^ var)
           end
         | read (c :: cs, seen) = c :: read (cs, seen)
         | read _ = nil
@@ -70,7 +70,7 @@ fun new f =
       if P.isAbsolute f then
         P.mkCanonical f
       else
-        raise Path (Layout.txt "Cannot create a relative path.")
+        raise Path "Cannot create a relative path"
     end
 
 fun new' f f' =

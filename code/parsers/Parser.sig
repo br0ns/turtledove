@@ -1,6 +1,6 @@
 signature Parser =
 sig
-  exception Parse of Layout.t
+  exception Error of int * string
 
   type ast
 

@@ -2,7 +2,7 @@ signature Path =
 sig
   eqtype t
 
-  exception Path of Layout.t
+  exception Path of string
 
   (* Raises Path if the argument is a relative path. *)
   val new : string -> t
