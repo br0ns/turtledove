@@ -28,6 +28,10 @@ val {ast = project, ...} = Main.init path
     handle Main.Error e => die e
 ;Benchmark.stopAndPrint "";
 
+;Benchmark.start ();
+val project = Resolve.init project
+;Benchmark.stopAndPrint "";
+
 structure Map = Path.Map
 structure Set = Path.Set
 
