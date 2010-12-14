@@ -321,31 +321,22 @@ type ('a, 'b) ast = ('a node, 'b) Wrap.t Tree.t
 
 (* fun or (p, p') t = p t orelse p' t *)
 
-fun show t =
+fun show d showa t =
     let
       open Layout
       infix ^^ ++ \ & \\ &&
+      val d = Option.map (1 \> op-) d
       fun node t = Wrap.unwrap $ Tree.this t
       fun next s =
           let
             val s = txt s
           in
-            case Tree.children t of
-              nil => s
-            | ts => s \ (indent 4 o vsep o map show) ts
-          end
-      fun show id =
-          let
-            val id = Wrap.unwrap id
-            fun iopt (SOME n) = Int.toString n
-              | iopt NONE = ""
-          in
-            (case Ident.fixity id of
-               Fixity.InfixL n => "(L" ^ iopt n ^ ") "
-             | Fixity.InfixR n => "(R" ^ iopt n ^ ") "
-             | Fixity.Nonfix => ""
-             | Fixity.Op => "(op)"
-            ) ^ Ident.toString id
+            case (Tree.children t, d) of
+              (nil, _)    => s
+            | (_, SOME 0) => s
+            | (ts, _)     => s \ (indent 2 o
+                                  enumerate ("", Number, "") NONE o
+                                  List.map (show d showa)) ts
           end
       fun showSCon scon =
           case scon of
@@ -403,16 +394,16 @@ fun show t =
       | Strdec_Local => next "Strdec_Local"
       | Sigdec_Sig => next "Sigdec_Sig"
       | Fundec_Fun => next "Fundec_Fun"
-      | Strbind id => next ("Strbind " ^ show id)
-      | Sigbind id => next ("Sigbind " ^ show id)
-      | Funbind id => next ("Funbind " ^ show id)
-      | Funarg_Structure id => next ("Funarg_Structure " ^ show id)
+      | Strbind id => next ("Strbind " ^ showa id)
+      | Sigbind id => next ("Sigbind " ^ showa id)
+      | Funbind id => next ("Funbind " ^ showa id)
+      | Funarg_Structure id => next ("Funarg_Structure " ^ showa id)
       | Funarg_Spec => next "Funarg_Spec"
       | Strexp_Struct => next "Strexp_Struct"
       | Strexp_Let => next "Strexp_Let"
       | Strexp_Con => next "Strexp_Con"
-      | Strexp_Fun id => next ("Strexp_Fun " ^ show id)
-      | Strexp_Var id => next ("Strexp_Var " ^ show id)
+      | Strexp_Fun id => next ("Strexp_Fun " ^ showa id)
+      | Strexp_Var id => next ("Strexp_Var " ^ showa id)
       | Sigcon con => next ("Sigcon " ^
                             (case con of
                                Sigcon.Opaque => "Opaque"
@@ -421,10 +412,10 @@ fun show t =
                            )
       | Sigexp_Where => next "Sigexp_Where"
       | Sigexp_Spec => next "Sigexp_Spec"
-      | Sigexp_Var id => next ("Sigexp_Var " ^ show id)
+      | Sigexp_Var id => next ("Sigexp_Var " ^ showa id)
       | Wherespecs => next "Wherespecs"
       | Wherespec (ids, id) =>
-        next ("Wherespec " ^ Show.list show ids ^ " " ^ show id)
+        next ("Wherespec " ^ Show.list showa ids ^ " " ^ showa id)
       | Spec_Val => next "Spec_Val"
       | Spec_Type => next "Spec_Type"
       | Spec_Typedef => next "Spec_Typedef"
@@ -435,32 +426,32 @@ fun show t =
       | Spec_Structure => next "Spec_Structure"
       | Spec_Include => next "Spec_Include"
       | Spec_IncludeSigids _ => next "Spec_IncludeSigids _"
-      | Spec_Sharing ids => next ("Spec_Sharing " ^ Show.list show ids)
+      | Spec_Sharing ids => next ("Spec_Sharing " ^ Show.list showa ids)
       | Spec_SharingStructure ids =>
-        next ("Spec_SharingStructure " ^ Show.list show ids)
-      | Strdesc id => next ("Strdesc " ^ show id)
+        next ("Spec_SharingStructure " ^ Show.list showa ids)
+      | Strdesc id => next ("Strdesc " ^ showa id)
       | Tydesc (ids, id) =>
-        next ("Tydesc " ^ Show.list show ids ^ " " ^ show id)
-      | Valdesc id => next ("Valdesc " ^ show id)
-      | Exndesc id => next ("Exndesc " ^ show id)
+        next ("Tydesc " ^ Show.list showa ids ^ " " ^ showa id)
+      | Valdesc id => next ("Valdesc " ^ showa id)
+      | Exndesc id => next ("Exndesc " ^ showa id)
       | Datatypes => next "Datatypes"
       | Datatype (ids, id) =>
-        next ("Datatype " ^ Show.list show ids ^ " " ^ show id)
-      | Constructor id => next ("Constructor " ^ show id)
+        next ("Datatype " ^ Show.list showa ids ^ " " ^ showa id)
+      | Constructor id => next ("Constructor " ^ showa id)
       | Replication (id, id') =>
-        next ("Replication " ^ show id ^ " " ^ show id')
+        next ("Replication " ^ showa id ^ " " ^ showa id')
       | MaybeTy => next "MaybeTy"
       | Decs => next "Decs"
       | Dec_Local => next "Dec_Local"
-      | Dec_Val ids => next ("Dec_Val " ^ Show.list show ids)
-      | Dec_Fun ids => next ("Dec_Fun " ^ Show.list show ids)
+      | Dec_Val ids => next ("Dec_Val " ^ Show.list showa ids)
+      | Dec_Fun ids => next ("Dec_Fun " ^ Show.list showa ids)
       | Dec_Type => next "Dec_Type"
       | Dec_Datatype => next "Dec_Datatype"
       | Dec_Replication (id, id') =>
-        next ("Dec_Replication " ^ show id ^ " " ^ show id')
+        next ("Dec_Replication " ^ showa id ^ " " ^ showa id')
       | Dec_Abstype => next "Dec_Abstype"
       | Dec_Exception => next "Dec_Exception"
-      | Dec_Open ids => next ("Dec_Open " ^ Show.list show ids)
+      | Dec_Open ids => next ("Dec_Open " ^ Show.list showa ids)
       | Dec_Fix (f, ids) =>
         next ("Dec_Fix " ^
               (case f of
@@ -468,19 +459,19 @@ fun show t =
                | Fixity.InfixR n => "InfixR " ^ Show.option Show.int n ^ " "
                | Fixity.Nonfix => "Nonfix "
                | Fixity.Op => "Op ") ^
-              Show.list show ids)
+              Show.list showa ids)
       | Dec_Overload _ => next "Dec_Overload ..."
       | Valbinds => next "Valbinds"
       | Valbind_Plain => next "Valbind_Plain"
       | Valbind_Rec => next "Valbind_Rec"
       | Match => next "Match"
-      | Clause id => next ("Clause " ^ show id)
+      | Clause id => next ("Clause " ^ showa id)
       | FlatClause => next "FlatClause"
       | Rule => next "Rule"
       | Datbinds => next "Datbinds"
       | Withtypes => next "Withtypes"
       | Tybind (ids, id) =>
-        next ("Tybind " ^ Show.list show ids ^ " " ^ show id)
+        next ("Tybind " ^ Show.list showa ids ^ " " ^ showa id)
       | Exps => next "Exps"
       | Exp_Handle => next "Exp_Handle"
       | Exp_Orelse => next "Exp_Orelse"
@@ -493,9 +484,9 @@ fun show t =
       | Exp_While => next "Exp_While"
       | Exp_If => next "Exp_If"
       | Exp_Raise => next "Exp_Raise"
-      | Exp_Var id => next ("Exp_Var " ^ show id)
+      | Exp_Var id => next ("Exp_Var " ^ showa id)
       | Exp_SCon scon => next ("Exp_SCon " ^ showSCon scon)
-      | Exp_Selector id => next ("Exp_Selector " ^ show id)
+      | Exp_Selector id => next ("Exp_Selector " ^ showa id)
       | Exp_Record => next "Exp_Record"
       | Exp_Unit => next "Exp_Unit"
       | Exp_Par => next "Exp_Par"
@@ -504,15 +495,15 @@ fun show t =
       | Exp_List => next "Exp_List"
       | Exp_Let => next "Exp_Let"
       | Exp_LetSeq => next "Exp_LetSeq"
-      | Label_Plain id => next ("Label_Plain " ^ show id)
-      | Label_Short id => next ("Label_Short " ^ show id)
+      | Label_Plain id => next ("Label_Plain " ^ showa id)
+      | Label_Short id => next ("Label_Short " ^ showa id)
       | MaybePat => next "MaybePat"
       | Pats => next "Pats"
-      | Pat_Layered id => next ("Pat_Layered " ^ show id)
+      | Pat_Layered id => next ("Pat_Layered " ^ showa id)
       | Pat_Typed => next "Pat_Typed"
       | Pat_App => next "Pat_App"
       | Pat_FlatApp => next "Pat_FlatApp"
-      | Pat_Var id => next ("Pat_Var " ^ show id)
+      | Pat_Var id => next ("Pat_Var " ^ showa id)
       | Pat_SCon scon => next ("Pat_SCon " ^ showSCon scon)
       | Pat_Wild => next "Pat_Wild"
       | Pat_Tuple => next "Pat_Tuple"
@@ -523,8 +514,8 @@ fun show t =
       | Tys => next "Tys"
       | Ty_Tuple => next "Ty_Tuple"
       | Ty_Record => next "Ty_Record"
-      | Ty_Var id => next ("Ty_Var " ^ show id)
-      | Ty_Con id => next ("Ty_Con " ^ show id)
+      | Ty_Var id => next ("Ty_Var " ^ showa id)
+      | Ty_Con id => next ("Ty_Con " ^ showa id)
       | Ty_Par => next "Ty_Par"
       | Ty_Arrow => next "Ty_Arrow"
       | Unparsed => next "Unparsed"

@@ -19,7 +19,7 @@ type strbinds = strbind list
 type sigbinds = sigbind list
 type fctbinds = fctbind list
 
-datatype ('a, 'b) node
+datatype ('a, 'b, 'c) node
   = Basdecs (* Dec list *)
   | Basbind of basid (* [Exp] *)
   | Exp_Basis (* Basdec list *)
@@ -33,8 +33,10 @@ datatype ('a, 'b) node
   | Dec_Basis (* Basbind list *)
   | Dec_Local (* [Basdecs, Basdecs] *)
   | Dec_Include of {file     : file,
-                    ast      : ('a, 'b) ast,
-                    comments : Comments.t}
+                    ast      : ('a, 'b, 'c) ast,
+                    comments : Comments.t,
+                    basis    : 'c
+                   }
   | Dec_Source of 'a
   | Dec_Open of basids
   | Dec_Ann of string list (* Dec list *)
@@ -42,7 +44,7 @@ datatype ('a, 'b) node
   | Dec_Signature of sigbinds
   | Dec_Functor of fctbinds
   | Prim
-withtype ('a, 'b) ast = (('a, 'b) node, 'b) Wrap.t Tree.t
+withtype ('a, 'b, 'c) ast = (('a, 'b, 'c) node, 'b) Wrap.t Tree.t
 
 local
   fun id x =
@@ -68,10 +70,11 @@ fun identity x = Wrap.modify id x
 fun map f t =
     Tree.map
       (Wrap.modify
-         (fn Dec_Include {file, ast, comments} =>
+         (fn Dec_Include {file, ast, comments, basis} =>
              Dec_Include {file     = file,
                           ast      = map f ast,
-                          comments = comments
+                          comments = comments,
+                          basis    = basis
                          }
            | Dec_Source x =>
              Dec_Source $ f x
@@ -109,7 +112,7 @@ fun show d follow showa t =
 
       | Dec_Basis => next "Dec_Basis"
       | Dec_Local => next "Dec_Local"
-      | Dec_Include {file, ast, comments} =>
+      | Dec_Include {file, ast, comments, basis} =>
         let
           val s = txt ("Dec_Include '" ^ Path.toString file ^ "'")
         in

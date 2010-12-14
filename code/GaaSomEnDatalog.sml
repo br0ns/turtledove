@@ -50,78 +50,111 @@ structure Set = Path.Set
 (*               handle SMLParser.Parse s => die s *)
 (* ;Benchmark.stopAndPrint ""; *)
 
-fun walk sa sb t =
+fun walk walk' sa sb t =
     let
       open Tree.Walk
       val print = Layout.println NONE
+      exception Quit
       fun loop w =
           let
-            val _ = case Wrap.unwrap $ this w of
-                      Dec_Include {file, ast, comments} =>
-                      (println ("Reading " ^ Path.toString file) ;
-                       loop (init ast) ;
-                       println ("Leaving " ^ Path.toString file)
-                      )
-                    | _ => ()
             val _ = println "--"
             val _ = print $ show (SOME 2) false sa $ here w
             val _ = TextIO.print "> "
-            val i = (hd o explode o valOf o TextIO.inputLine) TextIO.stdIn
+            val i = valOf $ TextIO.inputLine TextIO.stdIn
+            fun read walk file ast =
+                (println ("Reading " ^ Path.toString file) ;
+                 walk file ast handle Quit => () ;
+                 println ("Leaving " ^ Path.toString file)
+                )
           in
-            case i of
-              #"u" =>
-              (case parent w of
-                 SOME p => loop p
-               | NONE   => ()
-              )
-            | #"1" =>
-              (case children w of
-                 c :: _ => loop c
-               | _      => (println "No children." ;
-                            loop w)
-              )
-            | #"2" =>
-              (case children w of
-                 _ :: c :: _ => loop c
-               | _           => (println "No second child." ;
-                                 loop w)
-              )
-            | #"3" =>
-              (case children w of
-                 _ :: _ :: c :: _ => loop c
-               | _      => (println "No third child." ;
-                            loop w)
-              )
-            | #"4" =>
-              (case children w of
-                 _ :: _ :: _ :: c :: _ => loop c
-               | _           => (println "No fourth child." ;
-                                 loop w)
-              )
-            | #"5" =>
-              (case children w of
-                 _ :: _ :: _ :: _ :: c :: _ => loop c
-               | _      => (println "No fifth child." ;
-                            loop w)
-              )
-            | #"6" =>
-              (case children w of
-                 _ :: _ :: _ :: _ :: _ :: c :: _ => loop c
-               | _           => (println "No sixth child." ;
-                                 loop w)
-              )
-            | #"s" => (print $ show NONE false sa $ here w ; loop w)
-            | #"l" => (print $ sb $ Wrap.left $ this w ; loop w)
-            | #"r" => (print $ sb $ Wrap.right $ this w ; loop w)
-            | #"q" => ()
-            | _    => (println "Press 'q', 'u', 's', 'l', 'r', or a number." ;
-                       loop w)
+            (if i = "\n" then
+               case Wrap.unwrap $ this w of
+                 Dec_Include {file, ast, comments, basis} =>
+                 read (fn _ => loop o init) file ast
+               | Dec_Source {file, ast, comments} =>
+                 read walk' file ast
+               | _ => ()
+             else
+               case String.sub (i, 0) of
+                 #"u" =>
+                 (case parent w of
+                    SOME p => loop p
+                  | NONE   => raise Quit
+                 )
+               | #"s" => print $ show NONE false sa $ here w
+               | #"l" => print $ sb $ Wrap.left $ this w
+               | #"r" => print $ sb $ Wrap.right $ this w
+               | #"q" => raise Quit
+               | _ =>
+                 case Int.fromString i of
+                   NONE => ()
+                 | SOME n =>
+                   loop $ List.nth (children w, n - 1)
+                   handle Subscript => ()
+            ) ; loop w
           end
     in
-      loop (init t)
+      loop (init t) handle Quit => TextIO.println "Goodbye"
     end
 
+fun walk' sa sb file t =
+    let
+      open Tree.Walk
+      val print = Layout.println NONE
+      val st = SourceText.fromFile file
+      exception Quit
+      fun loop w =
+          let
+            val _ = println "--"
+            val _ = print $ Grammar.show (SOME 2) sa $ here w
+            val _ = TextIO.print "> "
+            val i = valOf $ TextIO.inputLine TextIO.stdIn
+          in
+            (case String.sub (i, 0) of
+               #"u" =>
+               (case parent w of
+                  SOME p => loop p
+                | NONE   => raise Quit
+               )
+             | #"s" => TextIO.println
+                         $ SourceText.getSource
+                         st
+                         (Wrap.left $ this w)
+                         (Wrap.right $ this w)
+             | #"l" => print $ sb $ Wrap.left $ this w
+             | #"r" => print $ sb $ Wrap.right $ this w
+             | #"q" => raise Quit
+             | _ =>
+               case Int.fromString i of
+                 NONE => ()
+               | SOME n =>
+                 loop $ List.nth (children w, n - 1)
+                 handle Subscript => ()
+            ) ; loop w
+          end
+    in
+      loop (init t) handle Quit => ()
+    end
+
+
 val _ = walk
+          (walk'
+             (fn id =>
+                 let
+                   val id = Wrap.unwrap id
+                   fun iopt (SOME n) = Int.toString n
+                     | iopt NONE = ""
+                 in
+                   (case Ident.fixity id of
+                      Fixity.InfixL n => "(L" ^ iopt n ^ ") "
+                    | Fixity.InfixR n => "(R" ^ iopt n ^ ") "
+                    | Fixity.Nonfix => ""
+                    | Fixity.Op => "(op)"
+                   ) ^ Ident.toString id
+                 end
+             )
+             (Layout.int)
+          )
           (fn {file, ast, comments} => Path.show file)
           (Layout.itemize "-" o List.map Path.show o Set.toList)
           project

@@ -5,9 +5,11 @@ fun wrap n = Wrap.wrap n () ()
 fun join n ts = Tree.join (wrap n) ts
 fun leaf n = Tree.singleton $ wrap $ n
 
-type ast = (string, unit) MLBGrammar.ast
+type ast = (string, unit, unit) MLBGrammar.ast
 
 %%
+
+%pure
 
 %name MLB
 
