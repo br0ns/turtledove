@@ -5,8 +5,8 @@ function declarations, recursive value declarations, anonymous functions, case
 expressions and exception handlers. A rewriting rule works on a sublist (not
 necessarily proper) of such a list of clauses.
 
-\paragraph{Remark.} In the scheme bodies we allow the keyword \textsf{self},
-which we take to mean a recursive call.
+% \paragraph{Remark.} In the scheme bodies we allow the keyword \textsf{self},
+% which we take to mean a recursive call.
 
 \subsection{Inference rules}
 \def\TheTrueColour{Maroon}
@@ -18,12 +18,14 @@ which we take to mean a recursive call.
 \newcommand{\rewrite}[4]{\ensuremath{#1\mathrel{\cc{,}}#2\mathrel{\cc{|-}}#3\mathrel{\cc{\curvearrowright}}#4}}
 \newcommand{\becomesthrough}[3]{\ensuremath{#1\mathrel{\textsf{\cc{becomes}}}#2\mathrel{\textsf{\cc{through}}}#3}}
 
-
 Along with the judgement form we give ``type specifications'' for each variable,
 in the sense that any rule of the declared form has an implicit side condition
-requireing values to belong to the stated set.
+requiring values to belong to the stated set except for a few places; for
+variables and maps we rather give representatives of the desired sets. That is
+$\overline{x}$ means ``a pattern variable'' and not ``the particular pattern
+variable $\overline{x}$'', and $\sigma$ means a map of the type described above.
 
-\fixme{Explain what $\sigma$ and $\theta$ are}
+Also we have \cc{coloured} the syntax of each judgement form.
 
 \paragraph{Judgement} \fbox{\subspat{\sigma}{spat}{mpat}} \\
 
@@ -73,11 +75,9 @@ how holes are handled (rule 2 and 3).
 
 \paragraph{Judgement} \fbox{\matchpat{pat}{mpat}{\theta}} \\
 
-
-% The judgement $pat : \langle mpat, \theta \rangle$ means that the pattern is an
-% instance of the pair of meta pattern $mpat$ and pattern variable environment
-% $\theta$ in the environment $\sigma$.
-
+Expresses that $pat$ is an instance of $mpat$ with the mapping $\theta$ in the
+sense that if every pattern variable in $mpat$ is replaced with its image in
+$\theta$ then $pat$ is obtained.
 
 \[
 \inference
@@ -113,13 +113,7 @@ how holes are handled (rule 2 and 3).
 
 
 We have omitted the rules that deal with the structure of expressions and scheme
-expressions.
-
-Since the set of meta patterns is a subset of the set of scheme expressions
-there exists a canonical mapping from meta patterns to scheme expressions. In
-the following we call that mapping $\kappa$.
-
-\fixme{Explain why we omitted them, why is it stupid?}
+expressions, as it is unchanged.
 
 \[
 \inference
@@ -156,27 +150,6 @@ the following we call that mapping $\kappa$.
 \[
 \inference
 {
-  \matchbody
-  {\sigma}
-  {\theta}
-  {sexp[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n]}
-  {exp}
-}
-{
-  \matchbody
-  {\sigma}
-  {\theta}
-  {\mathcal{C}[sexp_1]\cdots[sexp_n]}
-  {exp}
-}
-{
-  sexp = \kappa(\sigma(\mathcal{C}))
-}
-\]
-
-\[
-\inference
-{
   \matchbody{\sigma}{\theta}{sexp_1}{exp_1} &
   \cdots &
   \matchbody{\sigma}{\theta}{sexp_n}{exp_n}
@@ -190,6 +163,30 @@ the following we call that mapping $\kappa$.
 }
 {
   \sigma(\mathbb{E}) = (pat, exp)
+}
+\]
+
+The set of hole free meta patterns is a subset of the set of scheme
+expressions. Notice that this means that there are exactly $n$ holes in $spat$.
+
+\[
+\inference
+{
+  \matchbody
+  {\sigma}
+  {\theta}
+  {spat[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n]}
+  {exp}
+}
+{
+  \matchbody
+  {\sigma}
+  {\theta}
+  {\mathcal{C}[sexp_1]\cdots[sexp_n]}
+  {exp}
+}
+{
+  spat = \sigma(\mathcal{C})
 }
 \]
 
@@ -295,8 +292,11 @@ $\matchclause{\sigma}{clause^{+}_2}{scheme}$.
 \[
 \inference
 {
-  \sigma[\textsf{self} \mapsto (id, 1)], rule |-
-  clause^{+} \curvearrowright clause'^{+}
+  \rewrite
+  {\sigma[\textsf{self} \mapsto (id, 1)]}
+  {rule}
+  {clause^{+}}
+  {clause'^{+}}
 }
 {
   \becomesthrough
@@ -309,8 +309,11 @@ $\matchclause{\sigma}{clause^{+}_2}{scheme}$.
 \[
 \inference
 {
-  \sigma[\textsf{self} \mapsto (id, n)], rule |-
-  clause^{+} \curvearrowright clause'^{+}
+  \rewrite
+  {\sigma[\textsf{self} \mapsto (id, n)]}
+  {rule}
+  {clause^{+}}
+  {clause'^{+}}
 }
 {
   \begin{array}{c}
@@ -332,8 +335,11 @@ $\matchclause{\sigma}{clause^{+}_2}{scheme}$.
 \[
 \inference
 {
-  \sigma[\textsf{self} \mapsto \textsf{undef}], rule |-
-  clause^{+} \curvearrowright clause'^{+}
+  \rewrite
+  {\sigma[\textsf{self} \mapsto \textsf{undef}]}
+  {rule}
+  {clause^{+}}
+  {clause'^{+}}
 }
 {
   \becomesthrough
@@ -346,8 +352,11 @@ $\matchclause{\sigma}{clause^{+}_2}{scheme}$.
 \[
 \inference
 {
-  \sigma[\textsf{self} \mapsto \textsf{undef}], rule |-
-  clause^{+} \curvearrowright clause'^{+}
+  \rewrite
+  {\sigma[\textsf{self} \mapsto \textsf{undef}]}
+  {rule}
+  {clause^{+}}
+  {clause'^{+}}
 }
 {
   \becomesthrough
@@ -356,15 +365,6 @@ $\matchclause{\sigma}{clause^{+}_2}{scheme}$.
   {rule}
 }
 \]
-
-\subsection{Transformers}
-
-\subsection{Rules}
-
-
-
-\fixme{Find på bedre måde at opstille disse definitions... Evt ligesom det gamle
-uden definition environments.}
 
 \subsection{Scheme bodies}
 
