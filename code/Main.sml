@@ -88,7 +88,7 @@ fun init path =
                     dep',
                     Dictionary.empty)
                  end)
-            | Dec_Include {file, ast, comments} =>
+            | Dec_Include {file, ast, comments, basis} =>
               (case Path.Map.lookup files file of
                  SOME (t', dep') => (t', files, dep', Dictionary.empty)
                | NONE =>
@@ -99,7 +99,10 @@ fun init path =
                        join
                          (Wrap.wrap
                             (Dec_Include
-                               {file = file, ast = ast', comments = comments}
+                               {file = file,
+                                ast = ast',
+                                comments = comments,
+                                basis = basis}
                             )
                             dep
                             dep'

@@ -5,7 +5,7 @@ open MLBGrammar
 structure Map = Path.Map
 structure Set = Path.Set
 
-type ast = (File.t, unit) MLBGrammar.ast
+type ast = (File.t, unit, unit) MLBGrammar.ast
 
 structure MLBLrVals = MLBLrValsFun
                         (structure Token = LrParser.Token)
@@ -76,7 +76,8 @@ fun fromFile file =
                             (leaf
                                $ Dec_Include {file     = file,
                                               ast      = ast,
-                                              comments = comments},
+                                              comments = comments,
+                                              basis    = ()},
                              parsed)
                           end
                       else

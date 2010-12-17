@@ -13,6 +13,10 @@ in
 infixing/Infixing.sml
 end
 
+environment/ValEnv.sml
+environment/IntEnv.sml
+environment/Environment.sml
+
 in
 
 Resolve.sml

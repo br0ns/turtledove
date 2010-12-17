@@ -1,78 +1,60 @@
 structure Resolve =
 struct
 exception Error of string
+fun fail s = raise Error s
 
-structure Map =
-OrderedMapFn (
-struct
-type t = Path.t
-fun compare x y = String.compare (Path.path x, Path.path y)
-val toString = Path.toString
-end
-)
+val eplus = Dictionary.plus
+val eenv = Dictionary.empty
+val renv = Infixing.resolve
+(* val renv = id *)
 
-fun resolve (envfuns as {empty,
-                         plus,
-                         resolve,
-                         rewrap}
-            ) ast =
+fun init ast =
     let
-      val eplus = plus
-      val eenv = empty
       val bplus = Dictionary.plus
       val ebas = Dictionary.empty
 
       open MLBGrammar
       val this = Tree.this
       fun node t = Wrap.unwrap $ this t
-      fun wrap n l r = identity $ Wrap.extend rewrap n l r
+      fun join n ts = Tree.join (identity n) ts
       val children = Tree.children
-      val join = Tree.join
-      fun left t = Wrap.left $ this t
-      fun right t = Wrap.right $ this t
 
-      fun fail s = raise Error s
-
-      val mlbs = ref Map.empty
-      fun mlblookup f = Map.lookup (!mlbs) f
-      fun mlbinsert (x, y) = (mlbs := Map.update (!mlbs) (x, y) ; y)
-
-      fun loop (t, bas, env) =
+      fun loop (t, mlbs, bas, env) =
           let
             fun lookup id =
                 case Dictionary.lookup bas id of
                   SOME env => env
                 | NONE     => fail ("Undefined variable: " ^ id)
 
-            fun openbas id (t, bas, env) =
-                (t, bas, eplus env $ lookup id)
+            fun openbas id (t, mlbs, bas, env) =
+                (t, mlbs, bas, lookup id)
 
             fun continue _ =
                 let
-                  fun loop' (nil, nbas, nenv) = (nil, nbas, nenv)
-                    | loop' (t :: ts, nbas, nenv) =
+                  fun loop' (nil, mlbs, bas', env') = (nil, mlbs, bas', env')
+                    | loop' (t :: ts, mlbs, bas', env') =
                       let
-                        val (t', nbas', nenv') =
-                            loop (t, bplus bas nbas, eplus env nenv)
-                        val (ts', nbas', nenv') =
-                            loop' (ts, bplus nbas nbas', eplus nenv nenv')
+                        val (t', mlbs, bas'', env'') =
+                            loop (t, mlbs, bplus bas bas', eplus env env')
+                        val (ts', mlbs, bas'', env'') =
+                            loop' (ts, mlbs, bplus bas' bas'', eplus env' env'')
                       in
-                        (t' :: ts', nbas', nenv')
+                        (t' :: ts', mlbs, bas'', env'')
                       end
-                  val (ts, nbas, nenv) = loop' (children t, ebas, eenv)
+                  val (ts, mlbs, bas', env') = loop' (children t, mlbs, ebas, eenv)
                 in
-                  (join (wrap (this t) env nenv) ts, nbas, nenv)
+                  (join (this t) ts, mlbs, bas', env')
                 end
 
             fun localize _ =
                 case children t of
                   [a, b] =>
                   let
-                    val (a', nbas, nenv) = loop (a, bas, env)
-                    val (b', nbas, nenv) =
-                        loop (b, bplus bas nbas, eplus env nenv)
+                    val (a', mlbs, bas', env') = loop (a, mlbs, bas, env)
+                    val (b', mlbs, bas', env') =
+                        loop (b, mlbs, bplus bas bas', eplus env env')
                   in
-                    (join (wrap (this t) env nenv) [a', b'], nbas, nenv)
+                    (join (this t) [a', b'], mlbs, bas', env')
                   end
                 | _ => fail
                          "Must have exactly two children in localization"
@@ -81,108 +63,86 @@ fun resolve (envfuns as {empty,
               Basdecs => continue ()
             | Basbind id =>
               let
-                val (t', bas', env') = continue ()
+                val (t', mlbs, bas', env') = continue ()
               in
-                (t', Dictionary.update bas (id, env'), empty)
+                (t', mlbs, Dictionary.update bas (id, env'), eenv)
               end
             | Exp_Basis => continue ()
             | Exp_Let => localize ()
             | Exp_Var id => openbas id $ continue ()
             | Dec_Basis => continue ()
             | Dec_Local => localize ()
-            | Dec_Include {file, ast, comments} =>
-              (case mlblookup file of
-                 SOME x => x
+            | Dec_Include {file, ast, comments, basis} =>
+              (case Path.Map.lookup mlbs file of
+                 SOME (t, env') => (t, mlbs, ebas, env')
                | NONE =>
                  let
-                   val _ = Crash.debug ("Resolving " ^ Path.toString file)
-                   val (ast', bas', env') = loop (ast, ebas, eenv)
-                   val _ = Crash.debug "Done!"
+                   val (ast', mlbs, bas', env') = loop (ast, mlbs, ebas, eenv)
+                   val t = Tree.join
+                             (Wrap.wrap
+                                (Dec_Include {file     = file,
+                                              ast      = ast',
+                                              comments = comments,
+                                              basis    = env'}
+                                )
+                                (Wrap.left $ this t)
+                                (Wrap.right $ this t)
+                             )
+                             nil
+                   val mlbs = Path.Map.update mlbs (file, (t, env'))
                  in
-                   mlbinsert
-                     (file,
-                      (join
-                         (Wrap.wrap
-                            (Dec_Include
-                               {file     = file,
-                                ast      = ast',
-                                comments = comments
-                               }
-                            )
-                            (rewrap (left t) env)
-                            (rewrap (right t) env')
-                         )
-
-                         (* (modify *)
-                         (*    (Dec_Include *)
-                         (*       {file     = file, *)
-                         (*        ast      = ast', *)
-                         (*        comments = comments *)
-                         (*       } *)
-                         (*    ) *)
-                         (*    {left = env, right = env'} *)
-                         (* ) *)
-
-                         nil,
-                       ebas,
-                       env'
-                      )
-                     )
+                   (t, mlbs, ebas, env')
                  end
               )
             | Dec_Source {file, ast, comments} =>
-              (let
-                 val (ast', env') = resolve (ast, env)
-               in
-                 (join
-                    (Wrap.wrap
-                       (Dec_Source {file = file, ast = ast', comments = comments})
-                       (rewrap (left t) env)
-                       (rewrap (right t) env')
-                    )
-                    nil,
-                  ebas,
-                  env'
-                 )
-               end handle _ => fail $ Path.toString file)
+              let
+                val (ast', env') = renv (ast, env)
+              in
+                (Tree.join
+                   (Wrap.wrap
+                      (Dec_Source {file = file, ast = ast', comments = comments})
+                      (Wrap.left $ this t)
+                      (Wrap.right $ this t)
+                   )
+                   nil,
+                 mlbs,
+                 ebas,
+                 env'
+                )
+              end
             | Dec_Open ids =>
               List.foldl
                 (fn (id, a) => openbas id a)
                 (continue ())
                 ids
             | Dec_Ann anns => continue ()
+            (* TODO: fix rebinding of structures, signatures and functors *)
             | Dec_Structure strbinds => continue ()
             | Dec_Signature sigbinds => continue ()
             | Dec_Functor fctbinds => continue ()
             | Prim => continue ()
           end
-      val (ast, bas, env) = loop (ast, ebas, eenv)
+      val (ast, mlbs, bas, env) = loop (ast, Path.Map.empty, ebas, eenv)
     in
-      Dictionary.appi
-        (fn (id, f) =>
-            let
-              fun iopt (SOME n) = Int.toString n
-                | iopt NONE = ""
-            in
-              println
-                (
-                 (case f of
-                    Fixity.InfixL n => "(L" ^ iopt n ^ ") "
-                  | Fixity.InfixR n => "(R" ^ iopt n ^ ") "
-                  | Fixity.Nonfix => ""
-                  | Fixity.Op => "(op)"
-                 ) ^ id
-                )
-            end
-        ) env ;
-      (* {ast = ast, env = env} *)
       ast
     end
 
-val infixing = resolve {empty   = Infixing.empty,
-                        plus    = Infixing.plus,
-                        resolve = Infixing.resolve,
-                        rewrap  = fn n => const n}
+
+(* val dependencies = *)
+(*     resolve *)
+(*     {empty = Set.empty, *)
+(*      plus = Set.union, *)
+(*      resolve = fn (env, path) => (Set.insert env path, path), *)
+(*      rewrap = const id *)
+(*     } *)
+
+(* val infixing = resolve {empty   = Infixing.empty, *)
+(*                         plus    = Infixing.plus, *)
+(*                         resolve = *)
+(*                      fn ({file, ast, comments}, bas) => *)
+(*                         let *)
+(*  Infixing.resolve, *)
+(*                         rewrap  = fn n => const n} *)
 end
 
 (* val f = Path.new "/home/morten/studie/turtledove/code/resolve/foo.sml" *)

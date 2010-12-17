@@ -22,7 +22,7 @@ struct
     *)
 
 open Grammar Fixity
-type ast = int Grammar.ast
+type ast = (ident, int) Grammar.ast
 exception Error of int * string
 
 fun die s = Crash.die "Infixing" s
