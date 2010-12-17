@@ -2,10 +2,13 @@
 \newcommand{\fun}{\ttt{fun}\ }
 \newcommand{\rec}{\ttt{rec}\ }
 
+An SML like grammar, without types, is presented below which will be the basis
+of defining normal forms for SML functions.
+
 \fixme{remember to introduce new relations with name.}
 \begin{eqnarray*}[rqcql:Tl]
-  var & = & \ttt{[a-z]+} & Identifiers\\
-  con & = & \ttt{[A-Z][a-z]* | [0-9]} & Constructors\\
+  var & = & \ttt{[a-z]$^{+}$} & Identifiers\\
+  con & = & \ttt{[A-Z][a-z]$^{*}$ | [0-9]} & Constructors\\
   num & = & \mathbb{Z}    & Natural numbers\\
   match & ::= & \epsilon                            & Empty match\\
   & & pat\texttt{.}exp\ \texttt{|}\ match               & Pattern -> expression\\
@@ -57,6 +60,7 @@ patterns), substitution (in expressions) and alpha equivalence (of expressions).
 \paragraph{Note.}
 \begin{enumerate}
 \item
+\label{item:note-plusplus}
 If $f : A -> B$ and $g : A -> B$ are arbitrary mappings then
 \begin{eqnarray*}[rlqTl]
   (g ++ f)(x) &= f(x) & if $x \in \Dom(f)$\\
@@ -67,8 +71,9 @@ and
   \Dom (g ++ f) = \Dom (g) \cup \Dom (f).
 \]
 
+
 \item
-We write $p \sqsubseteq p'$ to mean that $p$ is a subpattern of $p'$. More
+We write $p \subseteq p'$ to mean that $p$ is a subpattern of $p'$. More
 precisely this is the case if $p = p'$ or if $p' = c \ttt{(} p_1 \ttt{,} \ldots
 \ttt{,} p_n \ttt{)}$ and $p \subseteq p_i$ for some $i \in \{1, \ldots, n\}$.
 
@@ -134,19 +139,20 @@ interest. Equivalence of patterns is defined by $==_\pi$, \emph{only} when $\pi$
 is not fixed.
 \end{definition}
 
-\begin{example}
+\begin{example}[Equivalence of patterns, $==_{\pi}$]
   \label{ex:pattern-equiv1}
-  We have
   \begin{eqnarray*}
     \ttt{A(x,y)} &==_{\pi}& \ttt{A(f,g)}\\
     \ttt{A(f,g)} &==_{\pi'}& \ttt{A(x,y)}
   \end{eqnarray*}
-  with
+with
   \begin{eqnarray*}
     \pi &=& [x\mapsto f, y \mapsto g] \\
     \pi' &=& [f \mapsto x, g \mapsto y]
-  \end{eqnarray*}
-  but not
+\end{eqnarray*}
+
+Whereas these patterns are not equivalent
+
   \begin{eqnarray*}
     \ttt{A(x,y)} &\not ==& \ttt{B(h,j)} \\
     \ttt{1} &\not ==& \ttt{2}
@@ -191,7 +197,7 @@ functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
   \end{eqnarray}
 \end{definition}
 
-\begin{example}
+\begin{example}[Free variables, $\mrm{FV}$]
 \label{ex:free-variables1}
 \begin{eqnarray*}[c]
   \FV_{exp} \left(
@@ -220,6 +226,7 @@ Cons (x, xs)
   \right) = \{\ttt{x}, \ttt{xs}\} \\
 \end{eqnarray*}
 \end{example}
+
 
 \subsection{Substitution}
 We define substitution in expressions. An expression can be substituted for any
@@ -254,9 +261,9 @@ Note that in \fref[plain]{eq:subst-sub} we require $e_1$ and $e_3$ to be exactly
 equal, not just alpha equivalent.
 \end{definition}
 
-\begin{example}
+\begin{example}[Substitution]
 \label{ex:substituation1}
-We have
+
 \begin{eqnarray*}[c]
 \left(
   \begin{eqnalign}[Tl]
@@ -287,7 +294,7 @@ fun x . z
   \end{eqnalign} \\
 \end{eqnarray*}
 
-but not
+whereas this is not
 
 \begin{eqnarray*}
 \left(
@@ -343,7 +350,8 @@ and \fref{eq:alpha-con} holds if
 \sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n.
 \]
 
-\begin{definition}[Alpha equivalence of pattern-expression pairs, $==a$]\label{def:alpha-equivalence-patexp}
+\begin{definition}[Alpha equivalence of pattern-expression pairs, $==a$]
+\label{def:alpha-equivalence-patexp}
   Again we assume a mapping of bound variables. It is the case that
   \[
   \sigma |- (p_1, e_1) ==a (p_2, e_2)
@@ -358,36 +366,37 @@ If $e_1$ and $e_2$ are alpha equivalent expressions we write $e_1 ==a e_2$ which
 is a shorthand for $[] |- e_1 ==a e_2$. Similarly for pattern-expression pairs.
 \end{definition}
 
-\begin{example}
+\begin{example}[Alpha equivalence, $==a$]
 \label{ex:alpha-equivalence1}
-
-We have
-\begin{eqnarray*}[c]
-  \begin{eqnalign}[Tl]
+ 
+  We have
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fun Nil . Nil
   | Cons (x, xs) . Cons(f x, g xs)
 \end{lstlisting}
     \end{eqnalign}
-  ==a
-  \begin{eqnalign}[Tl]
+    ==a
+    \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fun Nil . Nil
   | Cons (y, ys) . Cons(f y, g ys)
 \end{lstlisting}
     \end{eqnalign}
   \end{eqnarray*}
-
-but not (as the free variables are not the same)
-\begin{eqnarray*}[c]
-  \begin{eqnalign}[Tl]
+  
+  whereas the example below is not, as the free variables are not the same
+  
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fun Nil . Nil
   | Cons (x, xs) . Cons(f x, g xs)
 \end{lstlisting}
     \end{eqnalign}
-  \not ==a
-  \begin{eqnalign}[Tl]
+    \not ==a
+    \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fun Nil . Nil
   | Cons (y, ys) . Cons(h y, j ys)
@@ -416,7 +425,8 @@ respectively.
 As it turns out it is easier to define $<$ and $<='$ directly and then define
 $<=$ and $<'$ in turn of those.
 
-\begin{definition}[Strict total ordering, $<$]\label{def:pat-total-order-strict}
+\begin{definition}[Strict total ordering, $<$]
+  \label{def:pat-total-order-strict}
   Assume a total strict ordering $\lessdot$ on constructors and
   variables\footnote{For example let all constructors come before all variables
     and let variables and constructors be ordered lexicographically among
@@ -434,94 +444,7 @@ $<=$ and $<'$ in turn of those.
   \]
 \end{definition}
 
-\begin{definition}[Total ordering, $<=$]\label{def:pat-total-order-weak}
-  We define the reflexive cousin:
-  \begin{eqnarray*}
-    p_1 <= p_2 \Longleftrightarrow p_1 < p_2 \lor p_1 = p_2
-  \end{eqnarray*}
-\end{definition}
-
-\begin{definition}[Partial ordering, $<='$]\label{def:pat-partial-order-weak}
-  We say that $p_2$ weakly generalises $p_1$ or $p_1$ is at least as specific as
-  $p_2$ and we write $p_1 <=' p_2$. Inductively defined.
-  \begin{eqnarray}
-    p &<='& v \label{eq:pat-partial-order-weak-var}\\
-    c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<='&
-    c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:pat-partial-order-weak-con}
-  \end{eqnarray}
-  Where \fref{eq:pat-partial-order-weak-con} holds if
-  \begin{eqnarray*}
-    c_1 &=& c_2 \quad \land\\
-    p_1 &<='& p'_1 \quad \land\\
-    &\ldots&\\
-    p_n &<='& p'_n
-  \end{eqnarray*}
-\end{definition}
-
-
-\begin{definition}[Strict partial ordering, $<'$]\label{def:pat-partial-order-strict}
-  We define the strict counterpart of $<='$ by
-  \begin{eqnarray*}
-      p_1 <' p_2 \Longleftrightarrow p_1 <=' p_2 \land p_1 \not == p_2
-  \end{eqnarray*}
-\end{definition}
-
-\begin{lemma}[Total ordering]\label{lem:pat-total-orderings}
-  The relation $<=$ is a total ordering, and $<$ is a strict total ordering on
-  patterns.
-
-  Proof is given in \fref{sec:proof-total-orderings}
-\end{lemma}
-
-
-\begin{lemma}[Partial ordering]\label{lem:pat-partial-orderings}
-  The relation $<='$ is a partial ordering and $<'$ is a strict partial ordering
-  on the equivalence classes of patterns modulo structural equivalence
-  ($pat_{/_{==}}$).
-
-  Proof is given in \fref{sec:proof-partial-orderings}
-\end{lemma}
-
-We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
-< p_1$, $p_2 <= p_1$, $p_2 <' p_1$ and $p_2 <=' p_1$ respectively.
-
-\begin{lemma}[]\label{lem:total-implies-partial}
-  If two patterns $p_1$ and $p_2$ are ordered by the partial ordering then they
-  are also ordered by the total one. That is
-  \begin{eqnarray*}
-    p_1 <' p_2 \Longrightarrow p_1 < p_2
-  \end{eqnarray*}
-\end{lemma}
-\begin{proof}
-  Straightforward using induction.
-\end{proof}
-
-\begin{definition}[Confusion, $||$]\label{def:pat-confusion}
-  Let two patterns $p_1$ and $p_2$ be given. If it is the case that neither $p_1
-  <=' p_2$ nor $p_1 >=' p_2$ we say that $p_1$ and $p_2$ are confused and we
-  write $p_1 || p_2$.
-\end{definition}
-
-\begin{lemma}[Unique relation]\label{lem:unique-rel}
-  Given two patterns $p_1$ and $p_2$ exactly one of the following hold
-  \begin{eqnarray*}
-    p_1 &==& p_2\\
-    p_1 &<'& p_2\\
-    p_1 &>'& p_2\\
-    p_1 &||& p_2
-  \end{eqnarray*}
-\end{lemma}
-\begin{proof}
-  Immediately by inspection.
-\end{proof}
-
-\begin{lemma}[]\label{lem:more-specific-confused}
-  If $p_1 <' p_2$ and $p_2 || p_3$, then $p_1 || p_3$.
-
-  Proof is given in \fref{sec:proof-partial-orderings}
-\end{lemma}
-
-\begin{example}
+\begin{example}[Strict total ordering on patterns, $<$]
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
@@ -553,9 +476,45 @@ b
 \end{lstlisting}
     \end{eqnalign}
   \end{eqnarray*}
+  Note: Keep in mind that the exact names of the variables are unimportant.
 \end{example}
 
-\begin{example}
+\begin{definition}[Total ordering, $<=$]\label{def:pat-total-order-weak}
+  We define the reflexive cousin:
+  \begin{eqnarray*}
+    p_1 <= p_2 \Longleftrightarrow p_1 < p_2 \lor p_1 = p_2
+  \end{eqnarray*}
+\end{definition}
+
+
+
+\begin{definition}[Partial ordering, $<='$]\label{def:pat-partial-order-weak}
+  We say that $p_2$ weakly generalises $p_1$ or $p_1$ is at least as specific as
+  $p_2$ and we write $p_1 <=' p_2$. Inductively defined.
+  \begin{eqnarray}
+    p &<='& v \label{eq:pat-partial-order-weak-var}\\
+    c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<='&
+    c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:pat-partial-order-weak-con}
+  \end{eqnarray}
+  Where \fref{eq:pat-partial-order-weak-con} holds if
+  \begin{eqnarray*}
+    c_1 &=& c_2 \quad \land\\
+    p_1 &<='& p'_1 \quad \land\\
+    &\ldots&\\
+    p_n &<='& p'_n
+  \end{eqnarray*}
+\end{definition}
+
+
+
+\begin{definition}[Strict partial ordering, $<'$]\label{def:pat-partial-order-strict}
+  We define the strict counterpart of $<='$ by
+  \begin{eqnarray*}
+      p_1 <' p_2 \Longleftrightarrow p_1 <=' p_2 \land p_1 \not == p_2
+  \end{eqnarray*}
+\end{definition}
+
+\begin{example}[Strict partial ordering on patterns, $<'$]
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
@@ -575,8 +534,69 @@ b
 \end{lstlisting}
     \end{eqnalign}
   \end{eqnarray*}
-Note: Keep in mind that the exact names of the variables are unimportant.
+  Keeping in mind that the exact names of the variables are unimportant.
 \end{example}
+
+
+\begin{lemma}[Total ordering]
+  \label{lem:pat-total-orderings}
+  The relation $<=$ is a total ordering, and $<$ is a strict total ordering on
+  patterns.
+
+  Proof is given in \fref{sec:proof-total-orderings}
+\end{lemma}
+
+
+\begin{lemma}[Partial ordering]
+  \label{lem:pat-partial-orderings}
+  The relation $<='$ is a partial ordering and $<'$ is a strict partial ordering
+  on the equivalence classes of patterns modulo structural equivalence
+  ($pat_{/_{==}}$).
+
+  Proof is given in \fref{sec:proof-partial-orderings}
+\end{lemma}
+
+We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
+< p_1$, $p_2 <= p_1$, $p_2 <' p_1$ and $p_2 <=' p_1$ respectively.
+
+\begin{lemma}[]
+  \label{lem:total-implies-partial}
+  If two patterns $p_1$ and $p_2$ are ordered by the partial ordering then they
+  are also ordered by the total one. That is
+  \begin{eqnarray*}
+    p_1 <' p_2 \Longrightarrow p_1 < p_2
+  \end{eqnarray*}
+\end{lemma}
+\begin{proof}
+  Straightforward using induction.
+\end{proof}
+
+\begin{definition}[Confusion, $||$]\label{def:pat-confusion}
+  Let two patterns $p_1$ and $p_2$ be given. If it is the case that neither $p_1
+  <=' p_2$ nor $p_1 >=' p_2$ we say that $p_1$ and $p_2$ are confused and we
+  write $p_1 || p_2$.
+\end{definition}
+
+\begin{lemma}[Unique relation]\label{lem:unique-rel}
+  Given two patterns $p_1$ and $p_2$ exactly one of the following hold
+  \begin{eqnarray*}
+    p_1 &==& p_2\\
+    p_1 &<'& p_2\\
+    p_1 &>'& p_2\\
+    p_1 &||& p_2
+  \end{eqnarray*}
+\end{lemma}
+\begin{proof}
+  Immediately by inspection.
+\end{proof}
+
+\begin{lemma}[]
+  \label{lem:more-specific-confused}
+  If $p_1 <' p_2$ and $p_2 || p_3$, then $p_1 || p_3$.
+
+  Proof is given in \fref{sec:proof-partial-orderings}
+\end{lemma}
+
 
 \section{Eliminating unused patterns}
 A function is simply a match. And a match is a list of pairs of patterns and
@@ -592,14 +612,16 @@ This can happen for two reasons.
 \item The pattern is only tried against inputs it doesn't match. \label{item:unused-reason-2}
 \end{enumerate}
 
-\subsection{Cover}\label{sec:cover}
+\subsection{Cover}
+\label{sec:cover}
 We define a cover to be a set of patterns such that for every input at least one
 of the patterns will match that input. And we write $Cov(P)$ if $P$ is a cover.
 
 Any pattern following patterns that taken together are a cover is unused because
 of reason \ref{item:unused-reason-1}.
 
-\subsection{Shadowed patterns}\label{sec:shadowed-patterns}
+\subsection{Shadowed patterns}
+\label{sec:shadowed-patterns}
 If a pattern is unused because of reason \ref{item:unused-reason-2} we say that
 it is shadowed.
 \begin{definition}[Shadowed]
@@ -630,24 +652,9 @@ We can now define the elimination of unused patterns.
   \ldots \texttt{|} p_n\texttt{.}e_n,
   \]
   and we write $m ->e m'$.
-
 \end{definition}
 
-\begin{lemma}(Preservation)
-  If an unused pattern is removed from a program, then the resulting program is
-  semantically equivalent.
-
-  That is
-  \[
-  m ->e m' ==> \fun m \sim \fun m'
-  \]
-\end{lemma}
-
-\begin{proof}
-  Trivial (as if).
-\end{proof}
-
-\begin{example}
+\begin{example}[Elimination, $->e$]
   The first two patterns make a cover (assuming the only constructors are
   \ttt{Cons} and \ttt{Nil}) so the last pattern is eliminated.
   \begin{eqnarray*}[c]
@@ -687,9 +694,25 @@ We can now define the elimination of unused patterns.
 
 \end{example}
 
-\section{Generalisiation}\fixme{Fatal: This doesn't hold! But it isn't too hard
-  to fix. The problem is that generalising a pattern extends its domain: We can
-  only do that when all following patterns are confused or shadowed.}
+\begin{lemma}(Preservation)
+  If an unused pattern is removed from a program, then the resulting program is
+  semantically equivalent.
+
+  That is
+  \[
+  m ->e m' ==> \fun m \sim \fun m'
+  \]
+\end{lemma}
+
+\begin{proof}
+  Trivial (as if).
+\end{proof}
+
+\section{Generalisiation}
+\fixme{Fatal: This doesn't hold! But it isn't too hard to fix. The problem is
+  that generalising a pattern extends its domain: We can only do that when all
+  following patterns are confused or shadowed.}
+
 Sometimes patterns get unnecessary complex. If for example a pattern (or one of
 its subpatterns) is a constructor pattern whose subpatterns are all variables,
 and those variables are only used as arguments to the same constructor (in the
@@ -774,13 +797,15 @@ Pair (xs, zs) . Pair (zs, xs)
 \subsection{Generalisation of matches}
 For the generalisation of a match $m$, we require $m$ to be in partially ordered
 form.
-\\[1em]
+
 When generalising a pattern several things might happen. Assume
+
 \begin{eqnarray*}[rqTcql]
   m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
   \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
   e'_i).
 \end{eqnarray*}
+
 Now, perhaps $m$ can be generalised if we substitute $p'_i$ for $p_i$ and $e'_i$
 for $e_i$. We would like the resulting match to be partially ordered too, so we
 must be cautious. Since we know from \fref{lem:single-gen-imp-gen} that $p'_i >'
@@ -870,6 +895,55 @@ Four scenarios arise
 
 \end{definition}
 
+\begin{example}[Generalisation, $->g$]
+Consider
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
+    | addodd Nil . Nil
+    | addodd x . x
+\end{lstlisting}
+Assume that the constructor environment is $C = \{\mathtt{Cons}, \mathtt{Nil},
+\mathtt{Pair}\}$, and that there exists a function \texttt{+}.
+
+As the match is not in partially ordered form (due to the pattern \texttt{x})
+our only choice is to eliminate. Luckily we can, because the three first
+patterns forms a cover, so we can eliminate the fourth. We get
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
+    | addodd Nil . Nil
+\end{lstlisting}
+which is in partially ordered form. The second clause can be generalised to
+\texttt{x . x}. This means that the clause \texttt{Nil . Nil} should be moved
+up. We get
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd Nil . Nil
+    | addodd x . x
+\end{lstlisting}
+Next we can generalise \texttt{Nil . Nil} to \texttt{x . x} which coincide with
+the third clause, so we remove it.
+\begin{lstlisting}
+      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+    | addodd x . x
+\end{lstlisting}
+The first clause can be generalised to \texttt{
+  Cons (Cons (x, y), xs) . Cons (Cons (x, + y), addodd xs)
+} (by generalising the two \texttt{Pair} patterns), so we get
+\begin{lstlisting}
+      addodd Cons (Cons (x, y), xs) .
+               Cons (Cons (x, + y), addodd xs)
+    | addodd x . x
+\end{lstlisting}
+which cannot be generalised or eliminated upon. So it is a normal form.
+
+\end{example}
+
 \section{Normal form}
 We say that the function $\fun m$ is a normal form if there does not exist an
 $m'$ such that $m ->e m'$ or $m ->g m'$.
@@ -944,7 +1018,8 @@ which cannot be generalised or eliminated further, so it is a normal form.
 \end{example}
 
 
-% \section{Weak unification}
+\section{Weak unification}
+\fixme{To do or not to do?}
 
 
 
