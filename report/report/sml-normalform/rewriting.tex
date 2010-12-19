@@ -1,38 +1,41 @@
 \section{Grammar}
-\newcommand{\fun}{\ttt{fun}\ }
+
+\newcommand{\fn}{\ttt{fn}\ }
 \newcommand{\rec}{\ttt{rec}\ }
 
 An SML like grammar, without types, is presented below which will be the basis
-of defining normal forms for SML functions.
+of defining normal forms for SML functions. 
 
-\fixme{remember to introduce new relations with name.}
 \begin{eqnarray*}[rqcql:Tl]
-  var & = & \ttt{[a-z]$^{+}$} & Identifiers\\
-  con & = & \ttt{[A-Z][a-z]$^{*}$ | [0-9]} & Constructors\\
-  num & = & \mathbb{Z}    & Natural numbers\\
-  match & ::= & \epsilon                            & Empty match\\
-  & & pat\texttt{.}exp\ \texttt{|}\ match               & Pattern -> expression\\
-  pat & ::= & var                                       & Variable\\
-  & & con\texttt{(}pat_1\texttt{,} \ldots\texttt{,} pat_n\texttt{)} & Where con
-  has arity $n$\\
-  exp & ::= & var                                       & Variable\\
-  & & exp_1 exp_2                                     & Application\\
-  & & \fun match                                  & Abstraction\\
-  & & con\texttt{(}exp_1\texttt{,} \ldots\texttt{,} exp_n\texttt{)} & Where con
-  has arity $n$\\
-  dec & ::= & var \mapsto exp                         & Plain value binding\\
-  & & \rec var \mapsto \fun match         & Recursive value binding\\
-  & & con \texttt{:} \overline{num}                           & Constructor of arity $num$\\
-  & & \epsilon                             & Empty program\\
-  & & dec_1 \texttt{;} dec_2
+  var & = & \ttt{[a-z]$^{+}$}                          & Identifiers\\
+  con & = & \ttt{[A-Z][a-z]$^{*}$ | [0-9]}             & Constructors\\
+  num & = & \mathbb{Z}                                & Natural numbers\\
+% Matches
+  match & ::= & \epsilon                              & Empty match\\
+  & & pat\texttt{.}exp\ \texttt{|}\ match             & Pattern $->$ expression\\
+% Patterns
+  pat & ::= & var                                     & Variable\\
+  & & con                                             & Constructor of arity $0$\\
+  & & con\texttt{(}pat_1\texttt{,} \ldots\texttt{,} pat_n\texttt{)} & Constructor of arity $n$\\
+% Expressions
+  exp & ::= & var                                     & Variable\\
+  & & exp_1\ exp_2                                     & Application\\
+  & & \fn match                                       & Function\\
+  & & con                                             & Constructor of arity $0$\\
+  & & con\texttt{(}exp_1\texttt{,} \ldots\texttt{,} exp_n\texttt{)} & Constructor of arity $n$\\
+% Declarations
+  dec & ::= & var \mapsto exp                         & value binding\\
+  & & \rec var \mapsto exp                            & Recursive value binding\\
+  & & dec_1 \ttt{;} \cdots \ttt{;} dec_n              & Sequence, $n \geq 2$\\
+  & & \epsilon                                        & Empty program\\
 \end{eqnarray*}
 
 No pattern may contain a given variable more than once.
 
-\paragraph{Note.} In constructor declarations the arity is overlined to enhance
-the difference between numerals and their representation. In practice we write
-the syntactic representation of a numeral as the numeral set in typewriter
-font.
+\paragraph{Environment.} We assume two fixed constructor environments $\rho$ and $\psi$
+for when determining coverage. $\rho$ is a mapping of constructors to their data
+type and $\psi$ is a mapping of data types to a list of all constructors of that
+data type.
 
 We use (with superfixes, subfixes and primes) $v$, $c$, $n$, $m$, $p$, $e$
 and $d$ to range over $var$, $con$, $num$, $match$, $pat$, $exp$ and $dec$
@@ -172,7 +175,7 @@ functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
   Inductively defined:
   \begin{eqnarray}
     \FV_{exp} (v) &=& \{v\} \\
-    \FV_{exp} (\fun m) &=& \FV_{match} (m) \\
+    \FV_{exp} (\fn m) &=& \FV_{match} (m) \\
     \FV_{exp} (e_1e_2) &=& \FV_{exp} (e_1) \cup \FV_{exp} (e_2) \\
     \FV_{exp} (c\ttt{(}e_1\ttt{,} \ldots \ttt{,} e_n \ttt{)}) &=& \FV_{exp}
     (e_1) \cup \ldots \cup \FV_{exp} (e_n)
@@ -238,7 +241,7 @@ We define substitution in expressions. An expression can be substituted for any
   \begin{eqnarray}
     e_1[e_2/e_3] &=& e_2 \quad \mrm{if}\ e_1 = e_3 \label{eq:subst-sub}\\
     (e^1_1 e^2_1)[e_2/e_3] &=& e^1_1[e_2/e_3] e^2_1[e_2/e_3] \label{eq:subst-app}\\
-    \fun p_1 \texttt{.} e_1 \texttt{|} m &=& \fun p_1 \texttt{.} e'_1
+    \fn p_1 \texttt{.} e_1 \texttt{|} m &=& \fn p_1 \texttt{.} e'_1
     \texttt{|} m' \label{eq:subst-lam}\\
     (c \texttt{(}e^1_1 \texttt{,} \ldots \texttt{,} e^1_n \texttt{)})[e_2/e_3]
     &=& c \texttt{(}e^1_1[e_2/e_3] \texttt{,} \ldots \texttt{,} e^1_n[e_2/e_3]
@@ -251,7 +254,7 @@ Where in \fref{eq:subst-lam} we have
 \end{eqnarray*}
 and
 \[
-(\fun m)[e_2/e_3] = \fun m'
+(\fn m)[e_2/e_3] = \fn m'
 \]
 
 In \fref[plain]{eq:subst-app}, \fref[plain]{eq:subst-lam} and
@@ -268,14 +271,14 @@ equal, not just alpha equivalent.
 \left(
   \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun x . x
+fn x . x
   | y . x
 \end{lstlisting}
   \end{eqnalign}
 \right) \left[ \ttt{z}/\ttt{x} \right] \quad = \quad
   \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun x . x
+fn x . x
   | y . z
 \end{lstlisting}
   \end{eqnalign} \\
@@ -283,13 +286,13 @@ fun x . x
 \left(
   \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun x . Cons (1, x)
+fn x . Cons (1, x)
 \end{lstlisting}
   \end{eqnalign}
 \right) \left[ \ttt{z}/\ttt{Cons (1, x)} \right] \quad = \quad
   \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun x . z
+fn x . z
 \end{lstlisting}
   \end{eqnalign} \\
 \end{eqnarray*}
@@ -300,13 +303,13 @@ whereas this is not
 \left(
   \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun x . x
+fn x . x
 \end{lstlisting}
   \end{eqnalign}
 \right) [ \ttt{z}/\ttt{x} ] \quad \neq \quad
   \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun z . z
+fn z . z
 \end{lstlisting}
   \end{eqnalign}
 \end{eqnarray*}
@@ -324,8 +327,8 @@ use the symbol $==a$ for both relations.
   \begin{eqnarray}
     \sigma |- v_1 &==a& v_2 \label{eq:alpha-var} \\
     \sigma |- e^1_1e^1_2 &==a& e^2_1e^2_1 \label{eq:alpha-exp} \\
-    \sigma |- \fun p^1_1 \texttt{.} e^1_1 \texttt{|} \ldots \texttt{|} p^1_n
-    \texttt{.} e^1_n &==a& \fun p^2_1 \texttt{.} e^2_1 \texttt{|} \ldots \texttt{|} p^2_n
+    \sigma |- \fn p^1_1 \texttt{.} e^1_1 \texttt{|} \ldots \texttt{|} p^1_n
+    \texttt{.} e^1_n &==a& \fn p^2_1 \texttt{.} e^2_1 \texttt{|} \ldots \texttt{|} p^2_n
     \texttt{.} e^2_n \label{eq:alpha-match} \\
     \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a&
     c\ttt{(}e^2_1 \ttt{,} \ldots \ttt{,} e^2_n \ttt{)} \label{eq:alpha-con}
@@ -373,14 +376,14 @@ is a shorthand for $[] |- e_1 ==a e_2$. Similarly for pattern-expression pairs.
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun Nil . Nil
+fn Nil . Nil
   | Cons (x, xs) . Cons(f x, g xs)
 \end{lstlisting}
     \end{eqnalign}
     ==a
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun Nil . Nil
+fn Nil . Nil
   | Cons (y, ys) . Cons(f y, g ys)
 \end{lstlisting}
     \end{eqnalign}
@@ -391,14 +394,14 @@ fun Nil . Nil
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun Nil . Nil
+fn Nil . Nil
   | Cons (x, xs) . Cons(f x, g xs)
 \end{lstlisting}
     \end{eqnalign}
     \not ==a
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun Nil . Nil
+fn Nil . Nil
   | Cons (y, ys) . Cons(h y, j ys)
 \end{lstlisting}
     \end{eqnalign}
@@ -633,6 +636,8 @@ it is shadowed.
   $p_i$).
 \end{definition}
 
+\subsection{Elimination}
+
 We can now define the elimination of unused patterns.
 \begin{definition}[Elimination, $->e$]
 \label{def:shadowed-patterns-1}
@@ -700,7 +705,7 @@ We can now define the elimination of unused patterns.
 
   That is
   \[
-  m ->e m' ==> \fun m \sim \fun m'
+  m ->e m' ==> \fn m \sim \fn m'
   \]
 \end{lemma}
 
@@ -806,6 +811,8 @@ When generalising a pattern several things might happen. Assume
   e'_i).
 \end{eqnarray*}
 
+ \fixme{n >= i >= 1?}
+
 Now, perhaps $m$ can be generalised if we substitute $p'_i$ for $p_i$ and $e'_i$
 for $e_i$. We would like the resulting match to be partially ordered too, so we
 must be cautious. Since we know from \fref{lem:single-gen-imp-gen} that $p'_i >'
@@ -814,16 +821,17 @@ p_i$ the first part of the match $p_1 \texttt{.} e_1 \texttt{|} \ldots
 the patterns $p_j$ for $j > i$.
 
 Note that by \fref{lem:unique-rel} we know that either $p_i <' p_j$ or $p_i ||
-p_j$.
+p_j$ due to $m$ being on partially ordered form.
 
+\paragraph{Generalisation scenarios} \ \\
 Four scenarios arise
 \begin{enumerate}
 \item $p'_i$ and $p_j$ are equivalent. The pattern was generalised to one that
   already existed. Now the only hope is that $e'_i$ and $e_j$ merge. By this we
   mean $(p'_i, e'_i) ==a (p_j, e_j)$ (\Fref{def:alpha-equivalence-patexp}).
 
-  If this is the case then either one of $p'_i \texttt{.} e'_i$ or $p_j
-  \texttt{.} e_j$ shall be removed. \label{item:gen-scen-1}
+  If this is the case then either $p'_i \texttt{.} e'_i$ or $p_j \texttt{.} e_j$
+  shall be removed. \label{item:gen-scen-1}
 \item $p'_i$ relates to $p_j$ in the same way that $p_i$ does. So $p_i <' p_j
   \Rightarrow p'_i <' p_j$ and $p_i || p_j \Rightarrow p'_i || p_j$. In this
   case nothing must be done. \label{item:gen-scen-2}
@@ -854,10 +862,11 @@ Four scenarios arise
     m' &=& p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_{i-1} \texttt{.}
     e_{i-1} & (Untouched)\label{eq:gen-1}\\
     &\texttt{|}& p_{m_1} \texttt{.} e_{m_1} \texttt{|} \ldots \texttt{|} p_{m_k}
-    \texttt{.} e_{m_k} & (Case \ref{item:gen-scen-3})\label{eq:gen-2}\\
-    (&\texttt{|}& p'_i \texttt{.} e'_i \ ) & (Perhaps case \ref{item:gen-scen-1})\label{eq:gen-3}\\
+    \texttt{.} e_{m_k} & (Scenario \ref{item:gen-scen-3})\label{eq:gen-2}\\
+    (&\texttt{|}& p'_i \texttt{.} e'_i \ \ ) 
+    & (Perhaps scenario \ref{item:gen-scen-1})\label{eq:gen-3}\\
     &\texttt{|}& p_{s_1} \texttt{.} e_{s_1} \texttt{|} \ldots \texttt{|} p_{s_l}
-    \texttt{.} e_{s_l} & (Case \ref{item:gen-scen-2})\label{eq:gen-4}
+    \texttt{.} e_{s_l} & (Scenario \ref{item:gen-scen-2})\label{eq:gen-4}
   \end{eqnarray*}
 
   Where $m_1 < \ldots < m_k$ and $s_1 < \ldots < s_l$.
@@ -896,60 +905,73 @@ Four scenarios arise
 \end{definition}
 
 \begin{example}[Generalisation, $->g$]
+Assume that the constructor environment is $C = \{list \mapsto \{\mathtt{Cons},
+\mathtt{Nil} \}, pair \mapsto \{\mathtt{Pair}\} \}$ which maps data types into ,
+and that there exists a function \texttt{+}. \fixme{Do this right according to
+  the new environment definitions}
+
 Consider
-\begin{lstlisting}
-      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
-    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
-    | addodd Nil . Nil
-    | addodd x . x
-\end{lstlisting}
-Assume that the constructor environment is $C = \{\mathtt{Cons}, \mathtt{Nil},
-\mathtt{Pair}\}$, and that there exists a function \texttt{+}.
+
+\begin{sml}
+val rec addodd = 
+fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+     Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+ | Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
+ | Nil . Nil
+ | x . x
+\end{sml}
 
 As the match is not in partially ordered form (due to the pattern \texttt{x})
 our only choice is to eliminate. Luckily we can, because the three first
 patterns forms a cover, so we can eliminate the fourth. We get
-\begin{lstlisting}
-      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
-    | addodd Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
-    | addodd Nil . Nil
-\end{lstlisting}
+\begin{sml}
+val rec addodd = 
+fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+     Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+ | Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
+ | Nil . Nil
+\end{sml}
 which is in partially ordered form. The second clause can be generalised to
-\texttt{x . x}. This means that the clause \texttt{Nil . Nil} should be moved
+\smlinline{x . x}. This means that the clause \smlinline{Nil . Nil} should be moved
 up. We get
-\begin{lstlisting}
-      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
-    | addodd Nil . Nil
-    | addodd x . x
-\end{lstlisting}
-Next we can generalise \texttt{Nil . Nil} to \texttt{x . x} which coincide with
+\begin{sml}
+val rec addodd = 
+fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+     Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+ | Nil . Nil
+ | x . x
+\end{sml}
+Next we can generalise \smlinline{Nil . Nil} to \smlinline{x . x} which coincide with
 the third clause, so we remove it.
-\begin{lstlisting}
-      addodd Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-               Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
-    | addodd x . x
-\end{lstlisting}
-The first clause can be generalised to \texttt{
-  Cons (Cons (x, y), xs) . Cons (Cons (x, + y), addodd xs)
-} (by generalising the two \texttt{Pair} patterns), so we get
-\begin{lstlisting}
-      addodd Cons (Cons (x, y), xs) .
-               Cons (Cons (x, + y), addodd xs)
-    | addodd x . x
-\end{lstlisting}
+\begin{sml}
+val rec addodd = 
+fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
+     Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+ | x . x
+\end{sml}
+The first clause can be generalised to
+
+\begin{sml}
+Cons (Cons (x, y), xs) . Cons (Cons (x, + y), addodd xs)
+\end{sml}
+\noindent (by generalising the two \texttt{Pair} patterns), so we get
+
+\begin{sml}
+val rec addodd = 
+fn Cons (Cons (x, y), xs) .
+     Cons (Cons (x, + y), addodd xs)
+ | x . x
+\end{sml}
 which cannot be generalised or eliminated upon. So it is a normal form.
 
 \end{example}
 
 \section{Normal form}
-We say that the function $\fun m$ is a normal form if there does not exist an
+We say that the function $\fn m$ is a normal form if there does not exist an
 $m'$ such that $m ->e m'$ or $m ->g m'$.
 
 \subsection{Reducing to normal form}
-Consider a function $\fun m$. It can be converted to a normal form by repeatedly
+Consider a function $\fn m$. It can be converted to a normal form by repeatedly
 eliminating and generalising patterns.
 
 Note that $m$ should be in partially ordered form (\fref{def:part-order-form}) in
@@ -966,14 +988,15 @@ ordered form by repeated elimination.
 \end{lemma}
 
 \begin{example}
-Consider
-\begin{lstlisting}
-      f (A (A (a, b), c)) . A (c, A (a, b))
-    | f (A (a, b))        . A (b, a)
-    | f B                 . B
-    | f x                 . x
-    | f (A (a, A (b, c))  . A (A (c, b), a)
-\end{lstlisting}
+Consider 
+\begin{sml}
+val f = 
+fn A (A (a, b), c) . A (c, A (a, b))
+ | A (a, b)        . A (b, a)
+ | B               . B
+ | x               . x
+ | A (a, A (b, c))  . A (A (c, b), a)
+\end{sml}
 Assume that the only constructors are \texttt{A} and \texttt{B}.
 
 As the match is not in partially ordered form (due to the last pattern being
@@ -981,38 +1004,44 @@ more specific than the pattern \texttt{x}) our only choice is to
 eliminate. Luckily we can, because the four (three actually) first patterns
 forms a cover. With the last clause eliminated we have
 
-\begin{lstlisting}
-      f (A (A (a, b), c)) . A (c, A (a, b))
-    | f (A (a, b))        . A (b, a)
-    | f B                 . B
-    | f x                 . x
-\end{lstlisting}
+\begin{sml}
+val f = 
+fn A (A (a, b), c) . A (c, A (a, b))
+ | A (a, b)        . A (b, a)
+ | B               . B
+ | x               . x
+\end{sml}
 
-From here we can choose to eliminate or generalise. We generalise. It is the
+From here we can choose to eliminate or generalise. We generalise and it is the
 case that
 \[
 (\texttt{A (A (a, b), c)}, \texttt{A (c, A (a, b))}) |> (\texttt{A (x, y)},
 \texttt{A (y, x)})
 \]
 
-We arrive at scenario \ref{item:gen-scen-1} since $\texttt{A (a, b)} ==
-\texttt{A (x, y)}$. So we must have $(\texttt{A (a, b)}, \texttt{A (b, a)}) ==a
-(\texttt{A (x, y)}, \texttt{A (y, x)})$, which is the case. So the first clause
-can be deleted. We now have
+We arrive at generalisation scenario \ref{item:gen-scen-1} since $\texttt{A (a, b)} ==
+\texttt{A (x, y)}$. So we must have 
+\[ 
+(\texttt{A (a, b)}, \texttt{A (b, a)}) 
+==a (\texttt{A (x, y)}, \texttt{A (y, x)})
+\]
+which is the case. So the first clause can be deleted. We now have
 
-\begin{lstlisting}
-      f (A (a, b)) . A (b, a)
-    | f B          . B
-    | f x          . x
-\end{lstlisting}
+\begin{sml}
+val f = 
+fn A (a, b) . A (b, a)
+ | B        . B
+ | x        . x
+\end{sml}
 
 Since the two first patterns form a cover the last clause can be eliminated. We
 end up with
 
-\begin{lstlisting}
-      f (A (a, b)) . A (b, a)
-    | f B          . B
-\end{lstlisting}
+\begin{sml}
+val f = 
+fn A (a, b) . A (b, a)
+ | B        . B
+\end{sml}
 
 which cannot be generalised or eliminated further, so it is a normal form.
 \end{example}
