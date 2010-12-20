@@ -1,52 +1,44 @@
 \section{Rule syntax}
 
-Rewriting rules are defined by the syntax in 
+\fixme{This is implementation specific.}
 
-\begin{nonfloatingtable}
+The actual syntax of rewriting rules are defined by the grammar in
+\fref{tab:rule-grammar}. One or more rules may be defined in a rule-file. This
+makes it possible to create ``groupings'' of the rewriting rules. Such groupings
+are solely intended for ease of reading/writing the rules but it also has the
+side effect that the rules will be applied in the order that they are defined in
+the file and files will be read into the system in the order they are reported
+by the operating system through a directory listing.
 
-  \setlength{\grammarindent}{7.3em}
-  \begin{grammar} 
-    
-    <rule-program> ::= <rule>$^{*}$
-    
-    <rule> ::= "rule" <rule-header> <scheme> "becomes" <clause>$^{+}$ "end"
-    
-    <rule-header> ::= <rule-type> <rule-name>
-    
-    <rule-type> ::= "clauses" 
-    \alt "expression" 
-    
-    <rule-name> ::= <longid>
-    
-    <rule-self> ::= "self" <sexp>
-    
-    <scheme> ::= <clause>$^{+}$ [<cstrns>]
-    
-    <clause> ::= "|" <spat> "=>" <sexp>
-    
-    <cstrns> ::= "where" <cstrn-body> 
-    
-    <cstrn-body> ::= <cstrn-rel> 
-    \alt <cstrn-rel> "," <cstrn-body>
-    
-    <cstrn-rel> ::= <longid> "(" <cstrn-rel-body>$^{+}$ ")"
-    
-    <cstrn-rel-body> ::= <spat>   
-    
-    <transformer> ::= "£" <longid> <sexp>
+\subsection{Syntax quirks}
 
-    <meta-pattern-sexp> ::= "§" <longid>  <sexp>$^{*}$
-    
-    <meta-pattern-spat> ::= "§" <longid>  <spat>$^{*}$
+The rule syntax has been designed to resemble SML syntax, but still not the
+extend where it is confusing to see which is SML and which is rule specific
+syntax.
 
-  \end{grammar}
-  
-  \caption{Complete rule grammar. See \fref{tab:scheme-expressions} for the
-    \synt{sexp} grammar and \fref{tab:scheme-patterns} for the \synt{spat}
-    grammar which uses the transformers and meta patterns}
-  \label{tab:rule-grammar}
+\begin{description}
+\item[Clauses] all starts with a pipe (\ttt{|}), also the first. We chose this as
+  there is no \ttt{fn} keyword at the beginning so it looked a bit empty and to
+  emphasise that it is a rule clause and not a SML clause.
 
-\end{nonfloatingtable}
+\item[Transformers] all starts with a pound sign (\ttt{£}) followed by any valid
+  SML function name. This was chosen as it is not a valid SML token so it would
+  stand out as being something special.
+
+\item[Meta patterns] all starts with a section sign (\ttt{§}) followed by any
+  valid SML function name. This was chosen as it is not a valid SML token so it
+  would stand out as being something special.
+
+\item[Meta variables] all starts with a underscore (\ttt{\_}) followed by any
+  valid SML varaible name. This was chosen as no SML identifier may start with
+  an underscore.
+\end{description}
+
+Not all valid SML code may be written inside a rule definition. As seen from the
+rule grammar expressions are defined as being \synt{sexp} (scheme expressions)
+and patterns as \synt{spat} (scheme patterns). The grammar for these two are
+given in 
+
 
 
 %%% Local Variables:
