@@ -4,15 +4,17 @@
 \newcommand{\rec}{\ttt{rec}\ }
 
 An SML like grammar, without types, is presented below which will be the basis
-of defining normal forms for SML functions. 
+of defining normal forms for SML functions. Well formed code in the below
+grammar also includes that all constructors used in the patterns of a match must
+be of the same data type. For example the unary constructors made from
+\ttt{[0-9]}$^{+}$ could be defined to belong to the data type \textit{number}
 
 \begin{eqnarray*}[rqcql:Tl]
   var & = & \ttt{[a-z]$^{+}$}                          & Identifiers\\
-  con & = & \ttt{[A-Z][a-z]$^{*}$ | [0-9]}             & Constructors\\
-  num & = & \mathbb{Z}                                & Natural numbers\\
+  con & = & \ttt{[A-Z][a-z]$^{*}$ | [0-9]$^{+}$}        & Constructors\\
 % Matches
   match & ::= & \epsilon                              & Empty match\\
-  & & pat\texttt{.}exp\ \texttt{|}\ match             & Pattern $->$ expression\\
+  & & pat\texttt{.}exp\ \texttt{|}\ match             & Pattern \ttt{=>} expression\\
 % Patterns
   pat & ::= & var                                     & Variable\\
   & & con                                             & Constructor of arity $0$\\
@@ -30,16 +32,18 @@ of defining normal forms for SML functions.
   & & \epsilon                                        & Empty program\\
 \end{eqnarray*}
 
+We use (with superfixes, subfixes and primes) $v$, $c$, $m$, $p$, $e$ and $d$ to
+range over $var$, $con$, $match$, $pat$, $exp$ and $dec$ respectively.
+
 No pattern may contain a given variable more than once.
 
-\paragraph{Environment.} We assume two fixed constructor environments $\rho$ and $\psi$
-for when determining coverage. $\rho$ is a mapping of constructors to their data
-type and $\psi$ is a mapping of data types to a list of all constructors of that
-data type.
+\paragraph{Environment.} For simplicity it is not possible to define data
+types/constructors in the grammar, but we will assume two fixed constructor
+environments, $\rho$ and $\psi$, containing this information as this is solely
+used when determining coverage (see \fref[plain]{sec:cover}). $\rho$ is a mapping
+of constructors to their data type and $\psi$ is a mapping of data types to a
+list of all constructors of that data type.
 
-We use (with superfixes, subfixes and primes) $v$, $c$, $n$, $m$, $p$, $e$
-and $d$ to range over $var$, $con$, $num$, $match$, $pat$, $exp$ and $dec$
-respectively.
 
 \section{A note about evaluation}
 We expect programs to be run in an environment containing predefined functions
@@ -84,7 +88,7 @@ In particular we have\footnote{See \fref{sec:free-variables}
   for the definition of $\FV_{pat}$.} $x \sqsubseteq p$ exactly when $x \in
 \FV_{pat}(p)$. The relation is obviously reflexive.
 
-\begin{example}
+\begin{example}\ \\
   \label{ex:suppattern1}
   Recall that lowercase identifiers are variables, and uppercase ones are
   constructors. Variables as subpatterns:
@@ -171,7 +175,7 @@ Whereas these patterns are not equivalent
 We denote the free variables of expressions, matches and patterns with the tree
 functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
 
-\begin{definition}[Free variables of expressions, $\FV_{exp}$] \ \\
+\begin{definition}[Free variables of expressions, $\FV_{exp}$]\ \\
   Inductively defined:
   \begin{eqnarray}
     \FV_{exp} (v) &=& \{v\} \\
@@ -206,7 +210,7 @@ functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
   \FV_{exp} \left(
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
-fun Nil . Nil
+fn Nil . Nil
   | Cons (x, xs) . Cons(f x, g xs)
 \end{lstlisting}
     \end{eqnalign}
@@ -235,7 +239,7 @@ Cons (x, xs)
 We define substitution in expressions. An expression can be substituted for any
 (sub)expression of an expressions, not just variables.
 
-\begin{definition}[Substitution]
+\begin{definition}[Substitution]\ \\
   If $e_1$, $e_2$ and $e_3$ are expressions we write $e_1[e_2/e_3]$ to be the
   result of substituting all occurrences of $e_3$ in $e_1$ with $e_2$.
   \begin{eqnarray}
@@ -321,7 +325,7 @@ fn z . z
 We define alpha equivalence for expressions and for pattern-expression pairs. We
 use the symbol $==a$ for both relations.
 
-\begin{definition}[Alpha equivalence of expressions, $==a$]
+\begin{definition}[Alpha equivalence of expressions, $==a$]\ \\
 \label{def:alpha-equivalence}
   First we define alpha equivalence given a mapping of bound variables:
   \begin{eqnarray}
@@ -353,7 +357,7 @@ and \fref{eq:alpha-con} holds if
 \sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n.
 \]
 
-\begin{definition}[Alpha equivalence of pattern-expression pairs, $==a$]
+\begin{definition}[Alpha equivalence of pattern-expression pairs, $==a$]\ \\
 \label{def:alpha-equivalence-patexp}
   Again we assume a mapping of bound variables. It is the case that
   \[
@@ -369,9 +373,8 @@ If $e_1$ and $e_2$ are alpha equivalent expressions we write $e_1 ==a e_2$ which
 is a shorthand for $[] |- e_1 ==a e_2$. Similarly for pattern-expression pairs.
 \end{definition}
 
-\begin{example}[Alpha equivalence, $==a$]
+\begin{example}[Alpha equivalence, $==a$]\ \\
 \label{ex:alpha-equivalence1}
- 
   We have
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
@@ -428,7 +431,7 @@ respectively.
 As it turns out it is easier to define $<$ and $<='$ directly and then define
 $<=$ and $<'$ in turn of those.
 
-\begin{definition}[Strict total ordering, $<$]
+\begin{definition}[Strict total ordering, $<$]\ \\
   \label{def:pat-total-order-strict}
   Assume a total strict ordering $\lessdot$ on constructors and
   variables\footnote{For example let all constructors come before all variables
@@ -482,7 +485,8 @@ b
   Note: Keep in mind that the exact names of the variables are unimportant.
 \end{example}
 
-\begin{definition}[Total ordering, $<=$]\label{def:pat-total-order-weak}
+\begin{definition}[Total ordering, $<=$]\ \\
+  \label{def:pat-total-order-weak}
   We define the reflexive cousin:
   \begin{eqnarray*}
     p_1 <= p_2 \Longleftrightarrow p_1 < p_2 \lor p_1 = p_2
@@ -491,13 +495,15 @@ b
 
 
 
-\begin{definition}[Partial ordering, $<='$]\label{def:pat-partial-order-weak}
+\begin{definition}[Partial ordering, $<='$]\ \\
+  \label{def:pat-partial-order-weak}
   We say that $p_2$ weakly generalises $p_1$ or $p_1$ is at least as specific as
   $p_2$ and we write $p_1 <=' p_2$. Inductively defined.
   \begin{eqnarray}
     p &<='& v \label{eq:pat-partial-order-weak-var}\\
     c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<='&
-    c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:pat-partial-order-weak-con}
+    c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}
+    \label{eq:pat-partial-order-weak-con}
   \end{eqnarray}
   Where \fref{eq:pat-partial-order-weak-con} holds if
   \begin{eqnarray*}
@@ -510,7 +516,8 @@ b
 
 
 
-\begin{definition}[Strict partial ordering, $<'$]\label{def:pat-partial-order-strict}
+\begin{definition}[Strict partial ordering, $<'$]\ \\
+  \label{def:pat-partial-order-strict}
   We define the strict counterpart of $<='$ by
   \begin{eqnarray*}
       p_1 <' p_2 \Longleftrightarrow p_1 <=' p_2 \land p_1 \not == p_2
@@ -541,7 +548,7 @@ b
 \end{example}
 
 
-\begin{lemma}[Total ordering]
+\begin{lemma}[Total ordering]\ \\
   \label{lem:pat-total-orderings}
   The relation $<=$ is a total ordering, and $<$ is a strict total ordering on
   patterns.
@@ -550,7 +557,7 @@ b
 \end{lemma}
 
 
-\begin{lemma}[Partial ordering]
+\begin{lemma}[Partial ordering]\ \\
   \label{lem:pat-partial-orderings}
   The relation $<='$ is a partial ordering and $<'$ is a strict partial ordering
   on the equivalence classes of patterns modulo structural equivalence
@@ -562,7 +569,7 @@ b
 We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
 < p_1$, $p_2 <= p_1$, $p_2 <' p_1$ and $p_2 <=' p_1$ respectively.
 
-\begin{lemma}[]
+\begin{lemma}[]\ \\
   \label{lem:total-implies-partial}
   If two patterns $p_1$ and $p_2$ are ordered by the partial ordering then they
   are also ordered by the total one. That is
@@ -574,13 +581,15 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
   Straightforward using induction.
 \end{proof}
 
-\begin{definition}[Confusion, $||$]\label{def:pat-confusion}
+\begin{definition}[Confusion, $||$]\ \\
+  \label{def:pat-confusion}
   Let two patterns $p_1$ and $p_2$ be given. If it is the case that neither $p_1
   <=' p_2$ nor $p_1 >=' p_2$ we say that $p_1$ and $p_2$ are confused and we
   write $p_1 || p_2$.
 \end{definition}
 
-\begin{lemma}[Unique relation]\label{lem:unique-rel}
+\begin{lemma}[Unique relation]\ \\
+  \label{lem:unique-rel}
   Given two patterns $p_1$ and $p_2$ exactly one of the following hold
   \begin{eqnarray*}
     p_1 &==& p_2\\
@@ -593,7 +602,7 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
   Immediately by inspection.
 \end{proof}
 
-\begin{lemma}[]
+\begin{lemma}[]\ \\
   \label{lem:more-specific-confused}
   If $p_1 <' p_2$ and $p_2 || p_3$, then $p_1 || p_3$.
 
@@ -608,6 +617,7 @@ corresponding bodys.
 The input to a function is tried against the patterns from top to bottom. An
 unused pattern is a pattern that will never see a value which it matches.
 
+\paragraph{Elimination reasons}\ \\
 This can happen for two reasons.
 \begin{enumerate}
 \item The pattern will never be tried against the input because the input
@@ -617,17 +627,46 @@ This can happen for two reasons.
 
 \subsection{Cover}
 \label{sec:cover}
-We define a cover to be a set of patterns such that for every input at least one
-of the patterns will match that input. And we write $Cov(P)$ if $P$ is a cover.
+\fixme{det her skal vidst lige luges lidt}
 
-Any pattern following patterns that taken together are a cover is unused because
-of reason \ref{item:unused-reason-1}.
+We define a cover to be a set of patterns such that for every input at least one
+of the patterns will match that input and we write $Cov(P)$ if $P$ is a cover.
+
+\[
+  m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
+\]
+
+There are two cases if we only look at nullary constructors
+\begin{enumerate}
+\item Trivially we have a cover with $P = \{p_1,\ldots,p_i\}$ for $1 \leq i \leq
+  n$ if $p_i$ is a variable
+  
+  
+\item Or we have a cover with $P = \{p_1,\ldots,p_j\}$ for $1 \leq j \leq n$ if
+  the set $C$ formed by the constructors of $P$ and the set $D$ formed of all
+  the constructors belonging to the data type of $p_1$ are equal. The set $D$
+  can be found by looking up the data type of $p_1$ in $\rho$ and then looking
+  up the data type in $\psi$ to get $D$.
+
+\end{enumerate}
+
+\noindent
+where the cover $Cov(P)$ will be of which ever set is the smallest.
+
+For constructors of arity $k$, the arguments to a constructor must also form a
+cover, resulting in more than one pattern for a given constructor is needed to
+form its own cover.
+
+\begin{lemma}\ \\
+  Any pattern following a cover is unused because of elimination reason
+  \ref{item:unused-reason-1}.
+\end{lemma}
 
 \subsection{Shadowed patterns}
 \label{sec:shadowed-patterns}
-If a pattern is unused because of reason \ref{item:unused-reason-2} we say that
+If a pattern is unused because of elimination reason \ref{item:unused-reason-2} we say that
 it is shadowed.
-\begin{definition}[Shadowed]
+\begin{definition}[Shadowed]\ \\
   Let
   \[
   m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
@@ -639,7 +678,7 @@ it is shadowed.
 \subsection{Elimination}
 
 We can now define the elimination of unused patterns.
-\begin{definition}[Elimination, $->e$]
+\begin{definition}[Elimination, $->e$]\ \\
 \label{def:shadowed-patterns-1}
   We define a reduction relation $->e$ that expresses the
   elimination of exactly one pattern from a match.
@@ -659,7 +698,7 @@ We can now define the elimination of unused patterns.
   and we write $m ->e m'$.
 \end{definition}
 
-\begin{example}[Elimination, $->e$]
+\begin{example}[Elimination, $->e$]\ \\
   The first two patterns make a cover (assuming the only constructors are
   \ttt{Cons} and \ttt{Nil}) so the last pattern is eliminated.
   \begin{eqnarray*}[c]
@@ -678,8 +717,8 @@ We can now define the elimination of unused patterns.
 \end{lstlisting}
     \end{eqnalign}
   \end{eqnarray*}
-
-  The second pattern in the example below is shadowed by the first pattern and is thus eliminated.
+  The second pattern in the example below is shadowed by the first pattern and
+  is thus eliminated.
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
@@ -699,7 +738,7 @@ We can now define the elimination of unused patterns.
 
 \end{example}
 
-\begin{lemma}(Preservation)
+\begin{lemma}[Preservation]\ \\
   If an unused pattern is removed from a program, then the resulting program is
   semantically equivalent.
 
@@ -709,7 +748,7 @@ We can now define the elimination of unused patterns.
   \]
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\ \\
   Trivial (as if).
 \end{proof}
 
@@ -731,7 +770,8 @@ seamlessly, such that two patterns can be made to one.
 First we need some auxiliary definitions.
 
 \subsection{Partially ordered form}
-\begin{definition}\label{def:part-order-form}
+\begin{definition}\ \\
+  \label{def:part-order-form}
   A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is in
   partially ordered form if
   \[
@@ -747,40 +787,42 @@ We define generalisation of a single pair of a pattern and its body. We write
 $(p, e) |> (p', e')$ to mean that the pattern $p$ with its body $e$ generalises
 to the pattern $p'$ with the body $e'$.
 
-\begin{definition}[Generalisation of single pattern-body pairs, $|>$]
-\label{def:gener-patt}
-Inductively defined:
-\begin{eqnarray}
-  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} , e) &|>& (x , e[x
-  / \kappa (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} )]) \label{eq:single-gen-1}\\
-  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_i \texttt{,} \ldots
-  \texttt{,} p_n \texttt{)}, e) &|>&
-  (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p'_i \texttt{,} \ldots
-  \texttt{,} p_n \texttt{)}, e') \label{eq:single-gen-2}
-\end{eqnarray}
-Where \fref{eq:single-gen-1} holds when $x$ is a fresh variable and
-\[
-FV_{pat}(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)}) \cap FV_{exp}(e[x/\kappa
-(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)})]) = \emptyset
-\]
-and \fref{eq:single-gen-2} holds when \fref{eq:single-gen-1} does not and
-\[
-(p_i , e) |> (p'_i , e')
-\]
+\begin{definition}[Generalisation of single pattern-body pairs, $|>$]\ \\
+  \label{def:gener-patt}
+  Inductively defined:
+  \begin{eqnarray}
+    (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} , e) &|>& (x , e[x
+    / \kappa (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} )]) 
+    \label{eq:single-gen-1}\\
+    (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_i \texttt{,} \ldots
+    \texttt{,} p_n \texttt{)}, e) &|>&
+    (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p'_i \texttt{,} \ldots
+    \texttt{,} p_n \texttt{)}, e') \label{eq:single-gen-2}
+  \end{eqnarray}
+  Where \fref{eq:single-gen-1} holds when $x$ is a fresh variable and
+  \[
+  FV_{pat}(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)}) \cap FV_{exp}(e[x/\kappa
+  (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)})]) = \emptyset
+  \]
+  and \fref{eq:single-gen-2} holds when \fref{eq:single-gen-1} does not and
+  \[
+  (p_i , e) |> (p'_i , e')
+  \]
 \end{definition}
 
-\begin{lemma}\label{lem:single-gen-imp-gen}
+\begin{lemma}\ \\
+  \label{lem:single-gen-imp-gen}
   If a pattern $p$ (and some body) is generalised to $p'$ (and some other
   body), then $p'$ strictly generalises $p$. In other words
   \[
   (p, e) |> (p', e') ==> p <' p'.
   \]
 \end{lemma}
-\begin{proof}
+\begin{proof}\ \\
   Straightforward induction proof.
 \end{proof}
 
-\begin{example}
+\begin{example}\ \\
   This example shows a match with an unnecessary complex pattern that reverses
   the components of a pair.
 
@@ -845,7 +887,7 @@ Four scenarios arise
   generalised. \label{item:gen-scen-4}
 \end{enumerate}
 
-\begin{definition}[Generalisation, $->g$]
+\begin{definition}[Generalisation, $->g$]\ \\
 \label{def:gener-match}
   We define a reduction relation $->g$ that expresses the
   generalisation of exactly one pattern from a match.
@@ -876,10 +918,10 @@ Four scenarios arise
 
   And we write $m ->g m'$.
 
-  \begin{lemma}
+  \begin{lemma}\ \\
     If $m ->g m'$ then $m'$ is in partially ordered form.
   \end{lemma}
-  \begin{proof}
+  \begin{proof}\ \\
     Assume
     \begin{eqnarray*}[rqTcql]
       m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
@@ -904,7 +946,7 @@ Four scenarios arise
 
 \end{definition}
 
-\begin{example}[Generalisation, $->g$]
+\begin{example}[Generalisation, $->g$]\ \\
 Assume that the constructor environment is $C = \{list \mapsto \{\mathtt{Cons},
 \mathtt{Nil} \}, pair \mapsto \{\mathtt{Pair}\} \}$ which maps data types into ,
 and that there exists a function \texttt{+}. \fixme{Do this right according to
@@ -978,16 +1020,16 @@ Note that $m$ should be in partially ordered form (\fref{def:part-order-form}) i
 order to generalise its patterns. Luckily we can convert it to a partially
 ordered form by repeated elimination.
 
-\begin{lemma}
+\begin{lemma}\ \\
   If a function $f$ can be converted to the normal form $f'$, then $f$ and $f'$
   are semantically equivalent.
 \end{lemma}
 
-\begin{lemma}
+\begin{lemma}\ \\
   We expect the normal form to be unique (in some sense).
 \end{lemma}
 
-\begin{example}
+\begin{example}\ \\
 Consider 
 \begin{sml}
 val f = 
