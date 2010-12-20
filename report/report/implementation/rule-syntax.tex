@@ -1,7 +1,5 @@
 \section{Rule syntax}
 
-\fixme{This is implementation specific.}
-
 The actual syntax of rewriting rules are defined by the grammar in
 \fref{tab:rule-grammar}. One or more rules may be defined in a rule-file. This
 makes it possible to create ``groupings'' of the rewriting rules. Such groupings
@@ -36,8 +34,13 @@ syntax.
 
 Not all valid SML code may be written inside a rule definition. As seen from the
 rule grammar expressions are defined as being \synt{sexp} (scheme expressions)
-and patterns as \synt{spat} (scheme patterns). The grammar for these two are
-given in 
+and patterns as \synt{spat} (scheme patterns), the grammar for these two are
+given in \fref[plain]{tab:scheme-expressions} and \fref{tab:scheme-patterns}
+respectively.
+
+\fixme{All this sexp and spat talk, havent't that been covered before ?}
+
+
 
 
 
