@@ -1,0 +1,32 @@
+\subsection{Project manager}
+
+When turtledove is to be used in collaboration with an editor and wants to take
+advantage of all the features it has to offer, the project manager must be
+used. The project manager is ultimately responsible for handling project files
+which in the end will be converted into an MLB file.
+
+The reason why project files aren't just MLB files is that they don't enforce
+enough limitations in how they are written which would make it practically
+impossible to write a descent tool to manipulate them whereas it makes it quite
+easy for the user to hack something together.
+
+Dependencies are properly the most challenging thing for a tool to handle as
+these are most often done with a local
+
+\begin{example}\ \\
+Example of an MLB file including the basis and MyLib library in a local
+  \begin{sml}
+local
+  $(SML_lIB)/basis/basis.mlb
+  $(SML_LIB)/mylib/MyLib.mlb
+in
+Main.sml
+end      
+  \end{sml}
+\end{example}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../../report"
+%%% End: 
