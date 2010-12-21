@@ -113,20 +113,19 @@ grouping.
 
 As a grouping may consists sub groupings, only the first level of sub groupings
 are allowed in exposure references. In dependency, references are
-only allowed from any first level element in a grouping (file or sub grouping)
+only allowed from any first level element in a grouping (file or exposure of sub grouping)
 to any first level element within the group or to any first level element in the
 parent group. The below example illustrates this:
 
-\begin{example}[Project description for a project named ``Posidon'']\ 
-  \label{ex:Sample-project-file-posidon}
-  
+\begin{example}[Project description for a project named ``Posidon'']\ \\
+  \label{ex:Sample-project-file-posidon}  
   The \texttt{Posidon} project contains the following 
-
+  
   \begin{description}
-  \item[Files] 
+  \item[Files]\ \\
     \texttt{u.sml} and \texttt{j.sml}.
     
-  \item[Groupings] 
+  \item[Groupings]\
     \begin{itemize}
     \item Group \texttt{A} which
       \begin{itemize}
@@ -155,10 +154,10 @@ parent group. The below example illustrates this:
     \end{itemize}
 
 
-  \item[Exposes] 
+  \item[Exposes]\ \\
     Group \texttt{C} and file \texttt{j.sml}
     
-  \item[Dependencies] 
+  \item[Dependencies]\
     \begin{itemize}
     \item \texttt{C} depends on \texttt{B}
     \item \texttt{j.sml} depends on \texttt{u.sml}
