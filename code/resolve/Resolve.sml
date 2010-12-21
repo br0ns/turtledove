@@ -3,10 +3,37 @@ struct
 exception Error of string
 fun fail s = raise Error s
 
-val eplus = Dictionary.plus
-val eenv = Dictionary.empty
-val renv = Infixing.resolve
-(* val renv = id *)
+type basis = {infixing    : Infixing.basis,
+              environment : ValEnv.t,
+              interface   : IntEnv.t}
+fun eplus {infixing = inf1, environment = env1, interface = int1}
+          {infixing = inf2, environment = env2, interface = int2} =
+    {infixing    = Infixing.plus inf1 inf2,
+     environment = ValEnv.++ (env1, env2),
+     interface   = IntEnv.++ (int1, int2)
+    }
+val eenv =
+    {infixing    = Infixing.empty,
+     environment = ValEnv.empty,
+     interface   = IntEnv.empty
+    }
+val primenv =
+    {infixing    = Infixing.empty,
+     environment = ValEnv.prim,
+     interface   = IntEnv.empty
+    }
+
+fun renv (t, {infixing = inf, environment = env, interface = int}) =
+    let
+      val (t', inf') = Infixing.resolve (t, inf)
+      val (t'', int', env') = Environment.resolve (t', int, env)
+    in
+      (t'',
+       {infixing    = inf',
+        environment = env',
+        interface   = int'
+      })
+    end
 
 fun init ast =
     let
@@ -97,6 +124,7 @@ fun init ast =
             | Dec_Source {file, ast, comments} =>
               let
                 val (ast', env') = renv (ast, env)
+                    handle Fail e => raise Fail (Path.toString file ^ ": " ^ e)
               in
                 (Tree.join
                    (Wrap.wrap
@@ -117,10 +145,82 @@ fun init ast =
                 ids
             | Dec_Ann anns => continue ()
             (* TODO: fix rebinding of structures, signatures and functors *)
-            | Dec_Structure strbinds => continue ()
-            | Dec_Signature sigbinds => continue ()
-            | Dec_Functor fctbinds => continue ()
-            | Prim => continue ()
+            | Dec_Structure strbinds =>
+              let
+                val {infixing    = inf,
+                     environment = venv,
+                     interface   = int} =
+                    env
+
+                val venv' =
+                    List.foldl
+                      (fn (binding, env) =>
+                          ValEnv.++ (env, ValEnv.strRep venv binding)
+                      )
+                      ValEnv.empty
+                      strbinds
+              in
+                (join
+                   (this t)
+                   nil,
+                 mlbs,
+                 ebas,
+                 {infixing    = inf,
+                  environment = venv',
+                  interface   = int}
+                )
+              end
+            | Dec_Signature sigbinds =>
+              let
+                val {infixing    = inf,
+                     environment = venv,
+                     interface   = int} =
+                    env
+
+                val int' =
+                    List.foldl
+                      (fn (binding, int') =>
+                          IntEnv.++ (int', IntEnv.sigRep int binding)
+                      )
+                      IntEnv.empty
+                      sigbinds
+              in
+                (join
+                   (this t)
+                   nil,
+                 mlbs,
+                 ebas,
+                 {infixing    = inf,
+                  environment = venv,
+                  interface   = int'}
+                )
+              end
+            | Dec_Functor fctbinds =>
+              let
+                val {infixing    = inf,
+                     environment = venv,
+                     interface   = int} =
+                    env
+
+                val int' =
+                    List.foldl
+                      (fn (binding, int') =>
+                          IntEnv.++ (int', IntEnv.funRep int binding)
+                      )
+                      IntEnv.empty
+                      fctbinds
+              in
+                (join
+                   (this t)
+                   nil,
+                 mlbs,
+                 ebas,
+                 {infixing    = inf,
+                  environment = venv,
+                  interface   = int'}
+                )
+              end
+            | Prim => (join (this t) nil, mlbs, ebas, primenv)
           end
       val (ast, mlbs, bas, env) = loop (ast, Path.Map.empty, ebas, eenv)
     in

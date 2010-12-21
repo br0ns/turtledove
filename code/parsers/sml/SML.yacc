@@ -1,3 +1,8 @@
+(* TODO: Fix dummy positions. Known problems:
+ * 1. A single datatype declaration.
+ *)
+
+
 open Grammar
 open ParserUtils
 type node = ident node
@@ -967,6 +972,7 @@ rvalbind
   : REC rvalbind
       (rvalbind)
   | pat EQUALOP FN match rvalbindRest
+                (* TODO: Assert unqual id *)
       (join (wrap Valbind_Rec patleft matchright) [pat, match]
        :: rvalbindRest)
 
@@ -1437,6 +1443,7 @@ apat
 (* t * tree list *)
 apatnode
   : longvidNoEqual
+                (* TODO: assert unqual *)
       ((Pat_Var longvidNoEqual, nil))
   | OP longvid
       ((Pat_Var (opify longvid), nil))

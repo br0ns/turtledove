@@ -5,12 +5,14 @@ type ast = (Grammar.ident, int) Grammar.ast
 
 structure SMLLrVals = SMLLrValsFun
                         (structure Token = LrParser.Token)
+
 structure SMLLex    = SMLLexFun
                         (structure Tokens = SMLLrVals.Tokens)
+
 structure SMLParser = JoinWithArg
                         (structure ParserData = SMLLrVals.ParserData
-structure Lex = SMLLex
-structure LrParser = LrParser)
+                         structure Lex = SMLLex
+                         structure LrParser = LrParser)
 
 exception LexError = LexError
 exception YaccError = YaccError

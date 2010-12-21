@@ -68,7 +68,15 @@ fun init path =
                    val {ast, comments} = SMLParser.fromFile file
                        handle
                        SMLParser.LexError (p, e) => fail $ Layout.txt "Lex"
-                     | SMLParser.YaccError (p, e) => fail $ Layout.txt "Yacc"
+                     | SMLParser.YaccError (p, e) =>
+                       let
+                         open Layout infix && \
+                         val st = SourceText.fromFile file
+                         val p = SourceText.showPos st p
+                         val e = p && colon \ indent 2 (txt e)
+                       in
+                         fail e
+                       end
 
                    val dep' = Path.Set.singleton file
                    val t' =

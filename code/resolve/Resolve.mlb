@@ -13,12 +13,13 @@ in
 infixing/Infixing.sml
 end
 
-environment/ValEnv.sml
+environment/ValEnv.mlb
 environment/IntEnv.sml
 environment/Environment.sml
 
 in
 
+environment/ValEnv.mlb
 Resolve.sml
 
 end

@@ -145,9 +145,6 @@ datatype 'a node =
        | Dec_Fix of Fixity.t * 'a list
        | Dec_Overload of int option * 'a * 'a list (* [Ty] *)
 
-       (* Valbinds *)
-       | Valbinds (* Valbind list *)
-
        (* Valbind *)
        | Valbind_Plain (* [Pat, Exp] *)
        | Valbind_Rec (* [Pat, Match] *)
@@ -461,7 +458,6 @@ fun show d showa t =
                | Fixity.Op => "Op ") ^
               Show.list showa ids)
       | Dec_Overload _ => next "Dec_Overload ..."
-      | Valbinds => next "Valbinds"
       | Valbind_Plain => next "Valbind_Plain"
       | Valbind_Rec => next "Valbind_Rec"
       | Match => next "Match"

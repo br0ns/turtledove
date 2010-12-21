@@ -134,6 +134,7 @@ fun resolveArgs pats =
 
 (* Takes a tree and a basis. Returns the new tree and the infixes declared by
    the tree *)
+type basis = Fixity.t Dictionary.t
 val empty = Dictionary.empty
 val plus = Dictionary.plus
 fun resolve (t, bas) =
@@ -290,7 +291,6 @@ fun resolve (t, bas) =
           (t, new)
         end
       | Dec_Overload _ => skip ()
-      | Valbinds => continue ()
       | Valbind_Plain => continue ()
       | Valbind_Rec => continue ()
       | Match => continue ()

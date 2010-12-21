@@ -123,8 +123,8 @@ fun walk' sa sb file t =
              | #"s" => TextIO.println
                          $ SourceText.getSource
                          st
-                         (Wrap.left $ this w)
-                         (Wrap.right $ this w)
+                         (#position $ Wrap.left $ this w)
+                         (#position $ Wrap.right $ this w)
              | #"l" => print $ sb $ Wrap.left $ this w
              | #"r" => print $ sb $ Wrap.right $ this w
              | #"q" => raise Quit
@@ -157,7 +157,8 @@ val _ = walk
                    ) ^ Ident.toString id
                  end
              )
-             (Layout.int)
+             (* (const $ Layout.txt "Din MOR") *)
+             (fn {environment, position} => ValEnv.show environment)
           )
           (fn {file, ast, comments} => Path.show file)
           (Layout.itemize "-" o List.map Path.show o Set.toList)
