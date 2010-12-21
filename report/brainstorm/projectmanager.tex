@@ -155,43 +155,56 @@ definition of a project file and more examples of project files.
 \begin{example}[Sample project file for a project named ``Turtledove'']\ 
   \label{ex:Sample-project-file-turtledove}
   
-  The \texttt{Turtledove} project contains the following groupings
-  
-  \begin{itemize}
-  \item Group \texttt{A} which
-    \begin{itemize}
-    \item Contains the file \texttt{x.sml}.
-    \item Exposes the file \texttt{x.sml}.
-    \item Doesn't depend on anything.
-    \end{itemize}
+  The \texttt{Turtledove} project contains the following 
+
+  \begin{description}
+  \item[Files] 
+    \texttt{u.sml} and \texttt{j.sml}.
     
-  \item Group \texttt{B} which
+  \item[Groupings] 
     \begin{itemize}
-    \item Contains the files \texttt{y.sml} and \texttt{z.sml}.
-    \item Exposes the file \texttt{z.sml}.
-    \item Has dependencies
+    \item Group \texttt{A} which
       \begin{itemize}
-      \item \texttt{y.sml} depends on \texttt{x.sml}.
-      \item \texttt{z.sml} depends on \texttt{y.sml}.
+      \item Contains the file \texttt{x.sml}.
+      \item Exposes the file \texttt{x.sml}.
+      \item Doesn't depend on anything.
+      \end{itemize}
+      
+    \item Group \texttt{B} which
+      \begin{itemize}
+      \item Contains the files \texttt{y.sml} and \texttt{z.sml}.
+      \item Exposes the file \texttt{z.sml}.
+      \item Has dependencies
+        \begin{itemize}
+        \item \texttt{y.sml} depends on \texttt{x.sml}.
+        \item \texttt{z.sml} depends on \texttt{y.sml}.
+        \end{itemize}
+      \end{itemize}
+      
+    \item Group \texttt{C} which
+      \begin{itemize}
+      \item Contains the files \texttt{n.sml} and \texttt{m.sml}.
+      \item Exposes the files \texttt{n.sml} and \texttt{m.sml}.
+      \item Doesn't depend on anything.
       \end{itemize}
     \end{itemize}
+
+
+  \item[Exposes] 
+    Group \texttt{C} and file \texttt{j.sml}
     
-  \item Group \texttt{C} which
+  \item[Dependencies] 
     \begin{itemize}
-    \item Contains the files \texttt{n.sml} and \texttt{m.sml}.
-    \item Exposes the files \texttt{n.sml} and \texttt{m.sml}.
-    \item Doesn't depend on anything.
-    \end{itemize}
-  \end{itemize}
-  
-  and files \texttt{u.sml} and \texttt{j.sml}. The project exposes the group
-  \texttt{C} and file \texttt{j.sml}, and it has dependencies: \texttt{C}
-  depends on \texttt{B}, \texttt{j.sml} depends on \texttt{u.sml} and
-  \texttt{j.sml} depends on \texttt{B}.
-  
-  
+    \item \texttt{C} depends on \texttt{B}
+    \item \texttt{j.sml} depends on \texttt{u.sml}
+    \item \texttt{j.sml} depends on \texttt{B}.
+    \end{itemize} 
+  \end{description}
+   
   This results in the following project file
   
+  \fixme{This is bullshit!!!!}
+
 \begin{lstlisting}
 {
   "Properties" : { },
