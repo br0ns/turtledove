@@ -1,9 +1,23 @@
 \section{Turtledove}
 \label{sec:design-turtledove}
 
-\input{design-decisions/turtledove/projectmanager}
+Turtledove is an all-in-one solution to ``Tool assisted programming in SML with
+special emphasis on semi-automatic rewriting to predefined standard forms''. As
+of this writing no integrated development environment exists for SML that offers
+high level assistance such as ``refactoring'' or ``go to definition''.
+Turtledove is an aim at being the first a back end system that can easily be
+integrated into most of the currently available development environments.
+
+
+To facilitate this Turtledove is a modular system with a few key tools described
+below. 
+
 
 \input{design-decisions/turtledove/parsers}
+
+\input{design-decisions/turtledove/tools/tools}
+
+....
 
 %%% Local Variables: 
 %%% mode: latex
