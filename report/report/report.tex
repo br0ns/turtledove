@@ -127,6 +127,12 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \Frefformat{vario}{\fancyrefdeflabelprefix}{%
   \Frefdefname\fancyrefdefaultspacing#1#3%
 }
+\frefformat{plain}{\fancyrefdeflabelprefix}{%
+  \frefdefname\fancyrefdefaultspacing#1%
+}
+\Frefformat{plain}{\fancyrefdeflabelprefix}{%
+  \Frefdefname\fancyrefdefaultspacing#1%
+}
 
 \newcommand*{\fancyreflemlabelprefix}{lem}
 \fancyrefaddcaptions{english}{
