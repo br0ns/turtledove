@@ -44,6 +44,34 @@ used when determining coverage (see \fref[plain]{sec:cover}). $\rho$ is a mappin
 of constructors to their data type and $\psi$ is a mapping of data types to a
 list of all constructors of that data type.
 
+\section{List of symbols}
+
+Below is a summarised list of symbols that will be introduced in this chapter
+
+\begin{tabular}{| >{$}c<{$} | p{18em} | l|}
+  \hline
+  \textbf{Symbol} & \textbf{Description} & \textbf{Defined at} \\ \hline
+  ++ & Union of two arbitrary mappings. & \Fref{sec:auxil-defin}  \\ \hline
+  = & Syntactic equality. & \\ \hline
+  ==_\pi & Equivalence of two patterns. & \Fref{def:equivalence-patterns} \\
+  \hline
+  ==a & Alpha equivalence of two expressions or pattern-expression
+  pairs. & \Fref{def:alpha-equivalence} \\ \hline
+  \sim & Semantic equivalence of two
+  expressions. & \Fref{sec:semantic-equivalence} \\ \hline
+  \lessdot & Some total ordering on constructors and variables. & \Fref{def:pat-total-order-strict} \\ \hline
+  <, \ <=& Total ordering of patterns & \Fref{lem:pat-total-orderings} \\
+  \hline
+  <', \ <='& Partial ordering of patterns & \Fref{lem:pat-partial-orderings} \\
+  \hline
+  || & Confusion of two patterns (when they don't partially order) &
+  \Fref{def:pat-confusion} \\ \hline
+  ->e & Elimination of one unused pattern from a match. &
+  \Fref{def:shadowed-patterns-1} \\ \hline
+  |> & Generalisation of a single pattern-expression pair. & \Fref{def:gener-patt} \\ \hline
+  ->g & Generalisation of one pattern in a match. & \Fref{def:gener-match} \\ \hline
+\end{tabular}
+
 
 \section{A note about evaluation}
 We expect programs to be run in an environment containing predefined functions
