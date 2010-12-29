@@ -1,9 +1,9 @@
 \subsection{Project manager}
 
-When turtledove is to be used in collaboration with an editor and wants to take
-advantage of all the features it has to offer, the project manager must be
-used. The project manager is ultimately responsible for handling project files
-which in the end will be converted into an MLB file.
+When turtledove is to be used in collaboration with a development environment
+and wants to take advantage of all the features it has to offer, the project
+manager must be used. The project manager is ultimately responsible for handling
+project files which in the end will be converted into an MLB file. 
 
 The reason why project files aren't just MLB files is that they don't enforce
 enough limitations in how they are written, which would make it practically
@@ -171,12 +171,10 @@ parent group. The below example illustrates this:
 There is one problem with this design, that it doesn't emulate exactly the
 expressive power of MLB files, however we believe that it lets the user emulate
 exactly the need that a novice programmer need. One of the drawbacks of this
-design is that it doesn't currently allow for structure/signature/functor
-replication and exposure. We have personally used this in some of our code, for
-example are all the parsers written with a structure named \texttt{Parser} which
-is renamed and exposed as structure \texttt{XXXParser} in the MLB file of the
-parsers, where \texttt{XXX} is either \texttt{SML}, \texttt{Rule} or
-\texttt{MLB} but we have newer come across this need/usage in our teaching.
+design is that it doesn't currently allow for structure, signature or functor
+replication and exposure. We have personally used this in some of our code (see
+\fref{ex:parsers.mlb}) but we have newer come across this need/usage in our
+teaching.
 
 If Turtledove at some point were extended to give back a list of
 signatures, structures or functors in a given set of files, then it wouldn't be
@@ -184,7 +182,15 @@ that big a deal extending the design to not only expose files or groups but also
 the name and or replicating of such a structure, signature or functor in
 cooperation with the Editor.
 
+\subsubsection{Input files}
 
+The project manager should be able to handle three types of input files: MLB files,
+Project files (turtledove project files) and stand alone SML files. This will
+make it possible for advanced users to create their own MLB but however loose
+most of the project managers facilities. It should also be possible to use just
+a single SML file, as this is what novice programmers often tend to use, by either
+wrapping it in an MLB template that includes the basis library or an empty Turtledove
+project file template. 
 
 %%% Local Variables: 
 %%% mode: latex
