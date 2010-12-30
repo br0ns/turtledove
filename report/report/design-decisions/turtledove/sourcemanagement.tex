@@ -1,0 +1,40 @@
+\subsection{Source Management}
+
+Parsing of non well formed code is a major challenge and will always be present
+when parsing code that is currently being written. Whether it being a new
+function that is currently being written or one or more parts of non well formed
+code it will inhibit the SML parser for giving an AST of the entire file. 
+
+Parsing of entire projects is a relative costly operation, the source management
+should thus only make the SML parser re parse as small fragments of code as
+possible to maintain low response times. 
+
+
+Multiple steps are taken to make sure these two issues are handled. 
+
+\begin{itemize}
+\item Remove non well formed code chunks from the source such that an AST can be
+  produced.
+  \begin{itemize}
+  \item Make sure that position information is not invalid because of any
+    temporary removed code in the produced AST
+  \item Extract as much information from the non well formed code as possible
+    and add this to the environment. For example: In function definitions the
+    name and number of arguments could be extracted and added to the environment
+    such that syntax colouring of recursive calls can be done and possible error
+    reporting of wrong number of arguments in succeeding clauses.
+  \end{itemize}
+
+\item Take an old AST, a chunk of code and merge the parsed code into
+  the old AST such that a new and update AST is produced.
+
+\item Report errors from the SML parser to the development environment.
+
+\end{itemize}
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../../report"
+%%% End: 

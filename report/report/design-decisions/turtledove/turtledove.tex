@@ -8,14 +8,54 @@ high level assistance such as ``refactoring'' or ``go to definition''.
 Turtledove is an aim at being the first a back end system that can easily be
 integrated into most of the currently available development environments.
 
+To facilitate this Turtledove should be a modular system with a few key tools
+described below. At the core of turtledove are the parsers (SML, MLB and Rules),
+which makes it possible for the tools to work on any user code.
 
-To facilitate this Turtledove is a modular system with a few key tools described
-below. 
+\begin{figure}[h!]
+  \centering
+ \includegraphics[scale=0.4]{imgs/design/flow.pdf}
+  \caption{Design overview of Turtledove and its internal components. Arrows
+    symbolise the intercommunication links between internal components.}
+  \label{fig:turtledove-design}
+\end{figure}
+
+Turtledove consists of two key components (see \fref{fig:turtledove-design}),
+the project manager and the rewriting tool. The project manager is an important
+part of Turtledove with respect to performance (together with the source
+management module) but also to help the novice
+programmer in building medium/large programs, whereas the rewriting tool is the
+main purpose behind the creation of Turtledove in the first place. Both are
+explained in detail below.
+
+\paragraph{Threading}
+
+Threading is an easy way of executing the desired modular design idea of
+Turtledove but also as a high throughput is needed by the development
+environment. It is of no use if the user has to wait 10+ seconds for auto
+completion or looking up the declaration point of a variable because Turtledove
+was doing some arbitrary job that had nothing to do with the requested
+information. Also it could happen that the user and the development environment
+asked for some actions shortly after each other which would otherwise make one
+of them wait.
+
+All components within Turtledove including the tools is thus run in a thread for
+itself and the communication bridge is used to bind all the threads together.
 
 
-\input{design-decisions/turtledove/parsers}
+
+\input{design-decisions/turtledove/commbridge}
+
+\input{design-decisions/turtledove/projectmanager}
+
+\input{design-decisions/turtledove/sourcemanagement}
+
+
+%\input{design-decisions/turtledove/parsers}
 
 \input{design-decisions/turtledove/tools/tools}
+
+
 
 ....
 

@@ -1,13 +1,18 @@
-\section{Intercommunication}
+\subsection{Communication bridge}
 
+The intercommunication links in Turtledove are all controlled by the
+communication manager including communication to ``outside'' of Turtledove such
+as a development environment. 
 
-\subsection*{Protocol}
+% Used below in the cite
+\def \protocoljson {\fref[plain]{fig:protocol-json}}
 
-The communication protocol between the development environment and Turtledove is
-very simple and versatile with almost no limitations. The protocol utilises JSON
-(JavaScript Object Notation) \footnote{\url{http://www.json.org/}} which makes
-it easy to serialise different types of values to and from the desired tools
-inside Turtledove. 
+The protocol has been chosen to be very simple and versatile with almost no
+limitations as it can then be used for both internal and external
+communication. The protocol utilises JSON (JavaScript Object
+Notation)\cite[\protocoljson]{json} which makes it easy to serialise different types of values
+to and from the desired tools inside Turtledove.
+
 
 \begin{nonfloatingfigure}
 { % so the \angleit command doesn't contaminate the whole environment.
@@ -25,6 +30,7 @@ inside Turtledove.
     tools) and the development evironment.}
   \label{fig:intercom-protocol-def}
 \end{nonfloatingfigure}
+
 
 The protocol is defined (see \fref{fig:intercom-protocol-def}) as a JSON-object
 encoded string with two newlines at the end as the stop delimiter. The JSON
@@ -93,53 +99,7 @@ string should not restrain any practical usability of the JSON protocol.
 \end{example}
 
 
-\subsection*{Useful commands}
-
- Below is a draft of which commands might be useful to implement in the final system. 
-
-\subsubsection*{Turtledove}
-
-\begin{description}
-\item[quit] This command closes down the server in a graceful way.
-\end{description}
-
-\subsubsection*{ProjectManager }
-
-\begin{description}
-\item[OpenProject] Makes the project manager open a project. If the
-  project doesn't exists, then a new project with the name is created.
-
-  If another project is currently opened, then this project is closed, if told
-  to do so.
-\item[CloseProject] makes the project manager close the currently opened project,
-  saving any unsaved changes if told to do so. 
-\item[DeleteProject] Makes the project manager delete the currently opened project
-  with all its files.
-\item[AddFile] Adds a new file to the project.
-\item[DeleteFile] Deletes a file contained in the project
-\item[ChangeFile] Add or delete content in a open file contained in the
-  project. This command should be used when ever the user adds or deletes text
-  from any file contained in the project, so the project manager can maintain an
-  up to date version of the file, without having to reread the file again and
-  thus also at some point do incremental parsing of the changes only.
-\end{description}
-
-
-\subsubsection*{Utils}
-
-\begin{description}
-\item[GotoDef] Returns the filename and position of the definition of the
-  specified function
-\item[Rename] Rename a function or identifier together with its definition and
-  all its uses.
-\item[NamesInScope] Returns a list of identifiers visible from the current
-  scope. This is particular handy for doing auto completion and
-\end{description}
-
-
-
 %%% Local Variables: 
 %%% mode: latex
-%%% reftex-fref-is-default: t
 %%% TeX-master: "../../report"
 %%% End: 
