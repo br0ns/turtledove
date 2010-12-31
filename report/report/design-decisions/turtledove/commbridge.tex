@@ -4,8 +4,8 @@ The intercommunication links in Turtledove are all controlled by the
 communication manager including communication to ``outside'' of Turtledove such
 as a development environment. 
 
-% Used below in the cite
-\def \protocoljson {\fref[plain]{fig:protocol-json}}
+% Used below in the cite to refer to the appendix definition of json.
+\def \protocoljson {\Fref[plain]{fig:protocol-json}}
 
 The protocol has been chosen to be very simple and versatile with almost no
 limitations as it can then be used for both internal and external
@@ -40,14 +40,9 @@ object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination) and
 \begin{description}
 \item[Meta] is a JSON value specified by the development environment. This value
   is not used in any way by Turtledove but is returned in the response. This
-  string is intended for internal bookkeeping in the development environment for
+  string is intended for internal bookkeeping by the development environment for
   example to distinguish which file/buffer and/or at which line and column the
-  response originated from.
-
-  As there is a possibility of Turtledove getting multi threaded, this is a good
-  way of handling multiple request to Turtledove that may have different
-  response times (One request waiting for a new complete reparse of the project
-  code and another requesting a static lookup of some data).
+  request came from.
 
   If this feature is not needed by the development environment it can set this
   field to the JSON value \texttt{null} but it is not a requirement.
@@ -78,26 +73,6 @@ the protocol. This is a requirement, even though the definition of JSON allows
 whitespace between a pair of tokens, as it would then render it near to
 impossible to determine when the request/response is done without incrementally
 parsing the JSON encoded string as it is received.
-
-We have chosen the double newline character as the stop signal as it can't be used
-inside the structure of the JSON object and when present in a JSON string it
-must be escaped. 
-
-This simple constraint of not having any double newlines inside the JSON encoded
-string should not restrain any practical usability of the JSON protocol.
-
-
-\paragraph{Examples}
-
-\begin{example} If a file needs to be added then the following string could be
-  sent to the ``ProjectManager'':
-\begin{verbatim}
-"{ \"Meta\" : null, \"Dest\" : \"ProjectManager\",
-   \"Data\" : { \"command\" : \"addfile\", 
-                \"file\" : \"myfoo.sml\"}} \n\n"
-\end{verbatim}
-\end{example}
-
 
 %%% Local Variables: 
 %%% mode: latex
