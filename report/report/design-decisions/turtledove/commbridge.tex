@@ -21,7 +21,7 @@ to and from the desired tools inside Turtledove.
  (@\angleit{request}@) ::= "{ \"Meta\" : (@\angleit{JSON-value}@), \"Dest\" : (@\angleit{JSON-string}@),
                 \"Data\" : (@\angleit{JSON-value}@) } \n\n"
 
-(@\angleit{response}@) ::= "{ \"Dest\" : (@\angleit{JSON-string}@), \"Meta\" : (@\angleit{JSON-value}@),
+(@\angleit{response}@) ::= "{ \"Meta\" : (@\angleit{JSON-value}@), \"Orig\" : (@\angleit{JSON-string}@),
                 \"Data\" : (@\angleit{JSON-value}@) } \n\n"
 \end{lstlisting}    
 }
@@ -34,8 +34,8 @@ to and from the desired tools inside Turtledove.
 
 The protocol is defined (see \fref{fig:intercom-protocol-def}) as a JSON-object
 encoded string with two newlines at the end as the stop delimiter. The JSON
-object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination) and
-``Data'' (Data payload) which is described below.
+object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination),
+``Orig'' (Origin) and ``Data'' (Data payload) which is described below.
 
 \begin{description}
 \item[Meta] is a JSON value specified by the development environment. This value
@@ -51,19 +51,9 @@ object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination) and
   the development environment has invoked it. In these cases the JSON value
   \texttt{null} will be used.
 
-\item[Dest] is a non empty JSON string that needs to match a named destination in
+\item[Dest/Orig] is a non empty JSON string that needs to match a named destination in
   Turtledove. Examples of such a named destination, also including name of
-  tools:
-
-  \begin{itemize}
-  \item ``Turtledove'': This is for communication with the main program. This
-    includes enabling/disabling of individual tools, status information and
-    closing down the server gracefully.
-
-  \item ``ProjectManager'': This is for communication with the project
-    manager. This include actions such as modifying text, creation/deletion of
-    files and projects.
-  \end{itemize}
+  tools.
 \end{description}
 
 
