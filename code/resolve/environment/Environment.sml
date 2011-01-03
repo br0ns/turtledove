@@ -31,6 +31,7 @@ open Grammar
 val this = Tree.this
 val join = Tree.join
 val left = Wrap.left
+val right = Wrap.right
 val children = Tree.children
 fun wrap n l r = Wrap.extend
                    (fn p => fn e => {position = p, environment = e}) n l r
@@ -39,14 +40,18 @@ fun node t = unwrap $ this t
 
 val empty = ValEnv.empty
 
-fun resolve (t, int, env) =
+val rec resolve :
+    (ident, variable, int) ast * IntEnv.t * ValEnv.t ->
+    (ident, variable, {position: int, environment: ValEnv.t}) ast * IntEnv.t * ValEnv.t
+  =
+fn (t, int, env) =>
     let
       fun fail s = raise Error (left $ this t, s)
 
       infix ++
       val op++ = ValEnv.++
 
-      fun run base =
+      fun run node base =
           let
             fun loop (nil, int, env') = (nil, int, env')
               | loop (t :: ts, int, env') =
@@ -60,7 +65,7 @@ fun resolve (t, int, env) =
           in
             (join
                (wrap
-                  (this t)
+                  node
                   env
                   env'
                ) ts,
@@ -68,7 +73,15 @@ fun resolve (t, int, env) =
              env')
           end
 
-      fun continue _ = run empty
+      fun continue _ = run (this t) empty
+
+      fun newNode node =
+          let
+            val n = this t
+            val (l, r) = (left n, right n)
+          in
+            run (Wrap.wrap node l r) empty
+          end
 
       fun localize _ =
           case children t of
@@ -91,7 +104,7 @@ fun resolve (t, int, env) =
       fun new bind id =
           let
             val (t', int, env') = continue ()
-            val env' = bind (unwrap id, env')
+            val env' = bind (id, env')
           in
             (join
                (wrap
@@ -108,7 +121,7 @@ fun resolve (t, int, env) =
 
       fun rep bind (id1, id2) =
           let
-            val env' = bind env (unwrap id1, unwrap id2)
+            val env' = bind env (id1, id2)
           in
             (join
                (wrap
@@ -140,7 +153,9 @@ fun resolve (t, int, env) =
                   )
                   (children t)
             val recursive =
-                Valbind_Rec = (node $ hd $ children t)
+                case node $ hd $ children t of
+                  Valbind_Rec => true
+                | _ => false
 
             val (pats, envs) =
                 ListPair.unzip
@@ -213,7 +228,7 @@ fun resolve (t, int, env) =
           let
             fun idOfMatch m =
                 case node $ hd $ children m of
-                  Clause id => unwrap id
+                  Clause var => Variable.ident $ unwrap var
                 | _ => fail "Illformed match"
             val ids = map idOfMatch $ children t
 
@@ -224,7 +239,24 @@ fun resolve (t, int, env) =
                   ids
 
           in
-            run env'
+            run (this t) env'
+          end
+
+      fun ihatedatatypedeclarations did =
+          let
+            fun idOfCon c =
+                case node c of
+                  Constructor var => Variable.ident $ unwrap var
+                | _ => fail "Illformed datatype"
+            val ids = map idOfCon $ children t
+
+            val env' =
+                List.foldl
+                  (fn (id, env) => env ++ ValEnv.newVal id)
+                  empty
+                  ids
+          in
+            run (this t) $ ValEnv.newDat (did, env')
           end
     in
       (* continue () *)
@@ -391,7 +423,7 @@ fun resolve (t, int, env) =
       | Spec_EqType => continue ()
       | Spec_Datatype => continue ()
       | Spec_Replication (dat1, dat2) =>
-        datRep (dat1, dat2)
+        datRep (unwrap dat1, unwrap dat2)
       | Spec_Exception => continue ()
       | Spec_Structure => continue ()
       | Spec_Include => continue ()
@@ -412,22 +444,58 @@ fun resolve (t, int, env) =
       | Spec_Sharing _ => continue ()
       | Spec_SharingStructure _ => continue ()
       | Strdesc strid =>
-        newStr strid
+        newStr $ unwrap strid
       | Tydesc _ => continue ()
       | Valdesc id =>
-        newVal id
+        newVal $ unwrap id
       | Exndesc eid =>
-        newExn eid
+        newExn $ unwrap eid
       | Datatypes => continue ()
-      | Datatype (_, did) =>
-        newDat did
-      | Constructor cid =>
-        (* A hack: We add the constructors as exception constructors, then
-         * promotes them to datatype constructors if a datatype if formed
-         *)
-        newExn cid
+      | Datatype (_, did) => ihatedatatypedeclarations $ unwrap did
+      | Constructor var =>
+        let
+          val id = Variable.ident $ unwrap var
+        in
+          if ValEnv.isCon env id then
+            let
+              val vid = ValEnv.findVal env id
+              val var = Wrap.modify (fn var => Variable.store var vid) var
+            in
+              newNode $ Constructor var
+            end
+          else
+            let
+              val (t', int, env') = newExn id
+              val vid = ValEnv.findVal env' id
+              val var = Wrap.modify (fn var => Variable.store var vid) var
+              val node =
+                  Wrap.modify (const $ Constructor var) (this t')
+            in
+              (join node $ children t', int, env')
+            end
+        end
       | Replication (exn1, exn2) =>
-        exnRep (exn1, exn2)
+        let
+          val (id1, id2) =
+              (Variable.ident $ unwrap exn1, Variable.ident $ unwrap exn2)
+          val (t', int, env') =
+              exnRep (id1, id2)
+          val (vid1, vid2) =
+              (ValEnv.findVal env' id1,
+               ValEnv.findVal env id2)
+          val (exn1, exn2) =
+              (Wrap.modify (fn var => Variable.store var vid1) exn1,
+               Wrap.modify (fn var => Variable.store var vid2) exn2)
+          val t' =
+              join
+                (Wrap.modify
+                   (const $ Replication (exn1, exn2))
+                   (this t')
+                )
+                (children t')
+        in
+          (t', int, env')
+        end
       | MaybeTy => continue ()
       | Decs => continue ()
       | Dec_Local => localize ()
@@ -440,7 +508,7 @@ fun resolve (t, int, env) =
       | Dec_Type => continue ()
       | Dec_Datatype => continue ()
       | Dec_Replication (dat1, dat2) =>
-        datRep (dat1, dat2)
+        datRep (unwrap dat1, unwrap dat2)
       | Dec_Abstype => continue ()
       | Dec_Exception => continue ()
       | Dec_Open ids =>
@@ -458,27 +526,46 @@ fun resolve (t, int, env) =
           )
         end
       | Dec_Fix _ => continue ()
-      | Dec_Overload (_, id, _) =>
+      | Dec_Overload (p, var, ids) =>
+        let
+          val id = Variable.ident $ unwrap var
         (* we regard overloaded variables as new variables *)
-        newVal id
+          val (t', int, env') =
+              newVal id
+          val vid = ValEnv.findVal env' id
+          val var = Wrap.modify (fn var => Variable.store var vid) var
+          val node = Wrap.modify (const $ Dec_Overload (p, var, ids)) (this t')
+        in
+          (join node $ children t', int, env')
+        end
       | Valbind_Plain => die "Valbind_Plain"
       | Valbind_Rec => die "Valbind_Rec"
       | Match => continue ()
-      | Clause _ =>
+      | Clause var =>
         (case children t of
-           [pat, tyop, exp] =>
+           [pats, tyop, exp] =>
            let
-             val (pat', int, env') = resolve (pat, int, env)
+             val (pats', int, env') = resolve (pats, int, env)
+             (* val _ = *)
+             (*     println *)
+             (*       ((Ident.toString $ Variable.ident $ unwrap var) ^ ": " ^ *)
+             (*        Layout.pretty NONE (ValEnv.show env')) *)
              val (tyop', int, _) = resolve (tyop, int, env)
              val (exp', int, _) = resolve (exp, int, env ++ env')
+
+             val id = Variable.ident $ unwrap var
+             val vid = ValEnv.findVal env id
+             val var = Wrap.modify (fn var => Variable.store var vid) var
+
+             val node = Wrap.modify (const $ Clause var) (this t)
            in
              (join
                 (wrap
-                   (this t)
+                   node
                    env
                    empty
                 )
-                [pat', tyop', exp'],
+                [pats', tyop', exp'],
               int,
               empty)
            end
@@ -519,9 +606,19 @@ fun resolve (t, int, env) =
       | Exp_While => continue ()
       | Exp_If => continue ()
       | Exp_Raise => continue ()
-      | Exp_Var id =>
+      | Exp_Var var =>
+        let
+          val id = Variable.ident $ unwrap var
+          val vid = ValEnv.findVal env id
+              (* handle Domain => *)
+                     (* raise Fail (Ident.toString id ^ ": " ^ *)
+                                 (* Int.toString (Wrap.left var)) *)
+          val var = Wrap.modify (fn var => Variable.store var vid) var
+        in
+          newNode $ Exp_Var var
+        end
         (* TODO: Store status and internal id at variable nodes *)
-        continue ()
+        (* continue () *)
       | Exp_SCon _ => continue ()
       | Exp_Selector _ => continue ()
       | Exp_Record => continue ()
@@ -533,19 +630,57 @@ fun resolve (t, int, env) =
       | Exp_Let => localize ()
       | Exp_LetSeq => localize ()
       | Label_Plain _ => continue ()
-      | Label_Short field =>
-        newVal field
+      | Label_Short var =>
+        let
+          val (t', int, env') = continue ()
+          val id = Variable.ident $ unwrap var
+          val env'' = ValEnv.newVal id
+          val vid = ValEnv.findVal env'' id
+          val var = Wrap.modify (fn var => Variable.store var vid) var
+          val node =
+              Wrap.modify (const $ Label_Short var) (this t')
+        in
+          (join node $ children t', int, env' ++ env'')
+        end
       | MaybePat => continue ()
       | Pats => continue ()
-      | Pat_Layered _ => continue ()
+      | Pat_Layered var =>
+        let
+          val (t', int, env') = continue ()
+          val id = Variable.ident $ unwrap var
+          val env'' = ValEnv.newVal id
+          val vid = ValEnv.findVal env'' id
+          val var = Wrap.modify (fn var => Variable.store var vid) var
+          val node =
+              Wrap.modify (const $ Pat_Layered var) (this t')
+        in
+          (join node $ children t', int, env' ++ env'')
+        end
       | Pat_Typed => continue ()
       | Pat_App => continue ()
       | Pat_FlatApp => die "Pat_FlatApp"
-      | Pat_Var id =>
-        if ValEnv.isConOrExn env $ unwrap id then
-          continue ()
-        else
-          newVal id
+      | Pat_Var var =>
+        let
+          val id = Variable.ident $ unwrap var
+        in
+          if ValEnv.isConOrExn env id then
+            let
+              val vid = ValEnv.findVal env id
+              val var = Wrap.modify (fn var => Variable.store var vid) var
+            in
+              newNode $ Pat_Var var
+            end
+          else
+            let
+              val (t', int, env') = newVal id
+              val vid = ValEnv.findVal env' id
+              val var = Wrap.modify (fn var => Variable.store var vid) var
+              val node =
+                  Wrap.modify (const $ Pat_Var var) (this t')
+            in
+              (join node $ children t', int, env')
+            end
+        end
       | Pat_SCon _ => continue ()
       | Pat_Wild => continue ()
       | Pat_Tuple => continue ()

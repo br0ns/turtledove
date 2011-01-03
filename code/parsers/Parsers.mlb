@@ -29,13 +29,13 @@ in
     structure SMLParser = Parser
   end
 
-  local
-    rule/rule.yacc.sig rule/rule.yacc.sml
-    rule/rule.lex.sml
+  (* local *)
+  (*   rule/rule.yacc.sig rule/rule.yacc.sml *)
+  (*   rule/rule.lex.sml *)
 
-    rule/Parser.sml
-  in
-    structure RuleParser = Parser
-  end
+  (*   rule/Parser.sml *)
+  (* in *)
+  (*   structure RuleParser = Parser *)
+  (* end *)
 
 end

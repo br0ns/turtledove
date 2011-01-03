@@ -26,10 +26,18 @@ val path =
 ;Benchmark.start ();
 val {ast = project, ...} = Main.init path
     handle Main.Error e => die e
+         | e => (println (exnName e ^ ": " ^ exnMessage e)
+               ; raise Fail "foo"
+                )
+
 ;Benchmark.stopAndPrint "";
 
 ;Benchmark.start ();
 val project = Resolve.init project
+    handle e =>
+           (println (exnName e ^ ": " ^ exnMessage e)
+          ; raise Fail "foo"
+           )
 ;Benchmark.stopAndPrint "";
 
 structure Map = Path.Map
@@ -101,7 +109,7 @@ fun walk walk' sa sb t =
       loop (init t) handle Quit => TextIO.println "Goodbye"
     end
 
-fun walk' sa sb file t =
+fun walk' sb file t =
     let
       open Tree.Walk
       val print = Layout.println NONE
@@ -110,9 +118,19 @@ fun walk' sa sb file t =
       fun loop w =
           let
             val _ = println "--"
-            val _ = print $ Grammar.show (SOME 2) sa $ here w
+            val showid = Ident.toString o Wrap.unwrap
+            val showvar = Variable.toString o Wrap.unwrap
+            val _ = print $ Grammar.show showid showvar (SOME 2) $ here w
             val _ = TextIO.print "> "
             val i = valOf $ TextIO.inputLine TextIO.stdIn
+            fun varToString v =
+                let
+                  val v = Wrap.unwrap v
+                  val id = Ident.toString $ Variable.ident v
+                  val vid = ValEnv.vidToString $ Variable.load v
+                in
+                  id ^ ": " ^ vid
+                end
           in
             (case String.sub (i, 0) of
                #"u" =>
@@ -125,6 +143,27 @@ fun walk' sa sb file t =
                          st
                          (#position $ Wrap.left $ this w)
                          (#position $ Wrap.right $ this w)
+             | #"i" =>
+               let open Grammar in
+                 TextIO.println
+                   (case Wrap.unwrap $ this w of
+                      Constructor v =>
+                      varToString v
+                    | Replication (v1, v2) =>
+                      varToString v1 ^ " = " ^ varToString v2
+                    | Dec_Overload (_, v, _) =>
+                      varToString v
+                    | Clause v =>
+                      varToString v
+                    | Exp_Var v =>
+                      varToString v
+                    | Label_Short v =>
+                      varToString v
+                    | Pat_Var v =>
+                      varToString v
+                    | _ => raise Quit
+                   ) handle Quit => ()
+               end
              | #"l" => print $ sb $ Wrap.left $ this w
              | #"r" => print $ sb $ Wrap.right $ this w
              | #"q" => raise Quit
@@ -143,23 +182,10 @@ fun walk' sa sb file t =
 
 val _ = walk
           (walk'
-             (fn id =>
-                 let
-                   val id = Wrap.unwrap id
-                   fun iopt (SOME n) = Int.toString n
-                     | iopt NONE = ""
-                 in
-                   (case Ident.fixity id of
-                      Fixity.InfixL n => "(L" ^ iopt n ^ ") "
-                    | Fixity.InfixR n => "(R" ^ iopt n ^ ") "
-                    | Fixity.Nonfix => ""
-                    | Fixity.Op => "(op)"
-                   ) ^ Ident.toString id
-                 end
-             )
              (* (const $ Layout.txt "Din MOR") *)
              (fn {environment, position} => ValEnv.show environment)
           )
           (fn {file, ast, comments} => Path.show file)
           (Layout.itemize "-" o List.map Path.show o Set.toList)
           project
+          handle e => println (exnName e ^ ": " ^ exnMessage e)

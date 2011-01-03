@@ -1,6 +1,6 @@
 functor InfixStack (
 type ident = Grammar.ident
-type ast = (ident, int) Grammar.ast
+type ast = (ident, ident, int) Grammar.ast
 val pair : ast -> ast -> ast
 val asId : ast -> ident option
 val toTree : ident -> ast

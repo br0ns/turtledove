@@ -31,7 +31,7 @@ fun isInfix (_, f) =
       Fixity.InfixL _ => true
     | Fixity.InfixR _ => true
     | _ => false
-val isNonfix = not o isInfix
+fun isNonfix i = not $ isInfix i
 fun fixity (_, f) = f
 fun explode (s, _) =
     case rev s of

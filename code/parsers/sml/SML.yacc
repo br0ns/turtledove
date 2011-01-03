@@ -5,8 +5,8 @@
 
 open Grammar
 open ParserUtils
-type node = ident node
-type ast = (ident, int) Grammar.ast
+type node = (ident, ident) node
+type ast = (ident, ident, int) Grammar.ast
 
 %%
 
@@ -1452,7 +1452,7 @@ apatnode
                     SCon.Real _ =>
                     fail
                       constleft
-                      "Real constants are not allowed in patterns."
+                      "Real constants are not allowed in patterns"
                   | _ => const),
         nil))
   | WILD
@@ -1472,7 +1472,7 @@ apatnode
          val _ = reportDuplicates
                    getField
                    patitemsleft
-                   "Duplicate fields in record pattern."
+                   "Duplicate fields in record pattern"
                    items
        in
          (if flexible then

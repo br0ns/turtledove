@@ -26,6 +26,7 @@ val primenv =
 fun renv (t, {infixing = inf, environment = env, interface = int}) =
     let
       val (t', inf') = Infixing.resolve (t, inf)
+      val t' = Grammar.transform Variable.ofIdent t'
       val (t'', int', env') = Environment.resolve (t', int, env)
     in
       (t'',
@@ -125,6 +126,7 @@ fun init ast =
               let
                 val (ast', env') = renv (ast, env)
                     handle Fail e => raise Fail (Path.toString file ^ ": " ^ e)
+                         | _ => raise Fail (Path.toString file)
               in
                 (Tree.join
                    (Wrap.wrap
