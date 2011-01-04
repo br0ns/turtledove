@@ -48,6 +48,16 @@ fun show (E (ve, te, se)) =
       list sv ve \ list st te \ list ss se
     end
 
+fun vidToString (id, v, stat) =
+    Int.toString id ^ ", " ^
+    (case v of
+       Left id => Int.toString id
+     | Right scon => SCon.toString scon) ^ ", " ^
+    (case stat of
+       Val => "Val"
+     | Con dat => "Con"
+     | Exn => "Exn")
+
 fun idToString id =
     if Ident.isUnqual id then
       Ident.toString id
@@ -128,14 +138,20 @@ fun find' lookup e ident =
 
 fun find lookup env id = find' lookup env id
     (* handle Domain => fail ("Undefined identifier:" ^ Ident.toString id) *)
-val findStr = find lookupStr
-val findVal = find lookupVal
-val findDat = find lookupDat
+fun findStr env id = find lookupStr env id
+fun findVal env id = find lookupVal env id
+fun findDat env id = find lookupDat env id
 
 fun isConOrExn env id =
     (case findVal env id of
        (_, _, Val) => false
      | _           => true)
+    handle Domain => false
+
+fun isCon env id =
+    (case findVal env id of
+       (_, _, Con _) => true
+     | _           => false)
     handle Domain => false
 
 fun exnRep env (e1, e2) =
@@ -149,8 +165,8 @@ fun exnRep env (e1, e2) =
 
 fun datRep env (d1, d2) =
     newDat' (d1, findDat env d2)
-    handle Domain => raise Fail (Ident.toString d1 ^ " = " ^ Ident.toString d2)
-                           before Layout.println NONE $ show env
+    (* handle Domain => raise Fail (Ident.toString d1 ^ " = " ^ Ident.toString d2) *)
+    (*                        before Layout.println NONE $ show env *)
 
 fun valRep env (id1, id2) =
     let
@@ -172,17 +188,22 @@ fun constrain (e1 as E (ve, te, se)) (e2 as E (vi, ti, si)) =
       (* val _ = println "constrain" *)
       (* val _ = Layout.println NONE $ show e1 *)
       (* val _ = Layout.println NONE $ show e1 *)
-      fun con e i =
+      val ve =
           Dictionary.mapi
-            (fn (id, _) =>
-                case Dictionary.lookup e id of
+            (fn (name, (_, _, stat)) =>
+                case Dictionary.lookup ve name of
+                  SOME (id, v, _) => (id, v, stat)
+                | NONE   => fail "Constraint not fulfilled"
+            )
+            vi
+      val te =
+          Dictionary.mapi
+            (fn (name, _) =>
+                case Dictionary.lookup te name of
                   SOME x => x
                 | NONE   => fail "Constraint not fulfilled"
             )
-            i
-
-      val ve = con ve vi
-      val te = con te ti
+            ti
       val se =
           Dictionary.mapi
             (fn (id, i) =>
@@ -216,7 +237,7 @@ local
         dats
   val dats = d [("bool", ["true", "false"]),
                 ("list", ["nil", "::"]),
-                ("ref", nil)
+                ("ref", ["ref"])
                ]
                 (* ("order", ["LESS", "EQUAL", "GREATER"]), *)
                 (* ("option", ["NONE", "SOME"]) *)

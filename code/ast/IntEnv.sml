@@ -2,7 +2,7 @@ structure IntEnv =
 struct
 datatype t =
          I of ValEnv.t Dictionary.t *
-              ((Grammar.ident, int) Grammar.ast *
+              ((Grammar.ident, Grammar.variable, int) Grammar.ast *
                Ident.t option *
                ValEnv.t *
                ValEnv.t option *
@@ -24,8 +24,8 @@ fun bindSig (I (sigs, funs)) (id, env) =
 
 fun bindFun (I (sigs, funs)) (id, x) =
     I (sigs, Dictionary.update funs (idToString id, x))
-    before
-    println ("Functor: " ^ idToString id)
+    (* before *)
+    (* println ("Functor: " ^ idToString id) *)
 
 fun findFun (I (sigs, funs)) id =
     case Dictionary.lookup funs $ idToString id of

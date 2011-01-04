@@ -1,8 +1,0 @@
-local
-$(SML_LIB)/basis/basis.mlb
-$(SML_LIB)/mylib/MyLib.mlb
-../../ast/ast.mlb
-
-in
-ValEnv.sml
-end

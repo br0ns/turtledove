@@ -154,6 +154,10 @@ fun init path =
           end
 
       val {ast, comments} = MLBParser.fromFile path
+          handle
+          MLBParser.LexError (p, e) => fail $ Layout.txt e
+        | MLBParser.YaccError (p, e) => fail $ Layout.txt e
+        | MLBParser.Error (p, e) => fail $ Layout.txt e
       val (t, files, dep, bas) =
           loop (ast, Path.Map.empty, Path.Set.empty, Dictionary.empty)
     in

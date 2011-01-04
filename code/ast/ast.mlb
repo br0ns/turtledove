@@ -8,9 +8,13 @@ Sigcon.sig Sigcon.sml
 Fixity.sig Fixity.sml
 SCon.sig SCon.sml
 Ident.sig Ident.sml
+(* ValEnv.sig *) ValEnv.sml
+Variable.sig Variable.sml
 Wrap.sig Wrap.sml
 
 MLBGrammar.sml
 Grammar.sml
+
+(* IntEnv.sig *) IntEnv.sml
 
 end
