@@ -1,5 +1,5 @@
 .PHONY: all
-all : todo size
+all : todo size GaaSomEnDatalog
 
 .PHONY: todo clean-todo
 todo:
@@ -13,7 +13,13 @@ size:
 clean-size:
 	make -C size -f Makefile clean
 
+.PHONY: GaaSomEnDatalog clean-GaaSomEnDatalog
+GaaSomEnDatalog:
+	make -C GaaSomEnDatalog -f Makefile all
+clean-GaaSomEnDatalog:
+	make -C GaaSomEnDatalog -f Makefile clean
+
 
 .PHONY : clean
-clean: clean-todo clean-size
+clean: clean-todo clean-size clean-GaaSomEnDatalog
 
