@@ -1,8 +1,10 @@
 local
   $(SML_LIB)/basis/basis.mlb
   $(SML_LIB)/mylib/MyLib.mlb
-in
 
+  ../crash/Crash.mlb
+in
+     
   Path.sig
   Path.sml
 
