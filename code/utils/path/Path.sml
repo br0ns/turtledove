@@ -18,12 +18,21 @@ exception Path of string
 val vars = Dictionary.fromList
              [("SML_LIB", "/usr/lib/mlton/sml"),
               ("LIB_MLTON_DIR", "/usr/lib/mlton"),
-              ("OBJPTR_REP", "objptr-rep32.sml"),
-              ("HEADER_WORD", "header-word32.sml"),
-              ("SEQINDEX_INT", "seqindex-int32.sml"),
               ("TARGET", "self"),
               ("TARGET_ARCH", "x86"),
               ("TARGET_OS", "linux"),
+
+              (* ("OBJPTR_REP", "rep32"), *)
+              (* ("HEADER_WORD", "word32"), *)
+              (* ("SEQINDEX_INT", "int32"), *)
+              (* ("DEFAULT_CHAR", "char8"), *)
+              (* ("DEFAULT_WIDECHAR", "widechar32"), *)
+              (* ("DEFAULT_INT", "int32"), *)
+              (* ("DEFAULT_REAL", "real64"), *)
+              (* ("DEFAULT_WORD", "word32") *)
+              ("OBJPTR_REP", "objptr-rep32.sml"),
+              ("HEADER_WORD", "header-word32.sml"),
+              ("SEQINDEX_INT", "seqindex-int32.sml"),
               ("DEFAULT_CHAR", "default-char8.sml"),
               ("DEFAULT_WIDECHAR", "default-widechar32.sml"),
               ("DEFAULT_INT", "default-int32.sml"),
