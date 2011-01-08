@@ -6,5 +6,6 @@ sig
   val load : t -> ValEnv.vid
   val store : t -> ValEnv.vid -> t
 
+  val show : t -> Layout.t
   val toString : t -> string
 end
