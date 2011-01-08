@@ -1,20 +1,23 @@
 local
-$(SML_LIB)/basis/basis.mlb
-$(SML_LIB)/mylib/MyLib.mlb
-../Basic.mlb
+  $(SML_LIB)/basis/basis.mlb
+  $(SML_LIB)/mylib/MyLib.mlb
+  ../Basic.mlb
 in
-Comments.sig Comments.sml
-Sigcon.sig Sigcon.sml
-Fixity.sig Fixity.sml
-SCon.sig SCon.sml
-Ident.sig Ident.sml
-(* ValEnv.sig *) ValEnv.sml
-Variable.sig Variable.sml
-Wrap.sig Wrap.sml
+  Comments.sig Comments.sml
+  Sigcon.sig Sigcon.sml
+  Fixity.sig Fixity.sml
+  SCon.sig SCon.sml
+  Ident.sig Ident.sml
+  (* ValEnv.sig *) ValEnv.sml
+  Variable.sig Variable.sml
+  Wrap.sig Wrap.sml
 
-MLBGrammar.sml
-Grammar.sml
 
-(* IntEnv.sig *) IntEnv.sml
+  MLBGrammar.sml
+  Grammar.sml
+
+  PPGrammar.sml
+
+  (* IntEnv.sig *) IntEnv.sml
 
 end
