@@ -1,7 +1,9 @@
 open Grammar
 open ParserUtils
-type ast = (ident, int) Grammar.ast
-type node = ident node
+
+type ident = unit ident
+type node = unit node
+type ast = (unit, int) Grammar.ast
 
   %%
   %term

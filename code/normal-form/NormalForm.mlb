@@ -1,0 +1,10 @@
+local
+$(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/mylib/MyLib.mlb
+../Basic.mlb
+../ast/ast.mlb
+in
+
+NormalForm.sml
+
+end

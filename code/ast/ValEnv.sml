@@ -192,7 +192,13 @@ fun constrain (e1 as E (ve, te, se)) (e2 as E (vi, ti, si)) =
           Dictionary.mapi
             (fn (name, (_, _, stat)) =>
                 case Dictionary.lookup ve name of
-                  SOME (id, v, _) => (id, v, stat)
+                  SOME (id, v, stat') =>
+                  (id,
+                   v,
+                   case (stat, stat') of
+                     (Con _, Con _) => stat'
+                   | _ => stat
+                  )
                 | NONE   => fail "Constraint not fulfilled"
             )
             vi

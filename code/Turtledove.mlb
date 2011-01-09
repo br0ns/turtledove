@@ -7,5 +7,7 @@ Basic.mlb
 
 resolve/Resolve.mlb
 
+normal-form/NormalForm.mlb
+
 Main.sml
 

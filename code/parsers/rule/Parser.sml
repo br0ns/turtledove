@@ -1,7 +1,7 @@
 (* TODO: empty productions mess with the position information. Fix that. *)
 structure Parser =
 struct
-type ast = (Grammar.ident, int) Grammar.ast
+type ast = (unit, int) Grammar.ast
 
 structure RuleLrVals = RuleLrValsFun
                         (structure Token = LrParser.Token)
