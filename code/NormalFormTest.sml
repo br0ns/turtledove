@@ -124,6 +124,7 @@ fun extractFuns t =
     end
 
 fun elimLayers t = clauseMagic NormalForm.elimLayers t
+fun elimWildcards t = clauseMagic NormalForm.elimWildcards t
 fun gen t = clauseMagic NormalForm.gen t
 
 fun var {environment, interface, infixing} name =
@@ -154,6 +155,7 @@ fun isExhaustive (v, cs) =
     end
 
 val ast = elimLayers ast
+val ast = elimWildcards ast
 val ast = NormalForm.elimLists cons nill ast
 
 val fs = extractFuns ast
@@ -169,12 +171,9 @@ val _ = List.app
           fs
 val ast = gen ast
 
-(* val xs = List.group (curry op=) [1,2,1,2] *)
-(* val _ = println $ Show.list (Show.list Show.int) xs *)
-
-(* ;Layout.println NONE $ *)
-(*                 Grammar.showUnwrapped *)
-(*                 Ident.toString *)
-(*                 (Ident.toString o Variable.ident) *)
-(*                 NONE *)
-(*                 ast; *)
+;Layout.println NONE $
+                Grammar.showUnwrapped
+                Ident.toString
+                (Ident.toString o Variable.ident)
+                NONE
+                ast;

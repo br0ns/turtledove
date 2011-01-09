@@ -183,10 +183,62 @@ fun FV p =
                   in
                     case n of
                       Exp_Var v => next v
-                    (* | Pat_Var v => next v *)
+                    | Pat_Var v => next v
                     | Label_Short v => next v
                     | _ => vs
                   end) nil p
+
+fun freshVar vs =
+    let
+      val cs = explode "xyzabcdefghijklmnopqrstuvw"
+      val n = length cs
+      val first = [0]
+      val toString = implode o List.map (curry List.nth cs)
+      fun next nil = [0]
+        | next (c :: cs) =
+          let
+            val c' = c + 1
+          in
+            if c >= n then
+              0 :: next cs
+            else
+              c' :: cs
+          end
+      fun loop cs =
+          let
+            val v = toString cs
+          in
+            if List.exists
+                 (fn v' => Ident.toString (Variable.ident v') = v) vs then
+              loop $ next cs
+            else
+              v
+          end
+      val v = loop first
+      val id = Ident.fromString Fixity.Nonfix v
+      val var = Variable.ofIdent id
+      val vid = ValEnv.newVid ()
+      val var = Variable.store var vid
+    in
+      var
+    end
+
+fun someVar p =
+    let open Tree Grammar
+      fun loop nil = NONE
+        | loop (p :: ps) =
+          case someVar p of
+            SOME v => SOME v
+          | NONE => loop ps
+    in
+      case this p of
+        Pat_Var v =>
+        (case Variable.load v of
+           (_, _, ValEnv.Val) => SOME v
+         | _ => loop $ children p
+        )
+      | _ => loop $ children p
+    end
 
 fun subs (e1, e2, e3) =
     let open Grammar
@@ -262,8 +314,25 @@ fun elimLists cons nill t =
       | n => join n ts
     end
 
+fun elimWildcards (p, e) =
+    let open Grammar Tree
+      val vs = ref (FV p @ FV e)
+      fun new _ =
+          let
+            val v = freshVar (!vs)
+          in
+            vs := v :: !vs ;
+            v
+          end
+    in
+      (map
+         (fn Pat_Wild => Pat_Var $ new ()
+           | x => x)
+         p,
+       e)
+    end
+
 fun elimRecords (p, e) = (p, e)
-fun elimWildcards (p, e) = (p, e)
 
 fun cover ps =
     let open Grammar Tree
@@ -373,23 +442,6 @@ fun cover ps =
       loop $ List.mapPartial trans ps
     end
 
-fun someVar p =
-    let open Tree Grammar
-      fun loop nil = NONE
-        | loop (p :: ps) =
-          case someVar p of
-            SOME v => SOME v
-          | NONE => loop ps
-    in
-      case this p of
-        Pat_Var v =>
-        (case Variable.load v of
-           (_, _, ValEnv.Val) => SOME v
-         | _ => loop $ children p
-        )
-      | _ => loop $ children p
-    end
-
 fun gen (p, e) =
     let open Grammar Tree
       fun loop nil e = (nil, e)
@@ -400,18 +452,20 @@ fun gen (p, e) =
           in
             (p' :: ps', e)
           end
+      val v = freshVar (FV p @ FV e)
     in
-      case someVar p of
-        NONE => (p, e)
-      | SOME v =>
-        case subs (e, kappa p, singleton $ Exp_Var v) of
-          SOME e => (singleton $ Pat_Var v, e)
-        | NONE =>
-          let
-            val (ps, e) = loop (children p) e
-          in
-            (join (this p) ps, e)
-          end
+      case this p of
+        Pat_Var _ => (p, e)
+      | _ =>
+        (case subs (e, kappa p, singleton $ Exp_Var v) of
+           SOME e => (singleton $ Pat_Var v, e)
+         | NONE =>
+           let
+             val (ps, e) = loop (children p) e
+           in
+             (join (this p) ps, e)
+           end
+        )
     end
 
 (* fun totalcmp (p1, p2) *)
