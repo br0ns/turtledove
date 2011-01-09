@@ -8,6 +8,8 @@ fun load (_, SOME vid) = vid
   | load _ = raise Empty
 fun store (id, _) vid = (id, SOME vid)
 
+fun show (id, _) = Ident.show id
+
 fun toString (id, SOME vid) = Ident.toString id ^ "(" ^ ValEnv.vidToString vid ^ ")"
   | toString (id, NONE) = Ident.toString id
 end
