@@ -334,6 +334,12 @@ fun elimWildcards (p, e) =
 
 fun elimRecords (p, e) = (p, e)
 
+fun elimUnit (p, e) = (p, e)
+
+(* At this point we only concern ourselves with Pat_Var, Pat_Tuple Pat_App
+ * Pat_SCon, Pat_Typed and Pat_Par
+ *)
+
 fun cover ps =
     let open Grammar Tree
       datatype pat = One
@@ -373,8 +379,6 @@ fun cover ps =
           in
             SOME [loop p] handle Zero => NONE
           end
-
-
 
       fun loop (nil :: _) = true
         | loop nil = false
@@ -466,6 +470,53 @@ fun gen (p, e) =
              (join (this p) ps, e)
            end
         )
+    end
+
+
+fun cmp cmpvarid p1 p2 =
+    let open Grammar Tree
+      fun bypass p = hd $ children p
+      fun vtos v = Ident.toString $ Variable.ident v
+      fun cmpvar v1 v2 =
+          case (Variable.load v1, Variable.load v2) of
+            ((_, _, ValEnv.Val), (_, _, ValEnv.Val)) =>
+            String.compare (vtos v1, vtos v2)
+          | ((_, _, ValEnv.Val), _) => GREATER
+          | (_, (_, _, ValEnv.Val)) => LESS
+          | ((id1, _, _), (id2, _, _)) =>
+            cmpvarid id1 id2
+      val cmp = cmp cmpvarid
+    in
+      case (this p1, this p2) of
+        (Pat_Par, _) => cmp (bypass p1) p2
+      | (Pat_Typed, _) => cmp (bypass p1) p2
+      | (_, Pat_Par) => cmp p1 (bypass p2)
+      | (_, Pat_Typed) => cmp p1 (bypass p2)
+      | (Pat_Var v1, Pat_Var v2) => cmpvar v1 v2
+      | (Pat_Tuple, Pat_Tuple) =>
+        List.collate
+          (uncurry cmp)
+          (children p1, children p2)
+      | (Pat_App, Pat_App) =>
+        List.collate
+          (uncurry cmp)
+          (children p1, children p2)
+      | (Pat_Var _, _) => GREATER
+      | (_, Pat_Var _) => LESS
+      | _ => fail "Illformed pattern in totalcmp"
+    end
+
+fun totalcmp p1 p2 = cmp (curry Int.compare) p1 p2
+fun partialcmp p1 p2 =
+    let
+      exception Unordered
+      fun cmpvarid id1 id2 =
+          if id1 = id2 then
+            EQUAL
+          else
+            raise Unordered
+    in
+      SOME (cmp cmpvarid p1 p2) handle Unordered => NONE
     end
 
 (* fun totalcmp (p1, p2) *)

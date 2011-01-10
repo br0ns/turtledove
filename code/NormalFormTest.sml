@@ -98,6 +98,26 @@ fun clauseMagic magic t =
       | n => join n (List.map (clauseMagic magic) $ children t)
     end
 
+fun sortMatches t =
+    let open Tree Grammar
+      fun cmp t1 t2 =
+          let
+            fun pats t =
+                case this t of
+                  Clause _ => children $ hd $ children t
+                | Rule => [hd $ children t]
+                | _ => die "Illformed match"
+          in
+            List.collate
+              (uncurry NormalForm.totalcmp)
+              (pats t1, pats t2)
+          end
+    in
+      case this t of
+        Match => join Match $ List.sort cmp $ children t
+      | n => join n (List.map sortMatches $ children t)
+    end
+
 fun extractFuns t =
     let open Tree Grammar
       fun extract cs =
@@ -125,6 +145,7 @@ fun extractFuns t =
 
 fun elimLayers t = clauseMagic NormalForm.elimLayers t
 fun elimWildcards t = clauseMagic NormalForm.elimWildcards t
+fun elimUnit t = clauseMagic NormalForm.elimUnit t
 fun gen t = clauseMagic NormalForm.gen t
 
 fun var {environment, interface, infixing} name =
@@ -156,6 +177,7 @@ fun isExhaustive (v, cs) =
 
 val ast = elimLayers ast
 val ast = elimWildcards ast
+val ast = elimUnit ast
 val ast = NormalForm.elimLists cons nill ast
 
 val fs = extractFuns ast
@@ -169,11 +191,20 @@ val _ = List.app
                        "exhaustive")
           )
           fs
-val ast = gen ast
 
+(* val ast = gen ast *)
+
+;println "Before sorting:";
 ;Layout.println NONE $
                 Grammar.showUnwrapped
                 Ident.toString
                 (Ident.toString o Variable.ident)
                 NONE
                 ast;
+;println "After sorting:";
+;Layout.println NONE $
+                Grammar.showUnwrapped
+                Ident.toString
+                (Ident.toString o Variable.ident)
+                NONE
+                (sortMatches ast);
