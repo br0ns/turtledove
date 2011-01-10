@@ -288,7 +288,10 @@ fun elimLayers (p, e) =
         let
           val p = hd ps
         in
-          (p, valOf $ subs (e, Tree.singleton $ Exp_Var v, kappa p))
+          (p, valOf $ subs
+                    (e,
+                     Tree.singleton $ Exp_Var v,
+                     join Exp_Par [kappa p]))
         end
       | n =>
         (join n ps, e)
@@ -304,7 +307,7 @@ fun elimLists cons nill t =
               | loop (t :: ts) =
                 join app [cons, join tuple [t, loop ts]]
           in
-            loop ts
+            join Pat_Par [loop ts]
           end
       val ts = List.map (elimLists cons nill) $ children t
     in
