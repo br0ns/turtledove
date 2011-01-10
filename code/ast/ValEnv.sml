@@ -67,6 +67,13 @@ fun idToString id =
 fun rebind (id, v, stat) =
     E (singleton (idToString id, (inc n, v, stat)), empty, empty)
 
+fun newVid _ =
+    let
+      val idref = inc n
+    in
+      (idref, Left idref, Val)
+    end
+
 fun new (id, stat) =
     let
       val idref = inc n
