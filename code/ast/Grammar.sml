@@ -319,11 +319,18 @@ type ('ident, 'var, 'wrap) ast = (('ident, 'var) node, 'wrap) Wrap.t Tree.t
 
 (* fun or (p, p') t = p t orelse p' t *)
 
-fun show' node showid showvar d t =
+(* The unwrap function should either be the identity for unwrapped trees or
+   Wrap.unwrap for wrapped trees *)
+fun show unwrapnode unwrapid unwrapvar d t =
     let
       open Layout
       infix ^^ ++ \ & \\ &&
       val d = Option.map (1 \> op-) d
+
+      val node = (unwrapnode o Tree.this) 
+      val showid = (Ident.toString o unwrapid) 
+      val showvar = (Variable.toString o unwrapvar)
+              
       fun next s =
           let
             val s = txt s
@@ -333,7 +340,7 @@ fun show' node showid showvar d t =
             | (_, SOME 0) => s
             | (ts, _)     => s \ (indent 2 o
                                   enumerate ("", Number, "") NONE o
-                                  List.map (show' node showid showvar d)) ts
+                                  List.map (show unwrapnode unwrapid unwrapvar d)) ts
           end
       fun showSCon scon =
           case scon of
@@ -342,35 +349,6 @@ fun show' node showid showvar d t =
           | SCon.Int i => i
           | SCon.Real r => r
           | SCon.Word w => w
-      (* open Report infix ++ *)
-      (* fun next s = *)
-      (*     let *)
-      (*       val s = text s *)
-      (*     in *)
-      (*       case Tree.children t of *)
-      (*         nil => s *)
-      (*       | ts => s ++ (indent o column o map show) ts *)
-      (*     end *)
-      (* fun show id = *)
-      (*     let *)
-      (*       val id = Wrap.unwrap id *)
-      (*       fun iopt (SOME n) = Int.toString n *)
-      (*         | iopt NONE = "" *)
-      (*     in *)
-      (*       (case Ident.fixity id of *)
-      (*          Fixity.InfixL n => "(L" ^ iopt n ^ ") " *)
-      (*        | Fixity.InfixR n => "(R" ^ iopt n ^ ") " *)
-      (*        | Fixity.Nonfix => "" *)
-      (*        | Fixity.Op => "(op)" *)
-      (*       ) ^ Ident.toString id *)
-      (*     end *)
-      (* fun showSCon scon = *)
-      (*     case scon of *)
-      (*       SCon.String s => "\"" ^ s ^ "\"" *)
-      (*     | SCon.Char c => "#\"" ^ c ^ "\"" *)
-      (*     | SCon.Int i => i *)
-      (*     | SCon.Real r => r *)
-      (*     | SCon.Word w => w *)
     in
       case node t of
         Rule_Rules => next "Rule_Rules"
@@ -517,8 +495,8 @@ fun show' node showid showvar d t =
       | Unparsed => next "Unparsed"
     end
 
-fun show t = show' (Wrap.unwrap o Tree.this) t
-fun showUnwrapped t = show' Tree.this t
+fun showWrapped d t = show Wrap.unwrap Wrap.unwrap Wrap.unwrap d t
+fun showUnwrapped d t = show id id id d t
 
 
 fun transform var t =
