@@ -610,9 +610,8 @@ fn (t, int, env) =>
         let
           val id = Variable.ident $ unwrap var
           val vid = ValEnv.findVal env id
-              (* handle Domain => *)
-                     (* raise Fail (Ident.toString id ^ ": " ^ *)
-                                 (* Int.toString (Wrap.left var)) *)
+              handle Domain =>
+                     fail ("Undefined variable: " ^ Ident.toString id)
           val var = Wrap.modify (fn var => Variable.store var vid) var
         in
           newNode $ Exp_Var var

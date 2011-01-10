@@ -288,7 +288,10 @@ fun elimLayers (p, e) =
         let
           val p = hd ps
         in
-          (p, valOf $ subs (e, Tree.singleton $ Exp_Var v, kappa p))
+          (p, valOf $ subs
+                    (e,
+                     Tree.singleton $ Exp_Var v,
+                     join Exp_Par [kappa p]))
         end
       | n =>
         (join n ps, e)

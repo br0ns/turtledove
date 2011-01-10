@@ -65,10 +65,8 @@ fun init path =
                  SOME (x, dep') => (x, files, dep', Dictionary.empty)
                | NONE =>
                  let
-                   val {ast, comments} = SMLParser.fromFile file
-                       handle
-                       SMLParser.LexError (p, e) => fail $ Layout.txt "Lex"
-                     | SMLParser.YaccError (p, e) =>
+                   val fail =
+                    fn (p, e) =>
                        let
                          open Layout infix && \
                          val st = SourceText.fromFile file
@@ -77,6 +75,11 @@ fun init path =
                        in
                          fail e
                        end
+
+                   val {ast, comments} = SMLParser.fromFile file
+                       handle
+                       SMLParser.LexError (p, e) => fail (p, e)
+                     | SMLParser.YaccError (p, e) => fail (p, e)
 
                    val dep' = Path.Set.singleton file
                    val t' =

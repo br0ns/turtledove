@@ -144,7 +144,6 @@ fun find' lookup e ident =
     end
 
 fun find lookup env id = find' lookup env id
-    (* handle Domain => fail ("Undefined identifier:" ^ Ident.toString id) *)
 fun findStr env id = find lookupStr env id
 fun findVal env id = find lookupVal env id
 fun findDat env id = find lookupDat env id

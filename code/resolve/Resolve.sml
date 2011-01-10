@@ -1,7 +1,7 @@
 structure Resolve =
 struct
 exception Error of string
-fun fail s = raise Error s
+fun fail s = raise Fail s
 
 type basis = {infixing    : Infixing.basis,
               environment : ValEnv.t,
@@ -125,8 +125,17 @@ fun init ast =
             | Dec_Source {file, ast, comments} =>
               let
                 val (ast', env') = renv (ast, env)
-                    handle Fail e => raise Fail (Path.toString file ^ ": " ^ e)
-                         | _ => raise Fail (Path.toString file)
+                    handle Environment.Error (p, e) =>
+                           let
+                             open Layout infix && \
+                             val st = SourceText.fromFile file
+                             val p = SourceText.showPos st p
+                             val e = p && colon \ indent 2 (txt e)
+                           in
+                             fail $ Layout.pretty NONE e
+                           end
+                         | Fail e => fail (Path.toString file ^ ": " ^ e)
+                         | _ => fail (Path.toString file)
               in
                 (Tree.join
                    (Wrap.wrap

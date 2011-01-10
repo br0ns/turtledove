@@ -194,11 +194,8 @@ val _ = List.app
 
 (* val ast = gen ast *)
 
-;println "Before sorting:";
-;Layout.println NONE $
-                PPGrammar.showUnwrapped
-                ast;
-;println "After sorting:";
-;Layout.println NONE $
-                PPGrammar.showUnwrapped
-                (sortMatches ast);
+local open Layout infix \ in
+val unsorted = txt "Before sorting:" \ PPGrammar.showUnwrapped ast
+val sorted = txt "After sorting:" \ PPGrammar.showUnwrapped (sortMatches ast)
+val _ = Layout.println NONE $ besides 4 (unsorted, sorted)
+end
