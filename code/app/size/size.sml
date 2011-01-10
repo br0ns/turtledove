@@ -137,7 +137,7 @@ val _ =
           besides
             2
             (vsep $ List.map path fs,
-             flushRight $ vsep $ List.map size ss)
+             vsep $ List.map size ss)
       val s = indent 2 ls \
                      txt "Total"
                      ++ size sz
@@ -145,8 +145,8 @@ val _ =
                      ++ int (List.length files)
                      ++ txt "files."
     in
-      println (SOME 120) s
-      (* println NONE s *)
+      (* println (SOME 120) s *)
+      println NONE s
     end
 
 
