@@ -28,16 +28,9 @@ fun show unwrapnode unwrapid unwrapvar showt t =
 
       (* Helper function for indenting matches correctly *)
       fun PPMatch numFstIndent numIndent sep (m::ms) = 
-          let
-            val _ = TextIO.println ""
-            val _ = TextIO.println $ "numFstIndex: " ^ (Int.toString numFstIndent)
-            val _ = TextIO.println $ "numIndex: " ^ (Int.toString numIndent)
-            val _ = Layout.println NONE (showt NONE m)
-          in
           List.foldl (fn (a,b) => sep (b, (indent numIndent $ txt "|" ++ (show' a))))
                      (indent numFstIndent $ show' m) 
                      ms
-          end
         | PPMatch _ _ _ [] = die "Empty match"
 
       (* Helper function to call PPMatch after getting the children of the tree *)
@@ -84,7 +77,7 @@ fun show unwrapnode unwrapid unwrapvar showt t =
             [] => txt ""
           | _ => hsep $ punctuate comma $ List.map showid tyvars
          ) ^^
-         (* TODO: Multiple recursive definitions might not show correct *)
+         (* TODO: Multiple recursive definitions might not show correct - 'ands' are missing *)
          (case Tree.children t of
             [] => die "Empty Valbind list in Dec_Val"
           | vals => align $ vsep $ List.map show' vals

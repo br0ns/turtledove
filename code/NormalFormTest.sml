@@ -196,15 +196,9 @@ val _ = List.app
 
 ;println "Before sorting:";
 ;Layout.println NONE $
-                Grammar.showUnwrapped
-                Ident.toString
-                (Ident.toString o Variable.ident)
-                NONE
+                PPGrammar.showUnwrapped
                 ast;
 ;println "After sorting:";
 ;Layout.println NONE $
-                Grammar.showUnwrapped
-                Ident.toString
-                (Ident.toString o Variable.ident)
-                NONE
+                PPGrammar.showUnwrapped
                 (sortMatches ast);

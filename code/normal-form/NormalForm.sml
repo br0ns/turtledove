@@ -304,7 +304,7 @@ fun elimLists cons nill t =
               | loop (t :: ts) =
                 join app [cons, join tuple [t, loop ts]]
           in
-            loop ts
+            join Pat_Par [loop ts]
           end
       val ts = List.map (elimLists cons nill) $ children t
     in
