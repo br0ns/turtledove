@@ -10,6 +10,7 @@ sig
     val getSource : t -> int -> int -> string
     val getFile : t -> Path.t
     val getSize : t -> int
+    val getLines : t -> int
 
     (* TODO:
      * val source : t -> int -> int -> string

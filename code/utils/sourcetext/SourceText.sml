@@ -67,6 +67,7 @@ fun getSource (f, ls) pl pr =
     end
 
 fun getSize (_, ls) = foldl (fn ((s, _), a) => s + a) 0 ls
+fun getLines (_, ls) = length ls
 
 fun patch (f, ls) pl pr sub =
     let
