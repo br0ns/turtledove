@@ -3,6 +3,7 @@ fun foo x = x
 open TextIO 
 
 val bar = 42
+and bar1 = bar
 
 open String Int
 

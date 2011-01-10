@@ -1,0 +1,17 @@
+(* This MLB is for use by the size tool to count total number of code lines
+   written *)
+
+Turtledove.mlb
+
+app/GaaSomEnDatalog/GaaSomEnDatalog.mlb
+app/size/size.mlb
+app/todo/todo.mlb
+
+test/benchmark/main.sml
+test/benchmark1/main.sml
+test/more_magic/more_magic.mlb
+test/parsers/rule/test.mlb
+test/pp/pp.mlb
+test/ProjectManager/ProjectManager.mlb
+
+modules/projectmanager/ProjectManager.mlb
