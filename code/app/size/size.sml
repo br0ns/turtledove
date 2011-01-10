@@ -2,7 +2,7 @@
 
 (* ;print "[Yeah baby!]"; *)
 
-fun die e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.failure)
+fun die e = (println e ; OS.Process.exit OS.Process.failure)
 
 datatype orderby = Size
                  | Name
@@ -33,8 +33,10 @@ val ast =
     in
       ast
     end
-    handle MLBParser.Parse r => die r
-         | Path.Path r => die r
+    handle MLBParser.Error (_, e) => die e
+         | MLBParser.LexError (_, e) => die e
+         | MLBParser.YaccError (_, e) => die e
+         | Path.Path e => die e
 (* ;Benchmark.stop (); *)
 (* ;Benchmark.print "Parsing MLB file:"; *)
 
@@ -62,7 +64,7 @@ fun sources ast =
           not (Path.sub (Path.dir mlbpath) file)
 
       fun loop t =
-          case this t of
+          case Wrap.unwrap $ this t of
             Dec_Source file =>
             if ignore file then
               ()
@@ -135,7 +137,7 @@ val _ =
           besides
             2
             (vsep $ List.map path fs,
-             vsep $ List.map size ss)
+             flushRight $ vsep $ List.map size ss)
       val s = indent 2 ls \
                      txt "Total"
                      ++ size sz
@@ -143,8 +145,8 @@ val _ =
                      ++ int (List.length files)
                      ++ txt "files."
     in
-      (* println (SOME 80) s *)
-      println NONE s
+      println (SOME 120) s
+      (* println NONE s *)
     end
 
 
