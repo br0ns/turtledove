@@ -73,21 +73,21 @@ fun show unwrapnode unwrapid unwrapvar showt t =
          (* TODO: Multiple recursive definitions might not show correct *)
          (case Tree.children t of
             [] => die "Empty Valbind list in Dec_Val"
-          | valb::valbs => 
+          | valb::valbs =>
             (* Fist valbind is with "val", rest with "and" *)
             List.foldl (fn (a,b) => b \ (txt "and" ++ show' a))
-                       (txt "val" ^^          
-                        ((* TODO: The tyvars might not be printed correct. *)
-                         case tyvars of
-                           [] => txt ""
-                         | _ => hsep $ punctuate comma $ List.map showid tyvars
-                        ) ++
-                       show' valb
+                       (txt "val" ^^
+                            ((* TODO: The tyvars might not be printed correct. *)
+                             case tyvars of
+                               [] => txt ""
+                             | _ => hsep $ punctuate comma $ List.map showid tyvars
+                            ) ++
+                            show' valb
                        )
                        valbs
          )
         )
-        
+
       | Dec_Fun tyvars => (* Match list (Clause) *)
         (align $
                txt "fun" ++
@@ -255,7 +255,6 @@ and other passes of the ast *)
            [exp1, exp2] =>  show' exp1 ++ txt "andalso" ++ show' exp2
          | _ => die "Empty or malformed Exp_Andalso"
         )
-      | Exp_Unit => txt "()"
       | Exp_App => (* [Exp, Exp] *)
         (
          case Tree.children t of

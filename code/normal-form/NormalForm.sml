@@ -104,7 +104,6 @@ fun unwrap t =
          | Exp_Raise                 => Exp_Raise
          | Exp_SCon x                => Exp_SCon x
          | Exp_Record                => Exp_Record
-         | Exp_Unit                  => Exp_Unit
          | Exp_Par                   => Exp_Par
          | Exp_Seq                   => Exp_Seq
          | Exp_Tuple                 => Exp_Tuple
@@ -133,23 +132,16 @@ fun unwrap t =
         (map unwrap $ Tree.children t)
     end
 
-infix ==
-fun n1 == n2 =
-    let open Grammar in
-      case (n1, n2) of
-        (Exp_Var v1, Exp_Var v2) =>
-        ValEnv.same (Variable.load v1) (Variable.load v2)
-      | (Exp_SCon x, Exp_SCon y) => x = y
-      | (Exp_Tuple, Exp_Tuple) => true
-      | (Exp_List, Exp_List) => true
-      | (Exp_Record, Exp_Record) => true
-      | (Exp_Par, Exp_Par) => true
-      | (Label_Plain x, Label_Plain y) => x = y
-      | (Exp_App, Exp_App) => true
-      | _ => false
-    end
-
 fun fail s = raise Fail ("NormalForm: " ^ s)
+
+(* structure Ord = *)
+(* struct *)
+(* type t = int *)
+(* fun compare (x, _, _) (y, _, _) = Int.compare (x, y) *)
+(* end *)
+
+(* structure Map = OrderedMap (Ord) *)
+(* structure Set = OrderedSet (Ord) *)
 
 fun kappa p =
     let open Grammar in
@@ -165,12 +157,6 @@ fun kappa p =
           | _ => fail "kappa"
         )
         p
-    end
-
-fun equiv (e1, e2) =
-    let open Tree Grammar in
-      (this e1) == (this e2) andalso
-      List.all equiv $ ListPair.zip (children e1, children e2)
     end
 
 fun FV p =
@@ -242,6 +228,28 @@ fun someVar p =
 
 fun subs (e1, e2, e3) =
     let open Grammar
+      infix ==
+      fun n1 == n2 =
+          let open Grammar in
+            case (n1, n2) of
+              (Exp_Var v1, Exp_Var v2) =>
+              ValEnv.same (Variable.load v1) (Variable.load v2)
+            | (Exp_SCon x, Exp_SCon y) => x = y
+            | (Exp_Tuple, Exp_Tuple) => true
+            | (Exp_List, Exp_List) => true
+            | (Exp_Record, Exp_Record) => true
+            | (Exp_Par, Exp_Par) => true
+            | (Label_Plain x, Label_Plain y) => x = y
+            | (Exp_App, Exp_App) => true
+            | _ => false
+          end
+
+      fun equiv (e1, e2) =
+          let open Tree Grammar in
+            (this e1) == (this e2) andalso
+            List.all equiv $ ListPair.zip (children e1, children e2)
+          end
+
       exception Quit
       val vs = FV e2
       fun loop e =
@@ -269,6 +277,31 @@ fun subs (e1, e2, e3) =
             end
     in
       SOME $ loop e1 handle Quit => NONE
+    end
+
+fun elimShortLabels p =
+    let open Grammar Tree
+      val ps = List.map elimShortLabels $ children p
+    in
+      case this p of
+        Label_Short v =>
+        join
+          (Label_Plain $ Variable.ident v)
+          [case List.map children $ children p of
+             [top, pop] =>
+             let
+               val p =
+                   case pop of
+                     [pat] => join (Pat_Layered v) [pat]
+                   | _ => singleton $ Pat_Var v
+             in
+               case top of
+                 [ty] => join Pat_Typed [p, ty]
+               | _ => p
+             end
+           | _ => fail "Illformed Label_Plain"
+          ]
+      | n => join n ps
     end
 
 fun elimLayers (p, e) =
@@ -335,21 +368,17 @@ fun elimWildcards (p, e) =
        e)
     end
 
-fun elimRecords (p, e) = (p, e)
-
-fun elimUnit (p, e) = (p, e)
-
 (* At this point we only concern ourselves with Pat_Var, Pat_Tuple Pat_App
  * Pat_SCon, Pat_Typed and Pat_Par
  *)
 
-fun cover ps =
+fun cover pss =
     let open Grammar Tree
       datatype pat = One
                    | Con of ValEnv.vid * pat
                    | Tup of pat list
 
-      fun trans p =
+      fun trans ps =
           let
             exception Zero
             fun loop p =
@@ -380,7 +409,7 @@ fun cover ps =
                   )
                 | _ => fail "Illformed pattern (eliminate lists, records and layers)"
           in
-            SOME [loop p] handle Zero => NONE
+            SOME $ List.map loop ps handle Zero => NONE
           end
 
       fun loop (nil :: _) = true
@@ -446,7 +475,7 @@ fun cover ps =
           end
 
     in
-      loop $ List.mapPartial trans ps
+      loop $ List.mapPartial trans pss
     end
 
 fun gen (p, e) =
@@ -475,8 +504,7 @@ fun gen (p, e) =
         )
     end
 
-
-fun cmp cmpvarid p1 p2 =
+fun totalcmp ps1 ps2 =
     let open Grammar Tree
       fun bypass p = hd $ children p
       fun vtos v = Ident.toString $ Variable.ident v
@@ -487,48 +515,237 @@ fun cmp cmpvarid p1 p2 =
           | ((_, _, ValEnv.Val), _) => GREATER
           | (_, (_, _, ValEnv.Val)) => LESS
           | ((id1, _, _), (id2, _, _)) =>
-            cmpvarid id1 id2
-      val cmp = cmp cmpvarid
+            Int.compare (id1, id2)
+
+      fun one (p1, p2) =
+          case (this p1, this p2) of
+            (Pat_Par, _) => one (bypass p1, p2)
+          | (Pat_Typed, _) => one (bypass p1, p2)
+          | (_, Pat_Par) => one (p1, bypass p2)
+          | (_, Pat_Typed) => one (p1, bypass p2)
+          | (Pat_Var v1, Pat_Var v2) => cmpvar v1 v2
+          | (Pat_Tuple, Pat_Tuple) =>
+            many (children p1, children p2)
+          | (Pat_App, Pat_App) =>
+            many (children p1, children p2)
+          | (Pat_Var _, _) => GREATER
+          | (_, Pat_Var _) => LESS
+          | _ => fail "Illformed pattern in totalcmp"
+
+      and many (ps1, ps2) =
+          List.collate one (ps1, ps2)
     in
-      case (this p1, this p2) of
-        (Pat_Par, _) => cmp (bypass p1) p2
-      | (Pat_Typed, _) => cmp (bypass p1) p2
-      | (_, Pat_Par) => cmp p1 (bypass p2)
-      | (_, Pat_Typed) => cmp p1 (bypass p2)
-      | (Pat_Var v1, Pat_Var v2) => cmpvar v1 v2
-      | (Pat_Tuple, Pat_Tuple) =>
-        List.collate
-          (uncurry cmp)
-          (children p1, children p2)
-      | (Pat_App, Pat_App) =>
-        List.collate
-          (uncurry cmp)
-          (children p1, children p2)
-      | (Pat_Var _, _) => GREATER
-      | (_, Pat_Var _) => LESS
-      | _ => fail "Illformed pattern in totalcmp"
+      many (ps1, ps2)
     end
 
-fun totalcmp p1 p2 = cmp (curry Int.compare) p1 p2
-fun partialcmp p1 p2 =
-    let
+fun partialcmp ps1 ps2 =
+    let open Grammar Tree
       exception Unordered
-      fun cmpvarid id1 id2 =
-          if id1 = id2 then
+      fun bypass p = hd $ children p
+      fun vtos v = Ident.toString $ Variable.ident v
+      fun cmpvar v1 v2 =
+          case (Variable.load v1, Variable.load v2) of
+            ((_, _, ValEnv.Val), (_, _, ValEnv.Val)) =>
             EQUAL
-          else
-            raise Unordered
+          | ((_, _, ValEnv.Val), _) => GREATER
+          | (_, (_, _, ValEnv.Val)) => LESS
+          | ((id1, _, _), (id2, _, _)) =>
+            if id1 = id2 then
+              EQUAL
+            else
+              raise Unordered
+
+      fun isCon v =
+          case Variable.load v of
+            (_, _, ValEnv.Val) => false
+          | _ => true
+
+      fun one (p1, p2) =
+          case (this p1, this p2) of
+            (Pat_Par, _) => one (bypass p1, p2)
+          | (Pat_Typed, _) => one (bypass p1, p2)
+          | (_, Pat_Par) => one (p1, bypass p2)
+          | (_, Pat_Typed) => one (p1, bypass p2)
+          | (Pat_Var v1, Pat_Var v2) => cmpvar v1 v2
+          | (Pat_Tuple, Pat_Tuple) =>
+            many (children p1, children p2)
+          | (Pat_App, Pat_Var v) =>
+            if isCon v then
+              raise Unordered
+            else
+              LESS
+          | (Pat_Var v, Pat_App) =>
+            if isCon v then
+              raise Unordered
+            else
+              GREATER
+          | (Pat_App, Pat_App) =>
+            many (children p1, children p2)
+          | (Pat_Var _, _) => GREATER
+          | (_, Pat_Var _) => LESS
+          | _ => fail "Illformed pattern in totalcmp"
+
+      and many (ps1, ps2) =
+          List.foldl
+            (fn (GREATER, LESS) => raise Unordered
+              | (LESS, GREATER) => raise Unordered
+              | (EQUAL, x) => x
+              | (GREATER, _) => GREATER
+              | (LESS, _) => LESS
+            )
+            EQUAL
+            $ List.map one $ ListPair.zip (ps1, ps2)
     in
-      SOME (cmp cmpvarid p1 p2) handle Unordered => NONE
+      SOME $ many (ps1, ps2) handle Unordered => NONE
     end
 
-(* fun totalcmp (p1, p2) *)
+fun convert cs =
+    let open Grammar Tree
+      fun bypass p = hd $ children p
 
-(* fun partialcmp *)
+      fun eqpat ps1 ps2 =
+          let
+            fun eqvar v1 v2 =
+                case (Variable.load v1, Variable.load v2) of
+                  ((id1, _, ValEnv.Val), (id2, _, ValEnv.Val)) =>
+                  SOME $ IntMap.singleton (id1, id2)
+                | (v1, v2) =>
+                  if ValEnv.same v1 v2 then
+                    SOME IntMap.empty
+                  else
+                    NONE
 
-(* fun convert t = *)
-(*     case Wrap.unwrap $ Tree.this t of *)
-(*       Exp_Var var => 7 *)
-(*     | _           => 8 *)
+            fun one (p1, p2) =
+                case (this p1, this p2) of
+                  (Pat_Par, _) => one (bypass p1, p2)
+                | (Pat_Typed, _) => one (bypass p1, p2)
+                | (_, Pat_Par) => one (p1, bypass p2)
+                | (_, Pat_Typed) => one (p1, bypass p2)
+                | (Pat_Var v1, Pat_Var v2) => eqvar v1 v2
+                | (Pat_Tuple, Pat_Tuple) => many (children p1, children p2)
+                | (Pat_App, Pat_App) => many (children p1, children p2)
+                | _ => NONE
+
+            and many (nil, nil) = SOME IntMap.empty
+              | many (p1 :: ps1, p2 :: ps2) =
+                (case one (p1, p2) of
+                   SOME m => Option.map (IntMap.plus m) $ many (ps1, ps2)
+                 | NONE => NONE)
+              | many _ = NONE
+          in
+            many (ps1, ps2)
+          end
+
+      fun eqexp m e1 e2 =
+          let
+            exception Unequal
+            fun eqvar v1 v2 =
+                case (Variable.load v1, Variable.load v2) of
+                  ((id1, _, ValEnv.Val), (id2, _, ValEnv.Val)) =>
+                  (case IntMap.lookup m id1 of
+                     SOME id1' => id1' = id2
+                   | NONE => id1 = id2)
+                | (v1, v2) => ValEnv.same v1 v2
+            fun next _ =
+                List.all (uncurry $ eqexp m)
+                         $ ListPair.zip (children e1, children e2)
+          in
+            case (this e1, this e2) of
+              (Pat_Par, _) => eqexp m (bypass e1) e2
+            | (Pat_Typed, _) => eqexp m (bypass e1) e2
+            | (_, Pat_Par) => eqexp m e1 (bypass e2)
+            | (_, Pat_Typed) => eqexp m e1 (bypass e2)
+            | (Pat_Var v1, Pat_Var v2) => eqvar v1 v2
+            | (Rule, Rule) =>
+              (* Children are allready in normal form *)
+              (case (children e1, children e2) of
+                 ([p1, e1], [p2, e2]) =>
+                 (case eqpat [p1] [p2] of
+                    SOME m' => eqexp (IntMap.plus m m') e2 e2
+                  | NONE => false)
+               | _ => fail "Illformed value Rule"
+              )
+            | (Exp_Handle, Exp_Handle) => next ()
+            | (Exp_Orelse, Exp_Orelse) => next ()
+            | (Exp_Andalso, Exp_Andalso) => next ()
+            | (Exp_App, Exp_App) => next ()
+            | (Exp_Fn, Exp_Fn) => next ()
+            | (Exp_Case, Exp_Case) => next ()
+            | (Exp_While, Exp_While) => next ()
+            | (Exp_If, Exp_If) => next ()
+            | (Exp_Raise, Exp_Raise) => next ()
+            | (Exp_SCon x, Exp_SCon y) => x = y
+            | (Exp_Seq, Exp_Seq) => next ()
+            | (Exp_Tuple, Exp_Tuple) => next ()
+            | _ => false
+          end
+
+      fun eq (ps1, e1) (ps2, e2) =
+          case eqpat ps1 ps2 of
+            SOME m => eqexp m e1 e2
+          | NONE => false
+
+      fun shadowed (ps, _) cs =
+          List.exists
+            (fn (ps', _) =>
+                case partialcmp ps' ps of
+                  SOME GREATER => true
+                | _ => false)
+            cs
+
+      val cover = cover o List.map fst
+
+      fun elim cs =
+          let
+            fun loop nil cs' = cs'
+              | loop (c :: cs) cs' =
+                if cover cs' then
+                  cs' before println "cover"
+                else if shadowed c cs' then
+                  loop cs cs' before println "shadowed"
+                else
+                  loop cs (c :: cs')
+          in
+            rev $ loop cs nil
+          end
+    in
+      elim cs
+      (* cs *)
+    end
+
+fun normalize t =
+    let open Grammar Tree
+      fun extract nil = (Rule, nil)
+        | extract (t :: ts) =
+          let
+            val (_, cs) = extract ts
+          in
+            case (this t, children t) of
+              (Rule, [p, e]) => (Rule, ([p], e) :: cs)
+            | (Clause v, [ps, top, e]) => (Clause v, (children ps, e) :: cs)
+            | _ => fail "Illformed Match"
+          end
+      fun inject (n, cs) =
+          case n of
+            Rule =>
+            List.map (fn (ps, e) => join n [hd ps, e]) cs
+          | Clause _ =>
+            List.map (fn (ps, e) => join n [join Pats ps, join MaybeTy [], e]) cs
+          | _ => Crash.impossible "normalize.inject"
+      val ts = List.map normalize $ children t
+    in
+      case (this t) of
+        Match =>
+        let
+          val (n, cs) = extract ts
+          val _ = println "foo"
+          val cs' = convert cs
+          val _ = println $ Show.pair Show.int Show.int (length cs, length cs')
+          val ts' = inject (n, cs')
+        in
+          join Match ts'
+        end
+      | n => join n ts
+    end
 
 end

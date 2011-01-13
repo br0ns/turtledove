@@ -621,7 +621,6 @@ fn (t, int, env) =>
       | Exp_SCon _ => continue ()
       | Exp_Selector _ => continue ()
       | Exp_Record => continue ()
-      | Exp_Unit => continue ()
       | Exp_Par => continue ()
       | Exp_Seq => continue ()
       | Exp_Tuple => continue ()

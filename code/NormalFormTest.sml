@@ -108,9 +108,7 @@ fun sortMatches t =
                 | Rule => [hd $ children t]
                 | _ => die "Illformed match"
           in
-            List.collate
-              (uncurry NormalForm.totalcmp)
-              (pats t1, pats t2)
+            NormalForm.totalcmp (pats t1) (pats t2)
           end
     in
       case this t of
@@ -145,7 +143,6 @@ fun extractFuns t =
 
 fun elimLayers t = clauseMagic NormalForm.elimLayers t
 fun elimWildcards t = clauseMagic NormalForm.elimWildcards t
-fun elimUnit t = clauseMagic NormalForm.elimUnit t
 fun gen t = clauseMagic NormalForm.gen t
 
 fun var {environment, interface, infixing} name =
@@ -172,30 +169,30 @@ fun isExhaustive (v, cs) =
     let
       val pss = List.map fst cs
     in
-      List.all NormalForm.cover $ List.transpose pss
+      NormalForm.cover pss
     end
 
 val ast = elimLayers ast
 val ast = elimWildcards ast
-val ast = elimUnit ast
 val ast = NormalForm.elimLists cons nill ast
+val ast' = NormalForm.normalize ast
 
-val fs = extractFuns ast
-val _ = List.app
-          (fn f as (v, _) =>
-              println (Variable.toString v ^ " is " ^
-                       (if isExhaustive f then
-                          ""
-                        else
-                          "not ") ^
-                       "exhaustive")
-          )
-          fs
+(* val fs = extractFuns ast *)
+(* val _ = List.app *)
+(*           (fn f as (v, _) => *)
+(*               println (Variable.toString v ^ " is " ^ *)
+(*                        (if isExhaustive f then *)
+(*                           "" *)
+(*                         else *)
+(*                           "not ") ^ *)
+(*                        "exhaustive") *)
+(*           ) *)
+(*           fs *)
 
 (* val ast = gen ast *)
 
 local open Layout infix \ in
-val unsorted = txt "Before sorting:" \ PPGrammar.showUnwrapped ast
-val sorted = txt "After sorting:" \ PPGrammar.showUnwrapped (sortMatches ast)
+val unsorted = txt "Before normalizing:" \ PPGrammar.showUnwrapped ast
+val sorted = txt "After normalizing:" \ PPGrammar.showUnwrapped ast'
 val _ = Layout.println NONE $ besides 4 (unsorted, sorted)
 end
