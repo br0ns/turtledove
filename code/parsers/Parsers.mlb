@@ -32,7 +32,6 @@ in
   (* local *)
   (*   rule/rule.yacc.sig rule/rule.yacc.sml *)
   (*   rule/rule.lex.sml *)
-
   (*   rule/Parser.sml *)
   (* in *)
   (*   structure RuleParser = Parser *)

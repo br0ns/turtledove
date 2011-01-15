@@ -133,6 +133,20 @@ fun unwrap t =
     end
 
 fun fail s = raise Fail ("NormalForm: " ^ s)
+fun fail' s t =
+    let open Layout infix \
+      val t = PPGrammar.showUnwrapped t
+    in
+      println NONE (txt s \ indent 2 t) ;
+      raise Fail "NormalForm"
+    end
+
+fun showClause (ps, e) =
+    let open Layout infix \ ++ in
+      hsep (map PPGrammar.showUnwrapped ps) ++ eq ++ PPGrammar.showUnwrapped e
+    end
+fun showClauses cs =
+    Layout.vsep $ map showClause cs
 
 (* structure Ord = *)
 (* struct *)
@@ -154,12 +168,12 @@ fun kappa p =
           | Pat_Par => Exp_Par
           | Pat_Var v => Exp_Var v
           | Label_Plain x => Label_Plain x
-          | _ => fail "kappa"
+          | _ => fail' "kappa" p
         )
         p
     end
 
-fun FV p =
+fun FV ts =
     Tree.fold (fn (n, vs) =>
                   let open Grammar
                     fun next v =
@@ -172,7 +186,9 @@ fun FV p =
                     | Pat_Var v => next v
                     | Label_Short v => next v
                     | _ => vs
-                  end) nil p
+                  end) nil
+              (* dummy node *)
+              $ Tree.join Grammar.Pat_Tuple ts
 
 fun freshVar vs =
     let
@@ -251,7 +267,7 @@ fun subs (e1, e2, e3) =
           end
 
       exception Quit
-      val vs = FV e2
+      val vs = FV [e2]
       fun loop e =
           if equiv (e, e2) then
             e3
@@ -304,35 +320,35 @@ fun elimShortLabels p =
       | n => join n ps
     end
 
-fun elimLayers (p, e) =
+fun elimLayers (ps, e) =
     let open Grammar Tree
-      fun loop nil e = (nil, e)
-        | loop (p :: ps) e =
+      fun one (p, e) =
+          case this p of
+            Pat_Layered v =>
+            let
+              val p = hd $ children p
+            in
+              (p, valOf $ subs
+                        (e,
+                         Tree.singleton $ Exp_Var v,
+                         join Exp_Par [kappa p]))
+            end
+          | n => Arrow.first (join n) $ many (children p, e)
+      and many (nil, e) = (nil, e)
+        | many (p :: ps, e) =
           let
-            val (p', e) = elimLayers (p, e)
-            val (ps', e) = loop ps e
+            val (p', e) = one (p, e)
+            val (ps', e) = many (ps, e)
           in
             (p' :: ps', e)
           end
-      val (ps, e) = loop (children p) e
     in
-      case this p of
-        Pat_Layered v =>
-        let
-          val p = hd ps
-        in
-          (p, valOf $ subs
-                    (e,
-                     Tree.singleton $ Exp_Var v,
-                     join Exp_Par [kappa p]))
-        end
-      | n =>
-        (join n ps, e)
+      many (ps, e)
     end
 
 fun elimLists cons nill t =
     let open Grammar Tree
-      fun braid (app, var, tuple) ts =
+      fun braid (app, var, tuple, par) ts =
           let
             val nill = singleton $ var nill
             val cons = singleton $ var cons
@@ -340,19 +356,19 @@ fun elimLists cons nill t =
               | loop (t :: ts) =
                 join app [cons, join tuple [t, loop ts]]
           in
-            join Pat_Par [loop ts]
+            join par [loop ts]
           end
       val ts = List.map (elimLists cons nill) $ children t
     in
       case this t of
-        Exp_List => braid (Exp_App, Exp_Var, Exp_Tuple) ts
-      | Pat_List => braid (Pat_App, Pat_Var, Pat_Tuple) ts
+        Exp_List => braid (Exp_App, Exp_Var, Exp_Tuple, Exp_Par) ts
+      | Pat_List => braid (Pat_App, Pat_Var, Pat_Tuple, Pat_Par) ts
       | n => join n ts
     end
 
-fun elimWildcards (p, e) =
+fun elimWildcards (ps, e) =
     let open Grammar Tree
-      val vs = ref (FV p @ FV e)
+      val vs = ref $ FV (e :: ps)
       fun new _ =
           let
             val v = freshVar (!vs)
@@ -361,10 +377,11 @@ fun elimWildcards (p, e) =
             v
           end
     in
-      (map
-         (fn Pat_Wild => Pat_Var $ new ()
-           | x => x)
-         p,
+      (List.map
+         (map
+            (fn Pat_Wild => Pat_Var $ new ()
+              | x => x)
+         ) ps,
        e)
     end
 
@@ -465,7 +482,7 @@ fun cover pss =
                 end
               | tupLoop _ = Crash.impossible "cover.tup"
 
-            (* val _ = println "loop" *)
+          (* val _ = println "loop" *)
           in
             case partition pss of
               (ones, nil, nil) => loop $ List.map tl ones
@@ -478,30 +495,56 @@ fun cover pss =
       loop $ List.mapPartial trans pss
     end
 
-fun gen (p, e) =
+fun generalise (ps, e) =
     let open Grammar Tree
-      fun loop nil e = (nil, e)
-        | loop (p :: ps) e =
+      val vs = ref $ FV (e :: ps)
+      fun new _ =
           let
-            val (p', e) = gen (p, e)
-            val (ps', e) = loop ps e
+            val v = freshVar (!vs)
+          in
+            vs := v :: !vs ;
+            v
+          end
+      fun isVar p =
+          case this p of
+            Pat_Var v =>
+            (case Variable.load v of
+               (_, _, ValEnv.Val) => true
+             | _ => false)
+          | _ => false
+      fun one (p, e) =
+          if isVar p then
+            (p, e)
+          else
+            let
+              val v = new ()
+            in
+              case subs (e, kappa p, singleton $ Exp_Var v) of
+                SOME e => (singleton $ Pat_Var v, e)
+              | NONE =>
+                case this p of
+                  Pat_App =>
+                  (case children p of
+                     [p1, p2] =>
+                     let
+                       val (p2, e) = one (p2, e)
+                     in
+                       (join Pat_App [p1, p2], e)
+                     end
+                   | _ => fail "Illformed Pat_App"
+                  )
+                | n => Arrow.first (join n) $ many (children p, e)
+            end
+      and many (nil, e) = (nil, e)
+        | many (p :: ps, e) =
+          let
+            val (p', e) = one (p, e)
+            val (ps', e) = many (ps, e)
           in
             (p' :: ps', e)
           end
-      val v = freshVar (FV p @ FV e)
     in
-      case this p of
-        Pat_Var _ => (p, e)
-      | _ =>
-        (case subs (e, kappa p, singleton $ Exp_Var v) of
-           SOME e => (singleton $ Pat_Var v, e)
-         | NONE =>
-           let
-             val (ps, e) = loop (children p) e
-           in
-             (join (this p) ps, e)
-           end
-        )
+      many (ps, e)
     end
 
 fun totalcmp ps1 ps2 =
@@ -651,11 +694,11 @@ fun convert cs =
                          $ ListPair.zip (children e1, children e2)
           in
             case (this e1, this e2) of
-              (Pat_Par, _) => eqexp m (bypass e1) e2
-            | (Pat_Typed, _) => eqexp m (bypass e1) e2
-            | (_, Pat_Par) => eqexp m e1 (bypass e2)
-            | (_, Pat_Typed) => eqexp m e1 (bypass e2)
-            | (Pat_Var v1, Pat_Var v2) => eqvar v1 v2
+              (Exp_Par, _) => eqexp m (bypass e1) e2
+            | (Exp_Typed, _) => eqexp m (bypass e1) e2
+            | (_, Exp_Par) => eqexp m e1 (bypass e2)
+            | (_, Exp_Typed) => eqexp m e1 (bypass e2)
+            | (Exp_Var v1, Exp_Var v2) => eqvar v1 v2
             | (Rule, Rule) =>
               (* Children are allready in normal form *)
               (case (children e1, children e2) of
@@ -695,22 +738,80 @@ fun convert cs =
 
       val cover = cover o List.map fst
 
+      fun clauses s cs =
+          let open Layout infix \
+          in
+            println NONE (txt s \ indent 2 (showClauses cs))
+          end
+      fun clause s c =
+          let open Layout infix \
+          in
+            println NONE (txt s \ indent 2 (showClause c))
+          end
+
       fun elim cs =
           let
             fun loop nil cs' = cs'
               | loop (c :: cs) cs' =
                 if cover cs' then
-                  cs' before println "cover"
+                  (clauses "These are a cover:" $ rev cs' ;
+                   clauses "Dropping:" $ rev (c :: cs) ;
+                   cs'
+                  )
                 else if shadowed c cs' then
-                  loop cs cs' before println "shadowed"
+                  (clause "This is shadowed:" c ;
+                   loop cs cs'
+                  )
                 else
                   loop cs (c :: cs')
+            val cs = rev $ loop cs nil
           in
-            rev $ loop cs nil
+            cs before clauses "After elimination:" cs
+          end
+
+      fun gen nil = nil
+        | gen ((c as (ps, e)) :: cs) =
+          let
+            exception Next
+            val c' as (ps', e') = generalise c
+            fun loop nil (csa, csb) = rev csa @ c' :: rev csb
+              | loop ((c'' as (ps'', e'')) :: cs) (csa, csb) =
+                case (partialcmp ps ps'', partialcmp ps' ps'') of
+                (* Case 1 *)
+                  (_, SOME EQUAL) =>
+                  if eq c' c'' then
+                    (clause "Deleted through unification:" c'' ;
+                     loop cs (csa, csb)
+                    )
+                  else
+                     raise Next
+                (* Case 2a *)
+                | (NONE, NONE) => loop cs (csa, c'' :: csb)
+                (* Case 2b *)
+                | (SOME LESS, SOME LESS) => loop cs (csa, c'' :: csb)
+                (* Case 3 *)
+                | (NONE, SOME GREATER) => loop cs (c'' :: csa, csb)
+                (* Case 4 *)
+                | (SOME LESS, SOME GREATER) => raise Next
+                (* Impossible *)
+                | x => raise Next before
+                             println
+                               $ Show.pair (Show.option Show.order)
+                               (Show.option Show.order)
+                               x
+            val cs = gen cs
+            val _ = clause "Generalising" c
+            val _ = clause "becomes" c'
+            val cs = loop cs (nil, nil) handle Next => c :: cs
+            val _ = clauses "Now have" cs
+            val _ = println ""
+          in
+            cs
           end
     in
-      elim cs
-      (* cs *)
+      clauses "Normalizing" cs ;
+      gen $
+          elim cs
     end
 
 fun normalize t =
@@ -738,9 +839,7 @@ fun normalize t =
         Match =>
         let
           val (n, cs) = extract ts
-          val _ = println "foo"
           val cs' = convert cs
-          val _ = println $ Show.pair Show.int Show.int (length cs, length cs')
           val ts' = inject (n, cs')
         in
           join Match ts'

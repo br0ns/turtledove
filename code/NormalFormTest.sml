@@ -77,21 +77,21 @@ val ast = NormalForm.unwrap ast
 
 fun clauseMagic magic t =
     let open Tree Grammar
-      fun loop nil e = (nil, e)
-        | loop (p :: ps) e =
-          let
-            val (p', e) = magic (p, e)
-            val (ps', e) = loop ps e
-          in
-            (p' :: ps', e)
-          end
+      (* fun loop nil e = (nil, e) *)
+      (*   | loop (p :: ps) e = *)
+      (*     let *)
+      (*       val (p', e) = magic (p, e) *)
+      (*       val (ps', e) = loop ps e *)
+      (*     in *)
+      (*       (p' :: ps', e) *)
+      (*     end *)
     in
       case this t of
         Clause v =>
         let
           val [ps, top, e] = children t
           val ps = children ps
-          val (ps, e) = loop ps e
+          val (ps, e) = magic (ps, e)
         in
           join (Clause v) [join Pats ps, top, clauseMagic magic e]
         end
@@ -143,7 +143,7 @@ fun extractFuns t =
 
 fun elimLayers t = clauseMagic NormalForm.elimLayers t
 fun elimWildcards t = clauseMagic NormalForm.elimWildcards t
-fun gen t = clauseMagic NormalForm.gen t
+(* fun gen t = clauseMagic NormalForm.gen t *)
 
 fun var {environment, interface, infixing} name =
     let
