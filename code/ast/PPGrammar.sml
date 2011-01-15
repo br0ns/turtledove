@@ -47,6 +47,37 @@ fun show unwrapnode unwrapid unwrapvar showt t =
            [] => die "Empty Topdec list in Topdecs"
          | topdecs => vsep $ List.map show' topdecs
         )
+        
+      (* Strdecs *)
+      | Strdecs => (* Strdec' list *)
+        (
+         case Tree.children t of
+           [] => die "Empty Strdec' list in Topdecs"
+         | strdec' => vsep $ List.map show' strdec'
+        )
+      (* Strdec *)
+(*       
+       (* TODO: Implement Strdec_Str *)
+       | Strdec_Str =>   (* Strbind list *)
+*)
+      | Strdec_Local => (* [Strdecs, Strdecs] *)
+        (
+         case Tree.children t of
+           [strdecsLocal, strdecsIn] => txt "local" \
+                                          (indent 2 $ show' strdecsLocal) \
+                                        txt "in" \
+                                          (indent 2 $ show' strdecsIn) \
+                                        txt "end"
+         | _ => die "Empty or malformed Strdec_Local"
+        )
+        
+       (* TODO: Implement Signatures *)
+
+       (* TODO: Implement Structures *)
+
+       (* TODO: Implement Functors *)
+
+       (* TODO: Implement Types *)
 
       (* Decs *)
       | Decs => (* Dec list *)
@@ -61,10 +92,10 @@ fun show unwrapnode unwrapid unwrapvar showt t =
         (
          case Tree.children t of
            [decLocal, decIn] => txt "local" \
-                                    (indent 2 $ show' decLocal) \
-                                    txt "in" \
-                                    (indent 2 $ show' decIn) \
-                                    txt "end"
+                                  (indent 2 $ show' decLocal) \
+                                txt "in" \
+                                  (indent 2 $ show' decIn) \
+                                txt "end"
          | _ => die "Empty or malformed Dec_Local"
         )
 
@@ -88,20 +119,21 @@ fun show unwrapnode unwrapid unwrapvar showt t =
          )
         )
 
+        (* TODO: The tyvars might not be printed correct. *)
+        (* TODO: Fix mutually recursive function definitions *)        
       | Dec_Fun tyvars => (* Match list (Clause) *)
         (align $
-               txt "fun" ++
-               (* TODO: The tyvars might not be printed correct. *)
+               txt "fun" ++               
                (
                 case tyvars of
                   [] => txt ""
                 | _ => hsep $ punctuate comma $ List.map showid tyvars
                ) ^^
-               (case Tree.children t of
+               (
+                case Tree.children t of
                   [] => die "Empty Match list in Dec_Fun"
                 | [match] => show' match
                 | matchs => die "Mutually recursive function definitions are not supported in Dec_Fun"
-
                )
         )
 
@@ -115,11 +147,13 @@ fun show unwrapnode unwrapid unwrapvar showt t =
              )
         )
       (*
+      (* TODO: Implement Dec_Datatype *)
       | Dec_Datatype => (* [Datatypes, Withtypes] *)
         (
          case Tree.children t of
         )
 
+      (* TODO: Implement Dec_Replication *)
       | Dec_Replication of 'ident * 'ident => (* [] *)
                            (
                             case Tree.children t of
@@ -143,6 +177,7 @@ fun show unwrapnode unwrapid unwrapvar showt t =
              )
         )
       (*
+       (* TODO: Implement Dec_Fix *)
       | Dec_Fix of Fixity.t * 'ident list =>
                    (
                     case Tree.children t of
@@ -158,17 +193,17 @@ fun show unwrapnode unwrapid unwrapvar showt t =
         (
          case Tree.children t of
            [pat, exp] => show' pat ++
-                               eq ++
-                               show' exp
+                         eq ++
+                         show' exp
          | _ => die "Empty or malformed Valbind_Plain"
         )
       | Valbind_Rec => (* [Pat, Match] *)
         (
          case Tree.children t of
            [pat, exp] => txt "rec" ++
-                             show' pat ++
-                             eq ++
-                             show' exp
+                         show' pat ++
+                         eq ++
+                         show' exp
          | _ => die "Empty or malformed Valbind_Rec"
         )
 
@@ -179,6 +214,7 @@ fun show unwrapnode unwrapid unwrapvar showt t =
         )
 
       (* Clause *)
+
       | Clause funname =>(* [Pats, MaybeTy, Exp] *)
         (
          showvar funname ++
@@ -187,9 +223,14 @@ fun show unwrapnode unwrapid unwrapvar showt t =
                     [pats, maybety, exp] =>
                     (
                      case Tree.children maybety of
-                       [] => show' pats ++
-                                   txt "=" ++
-                                   show' exp
+                       [] => 
+                       (
+                        case Tree.children pats of
+                          [] => die "Empty Pat list in Clause"
+                        | pats => (hsep $ List.map show' pats) ++   
+                                  txt "=" ++
+                                  show' exp
+                       )
                      | _ => die "Clause has a maybeTy, this is not implemented!!!"
                     )
                   | _ => die "Empty or malformed Clause"
@@ -197,12 +238,12 @@ fun show unwrapnode unwrapid unwrapvar showt t =
         )
 
       (* Only present at the parsing, is transformed to a clause after infixing
-and other passes of the ast *)
-      (*
+         and other passes of the ast *)
+(*
       | FlatClause => (* [Pats, MaybeTy, Exp] *)
         (
         )
-       *)
+*)
       | Rule => (* [Pat, Exp] *)
         (
          case Tree.children t of
@@ -448,10 +489,12 @@ and other passes of the ast *)
            pats => brackets $ hsep $ punctuate comma $ List.map show' pats
         )
       (*
+      (* TODO: Implement Pat_Record *)
       | Pat_Record =>
         (
          case Tree.children t of
         )
+      (* TODO: Implement Pat_FlexibleRecord *)
       | Pat_FlexibleRecord =>
         (
          case Tree.children t of
