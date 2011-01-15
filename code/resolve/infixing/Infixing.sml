@@ -342,7 +342,6 @@ fun resolve (t, bas) =
       | Exp_SCon _ => skip ()
       | Exp_Selector _ => skip ()
       | Exp_Record => continue ()
-      | Exp_Unit => skip ()
       | Exp_Par => continue ()
       | Exp_Seq => continue ()
       | Exp_Tuple => continue ()

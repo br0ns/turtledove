@@ -2,7 +2,7 @@
 
 (* ;print "[Yeah baby!]"; *)
 
-fun die e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.failure)
+fun die e = (println e ; OS.Process.exit OS.Process.failure)
 
 datatype orderby = Size
                  | Name
@@ -33,8 +33,10 @@ val ast =
     in
       ast
     end
-    handle MLBParser.Parse r => die r
-         | Path.Path r => die r
+    handle MLBParser.Error (_, e) => die e
+         | MLBParser.LexError (_, e) => die e
+         | MLBParser.YaccError (_, e) => die e
+         | Path.Path e => die e
 (* ;Benchmark.stop (); *)
 (* ;Benchmark.print "Parsing MLB file:"; *)
 
@@ -62,7 +64,7 @@ fun sources ast =
           not (Path.sub (Path.dir mlbpath) file)
 
       fun loop t =
-          case this t of
+          case Wrap.unwrap $ this t of
             Dec_Source file =>
             if ignore file then
               ()
@@ -114,23 +116,31 @@ val files = Set.toList srcs @
 (* ;Benchmark.stop (); *)
 (* ;Benchmark.print "Collecting source files:"; *)
 
-val files = map (fn f => (f, File.size f)) files
+val files =
+    map
+      (fn f =>
+          let
+            val st = SourceText.fromFile f
+          in
+            (f, (SourceText.getSize st, SourceText.getLines st))
+          end)
+      files
 
 val compare =
     case orderby of
-      Size => (fn (_, x) => fn (_, y) => Int.compare (x, y))
+      Size => (fn (_, (x, _)) => fn (_, (y, _)) => Int.compare (x, y))
     | Name => (fn (x, _) => fn (y, _) => String.compare (Path.path x,
                                                          Path.path y))
 val files = List.sort compare files
 
-val sz = foldl (fn ((_, s), a) => a + s) 0 files
+val sz = foldl (fn ((_, (s, l)), (sa, la)) => (s + sa, l + la)) (0, 0) files
 
 val _ =
     let
       open Layout infix ^^ \ \\ & && ++
       val (fs, ss) = ListPair.unzip files
       val path = txt o Path.path' (Path.dir mlbpath)
-      fun size s = int s ^^ txt "B"
+      fun size (s, l) = int s ^^ txt "B" ++ slash ++ int l ++ txt "ls"
       val ls =
           besides
             2
@@ -143,7 +153,7 @@ val _ =
                      ++ int (List.length files)
                      ++ txt "files."
     in
-      (* println (SOME 80) s *)
+      (* println (SOME 120) s *)
       println NONE s
     end
 

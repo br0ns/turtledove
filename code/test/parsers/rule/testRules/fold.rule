@@ -1,5 +1,5 @@
 rule clauses foldr
-  | §Co [x :: xs] => £D (§Co [x], self §Co[xs])
+  | §Co [x :: xs] => £D(§Co [x], self §Co[xs])
   | §Dimmer => £Effi §Dimmer
 where
   dom (§Dimmer, §C)

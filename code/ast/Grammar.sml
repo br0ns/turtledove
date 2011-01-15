@@ -183,7 +183,6 @@ datatype ('ident, 'var) node =
        | Exp_SCon of SCon.t
        | Exp_Selector of 'ident
        | Exp_Record (* Label list *)
-       | Exp_Unit
        | Exp_Par (* [Exp] *)
        | Exp_Seq (* Exp list *)
        | Exp_Tuple (* Exp list *)
@@ -462,7 +461,6 @@ fun show unwrapnode unwrapid unwrapvar d t =
       | Exp_SCon scon => next ("Exp_SCon " ^ showSCon scon)
       | Exp_Selector id => next ("Exp_Selector " ^ showid id)
       | Exp_Record => next "Exp_Record"
-      | Exp_Unit => next "Exp_Unit"
       | Exp_Par => next "Exp_Par"
       | Exp_Seq => next "Exp_Seq"
       | Exp_Tuple => next "Exp_Tuple"
@@ -595,7 +593,6 @@ fun transform var t =
            | Exp_SCon x                => Exp_SCon x
            | Exp_Selector x            => Exp_Selector x
            | Exp_Record                => Exp_Record
-           | Exp_Unit                  => Exp_Unit
            | Exp_Par                   => Exp_Par
            | Exp_Seq                   => Exp_Seq
            | Exp_Tuple                 => Exp_Tuple

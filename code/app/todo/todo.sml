@@ -2,7 +2,7 @@
 
 (* ;print "[Yeah baby!]"; *)
 
-fun die e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.failure)
+fun die e = (println e ; OS.Process.exit OS.Process.failure)
 
 val here = Path.new (OS.FileSys.getDir ())
 val mlbpath = Path.new' here
@@ -16,8 +16,10 @@ val ast =
     in
       ast
     end
-    handle MLBParser.Parse r => die r
-         | Path.Path r => die r
+    handle MLBParser.Error (_, e) => die e
+         | MLBParser.LexError (_, e) => die e
+         | MLBParser.YaccError (_, e) => die e
+         | Path.Path e => die e
 
 fun todos ast =
     let
@@ -78,7 +80,7 @@ fun todos ast =
           end
 
       fun loop t =
-          case this t of
+          case Wrap.unwrap $ this t of
             Dec_Source file =>
             if ignore file then
               nil
@@ -116,4 +118,4 @@ val ts = todos ast
 val _ =
     let open Layout in
       println NONE $ vsep $ punctuate ln $ ts
-    end
+    end handle Empty => println "foo"
