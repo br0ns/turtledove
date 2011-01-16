@@ -8,6 +8,7 @@ Basic.mlb
 resolve/Resolve.mlb
 
 normal-form/NormalForm.mlb
+magic/Magic.sml
 
 Main.sml
 

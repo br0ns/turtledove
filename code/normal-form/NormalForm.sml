@@ -135,7 +135,7 @@ fun unwrap t =
 fun fail s = raise Fail ("NormalForm: " ^ s)
 fun fail' s t =
     let open Layout infix \
-      val t = PPGrammar.showUnwrapped t
+      val t = Grammar.showUnwrapped NONE t
     in
       println NONE (txt s \ indent 2 t) ;
       raise Fail "NormalForm"
@@ -242,30 +242,38 @@ fun someVar p =
       | _ => loop $ children p
     end
 
+infix ==
+fun n1 == n2 =
+    let open Grammar in
+      case (n1, n2) of
+        (Exp_Var v1, Exp_Var v2) =>
+        ValEnv.same (Variable.load v1) (Variable.load v2)
+      | (Exp_SCon x, Exp_SCon y) => x = y
+      | (Exp_Tuple, Exp_Tuple) => true
+      | (Exp_List, Exp_List) => true
+      | (Exp_Record, Exp_Record) => true
+      | (Exp_Par, Exp_Par) => true
+      | (Label_Plain x, Label_Plain y) => x = y
+      | (Exp_App, Exp_App) => true
+      | _ => false
+    end
+
+fun equiv (e1, e2) =
+    let open Tree Grammar
+      fun bypass t = hd $ children t
+    in
+      case (this e1, this e2) of
+        (Exp_Par, _) => equiv (bypass e1, e2)
+      | (_, Exp_Par) => equiv (e1, bypass e2)
+      | (Exp_Typed, _) => equiv (bypass e1, e2)
+      | (_, Exp_Typed) => equiv (e1, bypass e2)
+      | (n1, n2) =>
+        n1 == n2 andalso
+        List.all equiv $ ListPair.zip (children e1, children e2)
+    end
+
 fun subs (e1, e2, e3) =
     let open Grammar
-      infix ==
-      fun n1 == n2 =
-          let open Grammar in
-            case (n1, n2) of
-              (Exp_Var v1, Exp_Var v2) =>
-              ValEnv.same (Variable.load v1) (Variable.load v2)
-            | (Exp_SCon x, Exp_SCon y) => x = y
-            | (Exp_Tuple, Exp_Tuple) => true
-            | (Exp_List, Exp_List) => true
-            | (Exp_Record, Exp_Record) => true
-            | (Exp_Par, Exp_Par) => true
-            | (Label_Plain x, Label_Plain y) => x = y
-            | (Exp_App, Exp_App) => true
-            | _ => false
-          end
-
-      fun equiv (e1, e2) =
-          let open Tree Grammar in
-            (this e1) == (this e2) andalso
-            List.all equiv $ ListPair.zip (children e1, children e2)
-          end
-
       exception Quit
       val vs = FV [e2]
       fun loop e =
@@ -295,29 +303,35 @@ fun subs (e1, e2, e3) =
       SOME $ loop e1 handle Quit => NONE
     end
 
-fun elimShortLabels p =
+fun elimShortLabels (ps, e) =
     let open Grammar Tree
-      val ps = List.map elimShortLabels $ children p
+      fun one p =
+          let
+            val ps = many $ children p
+          in
+            case this p of
+              Label_Short v =>
+              join
+                (Label_Plain $ Variable.ident v)
+                [case List.map children $ children p of
+                   [top, pop] =>
+                   let
+                     val p =
+                         case pop of
+                           [pat] => join (Pat_Layered v) [pat]
+                         | _ => singleton $ Pat_Var v
+                   in
+                     case top of
+                       [ty] => join Pat_Typed [p, ty]
+                     | _ => p
+                   end
+                 | _ => fail "Illformed Label_Plain"
+                ]
+            | n => join n ps
+          end
+      and many ps = List.map one ps
     in
-      case this p of
-        Label_Short v =>
-        join
-          (Label_Plain $ Variable.ident v)
-          [case List.map children $ children p of
-             [top, pop] =>
-             let
-               val p =
-                   case pop of
-                     [pat] => join (Pat_Layered v) [pat]
-                   | _ => singleton $ Pat_Var v
-             in
-               case top of
-                 [ty] => join Pat_Typed [p, ty]
-               | _ => p
-             end
-           | _ => fail "Illformed Label_Plain"
-          ]
-      | n => join n ps
+      (many ps, e)
     end
 
 fun elimLayers (ps, e) =
@@ -346,7 +360,7 @@ fun elimLayers (ps, e) =
       many (ps, e)
     end
 
-fun elimLists cons nill t =
+fun elimLists cons nill (ps, e) =
     let open Grammar Tree
       fun braid (app, var, tuple, par) ts =
           let
@@ -358,12 +372,18 @@ fun elimLists cons nill t =
           in
             join par [loop ts]
           end
-      val ts = List.map (elimLists cons nill) $ children t
+      fun one t =
+          let
+            val ts = many $ children t
+          in
+            case this t of
+              Exp_List => braid (Exp_App, Exp_Var, Exp_Tuple, Exp_Par) ts
+            | Pat_List => braid (Pat_App, Pat_Var, Pat_Tuple, Pat_Par) ts
+            | n => join n ts
+          end
+      and many ts = List.map one ts
     in
-      case this t of
-        Exp_List => braid (Exp_App, Exp_Var, Exp_Tuple, Exp_Par) ts
-      | Pat_List => braid (Pat_App, Pat_Var, Pat_Tuple, Pat_Par) ts
-      | n => join n ts
+      (many ps, one e)
     end
 
 fun elimWildcards (ps, e) =
@@ -642,7 +662,7 @@ fun partialcmp ps1 ps2 =
       SOME $ many (ps1, ps2) handle Unordered => NONE
     end
 
-fun convert cs =
+fun convert basis cs =
     let open Grammar Tree
       fun bypass p = hd $ children p
 
@@ -777,14 +797,14 @@ fun convert cs =
             fun loop nil (csa, csb) = rev csa @ c' :: rev csb
               | loop ((c'' as (ps'', e'')) :: cs) (csa, csb) =
                 case (partialcmp ps ps'', partialcmp ps' ps'') of
-                (* Case 1 *)
+                  (* Case 1 *)
                   (_, SOME EQUAL) =>
                   if eq c' c'' then
                     (clause "Deleted through unification:" c'' ;
                      loop cs (csa, csb)
                     )
                   else
-                     raise Next
+                    raise Next
                 (* Case 2a *)
                 | (NONE, NONE) => loop cs (csa, c'' :: csb)
                 (* Case 2b *)
@@ -808,43 +828,66 @@ fun convert cs =
           in
             cs
           end
+      fun var {environment, interface, infixing} name =
+          let
+            val id = Ident.fromString Fixity.Nonfix name
+            val id =
+                if Ident.isUnqual id then
+                  case Dictionary.lookup infixing name of
+                    SOME fixity => Ident.setFixity id fixity
+                  | NONE => id
+                else
+                  id
+            val vid = ValEnv.findVal environment id
+            val var = Variable.ofIdent id
+            val var = Variable.store var vid
+          in
+            var
+          end
+      val cons = var basis "::"
+      val nill = var basis "nil"
     in
       clauses "Normalizing" cs ;
-      gen $
-          elim cs
+      gen $ elim $
+          List.map
+          (elimLists cons nill o
+           elimLayers o
+           elimWildcards o
+           elimShortLabels)
+          cs
     end
 
-fun normalize t =
-    let open Grammar Tree
-      fun extract nil = (Rule, nil)
-        | extract (t :: ts) =
-          let
-            val (_, cs) = extract ts
-          in
-            case (this t, children t) of
-              (Rule, [p, e]) => (Rule, ([p], e) :: cs)
-            | (Clause v, [ps, top, e]) => (Clause v, (children ps, e) :: cs)
-            | _ => fail "Illformed Match"
-          end
-      fun inject (n, cs) =
-          case n of
-            Rule =>
-            List.map (fn (ps, e) => join n [hd ps, e]) cs
-          | Clause _ =>
-            List.map (fn (ps, e) => join n [join Pats ps, join MaybeTy [], e]) cs
-          | _ => Crash.impossible "normalize.inject"
-      val ts = List.map normalize $ children t
-    in
-      case (this t) of
-        Match =>
-        let
-          val (n, cs) = extract ts
-          val cs' = convert cs
-          val ts' = inject (n, cs')
-        in
-          join Match ts'
-        end
-      | n => join n ts
-    end
+(* fun normalize t = *)
+(*     let open Grammar Tree *)
+(*       fun extract nil = (Rule, nil) *)
+(*         | extract (t :: ts) = *)
+(*           let *)
+(*             val (_, cs) = extract ts *)
+(*           in *)
+(*             case (this t, children t) of *)
+(*               (Rule, [p, e]) => (Rule, ([p], e) :: cs) *)
+(*             | (Clause v, [ps, top, e]) => (Clause v, (children ps, e) :: cs) *)
+(*             | _ => fail "Illformed Match" *)
+(*           end *)
+(*       fun inject (n, cs) = *)
+(*           case n of *)
+(*             Rule => *)
+(*             List.map (fn (ps, e) => join n [hd ps, e]) cs *)
+(*           | Clause _ => *)
+(*             List.map (fn (ps, e) => join n [join Pats ps, join MaybeTy [], e]) cs *)
+(*           | _ => Crash.impossible "normalize.inject" *)
+(*       val ts = List.map normalize $ children t *)
+(*     in *)
+(*       case (this t) of *)
+(*         Match => *)
+(*         let *)
+(*           val (n, cs) = extract ts *)
+(*           val cs' = convert cs *)
+(*           val ts' = inject (n, cs') *)
+(*         in *)
+(*           join Match ts' *)
+(*         end *)
+(*       | n => join n ts *)
+(*     end *)
 
 end
