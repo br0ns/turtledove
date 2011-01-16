@@ -1,0 +1,9 @@
+local 
+  $(SML_LIB)/basis/basis.mlb
+in
+  udvaelg.sml
+  collatz.sml
+  composelist.sml
+  sumlige.sml
+  mellemsaml.sml    
+end
