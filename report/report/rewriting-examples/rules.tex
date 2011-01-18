@@ -1,0 +1,55 @@
+\section{Rules}
+
+We have made rules for map, foldl and foldr:
+
+\newenvironment{ttenv}{{\tt}{}}
+
+
+
+\begin{definition}[Map]
+
+\begin{eqnarray*}[x]
+  \begin{eqnalign}[rcl]
+    \mathcal{C}[ \ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ \mathcal{C}[\ol{x}] \ttt{::}
+    \ttt{self} \mathcal{C}[\ol{xs}] \\
+    \mathcal{D} &=>& \ttt{nil} \\
+  \end{eqnalign} 
+  \quad \ttt{where} \quad
+  dom (\mathcal{C}, \mathcal{D}) \\
+%
+  \Downarrow \\
+%
+  \begin{eqnalign}[rcl]
+    \mathcal{C}[\ol{xs}] &=>& \ttt{map (fn m => $\mathbb{D} \
+    \mathcal{C}[$m$]$)} \ \ol{xs} \\    
+  \end{eqnalign}
+ \end{eqnarray*}
+\fixme{Kappa around m in the resulting $fn m...$}
+\end{definition}
+
+
+
+\begin{definition}[Fold right]
+
+\begin{eqnarray*}[x]
+  \begin{eqnalign}[rcl]
+    \mathcal{C}[\ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ (\mathcal{C}[\ol{x}],
+    \ttt{self}\ \mathbb{C}[\ol{xs}])\\
+    \mathcal{D} &=>& \mathbb{E}\ \mathcal{D}
+  \end{eqnalign} 
+  \quad \ttt{where} \quad
+  dom (\mathcal{C}, \mathcal{D}) \\
+%
+  \Downarrow \\
+%
+  \begin{eqnalign}[rcl]
+    \mathcal{C}[\ol{xs}] &=>& \ttt{foldr (fn (a, b) =>
+      $\mathbb{D}(\mathcal{C}[$a$],\ $b$)$) ($\mathbb{E}\ \mathcal{C}$) $\ol{xs}$}
+  \end{eqnalign}
+ \end{eqnarray*}
+\end{definition}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 
