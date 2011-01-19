@@ -82,6 +82,40 @@ fun foo xs = map (fn a => a + 1) xs
 \end{example}
 
 
+
+\begin{example}
+  One of the discarded assignments from 2008 was:
+
+fun mapfil (f, p, []) = []
+  | mapfil (f, p, (x::xs)) = (if p x then f x else x) :: mapfil(f, p, xs)
+
+
+
+fun mapfil (f,p,xs) => map (fn a => if p a then f a else a) xs
+
+\end{example}
+
+
+\begin{example}
+eks 2009
+  \begin{sml}
+fun collatz [] = []
+  | collatz (x :: xs) = if x mod 2 = 0 then 
+                          x div 2 :: collatz xs
+                        else 
+                          3*x + 1 :: collatz xs
+  \end{sml}
+
+\end{example}
+group assignment 4 2010
+\begin{example}
+  \begin{sml}
+fun evallist [] v      = []
+  | evallist (f::fs) v = f v :: evallist fs v    
+  \end{sml}
+\end{example}
+
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "../report"

@@ -1,5 +1,35 @@
 \section{Fold}
 
+Exam answers from 2008
+
+This can't be used because of the 2nd clause. This could have been fixed if the
+weak unification was implemented.
+
+fun composelist [] x        = x
+  | composelist (f :: []) x = f(x)
+  | composelist (f :: fs) x = f(composelist fs x);
+
+However we did receive lots of answers like
+
+fun composelist [] x      = x
+  | composelist (y::ys) x = y (composelist (ys) x);
+
+
+fun composelist f x = foldr (fn (f,n) => f n) x f;
+
+
+
+\begin{example}
+eksamen 2009
+  \begin{sml}
+fun sumlige [] = 0
+  | sumlige (x :: xs) = if x mod 2 = 0 then x div 2 + sumlige xs else sumlige xs
+
+  \end{sml}
+\end{example}
+
+
+
 \begin{example}[\textsf{fold}-instans]\
 \begin{sml}
 fun sum nil       = 0
