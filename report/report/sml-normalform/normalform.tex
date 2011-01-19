@@ -2,19 +2,20 @@
 
 \newcommand{\fn}{\ttt{fn}\ }
 \newcommand{\rec}{\ttt{rec}\ }
+\newcommand{\clause}[2]
+{
+  #1\mathrel{\texttt{.}}#2
+}
 
 An SML like grammar, without types, is presented below which will be the basis
-of defining normal forms for SML functions. Well formed code in the below
-grammar also includes that all constructors used in the patterns of a match must
-be of the same data type. For example the unary constructors made from
-\ttt{[0-9]}$^{+}$ could be defined to belong to the data type \textit{number}
+of defining normal forms for SML functions.
 
 \begin{eqnarray*}[rqcql:Tl]
-  var & = & \ttt{[a-z]$^{+}$}                          & Identifiers\\
-  con & = & \ttt{[A-Z][a-z]$^{*}$ | [0-9]$^{+}$}        & Constructors\\
+  var & ::= & \ttt{[a-z]$^{+}$}                        & Identifiers\\
+  con & ::= & \ttt{[A-Z][a-z]$^{*}$ | [0-9]$^{+}$}      & Constructors\\
 % Matches
   match & ::= & \epsilon                              & Empty match\\
-  & & pat\texttt{.}exp\ \texttt{|}\ match             & Pattern \ttt{=>} expression\\
+  & & pat\texttt{.}exp\ \texttt{|}\ match             & Clause\\
 % Patterns
   pat & ::= & var                                     & Variable\\
   & & con                                             & Constructor of arity $0$\\
@@ -35,14 +36,30 @@ be of the same data type. For example the unary constructors made from
 We use (with superfixes, subfixes and primes) $v$, $c$, $m$, $p$, $e$ and $d$ to
 range over $var$, $con$, $match$, $pat$, $exp$ and $dec$ respectively.
 
-No pattern may contain a given variable more than once.
+\paragraph{Data types.} Every constructor belongs to exactly one data type. For
+simplicity it is not possible to define data types and constructors in the
+language but we will assume a fixed function $\psi$ mapping constructors to the
+set of constructors of its own data type. This information is used solely when
+determining coverage (see \fref[plain]{sec:cover}).
 
-\paragraph{Environment.} For simplicity it is not possible to define data
-types/constructors in the grammar, but we will assume two fixed constructor
-environments, $\rho$ and $\psi$, containing this information as this is solely
-used when determining coverage (see \fref[plain]{sec:cover}). $\rho$ is a mapping
-of constructors to their data type and $\psi$ is a mapping of data types to a
-list of all constructors of that data type.
+For the sake of examples assume that $list = \{\texttt{Nil}, \texttt{Cons}\}$,
+$pair = \{\texttt{Pair}\}$ and $number = \{\texttt{1}, \texttt{2}, \ldots\}$ are
+data types and that the arity of \texttt{Cons} and \texttt{Pair} are 2 and that
+the arity of \texttt{Nil} and all $numbers$ are 0.
+
+\paragraph{Well-formedness.}
+\begin{itemize}
+\item Expressions must not contain unbound variables.
+\item No pattern may contain a given variable more than once.
+\item In a match, corresponding nodes in the patterns should either be variables
+  or constructors of the same data type.
+\end{itemize}
+
+\section{Semantics}
+We do not define the semantics of the language formally. We have chosen not to
+do this as the work in this chapter is later extended to SML, thus rendering
+proofs etc. about semantics useless, and because the exact semantics of the
+language is of no importance to most of the work in this chapter.
 
 \section{List of symbols}
 
@@ -96,11 +113,11 @@ We expect programs to be run in an environment containing predefined functions
 program
 \begin{quote}
 % \begin{verbatim}
-\ttt{x $\mapsto$ plus (pair (1, 8))}
+\ttt{x $\mapsto$ plus (Pair (1, 8))}
 % \end{verbatim}
 \end{quote}
 might make perfect sense (if in particular \ttt{plus} is a variable bound to a
-suitable function (perhaps addition), and \texttt{pair}, \texttt{1} and
+suitable function (perhaps addition), and \texttt{Pair}, \texttt{1} and
 \texttt{8} are constructors of arity 2, 0 and 0, respectively).
 \section{Auxiliary definitions}
 \label{sec:auxil-defin}
@@ -125,16 +142,15 @@ and
 
 
 \item
-We write $p \subseteq p'$ to mean that $p$ is a subpattern of $p'$. More
+We write $p \sqsubseteq p'$ to mean that $p$ is a subpattern of $p'$. More
 precisely this is the case if $p = p'$ or if $p' = c \ttt{(} p_1 \ttt{,} \ldots
-\ttt{,} p_n \ttt{)}$ and $p \subseteq p_i$ for some $i \in \{1, \ldots, n\}$.
+\ttt{,} p_n \ttt{)}$ and $p \sqsubseteq p_i$ for some $i \in \{1, \ldots, n\}$.
 
 In particular we have\footnote{See \fref{sec:free-variables}
   for the definition of $\FV_{pat}$.} $x \sqsubseteq p$ exactly when $x \in
 \FV_{pat}(p)$. The relation is obviously reflexive.
 
-\begin{example}\ \\
-  \label{ex:suppattern1}
+\begin{example}\ \label{ex:suppattern1}\\
   Recall that lowercase identifiers are variables, and uppercase ones are
   constructors. Variables as subpatterns:
   \begin{eqnarray*}
@@ -166,8 +182,6 @@ is $\pi(x)$.
 
 For example we have $A(x,y) ==_\pi A(z,x)$ where $\pi = [x \mapsto z, y \mapsto x]$.
 
-\fixme{maybe: show that sigma is a permutation of variables}
-
 \begin{definition}[Equivalence of patterns, $==_\pi$]
 \label{def:equivalence-patterns}
   \begin{eqnarray}[rlqTl]
@@ -183,7 +197,7 @@ where \fref{eq:struct-eq-con} holds if
 \end{eqnarray*}
 and $\pi = \pi_1 ++ \ldots ++ \pi_n$.
 
-Note that the domains of each of the $\sigma$s are disjoint because no variable
+Note that the domains of each of the $\pi_i$'s are disjoint because no variable
 can occur more than once in a pattern (by the definition of the syntax).
 
 We write $==$ to mean $==_\pi$ (with a suitable non-fixed $\pi$) where $\pi$ has no
@@ -211,9 +225,14 @@ Whereas these patterns are not equivalent
   \end{eqnarray*}
 \end{example}
 
-\fixme{Show equivalence relation: reflexive, symmetric and transitive.}
-\fixme{maybe: show $p_1 ==_\pi p_2$ iff $p_2 ==_{\pi^{-1}} p_1$.}
+\begin{lemma}[Reflexivity, symmetry and transitivity]\ \\
+  The relation $==$ is a equivalence relation; it is reflexive, symmetric and
+  transitive.
 
+  \begin{proof}
+    Straightforward by induction.
+  \end{proof}
+\end{lemma}
 
 \subsection{Free variables}\label{sec:free-variables}
 
@@ -288,7 +307,7 @@ We define substitution in expressions. An expression can be substituted for any
   If $e_1$, $e_2$ and $e_3$ are expressions we write $e_1[e_2/e_3]$ to be the
   result of substituting all occurrences of $e_3$ in $e_1$ with $e_2$.
   \begin{eqnarray}
-    e_1[e_2/e_3] &=& e_2 \quad \mrm{if}\ e_1 = e_3 \label{eq:subst-sub}\\
+    e_1[e_2/e_3] &=& e_2 \quad \mrm{iff}\ e_1 = e_3 \label{eq:subst-sub}\\
     (e^1_1 e^2_1)[e_2/e_3] &=& e^1_1[e_2/e_3] e^2_1[e_2/e_3] \label{eq:subst-app}\\
     \fn p_1 \texttt{.} e_1 \texttt{|} m &=& \fn p_1 \texttt{.} e'_1
     \texttt{|} m' \label{eq:subst-lam}\\
@@ -298,7 +317,7 @@ We define substitution in expressions. An expression can be substituted for any
   \end{eqnarray}
 Where in \fref{eq:subst-lam} we have
 \begin{eqnarray*}[rlqTl]
-  e'_1 &= e_1 & if $\kappa^{-1}(e_3) \subseteq p_1$\\
+  e'_1 &= e_1 & iff $FV_{exp}(e_3) \cap FV_{pat}(p_1) = \emptyset$\\
   e'_1 &= e_1[e_2/e_3]
 \end{eqnarray*}
 and
@@ -321,14 +340,14 @@ equal, not just alpha equivalent.
   \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fn x . x
-  | y . x
+ | y . x
 \end{lstlisting}
   \end{eqnalign}
 \right) \left[ \ttt{z}/\ttt{x} \right] \quad = \quad
   \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fn x . x
-  | y . z
+ | y . z
 \end{lstlisting}
   \end{eqnalign} \\
 %
@@ -367,8 +386,8 @@ fn z . z
 \subsection{Alpha equivalence}
 \label{sec:alpha-equivalence}
 
-We define alpha equivalence for expressions and for pattern-expression pairs. We
-use the symbol $==a$ for both relations.
+We define alpha equivalence for expressions and clauses. We use the symbol $==a$
+for both relations.
 
 \begin{definition}[Alpha equivalence of expressions, $==a$]\ \\
 \label{def:alpha-equivalence}
@@ -393,84 +412,81 @@ v_1 &= v_2 & otherwise,
 \]
 \fref{eq:alpha-match} holds if
 \begin{eqnarray*}
-  (p^1_1, e^1_1) &==a& (p^2_1, e^2_1)\\
+  \clause{p^1_1}{e^1_1} &==a& \clause{p^2_1}{e^2_1}\\
   &\vdots&\\
-  (p^1_n, e^1_n) &==a& (p^2_n, e^2_n)
+  \clause{p^1_n}{e^1_n} &==a& \clause{p^2_n}{e^2_n}
 \end{eqnarray*}
 and \fref{eq:alpha-con} holds if
 \[
 \sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n.
 \]
 
-\begin{definition}[Alpha equivalence of pattern-expression pairs, $==a$]\ \\
+\begin{definition}[Alpha equivalence of clauses, $==a$]\ \\
 \label{def:alpha-equivalence-patexp}
   Again we assume a mapping of bound variables. It is the case that
   \[
-  \sigma |- (p_1, e_1) ==a (p_2, e_2)
+  \sigma |- \clause{p_1}{e_1} ==a \clause{p_2}{e_2}
   \]
-  exactly when $p_1 ==_\pi p_2$ and
-  \[
-  \sigma ++ \pi |- e_1 ==a e_2
-  \]
+  exactly when $p_1 ==_\pi p_2$ and $\sigma ++ \pi |- e_1 ==a e_2$.
 \end{definition}
 
 If $e_1$ and $e_2$ are alpha equivalent expressions we write $e_1 ==a e_2$ which
-is a shorthand for $[] |- e_1 ==a e_2$. Similarly for pattern-expression pairs.
+is a shorthand for $[] |- e_1 ==a e_2$. Similarly for clauses.
 \end{definition}
 
 \begin{example}[Alpha equivalence, $==a$]\ \\
 \label{ex:alpha-equivalence1}
-  We have
+  These are alpha equivalent
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fn Nil . Nil
-  | Cons (x, xs) . Cons(f x, g xs)
+ | Cons (x, xs) . Cons(f x, g xs)
 \end{lstlisting}
     \end{eqnalign}
     ==a
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fn Nil . Nil
-  | Cons (y, ys) . Cons(f y, g ys)
+ | Cons (y, ys) . Cons(f y, g ys)
 \end{lstlisting}
     \end{eqnalign}
   \end{eqnarray*}
-  
-  whereas the example below is not, as the free variables are not the same
-  
+
+  whereas these are not, as the free variables are not the same
+
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fn Nil . Nil
-  | Cons (x, xs) . Cons(f x, g xs)
+ | Cons (x, xs) . Cons(f x, g xs)
 \end{lstlisting}
     \end{eqnalign}
     \not ==a
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
 fn Nil . Nil
-  | Cons (y, ys) . Cons(h y, j ys)
+ | Cons (y, ys) . Cons(h y, j ys)
 \end{lstlisting}
     \end{eqnalign}
   \end{eqnarray*}
 \end{example}
 
-\section{Semantic equivalence}
-\label{sec:semantic-equivalence}
-We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
-if $e_2$ is substituted for $e_1$ (or vice versa) in any program $d$ to obtain
-$d'$, then if $d$ evaluates to something in an environment $\sigma$ then $d'$
-evaluates to that something in $\sigma$, and if $d$ diverges in $\sigma$ so does
-$d'$.
+% \section{Semantic equivalence}
+% \label{sec:semantic-equivalence}
+% We write $e_1 \sim e_2$ if $e_1$ and $e_2$ are semantically equivalent. That is
+% if $e_2$ is substituted for $e_1$ (or vice versa) in any program $d$ to obtain
+% $d'$, then if $d$ evaluates to something in an environment $\sigma$ then $d'$
+% evaluates to that something in $\sigma$, and if $d$ diverges in $\sigma$ so does
+% $d'$.
 
 \section{Orderings on patterns}
 \label{sec:orderings-patterns}
 We define a total ($<=$) relation on patterns, and a partial ($<='$) relation on
-the quotient set of patterns by structural equivalence. Then we show that they
-indeed are orderings.
+the quotient set of patterns by $\equiv$. Then we show that they indeed are
+orderings.
 
-We write $<$ and $<'$ for $<=$ and $<='$ strict (or irreflexive) counterparts
+We write $<$ and $<'$ for $<=$'s and $<='$'s strict (or irreflexive) counterparts
 respectively.
 
 As it turns out it is easier to define $<$ and $<='$ directly and then define
@@ -479,17 +495,17 @@ $<=$ and $<'$ in turn of those.
 \begin{definition}[Strict total ordering, $<$]\ \\
   \label{def:pat-total-order-strict}
   Assume a total strict ordering $\lessdot$ on constructors and
-  variables\footnote{For example let all constructors come before all variables
-    and let variables and constructors be ordered lexicographically among
-    themselves. Note that constructors and variables are not compared in the
-    definition of $<$.}. We inductively define:
+  variables\footnote{For example let all constructors order less than all
+    variables and let variables and constructors be ordered lexicographically
+    among themselves. Note that constructors and variables are not compared in
+    the definition of $<$.}. We inductively define:
   \begin{eqnarray}
     v_1 &<& v_2 \quad \mrm{if}\ v_1 \lessdot v_2\label{eq:pat-total-order-strict-var}\\
     c\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<& v\\
     c_1\texttt{(}p_1\texttt{,} \ldots\texttt{,} p_n\texttt{)} &<&
     c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}\label{eq:pat-total-order-strict-con}
   \end{eqnarray}
-  Where \fref{eq:pat-total-order-strict-con} holds if
+  Where \fref{eq:pat-total-order-strict-con} hold if
   \[
   c_1 \lessdot c_2 \lor (c_1 = c_2 \land ( p_1 < p'_1 \lor p_1 = p'_1 \land (\ldots p_n < p'_n \ldots )))
   \]
@@ -499,13 +515,13 @@ $<=$ and $<'$ in turn of those.
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
-Cons (y, z)
+Cons (x, z)
 \end{lstlisting}
     \end{eqnalign}
     <
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
-Cons (x, z)
+Cons (y, z)
 \end{lstlisting}
     \end{eqnalign}
     <
@@ -550,7 +566,7 @@ b
     c_2\texttt{(}p'_1\texttt{,} \ldots\texttt{,} p'_m\texttt{)}
     \label{eq:pat-partial-order-weak-con}
   \end{eqnarray}
-  Where \fref{eq:pat-partial-order-weak-con} holds if
+  Where \fref{eq:pat-partial-order-weak-con} hold if
   \begin{eqnarray*}
     c_1 &=& c_2 \quad \land\\
     p_1 &<='& p'_1 \quad \land\\
@@ -598,7 +614,7 @@ b
   The relation $<=$ is a total ordering, and $<$ is a strict total ordering on
   patterns.
 
-  Proof is given in \fref{sec:proof-total-orderings}
+  Proof is given in \fref{sec:proof-total-orderings}.
 \end{lemma}
 
 
@@ -608,7 +624,7 @@ b
   on the equivalence classes of patterns modulo structural equivalence
   ($pat_{/_{==}}$).
 
-  Proof is given in \fref{sec:proof-partial-orderings}
+  Proof is given in \fref{sec:proof-partial-orderings}.
 \end{lemma}
 
 We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
@@ -651,56 +667,62 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
   \label{lem:more-specific-confused}
   If $p_1 <' p_2$ and $p_2 || p_3$, then $p_1 || p_3$.
 
-  Proof is given in \fref{sec:proof-partial-orderings}
+  Proof is given in \fref{sec:proof-partial-orderings}.
 \end{lemma}
 
 
 \section{Eliminating unused patterns}
 A function is simply a match. And a match is a list of pairs of patterns and
-corresponding bodys.
+corresponding bodies.
 
-The input to a function is tried against the patterns from top to bottom. An
-unused pattern is a pattern that will never see a value which it matches.
+During pattern matching the input to a function is tried against the patterns
+from top to bottom. An unused pattern is a pattern that will never see a value
+which it matches.
 
 \paragraph{Elimination reasons}\ \\
 This can happen for two reasons.
 \begin{enumerate}
 \item The pattern will never be tried against the input because the input
-  matches an earlier pattern. \label{item:unused-reason-1}
-\item The pattern is only tried against inputs it doesn't match. \label{item:unused-reason-2}
+  matches an earlier pattern. \label{item:unused-reason-1}.
+\item The pattern is only tried against inputs it doesn't
+  match. \label{item:unused-reason-2}.
 \end{enumerate}
 
 \subsection{Cover}
 \label{sec:cover}
-\fixme{det her skal vidst lige luges lidt}
-
 We define a cover to be a set of patterns such that for every input at least one
 of the patterns will match that input and we write $Cov(P)$ if $P$ is a cover.
 
+Let
 \[
-  m = p_1\texttt{.}e_1 \texttt{|} \ldots \texttt{|} p_n\texttt{.}e_n
+P = \{p_1,\ldots,p_n\}
 \]
 
-There are two cases if we only look at nullary constructors
+Now $P$ can be a cover for two reasons
+
 \begin{enumerate}
-\item Trivially we have a cover with $P = \{p_1,\ldots,p_i\}$ for $1 \leq i \leq
-  n$ if $p_i$ is a variable
-  
-  
-\item Or we have a cover with $P = \{p_1,\ldots,p_j\}$ for $1 \leq j \leq n$ if
-  the set $C$ formed by the constructors of $P$ and the set $D$ formed of all
-  the constructors belonging to the data type of $p_1$ are equal. The set $D$
-  can be found by looking up the data type of $p_1$ in $\rho$ and then looking
-  up the data type in $\psi$ to get $D$.
+\item At least one of the patterns is a variable.
+\item If none of the patterns is a variable they must all have a constructor in
+  their root node. First we determine the data type associated with the
+  constructors. It must be the case that
+  \[
+  p_1 = c \texttt{(} p_{11} \texttt{,} \ldots \texttt{,} p_{1m}\texttt{)}
+  \quad \textrm{or} \quad
+  p_1 = c
+  \]
+  In either case the set of constructors associated with the data type is
+  \[
+  \{c_1, \ldots, c_l\} = \psi(t).
+  \]
+  Partition $P$ into $l$ subsets, $P_1, \ldots, P_l$, such that the root node of
+  all the patterns in $P_i$ is the constructor $c_i$. Note that every pattern
+  belongs to a subset because of the well-formedness criterion.
 
+  Coverage is defined recursively
+  \[
+  Cov(P) <=> \forall i. Cov(P_i)
+  \]
 \end{enumerate}
-
-\noindent
-where the cover $Cov(P)$ will be of which ever set is the smallest.
-
-For constructors of arity $k$, the arguments to a constructor must also form a
-cover, resulting in more than one pattern for a given constructor is needed to
-form its own cover.
 
 \begin{lemma}\ \\
   Any pattern following a cover is unused because of elimination reason
@@ -744,8 +766,7 @@ We can now define the elimination of unused patterns.
 \end{definition}
 
 \begin{example}[Elimination, $->e$]\ \\
-  The first two patterns make a cover (assuming the only constructors are
-  \ttt{Cons} and \ttt{Nil}) so the last pattern is eliminated.
+  The first two patterns make a cover so the last pattern is eliminated.
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
@@ -783,25 +804,21 @@ We can now define the elimination of unused patterns.
 
 \end{example}
 
-\begin{lemma}[Preservation]\ \\
-  If an unused pattern is removed from a program, then the resulting program is
-  semantically equivalent.
+% \begin{lemma}[Preservation]\ \\
+%   If an unused pattern is removed from a program, then the resulting program is
+%   semantically equivalent.
 
-  That is
-  \[
-  m ->e m' ==> \fn m \sim \fn m'
-  \]
-\end{lemma}
+%   That is
+%   \[
+%   m ->e m' ==> \fn m \sim \fn m'
+%   \]
+% \end{lemma}
 
-\begin{proof}\ \\
-  Trivial (as if).
-\end{proof}
+% \begin{proof}\ \\
+%   Trivial (as if).
+% \end{proof}
 
-\section{Generalisiation}
-\fixme{Fatal: This doesn't hold! But it isn't too hard to fix. The problem is
-  that generalising a pattern extends its domain: We can only do that when all
-  following patterns are confused or shadowed.}
-
+\section{Generalisiation}\label{sec:generalisiation}
 Sometimes patterns get unnecessary complex. If for example a pattern (or one of
 its subpatterns) is a constructor pattern whose subpatterns are all variables,
 and those variables are only used as arguments to the same constructor (in the
@@ -810,15 +827,15 @@ by a fresh variable in pattern and body. That is generalisation of the pattern.
 
 Sometimes the generalisation of a pattern makes it equivalent to another pattern
 in the match. And sometimes the two patterns corresponding bodys will merge
-seamlessly, such that two patterns can be made to one.
+seamlessly, such that two clauses can be made to one.
 \\[1em]
 First we need some auxiliary definitions.
 
 \subsection{Partially ordered form}
 \begin{definition}\ \\
   \label{def:part-order-form}
-  A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is in
-  partially ordered form if
+  A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is
+  partially ordered if
   \[
   \forall i \in \{1, \ldots, n\} : p_j \not <=' p_i \quad \textnormal{where $j > i$}
   \]
@@ -828,9 +845,9 @@ First we need some auxiliary definitions.
 \end{definition}
 
 \subsection{Generalisation of patterns}
-We define generalisation of a single pair of a pattern and its body. We write
-$(p, e) |> (p', e')$ to mean that the pattern $p$ with its body $e$ generalises
-to the pattern $p'$ with the body $e'$.
+We define generalisation of a single clause. We write $\clause{p}{e} |>
+\clause{p'}{e'}$ to mean that the pattern $p$ with its body $e$ generalises to
+the pattern $p'$ with the body $e'$.
 
 \begin{definition}[Generalisation of single pattern-body pairs, $|>$]\ \\
   \label{def:gener-patt}
@@ -849,9 +866,11 @@ to the pattern $p'$ with the body $e'$.
   FV_{pat}(c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)}) \cap FV_{exp}(e[x/\kappa
   (c\texttt{(}p_1\texttt{,}\ldots\texttt{,}p_n\texttt{)})]) = \emptyset
   \]
-  and \fref{eq:single-gen-2} holds when \fref{eq:single-gen-1} does not and
+  (the daunting equation above simply says that every variable of the subpattern
+  should be eliminated from the body during generalisation), and
+  \fref{eq:single-gen-2} holds when \fref{eq:single-gen-1} does not and
   \[
-  (p_i , e) |> (p'_i , e')
+  \clause{p_i}{e} |> \clause{p'_i}{e'}
   \]
 \end{definition}
 
@@ -860,7 +879,7 @@ to the pattern $p'$ with the body $e'$.
   If a pattern $p$ (and some body) is generalised to $p'$ (and some other
   body), then $p'$ strictly generalises $p$. In other words
   \[
-  (p, e) |> (p', e') ==> p <' p'.
+  \clause{p}{e} |> \clause{p'}{e'} ==> p <' p'.
   \]
 \end{lemma}
 \begin{proof}\ \\
@@ -868,16 +887,14 @@ to the pattern $p'$ with the body $e'$.
 \end{proof}
 
 \begin{example}\ \\
-  This example shows a match with an unnecessary complex pattern that reverses
-  the components of a pair.
-
+  This example shows a clause with an unnecessary complex pattern.
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
 Pair (Cons (x, xs), zs) . Pair (zs, Cons (x, xs))
 \end{lstlisting}
-    \end{eqnalign}
-    |>
+    \end{eqnalign}\\
+    |>\\
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
 Pair (xs, zs) . Pair (zs, xs)
@@ -894,11 +911,8 @@ When generalising a pattern several things might happen. Assume
 
 \begin{eqnarray*}[rqTcql]
   m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
-  \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
-  e'_i).
+  \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & \clause{p_i}{e_i} |> \clause{p'_i}{e'_i}.
 \end{eqnarray*}
-
- \fixme{n >= i >= 1?}
 
 Now, perhaps $m$ can be generalised if we substitute $p'_i$ for $p_i$ and $e'_i$
 for $e_i$. We would like the resulting match to be partially ordered too, so we
@@ -908,24 +922,25 @@ p_i$ the first part of the match $p_1 \texttt{.} e_1 \texttt{|} \ldots
 the patterns $p_j$ for $j > i$.
 
 Note that by \fref{lem:unique-rel} we know that either $p_i <' p_j$ or $p_i ||
-p_j$ due to $m$ being on partially ordered form.
+p_j$ due to $m$ being in partially ordered form.
 
 \paragraph{Generalisation scenarios} \ \\
 Four scenarios arise
 \begin{enumerate}
 \item $p'_i$ and $p_j$ are equivalent. The pattern was generalised to one that
   already existed. Now the only hope is that $e'_i$ and $e_j$ merge. By this we
-  mean $(p'_i, e'_i) ==a (p_j, e_j)$ (\Fref{def:alpha-equivalence-patexp}).
+  mean \mbox{$\clause{p'_i}{e'_i} ==a \clause{p_j}{e_j}$}
+  (\Fref{def:alpha-equivalence-patexp}).
 
   If this is the case then either $p'_i \texttt{.} e'_i$ or $p_j \texttt{.} e_j$
   shall be removed. \label{item:gen-scen-1}
 \item $p'_i$ relates to $p_j$ in the same way that $p_i$ does. So $p_i <' p_j
   \Rightarrow p'_i <' p_j$ and $p_i || p_j \Rightarrow p'_i || p_j$. In this
   case nothing must be done. \label{item:gen-scen-2}
-\item $p_i || p_j$ and $p'_i >' p_j$. So now $p'_i$ ``steals'' $p_j$s input. But
+\item $p_i || p_j$ and $p'_i >' p_j$. So now $p'_i$ ``steals'' $p_j$'s input. But
   because $p_i$ and $p_j$ were confused we know that $p_j$ will not steal any
-  input originally intended for $p_i$. So we move $p_j$ and its body up, in the
-  match so they come before $p'_i$. \label{item:gen-scen-3}
+  input originally intended for $p_i$. So we move $p_j$ and its body up in the
+  match so they placed before $p'_i$. \label{item:gen-scen-3}
 \item $p_i <' p_j$ and $p'_i >' p_j$. This means that $p'_i$ will match input
   intended for $p_j$ but we can not move $p_j$ above $p'_i$ for then it will
   steal input originally intended for $p_i$. So in this case $m$ can not be
@@ -935,13 +950,12 @@ Four scenarios arise
 \begin{definition}[Generalisation, $->g$]\ \\
 \label{def:gener-match}
   We define a reduction relation $->g$ that expresses the
-  generalisation of exactly one pattern from a match.
+  generalisation of exactly one clause in a match.
 
   Let
   \begin{eqnarray*}[rqTcql]
     m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
-    \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
-    e'_i).
+    \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & \clause{p_i}{e_i} |> \clause{p'_i}{e'_i}.
   \end{eqnarray*}
   and assume that a generalisation as described above can be done. Then the
   resulting match is
@@ -970,8 +984,7 @@ Four scenarios arise
     Assume
     \begin{eqnarray*}[rqTcql]
       m = p_1 \texttt{.} e_1 \texttt{|} \ldots \texttt{|} p_i \texttt{.} e_i
-      \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & (p_i, e_i) |> (p'_i,
-      e'_i).
+      \texttt{|} \ldots \texttt{|} p_n \texttt{.} e_n & and & \clause{p_i}{e_i} |> \clause{p'_i}{e'_i}.
     \end{eqnarray*}
 
     Since every $p_j <' p'_i$ for $j > i$ is moved in front of $p'_i$ the only
@@ -992,17 +1005,15 @@ Four scenarios arise
 \end{definition}
 
 \begin{example}[Generalisation, $->g$]\ \\
-Assume that the constructor environment is $C = \{list \mapsto \{\mathtt{Cons},
-\mathtt{Nil} \}, pair \mapsto \{\mathtt{Pair}\} \}$ which maps data types into ,
-and that there exists a function \texttt{+}. \fixme{Do this right according to
-  the new environment definitions}
+Assume the existence of a function \texttt{flip}.
+\fixme{Indsæt refernece til appendix hvor lortet kører in the wild!}
 
 Consider
 
 \begin{sml}
-val rec addodd = 
+val rec flipodd =
 fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-     Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+     Cons (Cons (Pair (a, b), flip (Pair (c, d))), flipodd xs)
  | Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
  | Nil . Nil
  | x . x
@@ -1012,9 +1023,9 @@ As the match is not in partially ordered form (due to the pattern \texttt{x})
 our only choice is to eliminate. Luckily we can, because the three first
 patterns forms a cover, so we can eliminate the fourth. We get
 \begin{sml}
-val rec addodd = 
+val rec flipodd =
 fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-     Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+     Cons (Cons (Pair (a, b), flip (Pair (c, d))), flipodd xs)
  | Cons (Pair (a, b), Nil) . Cons (Pair (a, b), Nil)
  | Nil . Nil
 \end{sml}
@@ -1022,31 +1033,31 @@ which is in partially ordered form. The second clause can be generalised to
 \smlinline{x . x}. This means that the clause \smlinline{Nil . Nil} should be moved
 up. We get
 \begin{sml}
-val rec addodd = 
+val rec flipodd =
 fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-     Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+     Cons (Cons (Pair (a, b), flip (Pair (c, d))), flipodd xs)
  | Nil . Nil
  | x . x
 \end{sml}
 Next we can generalise \smlinline{Nil . Nil} to \smlinline{x . x} which coincide with
 the third clause, so we remove it.
 \begin{sml}
-val rec addodd = 
+val rec flipodd =
 fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-     Cons (Cons (Pair (a, b), + (Pair (c, d))), addodd xs)
+     Cons (Cons (Pair (a, b), flip (Pair (c, d))), flipodd xs)
  | x . x
 \end{sml}
 The first clause can be generalised to
 
 \begin{sml}
-Cons (Cons (x, y), xs) . Cons (Cons (x, + y), addodd xs)
+Cons (Cons (x, y), xs) . Cons (Cons (x, flip y), flipodd xs)
 \end{sml}
 \noindent (by generalising the two \texttt{Pair} patterns), so we get
 
 \begin{sml}
-val rec addodd = 
+val rec flipodd =
 fn Cons (Cons (x, y), xs) .
-     Cons (Cons (x, + y), addodd xs)
+     Cons (Cons (x, flip y), flipodd xs)
  | x . x
 \end{sml}
 which cannot be generalised or eliminated upon. So it is a normal form.
@@ -1068,31 +1079,50 @@ ordered form by repeated elimination.
 \begin{lemma}\ \\
   If a function $f$ can be converted to the normal form $f'$, then $f$ and $f'$
   are semantically equivalent.
+
+  Since we have not defined the semantics of our toy language this lemma can
+  naturally not be proven. The gist of it is that we believe it to be true when
+  the normal form conversion is extended to SML. But we have not proven this.
 \end{lemma}
 
 \begin{lemma}\ \\
-  We expect the normal form to be unique (in some sense).
+  We expect the normal form to be unique under alpha equivalence. That is if
+  $f$  has normal forms
+  \[
+  f' = \fn \clause{p'_1}{e'_1} \texttt{|} \ldots \texttt{|} \clause{p'_n}{e'_n}
+  \quad \textrm{and} \quad
+  f'' = \fn \clause{p''_1}{e''_1} \texttt{|} \ldots \texttt{|} \clause{p''_m}{e''_m}
+  \]
+  then
+  \[
+  n = m \land \clause{p'_1}{e'_1} ==a \clause{p''_1}{e''_1} \land \cdots \land
+  \clause{p'_n}{e'_n} ==a \clause{p''_m}{e''_m}
+  \]
+
+  We have not proven this (hopefully only) because of lack of time.
 \end{lemma}
 
 \begin{example}\ \\
-Consider 
+Assume that $t = \{\texttt{A}, \texttt{B}\}$ is a data type and that the arity
+of \texttt{A} and \texttt{B} are 2 and 0 respectively.
+\fixme{Reference til appendixs (it works bitches).}
+
+Consider
 \begin{sml}
-val f = 
+val f =
 fn A (A (a, b), c) . A (c, A (a, b))
  | A (a, b)        . A (b, a)
  | B               . B
  | x               . x
- | A (a, A (b, c))  . A (A (c, b), a)
+ | A (a, A (b, c)) . A (A (c, b), a)
 \end{sml}
-Assume that the only constructors are \texttt{A} and \texttt{B}.
-
 As the match is not in partially ordered form (due to the last pattern being
 more specific than the pattern \texttt{x}) our only choice is to
 eliminate. Luckily we can, because the four (three actually) first patterns
-forms a cover. With the last clause eliminated we have
+form a cover. With the last clause eliminated we have
 
 \begin{sml}
-val f = 
+val f =
 fn A (A (a, b), c) . A (c, A (a, b))
  | A (a, b)        . A (b, a)
  | B               . B
@@ -1102,42 +1132,122 @@ fn A (A (a, b), c) . A (c, A (a, b))
 From here we can choose to eliminate or generalise. We generalise and it is the
 case that
 \[
-(\texttt{A (A (a, b), c)}, \texttt{A (c, A (a, b))}) |> (\texttt{A (x, y)},
-\texttt{A (y, x)})
+\clause{\texttt{A (A (a, b), c)}}{\texttt{A (c, A (a, b))}}
+|>
+\clause{\texttt{A (x, y)}}{\texttt{A (y, x)}}
 \]
 
 We arrive at generalisation scenario \ref{item:gen-scen-1} since $\texttt{A (a, b)} ==
-\texttt{A (x, y)}$. So we must have 
-\[ 
-(\texttt{A (a, b)}, \texttt{A (b, a)}) 
-==a (\texttt{A (x, y)}, \texttt{A (y, x)})
+\texttt{A (x, y)}$. So we must have
+\[
+\clause{\texttt{A (a, b)}}{\texttt{A (b, a)}}
+==a
+\clause{\texttt{A (x, y)}}{\texttt{A (y, x)}}
 \]
 which is the case. So the first clause can be deleted. We now have
 
 \begin{sml}
-val f = 
+val f =
 fn A (a, b) . A (b, a)
  | B        . B
  | x        . x
 \end{sml}
 
 Since the two first patterns form a cover the last clause can be eliminated. We
-end up with
+get
 
 \begin{sml}
-val f = 
+val f =
 fn A (a, b) . A (b, a)
  | B        . B
+\end{sml}
+
+And lastly the second the second clause can be generalised. We end up with
+
+\begin{sml}
+val f =
+fn A (a, b) . A (b, a)
+ | x        . x
 \end{sml}
 
 which cannot be generalised or eliminated further, so it is a normal form.
 \end{example}
 
 
-\section{Weak unification}
-\fixme{To do or not to do?}
+\section{Further generalisation}
+During generalisation we sometimes need to decide whether two clauses have the
+same meaning (see generalisation scenario \ref{item:gen-scen-1} in
+\fref{sec:generalisiation}). We require the clauses to be alpha equivalent. It
+is certainly true that alpha equivalent clauses have the same meaning but maybe
+we could be more lenient.
 
+We have not worked towards this but we have some ideas. In particular we have
+considered two techniques:
+\begin{description}
+\item[Simplification.] Clause bodies that have the same meaning can take many
+  forms. One could devise a set of rules for simplifying clause bodies. In
+  particular inlining of functions can sometimes simplify a function body.
+  \fixme{Reference til afsnit om Simpset.}
+\item[Specialisation.] As clauses can be generalised, they can also be
+  specialised. That is variables are expanded to range over whole data types
+  explicitly. In unison with simplification of clause bodies this can lead to
+  elimination of superfluous clauses.
+\end{description}
 
+Consider the function\footnote{We have seen novice SML programmers make very
+  similar (indeed alpha equivalent) mistakes surprisingly often.} (assume that
+\texttt{plus} exists)
+\begin{sml}
+val rec tricky =
+fn Cons (x, Nil) . Cons (plus (x, 42), Nil)
+ | Cons (x, xs)  . Cons (plus (x, 42), tricky xs)
+ | Nil           . Nil
+\end{sml}
+
+It's normal form is
+
+\begin{sml}
+val rec tricky =
+fn Cons (x, Nil) . Cons (plus (x, 42), Nil)
+ | Cons (x, xs)  . Cons (plus (x, 42), tricky xs)
+ | x             . x
+\end{sml}
+
+We would like to be able to tell that the first clause is superfluous. But it
+cannot be removed through generalisation:
+
+It can be generalised to
+
+\begin{sml}
+Cons (x, xs) . Cons (plus (x, 42), xs)
+\end{sml}
+
+Which is different in meaning to the second clause.
+
+So lets try the new techniques. The second clause could be specialised to the
+two clauses
+\begin{sml}
+Cons (x, Cons (y, ys)) . Cons (plus (x, 42), tricky (Cons (y, ys)))
+Cons (x, Nil)          . Cons (plus (x, 42), tricky Nil)
+\end{sml}
+
+By inlining the function definition in the second clause we get
+
+\begin{sml}
+Cons (x, Nil)          . Cons (plus (x, 42), Nil)
+\end{sml}
+
+which is alpha equivalent to the functions first clause. And thus we could
+arrive at the desired function
+
+\begin{sml}
+val rec tricky =
+fn Cons (x, xs)  . Cons (plus (x, 42), tricky xs)
+ | x             . x
+\end{sml}
+
+A major problem with this kind of approach is the inlining of the function
+definition -- obviously it makes finding a normal form undecidable.
 
 %%% Local Variables: 
 %%% mode: latex
