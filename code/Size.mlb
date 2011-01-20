@@ -14,5 +14,7 @@ test/parsers/rule/test.mlb
 test/pp/pp.mlb
 test/ProjectManager/ProjectManager.mlb
 
+tool/Magic.mlb
+
 modules/projectmanager/ProjectManager.mlb
 

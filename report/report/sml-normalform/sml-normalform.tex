@@ -1,22 +1,45 @@
-\chapter{SML normalform}
+\chapter{Normal form}
 
-In this chapter we will present the definition of a normalform for matches in a
-language weary similar to SML and how to derive it from any well formed code in
-this language. The language presented below is untyped for simplicity, but
+In this chapter we will present the definition of a normal form of functions in
+a language weary similar to SML and how to derive it from any well-formed code
+in this language. The language presented below is untyped for simplicity, but
 obviously when the techniques are transfered to a language with types, the code
-must not only be well formed but also type check.
+must not only be well-formed but also well-typed.
 
 In the end we will give an informal argument of how this can be directly
-transfered to work on any well formed SML code that type check.
+transfered to work on any well-formed and well-typed SML program.
 
 \input{sml-normalform/normalform}
 
-\section{SML normalform}
+\section{Extension to SML}
 
-informal argument of how the normalform can be transformed to work on live SML code.
+We have shown what we mean by a functions normal form and -- more or less -- how
+to compute it.
 
-\fixme{det ses tydeligt...}
+Now we consider the challenges in extending the work to SML. Here we list the
+main differences between our toy language and SML.
 
+\begin{enumerate}
+\item SML is a much bigger language. This has no real implication on the
+  theoretical aspect but it does add a lot of bulk to an implementation. In
+  particular one has to consider rebinding of variables, modules, data type
+  declarations, type specification, unnecessary parenthesis, etc.
+\item There are many more forms of expressions in SML. Again this has no real
+  theoretical implication safe one thing: the \texttt{let}-construct. The
+  problem is that the order of declarations, and even whether to have them or
+  not, is arbitrary to some extend. One way around this could be elimination of
+  \texttt{let}-expressions by inlining of non-recursive value declarations and
+  lifting of recursive ones (that is functions) to an outer scope (by inserting
+  a \texttt{local}-block one can avoid polluting the environment). We have not
+  pursued this idea in practice.
+\item Syntactic sugar in SML means that there is different syntax for the same
+  thing. One solution is to remove the syntactic sugar before conversion to
+  normal form. Another is to handle syntactic sugar specially.
+\item SML has records.
+\item In SML there is no $\kappa$-function.
+\end{enumerate}
+
+\subsection{Algorithm}
 
 %%% Local Variables:
 %%% mode: latex
