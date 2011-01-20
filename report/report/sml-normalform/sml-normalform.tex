@@ -34,12 +34,23 @@ main differences between our toy language and SML.
   pursued this idea in practice.
 \item Syntactic sugar in SML means that there is different syntax for the same
   thing. One solution is to remove the syntactic sugar before conversion to
-  normal form. Another is to handle syntactic sugar specially.
-\item SML has records.
-\item In SML there is no $\kappa$-function.
+  normal form. Another is to handle syntactic sugar specially. See
+  \fref{sec:preparation} below.
+\item In SML all constructors are nullary or unary. This has no significance in
+  itself. On the other hand SML has tuples and records which do present a
+  challenge.
+\item SML has records and tuples. See \fref[plain]{sec:algorithm} below.
+\item In SML there is no $\kappa$-function. See \fref[plain]{sec:preparation}
+  below.
 \end{enumerate}
 
-\subsection{Algorithm}
+\subsection{Preparation}\label{sec:preparation}
+Before we can compute a match's normal form we need to make some
+preparations. In particular we eliminate some forms of syntactic sugar and
+transforms patterns to a subset of the expressions, in order to have the
+$\kappa$-function defined.
+
+\subsection{Algorithm}\label{sec:algorithm}
 
 %%% Local Variables:
 %%% mode: latex

@@ -586,6 +586,7 @@ b
 \end{definition}
 
 \begin{example}[Strict partial ordering on patterns, $<'$]
+  \label{ex:orderings-patterns-1}
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
 \begin{lstlisting}
@@ -818,22 +819,22 @@ We can now define the elimination of unused patterns.
 %   Trivial (as if).
 % \end{proof}
 
-\section{Generalisiation}\label{sec:generalisiation}
+\section{Generalisation}\label{sec:generalisiation}
 Sometimes patterns get unnecessary complex. If for example a pattern (or one of
 its subpatterns) is a constructor pattern whose subpatterns are all variables,
 and those variables are only used as arguments to the same constructor (in the
 same order) in the function body, then the constructor could simply be replaced
-by a fresh variable in pattern and body. That is generalisation of the pattern.
+by a fresh variable in pattern and body. That is generalisation of the clause.
 
-Sometimes the generalisation of a pattern makes it equivalent to another pattern
-in the match. And sometimes the two patterns corresponding bodys will merge
-seamlessly, such that two clauses can be made to one.
+Sometimes the generalisation of a clause makes one or more other clauses in the
+match superfluous because their meaning is captured by the generalised one. When
+this happens they can be eliminated.
 \\[1em]
 First we need some auxiliary definitions.
 
 \subsection{Partially ordered form}
-\begin{definition}\ \\
-  \label{def:part-order-form}
+\begin{definition}\
+  \label{def:part-order-form}\\
   A match $m = p_1\texttt{.}e_1\texttt{|}\ldots\texttt{|}p_n\texttt{.}e_n$ is
   partially ordered if
   \[
@@ -844,13 +845,110 @@ First we need some auxiliary definitions.
   patterns (\fref{sec:shadowed-patterns}).
 \end{definition}
 
+\subsection{Partial ordering with mapping}
+If $p$ is less general than $p'$, that is $p <' p'$, it is because $p'$ has
+variables where $p$ has constructors in one or more places. We informally extend
+the relation $<'$ to regard this mapping of variables to subpatterns, and we
+write $p <'_\pi p'$ if $\pi$ is such a mapping from the variables of $p'$ to
+subpatterns of $p$.
+
+\begin{example}[Strict partial ordering on patterns with mapping, $<'_\pi$]\ \\
+  We repeat \fref{ex:orderings-patterns-1}.
+  \begin{eqnarray*}[c]
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (y, Nil)
+\end{lstlisting}
+    \end{eqnalign}
+    <'_\pi
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+Cons (x, z)
+\end{lstlisting}
+    \end{eqnalign}
+    <'_\tau
+    \begin{eqnalign}[Tl]
+\begin{lstlisting}
+b
+\end{lstlisting}
+    \end{eqnalign}
+  \end{eqnarray*}
+  where
+  \[
+  \pi =
+  \left\{
+    \begin{array}{l@{$\ \mapsto\ $}r}
+      \ttt{x} & \ttt{y}\\
+      \ttt{z} & \ttt{Nil}
+    \end{array}
+  \right\}
+  \quad \textrm{and} \quad
+  \tau =
+  \left\{
+    \begin{array}{l@{$\ \mapsto\ $}r}
+      \ttt{b} & \ttt{Cons (x, z)}
+    \end{array}
+  \right\}.
+  \]
+\end{example}
+
+We write $p <='_\pi p'$ to mean $p <'_\pi p' \lor p \equiv_\pi p'$.
+
+\subsection{Substitution}
+We extend the substitution in expressions of variables to whole patterns. We
+write
+\[
+e[p'/p] :\equiv e[\pi(x_i)/x_i]
+\]
+where $p' <='_\pi p$ and the $x_i$'s range over $dom(\pi)$.
+
+\begin{example}[Pattern substitution]
+  Let
+  \[
+  e = \ttt{Pair (x, y)} \ , \quad
+  p = \ttt{Pair (y, x)} \ , \quad
+  p' = \ttt{Pair (Cons (a, b), x)}
+  \]
+  then
+  \[
+  e[p'/p] = \ttt{Pair (x, Cons (a, b))}
+  \]
+  with
+  \[
+  p' <='_\pi p \ , \quad
+  \pi =
+  \left\{
+    \begin{array}{l@{$\ \mapsto\ $}r}
+      \ttt{y} & \ttt{Cons (a, b)}\\
+      \ttt{x} & \ttt{x}
+    \end{array}
+  \right\}
+  \]
+\end{example}
+
+Substitution is important for our purposes because it makes it possible to
+decide whether the meaning of one clause contains the meaning of another.
+Consider two clauses $c = \clause{p}{e}$ and $c' = \clause{p'}{e'}$ such that
+$p' <' p$.
+
+We would like to know if the meaning of $c'$ is contained in $c$. So we
+substitute the pattern of $c$ for the pattern of $c'$ to obtain
+\[
+\hat{e} = e[p'/p]
+\]
+This is the body of $c$ specialised to input intended for $c'$. Now comparing
+\[
+\hat{e} \stackrel{?}{=}_\alpha e'
+\]
+we can decide whether $c'$ is contained in $c$ or not.
+
 \subsection{Generalisation of patterns}
 We define generalisation of a single clause. We write $\clause{p}{e} |>
 \clause{p'}{e'}$ to mean that the pattern $p$ with its body $e$ generalises to
 the pattern $p'$ with the body $e'$.
 
-\begin{definition}[Generalisation of single pattern-body pairs, $|>$]\ \\
-  \label{def:gener-patt}
+\begin{definition}[Generalisation of single pattern-body pairs, $|>$]\
+  \label{def:gener-patt}\\
   Inductively defined:
   \begin{eqnarray}
     (c \texttt{(} p_1 \texttt{,} \ldots \texttt{,} p_n \texttt{)} , e) &|>& (x , e[x
@@ -868,14 +966,14 @@ the pattern $p'$ with the body $e'$.
   \]
   (the daunting equation above simply says that every variable of the subpattern
   should be eliminated from the body during generalisation), and
-  \fref{eq:single-gen-2} holds when \fref{eq:single-gen-1} does not and
+  \fref[plain]{eq:single-gen-2} holds when \fref[plain]{eq:single-gen-1} does not and
   \[
   \clause{p_i}{e} |> \clause{p'_i}{e'}
   \]
 \end{definition}
 
-\begin{lemma}\ \\
-  \label{lem:single-gen-imp-gen}
+\begin{lemma}\
+  \label{lem:single-gen-imp-gen}\\
   If a pattern $p$ (and some body) is generalised to $p'$ (and some other
   body), then $p'$ strictly generalises $p$. In other words
   \[
@@ -928,12 +1026,13 @@ p_j$ due to $m$ being in partially ordered form.
 Four scenarios arise
 \begin{enumerate}
 \item $p'_i$ and $p_j$ are equivalent. The pattern was generalised to one that
-  already existed. Now the only hope is that $e'_i$ and $e_j$ merge. By this we
-  mean \mbox{$\clause{p'_i}{e'_i} ==a \clause{p_j}{e_j}$}
-  (\Fref{def:alpha-equivalence-patexp}).
+  already existed.
 
-  If this is the case then either $p'_i \texttt{.} e'_i$ or $p_j \texttt{.} e_j$
-  shall be removed. \label{item:gen-scen-1}
+  Since $p'_i \equiv p_j$ we know that $p_i <' p_j$ and thus $\hat{e_j} =
+  e_j[p_i/p_j]$ exists. If $\hat{e_j} ==a e_i$ we know that the meaning of
+  $\clause{p_i}{e_i}$ and thus $\clause{p'_i}{e'_i}$ is contained in
+  $\clause{p_j}{e_j}$. Therefore $\clause{p_i}{e_i}$ can simply be
+  removed.\label{item:gen-scen-1}
 \item $p'_i$ relates to $p_j$ in the same way that $p_i$ does. So $p_i <' p_j
   \Rightarrow p'_i <' p_j$ and $p_i || p_j \Rightarrow p'_i || p_j$. In this
   case nothing must be done. \label{item:gen-scen-2}
@@ -942,8 +1041,11 @@ Four scenarios arise
   input originally intended for $p_i$. So we move $p_j$ and its body up in the
   match so they placed before $p'_i$. \label{item:gen-scen-3}
 \item $p_i <' p_j$ and $p'_i >' p_j$. This means that $p'_i$ will match input
-  intended for $p_j$ but we can not move $p_j$ above $p'_i$ for then it will
-  steal input originally intended for $p_i$. So in this case $m$ can not be
+  intended for $p_j$.
+
+  If the meaning of $\clause{p'_i}{e'_i}$ is the same as for $\clause{p_j}{e_j}$
+  for the inputs that $p_j$ matches we can remove $\clause{p_j}{e_j}$. This is
+  the case when $e'_i[p_j/p'_i] ==a e_j$. If it is not the case $m$ can not be
   generalised. \label{item:gen-scen-4}
 \end{enumerate}
 
@@ -973,7 +1075,8 @@ Four scenarios arise
   Where $m_1 < \ldots < m_k$ and $s_1 < \ldots < s_l$.
 
   The third line is put in parentheses because it should be deleted in the case
-  of scenario \ref{item:gen-scen-1}.
+  of scenario \ref{item:gen-scen-1}. Note also that clauses can be removed
+  because of scenario \ref{item:gen-scen-4}.
 
   And we write $m ->g m'$.
 
@@ -1030,17 +1133,8 @@ fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
  | Nil . Nil
 \end{sml}
 which is in partially ordered form. The second clause can be generalised to
-\smlinline{x . x}. This means that the clause \smlinline{Nil . Nil} should be moved
-up. We get
-\begin{sml}
-val rec flipodd =
-fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
-     Cons (Cons (Pair (a, b), flip (Pair (c, d))), flipodd xs)
- | Nil . Nil
- | x . x
-\end{sml}
-Next we can generalise \smlinline{Nil . Nil} to \smlinline{x . x} which coincide with
-the third clause, so we remove it.
+\smlinline{x . x}. This means that the clause \smlinline{Nil . Nil} should be removed
+because of scenario \ref{item:gen-scen-4}. We get
 \begin{sml}
 val rec flipodd =
 fn Cons (Cons (Pair (a, b), Pair (c, d)), xs) .
@@ -1138,13 +1232,17 @@ case that
 \]
 
 We arrive at generalisation scenario \ref{item:gen-scen-1} since $\texttt{A (a, b)} ==
-\texttt{A (x, y)}$. So we must have
+\texttt{A (x, y)}$. We have
 \[
-\clause{\texttt{A (a, b)}}{\texttt{A (b, a)}}
-==a
-\clause{\texttt{A (x, y)}}{\texttt{A (y, x)}}
+\ttt{A (b, a)}[\ttt{A (A (a, b), c)}/\ttt{A (a, b)}] = \ttt{A (c, A (a, b))}
 \]
-which is the case. So the first clause can be deleted. We now have
+We require that
+\[
+\ttt{A (c, A (a, b))}
+==a
+\ttt{A (c, A (a, b))}
+\]
+which is obviously the case. So the first clause can be deleted. We now have
 
 \begin{sml}
 val f =
