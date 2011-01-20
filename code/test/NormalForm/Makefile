@@ -31,3 +31,7 @@ sumlige:
 	./NormalFormTest files/test.mlb files/sumlige.sml
 udvaelg: 
 	./NormalFormTest files/test.mlb files/udvaelg.sml
+mapfil:
+	./NormalFormTest files/test.mlb files/mapfil.sml
+evallist:
+	./NormalFormTest files/test.mlb files/evallist.sml

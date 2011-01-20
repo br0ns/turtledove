@@ -6,4 +6,6 @@ in
   composelist.sml
   sumlige.sml
   mellemsaml.sml    
+  mapfil.sml
+  evallist.sml
 end
