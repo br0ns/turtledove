@@ -9,18 +9,18 @@ We have made rules for map, foldl and foldr:
     \mathcal{C}[ \ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ \mathcal{C}[\ol{x}] \ttt{::}
     \ttt{self} \mathcal{C}[\ol{xs}] \\
     \mathcal{D} &=>& \ttt{nil} \\
-  \end{eqnalign} 
+  \end{eqnalign}
   \quad \ttt{where} \quad
   dom (\mathcal{C}, \mathcal{D}) \\
 %
   \Downarrow \\
 %
   \begin{eqnalign}[rcl]
-    \mathcal{C}[\ol{xs}] &=>& \ttt{map (fn m => $\mathbb{D} \
-    \mathcal{C}[$m$]$)} \ \ol{xs} \\    
+    \mathcal{C}[\ol{xs}] &=>& \ttt{map (fn $\ol{m}$ => $\mathbb{D} \
+    \mathcal{C}[\ol{m}]$)} \ \ol{xs} \\
   \end{eqnalign}
  \end{eqnarray*}
-\fixme{Kappa around m in the resulting $fn m...$}
+\fixme{The m is fishy should it be $\ol{x}$? and what about kappa?}
 \end{definition}
 
 
