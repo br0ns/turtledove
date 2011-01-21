@@ -77,8 +77,8 @@ val ast = NormalForm.unwrap ast
 val ast' = Magic.dust bas ast
 
 local open Layout infix \ in
-val unsorted = txt "Before normalizing:" \ PPGrammar.showUnwrapped ast
-val sorted = txt "After normalizing:" \ PPGrammar.showUnwrapped ast'
+val unsorted = txt "Before:" \ PPGrammar.showUnwrapped ast
+val sorted = txt "After:" \ PPGrammar.showUnwrapped ast'
 val _ = Layout.println NONE $ besides 4 (unsorted, sorted)
 end
 

@@ -34,7 +34,7 @@ val sml = case smlFiles of
           | _ => die $ Layout.txt "Only one sml file should be given"
              
 
-val _ = print $ "Normalising: " ^ Path.toString sml
+val _ = print $ "Normalising: " ^ Path.file sml ^ "\n"
 
 (* fun show ast = Layout.println NONE $ Grammar.show ast *)
 
@@ -101,99 +101,16 @@ fun basis t target =
     end
 
 
-val SOME bas = basis project $ Path.new "$(SML_LIB)/basis/basis.mlb"
-val SOME ast = find project sml
-val ast = NormalForm.unwrap ast
+val bas = case basis project $ Path.new "$(SML_LIB)/basis/basis.mlb" of
+            SOME bas => bas
+          | _ => die $ Layout.txt $ "Could not find the basis declaration "
+                 ^ "\"$(SML_LIB)/basis/basis.mlb\" in the mlb file"
 
-fun clauseMagic magic t =
-    let open Tree Grammar
-      (* fun loop nil e = (nil, e) *)
-      (*   | loop (p :: ps) e = *)
-      (*     let *)
-      (*       val (p', e) = magic (p, e) *)
-      (*       val (ps', e) = loop ps e *)
-      (*     in *)
-      (*       (p' :: ps', e) *)
-      (*     end *)
-    in
-      case this t of
-        Clause v =>
-        let
-          val [ps, top, e] = children t
-          val ps = children ps
-          val (ps, e) = magic (ps, e)
-        in
-          join (Clause v) [join Pats ps, top, clauseMagic magic e]
-        end
-      | n => join n (List.map (clauseMagic magic) $ children t)
-    end
-
-fun sortMatches t =
-    let open Tree Grammar
-      fun cmp t1 t2 =
-          let
-            fun pats t =
-                case this t of
-                  Clause _ => children $ hd $ children t
-                | Rule => [hd $ children t]
-                | _ => die "Illformed match"
-          in
-            NormalForm.totalcmp (pats t1) (pats t2)
-          end
-    in
-      case this t of
-        Match => join Match $ List.sort cmp $ children t
-      | n => join n (List.map sortMatches $ children t)
-    end
-
-fun extractFuns t =
-    let open Tree Grammar
-      fun extract cs =
-          let
-            val v =
-                case this $ hd cs of
-                  Clause v => v
-            val cs =
-                List.map
-                  (fn c =>
-                      case children c of
-                        [pats, _, exp] =>
-                        (children pats, exp)
-                  )
-                  cs
-          in
-            (v, cs)
-          end
-    in
-      (case this t of
-         Dec_Fun _ => List.map (extract o children) $ children t
-       | _ => nil) @
-      List.concatMap extractFuns (children t)
-    end
-
-fun elimLayers t = clauseMagic NormalForm.elimLayers t
-fun elimWildcards t = clauseMagic NormalForm.elimWildcards t
-(* fun gen t = clauseMagic NormalForm.gen t *)
-
-fun var {environment, interface, infixing} name =
-    let
-      val id = Ident.fromString Fixity.Nonfix name
-      val id =
-          if Ident.isUnqual id then
-            case Dictionary.lookup infixing name of
-              SOME fixity => Ident.setFixity id fixity
-            | NONE => id
-          else
-            id
-      val vid = ValEnv.findVal environment id
-      val var = Variable.ofIdent id
-      val var = Variable.store var vid
-    in
-      var
-    end
-
-val cons = var bas "::"
-val nill = var bas "nil"
+val ast = case find project sml of
+            SOME ast => NormalForm.unwrap ast
+          | _ => die $ Layout.txt $ "Could not find the file (" 
+                                    ^ Path.file sml 
+                                    ^ ") to normalise in the mlb file"
 
 fun isExhaustive (v, cs) =
     let
@@ -202,31 +119,14 @@ fun isExhaustive (v, cs) =
       NormalForm.cover pss
     end
 
-val ast = elimLayers ast
-val ast = elimWildcards ast
-val ast = NormalForm.elimLists cons nill ast
-val ast' = NormalForm.normalize ast
+val ast' = NormalForm.normalize bas ast
 
-(* val fs = extractFuns ast *)
-(* val _ = List.app *)
-(*           (fn f as (v, _) => *)
-(*               println (Variable.toString v ^ " is " ^ *)
-(*                        (if isExhaustive f then *)
-(*                           "" *)
-(*                         else *)
-(*                           "not ") ^ *)
-(*                        "exhaustive") *)
-(*           ) *)
-(*           fs *)
+local open Layout infix \ ^^ in
 
-(* val ast = gen ast *)
-
-local open Layout infix \ in
-val unsorted = txt "Before normalizing:" \ PPGrammar.showUnwrapped ast
-val sorted = txt "After normalizing:" \ PPGrammar.showUnwrapped ast'
+val unsorted = txt "Before:" \ PPGrammar.showUnwrapped ast
+val sorted = txt "After:" \ PPGrammar.showUnwrapped ast'
 val _ = if List.exists (fn s => "--no-column" = s) flags then
-          (Layout.println NONE unsorted;
-           Layout.println NONE sorted)           
+          Layout.println NONE $ (unsorted ^^ brk ^^ brk ^^ sorted)
         else
           Layout.println NONE $ besides 4 (unsorted, sorted)
 end
