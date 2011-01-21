@@ -1,10 +1,40 @@
 open MLBGrammar
 
 fun die e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.failure)
+fun quit e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.success)
 
 val here = Path.new (OS.FileSys.getDir ())
 
-val [mlb, sml] = List.map (Path.new' here) $ CommandLine.arguments ()
+
+val (flags, mlbFiles, smlFiles) = 
+    let
+      val args = CommandLine.arguments ()
+      val _ = length args < 2 andalso die $ Layout.txt "Needs atleast two arguments, mlb-file and sml-file."
+      val (flags, files) = List.partition (fn s => String.isPrefix "--" s) args
+      val (mlbFiles, smlFiles) = List.partition 
+                                     (fn s => String.extract(s, size s - 3, NONE) = "mlb") 
+                                     files
+      val mlbFiles' = List.map (Path.new' here) mlbFiles
+      val smlFiles' = List.map (Path.new' here) smlFiles
+    in
+      (flags, mlbFiles', smlFiles')
+    end
+
+val _ = List.exists (fn s => s = "--help") flags andalso
+          quit $ Layout.txt $ "You are on your own..\n\n"
+               ^ "Btw there is one flag:\n"
+               ^ "--no-column"
+
+val mlb = case mlbFiles of
+            [mlb] => mlb
+          | _ => die $ Layout.txt "Only one mlb file should be given"
+
+val sml = case smlFiles of
+            [sml] => sml
+          | _ => die $ Layout.txt "Only one sml file should be given"
+             
+
+val _ = print $ "Normalising: " ^ Path.toString sml
 
 (* fun show ast = Layout.println NONE $ Grammar.show ast *)
 
@@ -194,5 +224,9 @@ val ast' = NormalForm.normalize ast
 local open Layout infix \ in
 val unsorted = txt "Before normalizing:" \ PPGrammar.showUnwrapped ast
 val sorted = txt "After normalizing:" \ PPGrammar.showUnwrapped ast'
-val _ = Layout.println NONE $ besides 4 (unsorted, sorted)
+val _ = if List.exists (fn s => "--no-column" = s) flags then
+          (Layout.println NONE unsorted;
+           Layout.println NONE sorted)           
+        else
+          Layout.println NONE $ besides 4 (unsorted, sorted)
 end
