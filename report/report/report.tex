@@ -50,6 +50,20 @@
 \usepackage{ulem} % \sout - strike-through
 \usepackage{tikz}
 
+\usepackage{multicol}
+
+% Extend figures into either left or right margin
+% Ex: \begin{narrow}{-1in}{0in} .. \end{narrow} will place 1in into left margin
+\newenvironment{narrow}[2]{%
+  \begin{list}{}{%
+  \setlength{\topsep}{0pt}%
+  \setlength{\leftmargin}{#1}%
+  \setlength{\rightmargin}{#2}%
+  \setlength{\listparindent}{\parindent}%
+  \setlength{\itemindent}{\parindent}%
+  \setlength{\parsep}{\parskip}}%
+\item[]}{\end{list}}
+
 \lstset{ %
 % language=Octave,                % choose the language of the code
 basicstyle=\ttfamily,        % the size of the fonts that are used for the code
@@ -117,6 +131,7 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
 \newtheorem{example}{Example}
+\newtheorem{trace}{Trace}
 
 \newcommand*{\fancyrefdeflabelprefix}{def}
 \fancyrefaddcaptions{english}{
@@ -194,6 +209,24 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 }
 \Frefformat{plain}{\fancyrefexlabelprefix}{%
   \Frefexname\fancyrefdefaultspacing#1%
+}
+
+\newcommand*{\fancyreftrlabelprefix}{tr}
+\fancyrefaddcaptions{english}{
+  \newcommand*{\Freftrname}{Trace}
+  \newcommand*{\freftrname}{\MakeLowercase{\Frefexname}}
+}
+\frefformat{vario}{\fancyreftrlabelprefix}{%
+  \freftrname\fancyrefdefaultspacing#1#3%
+}
+\Frefformat{vario}{\fancyreftrlabelprefix}{%
+  \Freftrname\fancyrefdefaultspacing#1#3%
+}
+\frefformat{plain}{\fancyreftrlabelprefix}{%
+  \freftrname\fancyrefdefaultspacing#1%
+}
+\Frefformat{plain}{\fancyreftrlabelprefix}{%
+  \Freftrname\fancyrefdefaultspacing#1%
 }
 
 \newcommand{\ttt}[1]{\texttt{#1}}
