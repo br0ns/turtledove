@@ -873,37 +873,37 @@ fun convert basis cs =
           cs
     end
 
-(* fun normalize t = *)
-(*     let open Grammar Tree *)
-(*       fun extract nil = (Rule, nil) *)
-(*         | extract (t :: ts) = *)
-(*           let *)
-(*             val (_, cs) = extract ts *)
-(*           in *)
-(*             case (this t, children t) of *)
-(*               (Rule, [p, e]) => (Rule, ([p], e) :: cs) *)
-(*             | (Clause v, [ps, top, e]) => (Clause v, (children ps, e) :: cs) *)
-(*             | _ => fail "Illformed Match" *)
-(*           end *)
-(*       fun inject (n, cs) = *)
-(*           case n of *)
-(*             Rule => *)
-(*             List.map (fn (ps, e) => join n [hd ps, e]) cs *)
-(*           | Clause _ => *)
-(*             List.map (fn (ps, e) => join n [join Pats ps, join MaybeTy [], e]) cs *)
-(*           | _ => Crash.impossible "normalize.inject" *)
-(*       val ts = List.map normalize $ children t *)
-(*     in *)
-(*       case (this t) of *)
-(*         Match => *)
-(*         let *)
-(*           val (n, cs) = extract ts *)
-(*           val cs' = convert cs *)
-(*           val ts' = inject (n, cs') *)
-(*         in *)
-(*           join Match ts' *)
-(*         end *)
-(*       | n => join n ts *)
-(*     end *)
+fun normalize basis t =
+    let open Grammar Tree
+      fun extract nil = (Rule, nil)
+        | extract (t :: ts) =
+          let
+            val (_, cs) = extract ts
+          in
+            case (this t, children t) of
+              (Rule, [p, e]) => (Rule, ([p], e) :: cs)
+            | (Clause v, [ps, top, e]) => (Clause v, (children ps, e) :: cs)
+            | _ => fail "Illformed Match"
+          end
+      fun inject (n, cs) =
+          case n of
+            Rule =>
+            List.map (fn (ps, e) => join n [hd ps, e]) cs
+          | Clause _ =>
+            List.map (fn (ps, e) => join n [join Pats ps, join MaybeTy [], e]) cs
+          | _ => Crash.impossible "normalize.inject"
+      val ts = List.map (normalize basis) $ children t
+    in
+      case (this t) of
+        Match =>
+        let
+          val (n, cs) = extract ts
+          val cs' = convert basis cs
+          val ts' = inject (n, cs')
+        in
+          join Match ts'
+        end
+      | n => join n ts
+    end
 
 end
