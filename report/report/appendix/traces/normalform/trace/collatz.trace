@@ -1,0 +1,52 @@
+Normalising: collatz.sml
+User: 0.540, System: 0.148, Total: 0.688
+User: 5.036, System: 0.620, Total: 5.656
+Normalizing
+  [] = []
+  (x :: xs) = (if x mod 2 = 0 then
+                 x div 2
+               else
+                 3 * x + 1) :: collatz xs
+After elimination:
+  (nil) = (nil)
+  (x :: xs) = (if x mod 2 = 0 then
+                 x div 2
+               else
+                 3 * x + 1) :: collatz xs
+Generalising
+  (nil) = (nil)
+becomes
+  x = x
+Now have
+  x = x
+
+Generalising
+  (x :: xs) = (if x mod 2 = 0 then
+                 x div 2
+               else
+                 3 * x + 1) :: collatz xs
+becomes
+  (x :: xs) = (if x mod 2 = 0 then
+                 x div 2
+               else
+                 3 * x + 1) :: collatz xs
+Now have
+  (x :: xs) = (if x mod 2 = 0 then
+                 x div 2
+               else
+                 3 * x + 1) :: collatz xs
+  x = x
+
+Before:
+fun collatz [] = []
+  | collatz (x :: xs) = (if x mod 2 = 0 then
+                           x div 2
+                         else
+                           3 * x + 1) :: collatz xs
+
+After:
+fun collatz (x :: xs) = (if x mod 2 = 0 then
+                           x div 2
+                         else
+                           3 * x + 1) :: collatz xs
+  | collatz x = x

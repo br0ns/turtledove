@@ -1,0 +1,31 @@
+Normalising: evallist.sml
+User: 0.484, System: 0.208, Total: 0.692
+User: 4.928, System: 0.700, Total: 5.628
+Normalizing
+  (f :: fs, v) = f v :: evallist (fs, v)
+  ([], _) = []
+After elimination:
+  (f :: fs, v) = f v :: evallist (fs, v)
+  ((nil), x) = (nil)
+Generalising
+  ((nil), x) = (nil)
+becomes
+  y = (nil)
+Now have
+  y = (nil)
+
+Generalising
+  (f :: fs, v) = f v :: evallist (fs, v)
+becomes
+  (f :: fs, v) = f v :: evallist (fs, v)
+Now have
+  (f :: fs, v) = f v :: evallist (fs, v)
+  y = (nil)
+
+Before:
+fun evallist (f :: fs, v) = f v :: evallist (fs, v)
+  | evallist ([], _) = []
+
+After:
+fun evallist (f :: fs, v) = f v :: evallist (fs, v)
+  | evallist y = (nil)

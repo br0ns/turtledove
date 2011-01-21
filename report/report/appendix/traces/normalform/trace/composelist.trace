@@ -1,0 +1,69 @@
+Normalising: composelist.sml
+User: 0.484, System: 0.208, Total: 0.692
+User: 5.028, System: 0.612, Total: 5.640
+Normalizing
+  [] x = x
+  (f :: []) x = f (x)
+  (f :: fs) x = f (composelist fs x)
+After elimination:
+  (nil) x = x
+  (f :: (nil)) x = f (x)
+  (f :: fs) x = f (composelist fs x)
+Generalising
+  (nil) x = x
+becomes
+  y x = x
+Now have
+  y x = x
+
+Generalising
+  (f :: fs) x = f (composelist fs x)
+becomes
+  (f :: fs) x = f (composelist fs x)
+Now have
+  (f :: fs) x = f (composelist fs x)
+  y x = x
+
+Generalising
+  (f :: (nil)) x = f (x)
+becomes
+  (f :: b) x = f (x)
+Now have
+  (f :: (nil)) x = f (x)
+  (f :: fs) x = f (composelist fs x)
+  y x = x
+
+Normalizing
+  [] x = x
+  (y :: ys) x = y (composelist (ys) x)
+After elimination:
+  (nil) x = x
+  (y :: ys) x = y (composelist (ys) x)
+Generalising
+  (nil) x = x
+becomes
+  y x = x
+Now have
+  y x = x
+
+Generalising
+  (y :: ys) x = y (composelist (ys) x)
+becomes
+  (y :: ys) x = y (composelist (ys) x)
+Now have
+  (y :: ys) x = y (composelist (ys) x)
+  y x = x
+
+Before:
+fun composelist [] x = x
+  | composelist (f :: []) x = f (x)
+  | composelist (f :: fs) x = f (composelist fs x)
+fun composelist [] x = x
+  | composelist (y :: ys) x = y (composelist (ys) x)
+
+After:
+fun composelist (f :: (nil)) x = f (x)
+  | composelist (f :: fs) x = f (composelist fs x)
+  | composelist y x = x
+fun composelist (y :: ys) x = y (composelist (ys) x)
+  | composelist y x = x

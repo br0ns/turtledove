@@ -1,0 +1,44 @@
+Normalising: mellemsaml.sml
+User: 0.508, System: 0.180, Total: 0.688
+User: 4.976, System: 0.648, Total: 5.624
+Normalizing
+  [] = ""
+  [x] = x
+  (x :: xs) = x ^ " " ^ (mellemsaml xs)
+After elimination:
+  (nil) = ""
+  (x :: nil) = x
+  (x :: xs) = x ^ " " ^ (mellemsaml xs)
+Generalising
+  (nil) = ""
+becomes
+  x = ""
+Now have
+  x = ""
+
+Generalising
+  (x :: xs) = x ^ " " ^ (mellemsaml xs)
+becomes
+  (x :: xs) = x ^ " " ^ (mellemsaml xs)
+Now have
+  (x :: xs) = x ^ " " ^ (mellemsaml xs)
+  x = ""
+
+Generalising
+  (x :: nil) = x
+becomes
+  (x :: b) = x
+Now have
+  (x :: nil) = x
+  (x :: xs) = x ^ " " ^ (mellemsaml xs)
+  x = ""
+
+Before:
+fun mellemsaml [] = ""
+  | mellemsaml [x] = x
+  | mellemsaml (x :: xs) = x ^ " " ^ (mellemsaml xs)
+
+After:
+fun mellemsaml (x :: nil) = x
+  | mellemsaml (x :: xs) = x ^ " " ^ (mellemsaml xs)
+  | mellemsaml x = ""

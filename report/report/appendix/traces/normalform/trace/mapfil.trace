@@ -1,0 +1,52 @@
+Normalising: mapfil.sml
+User: 0.496, System: 0.196, Total: 0.692
+User: 4.984, System: 0.648, Total: 5.632
+Normalizing
+  (f, p, []) = []
+  (f, p, (x :: xs)) = (if p x then
+                         f x
+                       else
+                         x) :: mapfil (f, p, xs)
+After elimination:
+  (f, p, (nil)) = (nil)
+  (f, p, (x :: xs)) = (if p x then
+                         f x
+                       else
+                         x) :: mapfil (f, p, xs)
+Generalising
+  (f, p, (nil)) = (nil)
+becomes
+  x = (nil)
+Now have
+  x = (nil)
+
+Generalising
+  (f, p, (x :: xs)) = (if p x then
+                         f x
+                       else
+                         x) :: mapfil (f, p, xs)
+becomes
+  (f, p, (x :: xs)) = (if p x then
+                         f x
+                       else
+                         x) :: mapfil (f, p, xs)
+Now have
+  (f, p, (x :: xs)) = (if p x then
+                         f x
+                       else
+                         x) :: mapfil (f, p, xs)
+  x = (nil)
+
+Before:
+fun mapfil (f, p, []) = []
+  | mapfil (f, p, (x :: xs)) = (if p x then
+                                  f x
+                                else
+                                  x) :: mapfil (f, p, xs)
+
+After:
+fun mapfil (f, p, (x :: xs)) = (if p x then
+                                  f x
+                                else
+                                  x) :: mapfil (f, p, xs)
+  | mapfil x = (nil)
