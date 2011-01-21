@@ -1,0 +1,46 @@
+
+
+\begin{example}[\textsf{map}-instans]\
+
+KAN IKKE LADE SIG GØRE DA DER FØRSTE CLAUSUL SKAL MATCHE.
+
+\begin{sml}
+fun foo (nil, f)     = nil
+  | foo ([x], g)     = [g x]
+  | foo (x :: xs, f) = f x :: foo (xs, f)
+\end{sml}
+
+bliver normaliseret til
+
+\begin{sml}
+fun foo ([x], g)     = [g x]
+  | foo (x :: xs, f) = f x :: foo (xs, f)
+  | foo _            = nil
+\end{sml}
+
+De to sidste to klausuler er en instans af \textsf{map}-reglen med
+\begin{eqnarray*}[rl]
+\mathcal{C} &\mapsto \texttt{($\diamond$, $\overline{y}$)}\\
+\overline{x} &\mapsto \texttt{x}\\
+\overline{xs} &\mapsto \texttt{xs}\\
+\mathbb{D}(\texttt{($\overline{a}$, $\overline{b}$)}) &= \kappa(\overline{b})\
+\kappa(\overline{a})\\
+\mathcal{D} &\mapsto \texttt{\_}
+\end{eqnarray*}
+
+Så de skrives om til
+  \begin{eqnarray*}[c]
+    \texttt{$\mathcal{C}[xs]$ => map (fn $m$ =>
+      $\mathbb{D}(\mathcal{C}[m])$) $xs$}\\
+    =\\
+    \texttt{(a, b) => map (fn a => b a) a}
+  \end{eqnarray*}
+  
+Og det endelige resultat er
+
+\begin{sml}
+fun foo ([x], g) = [g x]
+  | foo (a, b)   = map (fn a => b a) a
+\end{sml}
+
+\end{example}
