@@ -6,8 +6,8 @@ We have made rules for map, foldl and foldr:
 
 \begin{eqnarray*}[x]
   \begin{eqnalign}[rcl]
-    \mathcal{C}[ \ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ \mathcal{C}[\ol{x}] \ttt{::}
-    \ttt{self} \mathcal{C}[\ol{xs}] \\
+    \mathcal{C}[ \ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ \mathcal{C}[\ol{x}]
+    \ttt{:: self}\ \mathcal{C}[\ol{xs}] \\
     \mathcal{D} &=>& \ttt{nil} \\
   \end{eqnalign}
   \quad \ttt{where} \quad
@@ -20,7 +20,10 @@ We have made rules for map, foldl and foldr:
     \mathcal{C}[\ol{m}]$)} \ \ol{xs} \\
   \end{eqnalign}
  \end{eqnarray*}
-\fixme{The m is fishy should it be $\ol{x}$? and what about kappa?}
+\fixme{The m is fishy it should be $\ol{m}$? and what about kappa when removing
+  the overline?}
+\fixme{The \ttt{nil} in the second clause will lead to problems as the
+  normalform may produce an x as body of that clause.}
 \end{definition}
 
 
@@ -29,8 +32,8 @@ We have made rules for map, foldl and foldr:
 
 \begin{eqnarray*}[x]
   \begin{eqnalign}[rcl]
-    \mathcal{C}[\ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ (\mathcal{C}[\ol{x}],
-    \ttt{self}\ \mathbb{C}[\ol{xs}])\\
+    \mathcal{C}[\ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ (\mathcal{C}[\ol{x}],\
+    \ttt{self}\ \mathcal{C}[\ol{xs}])\\
     \mathcal{D} &=>& \mathbb{E}\ \mathcal{D}
   \end{eqnalign} 
   \quad \ttt{where} \quad
@@ -40,9 +43,10 @@ We have made rules for map, foldl and foldr:
 %
   \begin{eqnalign}[rcl]
     \mathcal{C}[\ol{xs}] &=>& \ttt{foldr (fn (a, b) =>
-      $\mathbb{D}(\mathcal{C}[$a$],\ $b$)$) ($\mathbb{E}\ \mathcal{C}$) $\ol{xs}$}
+      $\mathbb{D}(\mathcal{C}[$a$],\ $b$)$) ($\mathbb{E}\ \mathcal{D}$) $\ol{xs}$}
   \end{eqnalign}
  \end{eqnarray*}
+ \fixme{Same issues with \ttt{(a, b)} as with $\ol{m}$ in map}
 \end{definition}
 
 %%% Local Variables: 

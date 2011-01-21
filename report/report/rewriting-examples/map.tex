@@ -1,5 +1,8 @@
 \section{Map}
 
+\fixme{We should properly introduce where these exams and assignments orriginate
+  from, i.e. ``Introduction to Programming''}
+
 \begin{example}[Simple \textsf{map}-instance]\ \\ 
   \label{ex:map-instance-foo} 
   \noindent
@@ -56,15 +59,16 @@ fun foo (x :: xs) = x + 1 :: foo xs
   
   \noindent
   and thus it can be rewritten with the following
-  
-  \begin{center}
-    \begin{tabular}{Ml Ml}
-      \mathcal{C}[\ol{xs}]  == \mathcal{C}[\ttt{xs}] == \kappa{(\ttt{xs})} == \ttt{xs}
-      & \mathcal{C}[\ol{m}] == \kappa{(\ol{m})} == \ttt{a}^{(\dag)} 
-      \\ \mathbb{D}\ \ttt{a} == \ttt{a + 1} & \\    
-    \end{tabular} \\
-    \small{$(\dag)$} for \ttt{a} being a free variable in the environment
-  \end{center}
+ 
+  \begin{eqnarray*}[c]
+    \mathcal{C}[\ol{xs}]  -> \mathcal{C}[\ttt{xs}] -> \kappa{(\ttt{xs})} -> \ttt{xs}
+    \qquad\quad
+    \mathcal{C}[\ol{m}] -> \kappa{(\ol{m})} -> \ttt{a}^{(\dag)} 
+    \\ 
+    \mathbb{D}\ \ttt{a} -> \ttt{a + 1}
+    \\
+    \text{\small{$(\dag)$} for \ttt{a} being a free variable in the environment}
+  \end{eqnarray*}
   
   \noindent
   to
