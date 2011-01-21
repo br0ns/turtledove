@@ -38,8 +38,7 @@ main differences between our toy language and SML.
   \fref{sec:preparation} below.
 \item In SML all constructors are nullary or unary. This has no significance in
   itself. On the other hand SML has tuples and records which do present a
-  challenge.
-\item SML has records and tuples. See \fref[plain]{sec:algorithm} below.
+  challenge. See \fref[plain]{sec:algorithm} below.
 \item In SML there is no $\kappa$-function. See \fref[plain]{sec:preparation}
   below.
 \end{enumerate}
@@ -50,7 +49,169 @@ preparations. In particular we eliminate some forms of syntactic sugar and
 transforms patterns to a subset of the expressions, in order to have the
 $\kappa$-function defined.
 
+\subsubsection{Name bindings}
+To avoid (pun intended) the difficulties of capture avoiding substitution, checking
+of alpha equivalence, etc. when names can be rebound we simply provide every
+name in a SML program with a unique identifier. We then use the identifiers to
+check whether two names are bound to the same value or not.
+
+\subsubsection{Lists}
+SML offers a special syntax for lists of a specific length. A list of length $n$
+is written
+\[
+\ttt{[$x_1$, $\ldots$, $x_n$]}
+\]
+instead of the longer
+\[
+\ttt{$x_1$ :: $\ldots$ :: $x_n$ :: nil}
+\]
+We simply rewrite the former to the latter everywhere.
+
+\subsubsection{The $\kappa$-function}
+There are three reasons there is no $\kappa$-function in SML. They are
+\begin{description}
+\item[Layered patterns] are patterns of the form
+  \[
+  \ttt{x as $p'$}
+  \]
+  We eliminate them simply by replacing \ttt{x} with $p'$ everywhere in the
+  corresponding clause body.
+\item[Wildcards] are a special pattern ``variable'' that can not be bound. We
+  eliminate wildcards by replacing them with fresh variables.
+\item[Flexible records] are a special kind of record pattern where only some of
+  the records fields are used. For example:
+  \[
+  \ttt{\{x = $p$, ...\}}
+  \]
+  We do not handle flexible records.
+\end{description}
+
 \subsection{Algorithm}\label{sec:algorithm}
+The algorithm for checking coverage (see \fref{sec:cover}) must be altered
+slightly because of tuples and records. In our toy language a pattern always has
+a single root node. But in SML a tuple can be regarded as several root nodes, or
+a list of patterns. And that is exactly what we do; we determines if a set of
+lists (of equal length) of patterns is a cover.
+
+In each step we check if all the heads of the lists are a cover, and then we
+proceed with the tails until the lists are empty. For the heads there are three
+cases:
+\begin{enumerate}
+\item There are none; The empty set is not a cover.
+\item They are all variables and thus a cover.
+\item There are constructors among them. The tails are partitioned according to
+  constructors of the data type. For each tail the constructors argument is
+  inserted as a new head. If the constructor was nullary a fresh variable is
+  inserted. The lists of patterns with variables as their head are added to all
+  the subsets.
+\item There are $n$-tuples among them. The heads are replaced with the patterns of
+  the tuples and variables are replicated $n$ times.
+\end{enumerate}
+
+\begin{example}
+  Is \fixme{Husk at indsætte en tabpause så alting bliver pænt}
+  \begin{sml}
+(SOME (a, b), x)
+(x, NONE)
+  \end{sml}
+  a cover? The algorithm runs like this (we suffix $Cov$ with the name of the
+  constructor of the subset we check):
+  {\allowdisplaybreaks
+    \begin{eqnarray*}
+      &&
+      Cov \left\{
+        \begin{eqnalign}[l]
+          \left[\ttt{(SOME (a, b), x)}\right]\\
+          \left[\ttt{(x, NONE)}\right]
+        \end{eqnalign}
+      \right\}\\
+      &=&
+      Cov \left\{
+        \begin{eqnalign}[l]
+          \left[\ttt{SOME (a, b)}, \ttt{x}\right]\\
+          \left[\ttt{x}, \ttt{NONE}\right]
+        \end{eqnalign}
+      \right\}\\
+      &=&
+      Cov_{\ttt{\tiny SOME}} \left\{
+        \begin{eqnalign}[l]
+          \left[\ttt{(a, b)}, \ttt{x}\right]\\
+          \left[\ttt{x}, \ttt{NONE}\right]
+        \end{eqnalign}
+      \right\} \land
+      Cov_{\ttt{\tiny NONE}} \left\{
+        \begin{eqnalign}[l]
+          \left[\ttt{x}, \ttt{NONE}\right]
+        \end{eqnalign}
+      \right\}\\
+      &=&
+      Cov_{\ttt{\tiny SOME}} \left\{
+        \begin{eqnalign}[l]
+          \left[\ttt{a}, \ttt{b}, \ttt{x}\right]\\
+          \left[\ttt{x}, \ttt{y}, \ttt{NONE}\right]
+        \end{eqnalign}
+      \right\} \land
+      Cov_{\ttt{\tiny NONE}} \left\{
+        \begin{eqnalign}[l]
+          \left[\ttt{NONE}\right]
+        \end{eqnalign}
+      \right\}\\
+      &=&
+      Cov_{\ttt{\tiny SOME}} \left\{
+        \begin{eqnalign}[l]
+          \left[\ttt{b}, \ttt{x}\right]\\
+          \left[\ttt{y}, \ttt{NONE}\right]
+        \end{eqnalign}
+      \right\} \land
+      \left(
+        Cov_{\ttt{\tiny NONE}} \left\{
+        \right\} \land
+        Cov_{\ttt{\tiny SOME}} \left\{
+          \begin{eqnalign}[l]
+            \left[\ttt{x}\right]
+          \end{eqnalign}
+        \right\}
+      \right)\\
+      &=&
+      Cov_{\ttt{\tiny SOME}} \left\{
+        \begin{eqnalign}[l]
+          \left[\ttt{x}\right]\\
+          \left[\ttt{NONE}\right]
+        \end{eqnalign}
+      \right\} \land
+      \left(
+        \textsf{false} \land \textsf{true}
+      \right)\\
+      \tabpause{now we can see that the result is \textsf{false}, eg. it is not a
+        cover. But we run the algorithm to the end just to illustrate.}
+      &=&
+      \left(
+        Cov_{\ttt{\tiny SOME}} \left\{
+          \begin{eqnalign}[l]
+            \left[\ttt{x}\right]\\
+          \end{eqnalign}
+        \right\} \land
+        Cov_{\ttt{\tiny NONE}} \left\{
+          \begin{eqnalign}[l]
+            \left[\ttt{x}\right]\\
+            \left[\ttt{y}\right]
+          \end{eqnalign}
+        \right\}
+      \right) \land \textsf{false}\\
+      &=& \left(\textsf{true} \land \textsf{true}\right) \land \textsf{false}\\
+      &=& \textsf{false}\\
+    \end{eqnarray*}
+  }
+\end{example}
+
+\paragraph{Elimination and generalisation order.} We say that if a no clause in
+a ordered match can be eliminated or generalised then it is a normal form, but
+we do not give a order in which elimination and generalisation should be carried
+out.
+
+It turns out (but we have not proven this) that it is enough to first do try to
+eliminate each clause from top to bottom and then try to generalise each clause
+from bottom to top.
 
 %%% Local Variables:
 %%% mode: latex
