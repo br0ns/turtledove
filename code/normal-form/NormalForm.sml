@@ -517,6 +517,16 @@ fun cover pss =
 
 fun generalise (ps, e) =
     let open Grammar Tree
+      fun disjoint xs ys =
+          List.all
+            (fn y =>
+                List.all
+                  (fn x =>
+                      not $ ValEnv.same (Variable.load x) (Variable.load y)
+                  )
+                  xs
+            )
+            ys
       val vs = ref $ FV (e :: ps)
       fun new _ =
           let
@@ -539,21 +549,24 @@ fun generalise (ps, e) =
             let
               val v = new ()
             in
-              case subs (e, kappa p, singleton $ Exp_Var v) of
-                SOME e => (singleton $ Pat_Var v, e)
-              | NONE =>
-                case this p of
-                  Pat_App =>
-                  (case children p of
-                     [p1, p2] =>
-                     let
-                       val (p2, e) = one (p2, e)
-                     in
-                       (join Pat_App [p1, p2], e)
-                     end
-                   | _ => fail "Illformed Pat_App"
-                  )
-                | n => Arrow.first (join n) $ many (children p, e)
+              (* if disjoint (FV ps) (FV [e]) then *)
+              (*   (singleton $ Pat_Var v, e) *)
+              (* else *)
+                case subs (e, kappa p, singleton $ Exp_Var v) of
+                  SOME e => (singleton $ Pat_Var v, e)
+                | NONE =>
+                  case this p of
+                    Pat_App =>
+                    (case children p of
+                       [p1, p2] =>
+                       let
+                         val (p2, e) = one (p2, e)
+                       in
+                         (join Pat_App [p1, p2], e)
+                       end
+                     | _ => fail "Illformed Pat_App"
+                    )
+                  | n => Arrow.first (join n) $ many (children p, e)
             end
       and many (nil, e) = (nil, e)
         | many (p :: ps, e) =
@@ -828,6 +841,9 @@ fun convert basis cs =
           in
             cs
           end
+
+      val sort = List.sort (fn (ps1, _) => fn (ps2, _) => totalcmp ps1 ps2)
+
       fun var {environment, interface, infixing} name =
           let
             val id = Ident.fromString Fixity.Nonfix name
@@ -848,7 +864,7 @@ fun convert basis cs =
       val nill = var basis "nil"
     in
       clauses "Normalizing" cs ;
-      gen $ elim $
+      gen $ sort $ elim $
           List.map
           (elimLists cons nill o
            elimLayers o
