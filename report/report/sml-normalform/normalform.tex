@@ -1160,7 +1160,12 @@ which cannot be generalised or eliminated upon. So it is a normal form.
 
 \section{Normal form}
 We say that the function $\fn m$ is a normal form if there does not exist an
-$m'$ such that $m ->e m'$ or $m ->g m'$.
+$m'$ such that $m ->e m'$ or $m ->g m'$ and $m$ is ordered by patterns according
+to $<$.
+
+Notice that a partially ordered match (which $m$ must be) can be ordered by $<$
+according to \fref{lem:more-specific-confused} and
+\fref{lem:total-implies-partial}.
 
 \subsection{Reducing to normal form}
 Consider a function $\fn m$. It can be converted to a normal form by repeatedly
@@ -1273,23 +1278,20 @@ which cannot be generalised or eliminated further, so it is a normal form.
 
 
 \section{Further generalisation}
-During generalisation we sometimes need to decide whether two clauses have the
-same meaning (see generalisation scenario \ref{item:gen-scen-1} in
-\fref{sec:generalisiation}). We require the clauses to be alpha equivalent. It
-is certainly true that alpha equivalent clauses have the same meaning but maybe
-we could be more lenient.
+During generalisation we sometimes need to decide whether two clause bodies have
+the same meaning (see generalisation scenario \ref{item:gen-scen-1} in
+\fref{sec:generalisiation}). We require the them to be alpha equivalent. It is
+certainly true that alpha equivalent clauses have the same meaning but maybe we
+could be more lenient.
 
 We have not worked towards this but we have some ideas. In particular we have
 considered two techniques:
 \begin{description}
 \item[Simplification.] Clause bodies that have the same meaning can take many
-  forms. One could devise a set of rules for simplifying clause bodies. In
-  particular inlining of functions can sometimes simplify a function body.
+  forms. One could devise a set of rules for simplifying clause bodies.
   \fixme{Reference til afsnit om Simpset.}
-\item[Specialisation.] As clauses can be generalised, they can also be
-  specialised. That is variables are expanded to range over whole data types
-  explicitly. In unison with simplification of clause bodies this can lead to
-  elimination of superfluous clauses.
+\item[Inlining of function calls.] The inlining of function calls where the
+  argument(s) is a value can sometimes simplify a clause body as we show below.
 \end{description}
 
 Consider the function\footnote{We have seen novice SML programmers make very
@@ -1320,22 +1322,20 @@ It can be generalised to
 Cons (x, xs) . Cons (plus (x, 42), xs)
 \end{sml}
 
-Which is different in meaning to the second clause.
+We arrive at generalisation scenario \ref{item:gen-scen-1}. If we substitute
+the second pattern for the first in the second body we get
+\begin{eqnarray*}
+\ttt{Cons (plus (x, 42), tricky xs)}[\ttt{Cons (x, xs)}/\ttt{Cons (x, Nil)}] =\\
+\ttt{Cons (plus (x, 42), tricky Nil)}
+\end{eqnarray*}
 
-So lets try the new techniques. The second clause could be specialised to the
-two clauses
-\begin{sml}
-Cons (x, Cons (y, ys)) . Cons (plus (x, 42), tricky (Cons (y, ys)))
-Cons (x, Nil)          . Cons (plus (x, 42), tricky Nil)
-\end{sml}
+which is different from
 
-By inlining the function definition in the second clause we get
+\[
+\ttt{Cons (plus (x, 42), Nil)}
+\]
 
-\begin{sml}
-Cons (x, Nil)          . Cons (plus (x, 42), Nil)
-\end{sml}
-
-which is alpha equivalent to the functions first clause. And thus we could
+But if we inline \ttt{tricky Nil} we get \ttt{Nil} as desired. And thus we could
 arrive at the desired function
 
 \begin{sml}
