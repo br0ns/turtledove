@@ -5,10 +5,14 @@
 fun die e = (println e ; OS.Process.exit OS.Process.failure)
 
 val here = Path.new (OS.FileSys.getDir ())
-val mlbpath = Path.new' here
-              (hd (CommandLine.arguments ())
-               handle _ => "Turtledove.mlb"
-              )
+val args = CommandLine.arguments ()
+val arg1 = case args of 
+             [arg] => arg
+           | _ => die $ "Expects exactly one argument, namely an .mlb file.\n"
+                  ^ "All occurances of comments starting with \"TODO\" in\n"
+                  ^ "any .sml file referenced in the supplied .mlb will be printed to std out."
+val mlbpath = Path.new' here arg1 
+    handle _ => die $ "Can't create path from '" ^ arg1  ^ "'" 
 
 val ast =
     let
