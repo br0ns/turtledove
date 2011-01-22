@@ -28,3 +28,22 @@ NormalForm:
 
 
 SourceExplorer:
+  Takes one argument, an mlb file, and prints "tree structure" to the console
+  that can be navigated through.
+
+  Navigation down the tree can be done by inputting the number of the desired
+  node to navigate into.
+
+  Other navigation keys are:
+  Key : Meaning  : Description
+  u   : Up       : Navigate up to parent node.
+  s   : Show     : Show the current node and any level of child nodes.
+  r   : Right    : Show environment before the node.
+  l   : Left     : Show the environment that the current node introduces
+                 : I.E. left+right = new environment after node
+  Ent : Enter    : When the current node is an sml file, enter will go into the
+                   sml file and the exploration can continue.
+  q   : Quit     : If entered into an sml file, quit will walk out of the file
+                   and back to the parent file including/referencing the current.
+                   Up has the same effect as quit if the current node is the top
+                   most node in the current file.
