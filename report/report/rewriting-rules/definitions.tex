@@ -1,4 +1,26 @@
 \section{Definitions}
+\subsection{Patterns}
+Patterns in SML can be thought of as trees with constructors as nodes and
+variables as liefs where nullary constructors is not seen as liefs.
+
+In the following chapter we will be generalising patterns to be parameterised
+over their liefs, meaning that SML patterns are patterns over (SML) variables.
+
+We follow the convention that constants can be thought of as being nullary
+constructors\footnote{as in the ``Mini-ML'' document}\fixme{Insert proper
+  reference in footnote}. It is also assumed, for all code we will match, that
+
+\begin{enumerate}
+\item All \texttt{as}-patterns has been removed (this can be done by
+  substitution).
+
+\item All infix functions has been turned into their nonfix counterparts.
+
+\item ... Most likely something else \fixme{More to the list of stuff that is
+    assumed of the code we will work on}
+\end{enumerate}
+
+
 We write concrete SML in typewriter font as this:
 \begin{sml}
 fun id x = x
