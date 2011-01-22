@@ -1,6 +1,0 @@
-Af 4. septemper 2009
- o Læs kapitel 15 i 'mlkit-4.3.0.pdf'.
- o Læs 'http://www.it-c.dk/research/mlkit/index.php/ML_Basis_Files'.
- o Læs 'http://www.smlnj.org/doc/ML-Lex/manual.html'.
- o Læs 'http://www.smlnj.org/doc/ML-Yacc/index.html'.
- o Lav en fortolker (say aritmetiske udtryk) for øvelsens skyld.
