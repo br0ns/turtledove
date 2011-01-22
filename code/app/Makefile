@@ -1,5 +1,5 @@
 .PHONY: all
-all : todo size GaaSomEnDatalog NormalForm
+all : todo size SourceExplorer NormalForm
 
 # Todo
 
@@ -17,13 +17,13 @@ size:
 clean-size:
 	make -C size -f Makefile clean
 
-# GaaSomEnDatalog
+# SourceExplorer
 
-.PHONY: GaaSomEnDatalog clean-GaaSomEnDatalog
-GaaSomEnDatalog:
-	make -C GaaSomEnDatalog -f Makefile all
-clean-GaaSomEnDatalog:
-	make -C GaaSomEnDatalog -f Makefile clean
+.PHONY: SourceExplorer clean-SourceExplorer
+SourceExplorer:
+	make -C SourceExplorer -f Makefile all
+clean-SourceExplorer:
+	make -C SourceExplorer -f Makefile clean
 
 # NormalForm
 
@@ -36,5 +36,5 @@ clean-NormalForm:
 
 
 .PHONY : clean
-clean: clean-todo clean-size clean-GaaSomEnDatalog clean-NormalForm
+clean: clean-todo clean-size clean-SourceExplorer clean-NormalForm
 

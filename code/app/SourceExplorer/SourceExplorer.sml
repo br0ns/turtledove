@@ -10,7 +10,7 @@ val path =
        handle _ =>
               (println ("Usage: " ^
                         CommandLine.name () ^
-                        " file") ;
+                        " file.mlb") ;
                OS.Process.exit OS.Process.success
               )
       )
