@@ -81,9 +81,6 @@ Below is a summarised list of symbols that will be introduced in this chapter
   ==a & Alpha equivalence of two expressions or pattern-expression pairs. 
   & \Fref[plain]{def:alpha-equivalence} \\ \hline
 %
-  \sim & Semantic equivalence of two expressions. 
-  & \Fref[plain]{sec:semantic-equivalence} \\ \hline
-%
   \lessdot & Some total ordering on constructors and variables. 
   & \Fref[plain]{def:pat-total-order-strict} \\ \hline
 %
@@ -820,6 +817,7 @@ We can now define the elimination of unused patterns.
 % \end{proof}
 
 \section{Generalisation}\label{sec:generalisiation}
+\fixme{Require that patterns form a cover.}
 Sometimes patterns get unnecessary complex. If for example a pattern (or one of
 its subpatterns) is a constructor pattern whose subpatterns are all variables,
 and those variables are only used as arguments to the same constructor (in the
