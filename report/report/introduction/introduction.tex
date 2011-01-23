@@ -6,9 +6,17 @@ http://mlton.org/pipermail/mlton/2005-July/027571.html
 
 The peeeps want this stuff.
 
+An example is the similar but much more developed, and much larger project, The
+Haskell Refactorer, HaRe\footnote{See \cite{HARE}.} that performs
+transformations in Haskell. At present twenty three transformations has been
+implemented in HaRe.
+
+
+
 \section{Problem Statement}
 
 {\footnotesize [Huge explanation about the actual problem.]}
+
 
 \section{Motivation}
 \label{sec:motivation}
@@ -93,13 +101,31 @@ rules.
 
 \section{Readers prerequisites}
 
-
 Readers of this text should, as a minimal prerequisite, be familiar with
 Standard ML. Some knowledge of compiler design and programming language theory,
 is also recommended. Also some algorithmic and mathematically maturity will be
 of help. Any to-be computer scientist with a few years experience should be able
 to either directly understand this text, or be able to easily acquire the needed
-knowledge.
+knowledge.\\
+
+\noindent
+Literature that may prove helpful:
+
+\begin{itemize}
+\item {The definition of Standard ML revised, \cite{SML97}.}.
+\item {Commentary on Standard ML, \cite{SMLCOMM}.} Very helpful when reading
+  \cite{SML97}.
+\item {A Lexical Analyzer Generator for Standard ML, \cite{MLLEX}.} A
+  description of, and a tutorial to, the software ML-Lex. It is not in print,
+  but can be viewed online here:
+  \url{http://www.smlnj.org/doc/ML-Lex/manual.html}
+\item {ML-Yac Users Manual, \cite{MLYACC}.} A description of, and a tutorial to, the
+  software ML-Yacc. It is not in print, but can be viewed online here:
+  \url{http://www.smlnj.org/doc/ML-Yacc/index.html}.
+\end{itemize}
+
+\fixme{Why not reference the paper where lex and yacc are combined? It seems to
+  be much newer and updated examples}
 
 \section{Structure outline}
 
