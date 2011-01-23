@@ -1,25 +1,15 @@
-\section{Definitions}
-\subsection{Patterns}
-Patterns in SML can be thought of as trees with constructors as nodes and
-variables as liefs where nullary constructors is not seen as liefs.
+\section{Definitions}\label{sec:definitions}
+% \subsection{Patterns}
+A subset of patterns in SML (see \fref{sec:preparation}) can be thought of as
+trees with constructors as nodes and variables as leafs (where nullary
+constructors are seen as nodes with no leafs).
 
 In the following chapter we will be generalising patterns to be parameterised
-over their liefs, meaning that SML patterns are patterns over (SML) variables.
+over their leafs, meaning that SML patterns are patterns over (SML) variables.
 
 We follow the convention that constants can be thought of as being nullary
-constructors\footnote{as in the ``Mini-ML'' document}\fixme{Insert proper
-  reference in footnote}. It is also assumed, for all code we will match, that
-
-\begin{enumerate}
-\item All \texttt{as}-patterns has been removed (this can be done by
-  substitution).
-
-\item All infix functions has been turned into their nonfix counterparts.
-
-\item ... Most likely something else \fixme{More to the list of stuff that is
-    assumed of the code we will work on}
-\end{enumerate}
-
+constructors\footnote{As in our toy language of
+  \fref[plain]{chap:normal-form}.}.
 
 We write concrete SML in typewriter font as this:
 \begin{sml}
@@ -28,17 +18,15 @@ fun id x = x
 
 In the following we use the names given in \cite{SML97} for the different
 syntactic categories, we assume a fixed SML environment $E = (S\!E, T\!E, V\!E)$
-and a set of $n$-ary relations over $mpat$ (defined below), $\sigma$.
+and a set of $n$-ary relations over $mpat$ (defined below), $\rho$.
 
 \begin{definition}
   We write $pat^\alpha$ to mean the subset of the term algebra
   \[
   T(con, \alpha)
   \]
-  of the constructors of $E$ and the set of record constructors over $\alpha$,
-  where each variable occurs at most once. \fixme{Rewrite this sentence so Jakob
-  understands it.}\fixme{And the identity?}
-
+  where the signature $con$ consists of the constructors of $E$ and the set of
+  record constructors, and each variable occurs at most once.
 \end{definition}
 
 \paragraph{Note.} One can think of $pat^\alpha$ as SML-patterns generalised to
@@ -48,10 +36,6 @@ functions with finite arity. To distinguish constructors from the surrounding
 program text we write them with an initial capital letter (with very few
 exceptions like \codeinline{::} and \codeinline{nil}). We respect the infix
 status of the symbols given by $E$.
-
-We regard all occurences of the specieal variable \texttt{\_} (``wildcard'') as
-different from any other variable. \fixme{Possible reference to the normalforms
-  where this is used as well?}
 
 \begin{description}
 \item[Record constructors] The record constructor given by
@@ -68,17 +52,20 @@ different from any other variable. \fixme{Possible reference to the normalforms
 \paragraph{Syntax}\ \\
 \renewcommand{\arraystretch}{1.5}
 \begin{tabular}{lMlMcMl}
-  \textbf{Kind} & \textbf{Category} & \textbf{Is}\\
-  (SML) identifiers & id, con & ::= & \mathtt{\_} \mid \mathtt{x} \mid
+  \textbf{Kind} & \textbf{Category} && \textbf{Is}\\
+  (SML) identifiers & id, con & ::= & \mathtt{x} \mid
   \mathtt{xs} \mid \mathtt{A} \mid \mathtt{B} \mid \ldots \\
   Pattern variables & patvar & ::= & \overline{x} \mid \overline{y} \mid \ldots\\
   Holes & hole & ::= & \diamond_1 \mid \diamond_2 \mid \ldots \\
 
-  Meta patterns & mpat & ::= & mpatvar[pat^{patvar \cup hole}]^{*}\\
-  Meta pattern variable & mpatvar & ::= & \mathcal{A} \mid \mathcal{B} \mid
+  Meta patterns & mpat & ::= & pat^{patvar}\\
+  & mpat_\diamond & ::= & pat^{patvar \cup hole}\\
+
+  Contexts & ctx & ::= & ctxvar[mpat]^{*}\\
+  Context variables & ctxvar & ::= & \mathcal{A} \mid \mathcal{B} \mid
   \ldots\\
 
-  Scheme patterns & spat & ::= & pat^{mpat \cup patvar}\\
+  Scheme patterns & spat & ::= & pat^{ctx \cup patvar}\\
   Scheme expressions & sexp & ::= & \textrm{ (see \fref{tab:scheme-expressions})}
   \\
   Scheme clauses & sclause & ::= & spat => sexp \\
@@ -102,6 +89,8 @@ meta expressions of the form
 mexp ::= mpatvar[sexp]^{*}
 \]
 
+See \fref{tab:rule-grammar} for the full grammar.
+
 % \paragraph{Aliases}\ \\
 % \begin{tabular}{lMlMl}
 %   \textbf{Kind} & \textbf{Alias} & \textbf{Is}\\
@@ -115,7 +104,7 @@ mexp ::= mpatvar[sexp]^{*}
 \paragraph{Environment.}
 We use two kinds of maps during rewriting. We denote them $\sigma$ and
 $\theta$. $\sigma$ is global to a particular rewriting and $\theta$ is local to
-each clause during matching of SML to a scheme.
+each clause.
 
 Maps support three operations: binding ($[a \mapsto 42]$), lookup ($\psi(a)$)
 and union ($\psi_1 ++ \psi_2$). For union the second map takes precedence if a
@@ -134,7 +123,7 @@ maps $recvar$'s, $transvar$'s and $mvar$'s, and $\theta$ maps $patvar$'s.
   Pattern variables & patvar & \overline{a}, \overline{b}, \ldots & pat\\
   % Patterns & patvar & \overline{x}, \overline{y}, \ldots & pat^{id} \\
   Transformers & transvar &  \mathbb{D}, \mathbb{E}, \ldots & pat \times exp\\
-  Meta patterns & mpatvar & \mathcal{A}, \mathcal{B}, \ldots & pat^{patvar \cup hole} \\
+  Contexts & ctxvar & \mathcal{A}, \mathcal{B}, \ldots & mpat_\diamond \\
   % Scheme patterns & spatvar & \alpha, \beta, \ldots & spat \\
 
 \end{tabular}

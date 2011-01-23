@@ -9,8 +9,12 @@ necessarily proper) of such a list of clauses.
 % which we take to mean a recursive call.
 
 \subsection{Inference rules}
-\def\TheTrueColour{Maroon}
-\newcommand{\cc}[1]{{\color{Maroon}#1}}
+\def\TheTrueColour{BrickRed}
+% \def\TheTrueColour{RubineRed}
+% \def\TheTrueColour{ProcessBlue}
+% \def\TheTrueColour{RoyalBlue}
+
+\newcommand{\cc}[1]{{\color{\TheTrueColour}#1}}
 \newcommand{\subspat}[3]{\ensuremath{#1\cc{(}#2\cc{)}\mathrel{\cc{=}}#3}}
 \newcommand{\matchpat}[3]{\ensuremath{#1\mathrel{\cc{:}}\cc{\langle}#2\cc{,}\mathrel{ }#3\cc{\rangle}}}
 \newcommand{\matchbody}[4]{\ensuremath{#1\cc{,}\mathrel{ }#2\mathrel{\cc{|-}}#3\mathrel{\cc{:}}#4}}
@@ -57,10 +61,10 @@ how holes are handled (rule 2 and 3).
 {
   \subspat{\sigma}
   {\mathcal{C}[mpat_1]\cdots[mpat_n]}
-  {mpat[mpat_1/\diamond_1]\cdots[mpat_n/\diamond_n]}
+  {mpat_\diamond[mpat_1/\diamond_1]\cdots[mpat_n/\diamond_n]}
 }
 {
-  \sigma ( \mathcal{C} ) = mpat
+  \sigma ( \mathcal{C} ) = mpat_\diamond
 }
 \]
 
@@ -70,6 +74,15 @@ how holes are handled (rule 2 and 3).
 }
 {
   \subspat{\sigma}{\diamond_i}{\diamond_i}
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  \subspat{\sigma}{\ol{a}}{\ol{a}}
 }
 \]
 
@@ -111,9 +124,9 @@ $\theta$ then $pat$ is obtained.
 
 \paragraph{Judgement} \fbox{\matchbody{\sigma}{\theta}{sexp}{exp}} \\
 
-
-We have omitted the rules that deal with the structure of expressions and scheme
-expressions, as it is unchanged.
+Expresses that $exp$ is an instance of $sexp$ under the environments $\sigma$
+and $\theta$. We have omitted the rules that deal with the structure of
+expressions and scheme expressions, as it is unchanged.
 
 \[
 \inference
@@ -167,7 +180,7 @@ expressions, as it is unchanged.
 \]
 
 The set of hole free meta patterns is a subset of the set of scheme
-expressions. Notice that this means that there are exactly $n$ holes in $spat$.
+expressions. Notice that this means that there are exactly $n$ holes in $mpat_\diamond$.
 
 \[
 \inference
@@ -175,7 +188,7 @@ expressions. Notice that this means that there are exactly $n$ holes in $spat$.
   \matchbody
   {\sigma}
   {\theta}
-  {spat[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n]}
+  {mpat_\diamond[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n]}
   {exp}
 }
 {
@@ -186,7 +199,7 @@ expressions. Notice that this means that there are exactly $n$ holes in $spat$.
   {exp}
 }
 {
-  spat = \sigma(\mathcal{C})
+  mpat_\diamond = \sigma(\mathcal{C})
 }
 \]
 
@@ -235,7 +248,8 @@ expressions. Notice that this means that there are exactly $n$ holes in $spat$.
 
 \paragraph{Judgement} \fbox{\matchclause{\sigma}{clause^{+}}{sclause^{+} \texttt{ where } cstrn^{+}}} \\
 
-\fixme{Remember to take account of constrains in rules}
+Recall that $\rho$ is an environment of relations on $mpat$'s (see
+\fref{sec:definitions}).
 
 \[
 \inference
@@ -245,8 +259,21 @@ expressions. Notice that this means that there are exactly $n$ holes in $spat$.
 {
   \matchclause
   {\sigma}
-  {clause^{+}}  
-  {sclause^{+} \texttt{ where } cstrn^{+}}
+  {clause^{+}}
+  {sclause^{+} \texttt{ where }
+    \begin{tabular}{Mc}
+      \textsf{a}(\mathcal{A}_1, \ldots, \mathcal{A}_n)\\
+      \vdots \\
+      \textsf{z}(\mathcal{Z}_1, \ldots, \mathcal{Z}_m)
+    \end{tabular}
+  }
+}
+{
+  \begin{tabular}{Mc}
+    \rho(\textsf{a})(\sigma(\mathcal{A}_1), \ldots, \sigma(\mathcal{A}_n))\\
+    \vdots \\
+    \rho(\textsf{z})(\sigma(\mathcal{Z}_1), \ldots, \sigma(\mathcal{Z}_m))
+  \end{tabular}
 }
 \]
 
@@ -257,8 +284,6 @@ $clause^{+}_2$ that match a scheme $scheme$ and then zero or more preceding
 clauses $clause^{*}_3$ afterwards. The number of clauses in $clause^{+}_2$ and
 $scheme$ needs to be the same as required by
 $\matchclause{\sigma}{clause^{+}_2}{scheme}$.
-
-\fixme{Reference to miniml where this is explained.}
 
 \[
 \inference
@@ -285,10 +310,31 @@ $\matchclause{\sigma}{clause^{+}_2}{scheme}$.
     \end{tabular}
   }
 }
+{\ \scalebox{1.5}{$(\dagger)$}}
 \]
+\begin{description}
+\item[\scalebox{1.0}{$(\dagger)$}] When designing rewriting rules one must be
+  certain that recursive calls are handled by the clauses concerning the rules
+  itself. Consider for example
+  \begin{sml}
+fun foo [x]       = [x + 1]
+  | foo (x :: xs) = x + 2 :: foo xs
+  | foo nil       = nil
+  \end{sml}
+  if we didn't have a side condition a rewriting rule could rewrite the function to
+  \begin{sml}
+fun foo [x] = [x + 1]
+  | foo xs  = map (fn x => x + 2) xs
+  \end{sml}
+  which would be wrong (the argument \smlinline{[1,2]} is a counter example). So
+  we require that the patterns of the clauses $clause^{*}_1$ is confused with
+  the patterns of the clauses $clause^{+}_2$.
+\end{description}
 
 \paragraph{Judgement} \fbox{\becomesthrough{exp_1}{exp_2}{rule}}\\
 
+Recall that the \smlinline{fun ...}-syntax is just semantic sugar (see
+\cite[appendix B]{SML97}). Rule 2 and 3 are concerned with this.
 \[
 \inference
 {
@@ -365,11 +411,6 @@ $\matchclause{\sigma}{clause^{+}_2}{scheme}$.
   {rule}
 }
 \]
-
-\subsection{Scheme bodies}
-
-
-
 
 %%% Local Variables: 
 %%% mode: latex
