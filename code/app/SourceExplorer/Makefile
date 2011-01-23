@@ -17,6 +17,13 @@ MyLib.mlb:
 	./SourceExplorer /usr/lib/mlton/sml/mylib/MyLib.mlb
 
 
+.PHONY: basis.mlb
+basis.mlb:
+	./SourceExplorer /usr/lib/mlton/sml/basis/basis.mlb
+
+
+
+
 .PHONY: clean
 clean :
 	-rm SourceExplorer
