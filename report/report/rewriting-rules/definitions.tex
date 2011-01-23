@@ -58,11 +58,14 @@ status of the symbols given by $E$.
   Pattern variables & patvar & ::= & \overline{x} \mid \overline{y} \mid \ldots\\
   Holes & hole & ::= & \diamond_1 \mid \diamond_2 \mid \ldots \\
 
-  Meta patterns & mpat & ::= & mpatvar[pat^{patvar \cup hole}]^{*}\\
-  Meta pattern variable & mpatvar & ::= & \mathcal{A} \mid \mathcal{B} \mid
+  Meta patterns & mpat & ::= & pat^{patvar}\\
+  & mpat_\diamond & ::= & pat^{patvar \cup hole}\\
+
+  Contexts & ctx & ::= & ctxvar[mpat]^{*}\\
+  Context variables & ctxvar & ::= & \mathcal{A} \mid \mathcal{B} \mid
   \ldots\\
 
-  Scheme patterns & spat & ::= & pat^{mpat \cup patvar}\\
+  Scheme patterns & spat & ::= & pat^{ctx \cup patvar}\\
   Scheme expressions & sexp & ::= & \textrm{ (see \fref{tab:scheme-expressions})}
   \\
   Scheme clauses & sclause & ::= & spat => sexp \\
@@ -120,7 +123,7 @@ maps $recvar$'s, $transvar$'s and $mvar$'s, and $\theta$ maps $patvar$'s.
   Pattern variables & patvar & \overline{a}, \overline{b}, \ldots & pat\\
   % Patterns & patvar & \overline{x}, \overline{y}, \ldots & pat^{id} \\
   Transformers & transvar &  \mathbb{D}, \mathbb{E}, \ldots & pat \times exp\\
-  Meta patterns & mpatvar & \mathcal{A}, \mathcal{B}, \ldots & pat^{patvar \cup hole} \\
+  Contexts & ctxvar & \mathcal{A}, \mathcal{B}, \ldots & mpat_\diamond \\
   % Scheme patterns & spatvar & \alpha, \beta, \ldots & spat \\
 
 \end{tabular}

@@ -61,10 +61,10 @@ how holes are handled (rule 2 and 3).
 {
   \subspat{\sigma}
   {\mathcal{C}[mpat_1]\cdots[mpat_n]}
-  {mpat[mpat_1/\diamond_1]\cdots[mpat_n/\diamond_n]}
+  {mpat_\diamond[mpat_1/\diamond_1]\cdots[mpat_n/\diamond_n]}
 }
 {
-  \sigma ( \mathcal{C} ) = mpat
+  \sigma ( \mathcal{C} ) = mpat_\diamond
 }
 \]
 
@@ -74,6 +74,15 @@ how holes are handled (rule 2 and 3).
 }
 {
   \subspat{\sigma}{\diamond_i}{\diamond_i}
+}
+\]
+
+\[
+\inference
+{
+}
+{
+  \subspat{\sigma}{\ol{a}}{\ol{a}}
 }
 \]
 
@@ -171,7 +180,7 @@ expressions and scheme expressions, as it is unchanged.
 \]
 
 The set of hole free meta patterns is a subset of the set of scheme
-expressions. Notice that this means that there are exactly $n$ holes in $spat$.
+expressions. Notice that this means that there are exactly $n$ holes in $mpat_\diamond$.
 
 \[
 \inference
@@ -179,7 +188,7 @@ expressions. Notice that this means that there are exactly $n$ holes in $spat$.
   \matchbody
   {\sigma}
   {\theta}
-  {spat[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n]}
+  {mpat_\diamond[sexp_1/\diamond_1]\cdots[sexp_n/\diamond_n]}
   {exp}
 }
 {
@@ -190,7 +199,7 @@ expressions. Notice that this means that there are exactly $n$ holes in $spat$.
   {exp}
 }
 {
-  spat = \sigma(\mathcal{C})
+  mpat_\diamond = \sigma(\mathcal{C})
 }
 \]
 
