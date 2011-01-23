@@ -1,0 +1,65 @@
+\section{About Turtledove}
+
+Turtledove is written entirely in SML and depends heavily on the SML library
+MyLib. The MyLib library is the result of all the extensions to the basis
+library that we created for Turtledove but later found to be general purpose
+enough to be a library for itself. The source code for both projects can be
+found on \href{http://github.com/mortenbp/}{GitHub}\footnote{Turtledove and
+  MyLib can be found on GitHub at \url{http://github.com/mortenbp/}}
+
+There are two main folders within the Turtledove repository: \ttt{code} and
+\ttt{report}. The code folder contains all the source code for Turtledove and
+its folder structure resembles that of the original design idea (see
+\fref{fig:turtledove-design}). The \ttt{app} folder contain various examples
+applications that uses different features of Turtledove and the \ttt{test}
+folder contains small test ``applications'' that was created along the way to
+test new features of Turtledove. The \ttt{report} folder contains various
+documents that have been created along the way but of main importance, it
+contains this report.
+
+
+\subsection{Installing and compiling Turtledove}
+
+Turtledove has been written with MLton 20100608 as the target compiler, and the
+\ttt{utils/path/Path.sml} file contains MLton specific MLB variable paths that
+are hard coded into MLton or given as arguments given to MLton at compile
+time. Quite a few of there paths are architecture specific (32/64bit) and thus
+we have hard coded these in the \ttt{Path.sml} depending on the result from
+running \ttt{uname -m}. Currently we support ``i686'' and ``x86_64'' for the
+32bit and 64bit paths respectively. If \ttt{uname -m} returns another string, it
+will have to be added in \ttt{Path.sml} together with the paths if they are
+different from those that are already added.  
+
+The MLB variable paths are used by the MLton basis library MLB files and as such
+would have to be completely changed for any other interpreter/compiler than
+MLton.
+
+To test that the system is set up correctly the command ``mlton Turtledove.mlb''
+can be run, and if it compiles without any errors, everything should
+compile. Remember that MyLib must be installed before attempting to compile any
+Turtledove related code.
+
+The root code folder contains a make file that will build all the applications
+and the test applications. All individual applications and test applications
+also have their own make files as well. Some of these make files are even
+extended with shorthands for running the executable on a predefined set of input
+files.
+
+
+\subsection{Installing MyLib}
+
+As MyLib is designed as an SML library and as such we have chosen to place it in
+\ttt{\$(SML_LIB)/mylib/MyLib.mlb}. We have supplied an ``install'' option to the
+make file, in MyLib, that will create a symbolic link between MyLib and
+\ttt{/usr/lib/mlton/sml/} if it is issued in the root folder of MyLib.
+
+Currently MyLib will work with MLton and MosML. The two \ttt{MyLib.ui/.uo} files
+are produced for MosML, which also has an ``install'' option that will create a
+symbolic link between the two files and the MosML library folder
+\ttt{/usr/lib/mosml/}. This ``install'' feature also requires that the current
+working directory is the root of the MyLib folder.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 
