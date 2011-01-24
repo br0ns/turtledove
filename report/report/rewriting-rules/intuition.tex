@@ -2,10 +2,22 @@
 In this section we will try to give an intuitive understanding of the rules
 given in the previous section, and why we have made them the way they are.
 
-\subsection{Contexts and meta patterns}
+\subsection{Scheme patterns, contexts and meta patterns}
 The $\sigma$-environment binds variables of the form $\mathcal{C}$ to meta
 patterns with zero or more holes. They can be thought of as contexts since other
-(hole free) meta patterns can inhabit the holes.
+(hole free) meta patterns can inhabit the holes. A (variable denoting a) meta
+pattern applied to as many hole free meta patterns as it has holes is called a
+context. If $\sigma(\mathcal{C}) = \diamond_1\ \ttt{::}\ \ol{ys}$ then --- as an
+example --- this is a context:
+\[
+\mathcal{C}[\ttt{SOME}\ \ol{a}]
+\]
+
+Scheme patterns are patterns over contexts and meta variables. So with the same
+$\sigma$ as above this could be a scheme pattern:
+\[
+\ttt{($\ol{a}$, $\mathcal{C}[\ol{y}]$)}
+\]
 
 Meta patterns can be instantiated to concrete SML patterns in which case the
 pattern variables are bound to subpatterns of the SML pattern. Consider the SML
@@ -40,24 +52,33 @@ recall that \ttt{::} is right associative. Thus the resulting tree is this:
 \end{tikzpicture}
 \end{center}
 
-If $\sigma(\mathcal{C}) = \diamond_1\ \ttt{::}\ \ol{ys}$ we would have
+First a scheme pattern is turned into a meta pattern under the environment
+$\sigma$. With the same $\sigma$ as above we would have
 \[
 \inference
 {
   \inference
   {}
   {
-    \sigma(\ol{a}) = \ol{a}
+    \subspat
+    {\sigma}
+    {\ol{a}}
+    {\ol{a}}
   } &
   \inference
   {}
   {
-    \sigma(\mathcal{C}[\ol{y}]) = (\diamond_1\ \ttt{::}\ \ol{ys})[\ol{y}/\diamond_1]
+    \subspat
+    {\sigma}
+    {\mathcal{C}[\ol{y}]}
+    {(\diamond_1\ \ttt{::}\ \ol{ys})[\ol{y}/\diamond_1]}
   }
 }
 {
-  \sigma(\ttt{($\ol{a}$, $\mathcal{C}[\ol{y}]$)}) =
-  \ttt{($\ol{a}$, $\ol{y}\ $::$\ \ol{ys}$)}
+  \subspat
+  {\sigma}
+  {\ttt{($\ol{a}$, $\mathcal{C}[\ol{y}]$)}}
+  {\ttt{($\ol{a}$, $\ol{y}\ $::$\ \ol{ys}$)}}
 }
 \]
 and then
@@ -69,56 +90,61 @@ and then
   \inference
   {}
   {
-    \mathsml{(a, b)} :
-    \left\langle
-      \ol{a},
+    \matchpat
+    {\mathsml{(a, b)}}
+    {\ol{a}}
+    {
       \left\{
         \ol{a} \mapsto \mathsml{(a, b)}
       \right\}
-    \right\rangle
+    }
   } &
   \inference
   {
     \inference
     {}
     {
-      \mathsml{x} :
-      \left\langle
-        \ol{y},
+      \matchpat
+      {\mathsml{x}}
+      {\ol{y}}
+      {
         \left\{
           \ol{y} \mapsto \mathsml{x}
         \right\}
-      \right\rangle
+      }
     } &
     \inference
     {}
     {
-      \mathsml{y :: xs} :
-      \left\langle
-        \ol{ys},
+      \matchpat
+      {\mathsml{y :: xs}}
+      {\ol{ys}}
+      {
         \left\{
           \ol{ys} \mapsto \mathsml{y :: xs}
         \right\}
-      \right\rangle
+      }
     }
   }
   {
-    \mathsml{x :: y :: xs} :
-    \left\langle
-      \ttt{$\ol{y}\ $::$\ \ol{ys}$},
+    \matchpat
+    {\mathsml{x :: y :: xs}}
+    {\ttt{$\ol{y}\ $::$\ \ol{ys}$}}
+    {
       \left\{
         \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
           \ol{y} & \ttt{x}\\
           \ol{ys} & \mathsml{y :: xs}
         \end{tabular}
       \right\}
-    \right\rangle
+    }
   }
 }
 {
-  \mathsml{((a, b), x :: y :: xs)} :
-  \left\langle
-    \ttt{($\ol{a}$, $\ol{y}\ $::$\ \ol{ys}$)},
+  \matchpat
+  {\mathsml{((a, b), x :: y :: xs)}}
+  {\ttt{($\ol{a}$, $\ol{y}\ $::$\ \ol{ys}$)}}
+  {
     \left\{
       \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
         \ol{a} & \ttt{(a, b)}\\
@@ -126,55 +152,238 @@ and then
         \ol{ys} & \mathsml{y :: xs}
       \end{tabular}
     \right\}
-  \right\rangle
+  }
 }
 \]
 \end{narrow}
 
-over the union of pattern variables and holes. They can be thought of as
-contexts. A meta pattern is (the variable of) such one context applied to a
-suitable (as many as there are holes) of patterns over pattern variables.
+In this case we get
+\[
+\theta =
+\left\{
+  \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
+    \ol{a} & \ttt{(a, b)}\\
+    \ol{y} & \ttt{x}\\
+    \ol{ys} & \mathsml{y :: xs}
+  \end{tabular}
+\right\}
+\]
 
+\subsection{Transformers}
+In the bodies of scheme clauses, eg. scheme expressions, we want to express that
+\textit{some} computation takes place without being too specific about
+\textit{what} it actually is. We use transformers to that end.
+
+A transformer is simply a pair of a (concrete) SML pattern and an SML
+expression. On can think of it as a single clause, or a function definition
+without the benefits of pattern matching.
+
+Consider the function definition
+\begin{sml}
+fun foo ((a, b) :: xs) = f (b, a) :: foo xs
+  | foo nil            = nil
+\end{sml}
+It is an obvious target for at \textsf{map}-rule. During rewriting we would get
+a $\theta$ that binds a variable to \smlinline{(a, b)}. Now we need to express
+the relationship between \smlinline{(a, b)} and \smlinline{f (b, a)}. We do that
+simply by storing the pattern and the expression.
+
+\subsection{The ``\textsf{self}'' keyword}
 
 \subsection{Schemes}
-\paragraph{Notits!} Disse sektioner er ikke tomme, blot udkommenteret ind til de
-er passet til, for at spare båndbredde.
+Schemes are lists of scheme clauses. A scheme clause is essentially a pair of a
+scheme pattern and a scheme expression written as
+\[
+spat => sexp
+\]
+A concrete SML clause can be an instance of a scheme clause under a particular
+$\sigma$-environment. The $\theta$-environment is build on an per clause basis
+as we saw above. Let
+\[
+\sigma =
+\left\{
+  \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
+    \mathcal{C} & \diamond_1\\
+    \mathbb{E} & (\ttt{(v, w)}, \ttt{w + v})\\
+    \textsf{self} & (\ttt{foo}, 1)
+  \end{tabular}
+\right\}
+\]
+Consider the SML clauses
+\begin{eqnarray*}[ll]
+  \mathsml{(a, b) :: xs}\ttt{ }&\mathsml{= b + a :: foo xs}\\
+  \mathsml{nil}\ttt{ }&\mathsml{= nil}
+\end{eqnarray*}
+and the scheme clauses
+\begin{eqnarray*}[lcl]
+  \mathcal{C}[\ol{x}\ \ttt{::}\ \ol{xs}] &=&
+\mathbb{E}(\mathcal{C}[\ol{x}])\ \ttt{::}\ \textsf{self}(\mathcal{C}[\ol{xs}])\\
+\mathcal{C}[\ttt{nil}] &=& \ttt{nil}
+\end{eqnarray*}
+Instantiating the meta patterns we get
+\[
+\inference
+{}
+{
+  \subspat
+  {\sigma}
+  {\mathcal{C}[\ol{x}\ \ttt{::}\ \ol{xs}]}
+  {\ttt{$\ol{x}$\ \ttt{::}\ $\ol{xs}$}}
+}
+\quad \textrm{and} \quad
+\inference
+{}
+{
+  \subspat
+  {\sigma}
+  {\mathcal{C}[\ttt{nil}]}
+  {\ttt{nil}}
+}
+\]
+We see that the SML patterns are instances of the meta patterns:
+\[
+\inference
+{\vdots}
+{
+  \matchpat
+  {\mathsml{(a, b) :: xs}}
+  {\ttt{$\ol{x}$\ \ttt{::}\ $\ol{xs}$}}
+  {\theta_1}
+}
+\quad \textrm{and} \quad
+\inference
+{\vdots}
+{
+  \matchpat
+  {\mathsml{nil}}
+  {\ttt{nil}}
+  {\theta_2}
+}
+\]
+where
+\[
+\theta_1 =
+    \left\{
+      \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
+        \ol{x} & \ttt{(a, b)}\\
+        \ol{xs} & \ttt{xs}
+      \end{tabular}
+    \right\}
+    \ , \quad
+\theta_2 = \{\}
+\]
+And finally we can see that the SML bodies are instances of the scheme ditto:
+\[
+\inference
+{
+  \inference
+  {
+    \inference
+    {
+      \inference
+      {
+        \inference
+        {}
+        {
+          \matchbody
+          {\sigma}
+          {\theta_1}
+          {\ol{x}}
+          {\ttt{(a, b)}}
+        }
+      }
+      {
+        \matchbody
+        {\sigma}
+        {\theta_1}
+        {\diamond_1[\ol{x}/\diamond_1]}
+        {\ttt{(a, b)}}
+      }
+    }
+    {
+      \matchbody
+      {\sigma}
+      {\theta_1}
+      {\mathcal{C}[\ol{x}]}
+      {\mathsml{(a, b)}}
+    }
+  }
+  {
+    \matchbody
+    {\sigma}
+    {\theta_1}
+    {\mathbb{E}(\mathcal{C}[\ol{x}])}
+    {(\mathsml{w + v})[\mathsml{(a, b)}/\mathsml{(v, w)}]}
+  } &
+  \inference
+  {
+    \inference
+    {
+      \inference
+      {
+        \inference
+        {}
+        {
+          \matchbody
+          {\sigma}
+          {\theta_1}
+          {\ol{xs}}
+          {\ttt{xs}}
+        }
+      }
+      {
+        \matchbody
+        {\sigma}
+        {\theta_1}
+        {\diamond_1[\ol{xs}/\diamond_1]}
+        {\ttt{xs}}
+      }
+    }
+    {
+      \matchbody
+      {\sigma}
+      {\theta_1}
+      {\mathcal{C}[\ol{xs}]}
+      {\mathsml{xs}}
+    }
+  }
+  {
+    \matchbody
+    {\sigma}
+    {\theta_1}
+    {\textsf{self}(\mathcal{C}[\ol{xs}])}
+    {(\mathsml{foo x})[\mathsml{xs}/\mathsml{x}]}
+  }
+}
+{
+  \matchbody
+  {\sigma}
+  {\theta_1}
+  {
+    \mathbb{E}(\mathcal{C}[\ol{x}])\ \ttt{::}\
+    \textsf{self}(\mathcal{C}[\ol{xs}])
+  }
+  {
+    \mathsml{b + a :: foo xs}
+  }
+}
+\]
+and
+\[
+\inference
+{}
+{
+  \matchbody
+  {\sigma}
+  {\theta_2}
+  {\ttt{nil}}
+  {\ttt{nil}}
+}
+\]
 
-% \fixme{Is this the correct syntax used in the mathematical definitions?}
+\subsection{The $\sigma$-environment}
 
-% \fixme{Add a ref to the definition}
-
-% Schemes are lists of pairs of scheme patterns and scheme expressions (also
-% called a clause) where we write $|\ spat => sexp$ to mean the pair $(spat,
-% sexp)$. A piece of concrete SML code can be an instance of a scheme, where the meta
-% patterns gets instantiated accordingly. 
-
-% Pattern variables in a scheme pattern gets instantiated per clause and they are
-% implicitly replaced by the concrete SML pattern they are bound to from the left
-% hand side of the clause (scheme pattern) when used on the right hand side of the
-% clause (scheme expression), see \fref{ex:intuition-example}
-
-% whereas meta patterns gets instantiated across the whole
-% scheme.
-
-
-\subsubsection{Scheme patterns}
-% \fixme{Reference to the definition}
-% Scheme patterns can be seen as patterns over meta patterns. If this was not the
-% case and we defined them as just being meta patterns then we would be able to
-% express patterns as $(\overline{x}, \overline{y})$ and $\mathcal{C}[\overline{x}
-% :: \overline{xs}]$, however we would not be able to express patterns as
-% $(\overline{x}, \mathcal{C}[\overline{y} :: \overline{ys}])$ since the liefs of
-% meta patterns may only be pattern variables or holes.
-
-% By defining scheme patterns as patterns over meta patterns we allow before
-% mentioned pattern and thus gains more expressive power
-
-\subsubsection{Scheme expressions}
-% \fixme{Reference to the definition}
-% blalblalbla
-
-\subsection{Rewriting rules}
+% \subsection{Rewriting rules}
 
 % \fixme{This is utterly wrong.}
 % \fixme{Reference to the definition}
@@ -259,7 +468,7 @@ er passet til, for at spare båndbredde.
 % \fixme{Der beskrives slet ikke hvordan og hvorledes med resultat
 %   omskrivningen. Der beskrives kun den matchende del af skabelonen.}
 
-\subsubsection{Restrictions, predicates and meta functions}
+\subsection{Relations on meta patterns (the $\rho$-environment)}
 
 % \fixme{This is a lot of ideas of what we might need. It should be more concrete}
 
@@ -284,26 +493,6 @@ er passet til, for at spare båndbredde.
 
 % Bemærk at metafunktionerne kan have en nytteværdi i sig selv, og ikke blot
 % sammen med omskrivningssystemet.
-
-
-\subsubsection{Canonical instantiation}
-% \fixme{Reference to the definition}
-% The canonical instantiation of a meta pattern ($\floor{\mathcal{C}}$) is when
-% all pattern variables are instantiated to concrete SML variables with capture
-% avoidance. 
-
-% \fixme{add something about using of meta patterns from the schemes}
-
-% This is used in the resulting part of a rewriting rule, because pattern
-% variables aren't bound to any concrete SML code.
-
-% Example: $\floor{\mathcal{C}}$ $\mathcal{C} = \texttt{(}\diamond\texttt{,} \overline{y}\texttt{)}$:
-% $\floor{\mathcal{C}} = \floor{\texttt{(}\diamond\texttt{,} \overline{y}\texttt{)}} = \texttt{(}\diamond\texttt{,}
-% \floor{\overline{y}}\texttt{)} = \texttt{(}\diamond\texttt{,} \texttt{a)}$.
-
-% \paragraph{Note.} The canonical instantiation only occurs in the right hand side
-% of rewriting rules and since they are mandatory we will let it be implicit in the
-% rest of the document.
 
 \subsection{Example}
 
