@@ -16,7 +16,7 @@ necessarily proper) of such a list of clauses.
 
 \newcommand{\cc}[1]{{\color{\TheTrueColour}#1}}
 \newcommand{\subspat}[3]{\ensuremath{#1\cc{(}#2\cc{)}\mathrel{\cc{=}}#3}}
-\newcommand{\matchpat}[3]{\ensuremath{#1\mathrel{\cc{:}}\cc{\langle}#2\cc{,}\mathrel{ }#3\cc{\rangle}}}
+\newcommand{\matchpat}[3]{\ensuremath{\cc{{\color{Black}#1}\mathrel{:}\left\langle{\color{Black}#2},\mathrel{ }{\color{Black}#3}\right\rangle}}}
 \newcommand{\matchbody}[4]{\ensuremath{#1\cc{,}\mathrel{ }#2\mathrel{\cc{|-}}#3\mathrel{\cc{:}}#4}}
 \newcommand{\matchclause}[3]{\ensuremath{#1\mathrel{\cc{|-}}#2\mathrel{\cc{:}}#3}}
 \newcommand{\rewrite}[4]{\ensuremath{#1\mathrel{\cc{,}}#2\mathrel{\cc{|-}}#3\mathrel{\cc{\curvearrowright}}#4}}
@@ -118,7 +118,7 @@ $\theta$ then $pat$ is obtained.
   \matchpat
   {pat}
   {\overline{x}}
-  {\overline{x} \mapsto pat}
+  {\{\overline{x} \mapsto pat\}}
 }
 \]
 
@@ -128,16 +128,24 @@ Expresses that $exp$ is an instance of $sexp$ under the environments $\sigma$
 and $\theta$. We have omitted the rules that deal with the structure of
 expressions and scheme expressions, as it is unchanged.
 
+We write $exp[pat/exp']$ for the substitution of $exp'$ in $exp$ according to
+the pattern $pat$ (see \ref{sec:substitution}).
+
 \[
 \inference
 {
+  \matchbody
+  {\sigma}
+  {\theta}
+  {sexp}
+  {exp}
 }
 {
   \matchbody
   {\sigma}
   {\theta}
-  {\textsf{self}}
-  {\texttt{(fn ($x_1$, $\ldots$, $x_n$) => $id$ $x_1$ $\cdots$ $x_n$)}}
+  {\textsf{self}\ sexp}
+  {(id\ x_1\ \cdots\ x_n)[exp/\ttt{($x_1$, $\ldots$, $x_n$)}]}
 }
 {
   \sigma(\textsf{self}) = (id, n)
@@ -172,7 +180,7 @@ expressions and scheme expressions, as it is unchanged.
   {\sigma}
   {\theta}
   {\mathbb{E}(sexp_1, \ldots, sexp_n)}
-  {\texttt{(fn $pat$ => $exp$)($exp_1$, $\ldots$, $exp_n$)}}
+  {exp[\ttt{($exp_1$, $\ldots$, $exp_n$)}/pat]}
 }
 {
   \sigma(\mathbb{E}) = (pat, exp)
@@ -327,8 +335,8 @@ fun foo [x] = [x + 1]
   | foo xs  = map (fn x => x + 2) xs
   \end{sml}
   which would be wrong (the argument \smlinline{[1,2]} is a counter example). So
-  we require that the patterns of the clauses $clause^{*}_1$ is confused with
-  the patterns of the clauses $clause^{+}_2$.
+  we require that the patterns of the clauses $clause^{*}_1$ are confused (see
+  \fref{def:pat-confusion}) with the patterns of the clauses $clause^{+}_2$.
 \end{description}
 
 \paragraph{Judgement} \fbox{\becomesthrough{exp_1}{exp_2}{rule}}\\

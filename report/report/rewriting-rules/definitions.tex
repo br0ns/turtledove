@@ -106,11 +106,11 @@ We use two kinds of maps during rewriting. We denote them $\sigma$ and
 $\theta$. $\sigma$ is global to a particular rewriting and $\theta$ is local to
 each clause.
 
-Maps support three operations: binding ($[a \mapsto 42]$), lookup ($\psi(a)$)
+Maps support three operations: binding ($\{a \mapsto 42\}$), lookup ($\psi(a)$)
 and union ($\psi_1 ++ \psi_2$). For union the second map takes precedence if a
 variable is bound in both maps (see note \ref{item:note-plusplus} in
-\fref{sec:auxil-defin}). We write $\psi[a \mapsto 42]$ as a shorthand for $\psi
-++ [a \mapsto 42]$.
+\fref{sec:auxil-defin}). We write $\psi\{a \mapsto 42\}$ as a shorthand for $\psi
+++ \{a \mapsto 42\}$.
 
 Below is listed the different kinds of variables and their domains. $\sigma$
 maps $recvar$'s, $transvar$'s and $mvar$'s, and $\theta$ maps $patvar$'s.
