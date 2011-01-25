@@ -70,7 +70,7 @@ on how it got normalised) is printed to the console.
   <td>-v</td>
   <td>Same as --verbose</td>  
 </tr>
-<table>
+</table>
 
 
 # Source explorer
@@ -162,4 +162,4 @@ to use map..
   <td>-v</td>
   <td>Same as --verbose</td>  
 </tr>
-<table>
+</table>
