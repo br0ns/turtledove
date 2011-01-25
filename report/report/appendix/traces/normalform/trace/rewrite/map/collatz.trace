@@ -1,0 +1,22 @@
+Normalising and rewriting: collatz.sml
+collatz(34770, 34770, Val)
+1
+Exp_App
+  1 Exp_Var collatz(34770, 34770, Val)
+  2 Exp_Var xs(34772, 34772, Val)
+Exp_App
+  1 Exp_Var collatz(34770, 34770, Val)
+  2 Exp_Var xs(34772, 34772, Val)
+foo
+Before:
+fun collatz [] = []
+  | collatz (x :: xs) = (if x mod 2 = 0 then
+                           x div 2
+                         else
+                           3 * x + 1) :: collatz xs
+
+After:
+fun collatz xs = map (fn x => (if x mod 2 = 0 then
+                                 x div 2
+                               else
+                                 3 * x + 1)) xs

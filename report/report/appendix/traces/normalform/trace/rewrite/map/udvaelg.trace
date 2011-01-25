@@ -1,0 +1,20 @@
+Normalising and rewriting: udvaelg.sml
+udvaelg(34765, 34765, Val)
+1
+Exp_App
+  1 Exp_App
+      1 Exp_Var udvaelg(34765, 34765, Val)
+      2 Exp_Var xs(34767, 34767, Val)
+  2 Exp_Var ys(34769, 34769, Val)
+Exp_App
+  1 Exp_App
+      1 Exp_Var udvaelg(34765, 34765, Val)
+      2 Exp_Var xs(34767, 34767, Val)
+  2 Exp_Var ys(34769, 34769, Val)
+foo
+Before:
+fun udvaelg xs [] = []
+  | udvaelg xs (y :: ys) = List.nth (xs, y) :: udvaelg xs ys
+
+After:
+fun udvaelg xs ys = map (fn y => List.nth (xs, y)) ys

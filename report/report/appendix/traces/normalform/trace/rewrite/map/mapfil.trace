@@ -1,0 +1,15 @@
+Normalising and rewriting: mapfil.sml
+mapfil(34773, 34773, Val)
+Before:
+fun mapfil (f, p, []) = []
+  | mapfil (f, p, (x :: xs)) = (if p x then
+                                  f x
+                                else
+                                  x) :: mapfil (f, p, xs)
+
+After:
+fun mapfil (f, p, (x :: xs)) = (if p x then
+                                  f x
+                                else
+                                  x) :: mapfil (f, p, xs)
+  | mapfil x = (nil)

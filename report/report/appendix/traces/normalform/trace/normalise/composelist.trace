@@ -1,8 +1,8 @@
 Normalising: composelist.sml
 Parsing mlb/sml: 
-  User: 0.508, System: 0.204, Total: 0.712
+  User: 0.504, System: 0.208, Total: 0.712
 Resolving: 
-  User: 4.964, System: 0.752, Total: 5.716
+  User: 4.956, System: 0.736, Total: 5.692
 Normalizing
   [] x = x
   (f :: []) x = f (x)
