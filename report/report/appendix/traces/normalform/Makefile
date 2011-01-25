@@ -1,7 +1,7 @@
-CODEPATH = ../../../../../code/test/NormalForm
+CODEPATH = ../../../../../code/app/NormalForm
 FILES = $(CODEPATH)/files
 MLB = $(CODEPATH)/files/test.mlb
-NFT = $(CODEPATH)/NormalFormTest
+NF = $(CODEPATH)/NormalForm
 
 .PHONY: all
 all: sumlige collatz composelist evallist mapfil mellemsaml sumlige udvaelg
@@ -10,24 +10,25 @@ all: sumlige collatz composelist evallist mapfil mellemsaml sumlige udvaelg
 clean :
 	-rm trace/*.trace
 
+.PHONY: sumlige
 sumlige:
-	$(NFT) --no-column $(MLB)  $(FILES)/sumlige.sml > trace/sumlige.trace
-
+	$(NF) -v --no-column $(MLB)  $(FILES)/sumlige.sml > trace/sumlige.trace
+.PHONY: collatz
 collatz:
-	$(NFT) --no-column $(MLB)  $(FILES)/collatz.sml > trace/collatz.trace
-
+	$(NF) -v --no-column $(MLB)  $(FILES)/collatz.sml > trace/collatz.trace
+.PHONY: composelist
 composelist:
-	$(NFT) --no-column $(MLB)  $(FILES)/composelist.sml > trace/composelist.trace
-
+	$(NF) -v --no-column $(MLB)  $(FILES)/composelist.sml > trace/composelist.trace
+.PHONY: evallist
 evallist:
-	$(NFT) --no-column $(MLB)  $(FILES)/evallist.sml > trace/evallist.trace
-
+	$(NF) -v --no-column $(MLB)  $(FILES)/evallist.sml > trace/evallist.trace
+.PHONY: mapfil
 mapfil:
-	$(NFT) --no-column $(MLB)  $(FILES)/mapfil.sml > trace/mapfil.trace
-
+	$(NF) -v --no-column $(MLB)  $(FILES)/mapfil.sml > trace/mapfil.trace
+.PHONY: mellemsaml
 mellemsaml:
-	$(NFT) --no-column $(MLB)  $(FILES)/mellemsaml.sml > trace/mellemsaml.trace
-
+	$(NF) -v --no-column $(MLB)  $(FILES)/mellemsaml.sml > trace/mellemsaml.trace
+.PHONY: udvaelg
 udvaelg:
-	$(NFT) --no-column $(MLB)  $(FILES)/udvaelg.sml > trace/udvaelg.trace
+	$(NF) -v --no-column $(MLB)  $(FILES)/udvaelg.sml > trace/udvaelg.trace
 

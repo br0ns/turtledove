@@ -1,6 +1,8 @@
 Normalising: collatz.sml
-User: 0.540, System: 0.148, Total: 0.688
-User: 5.036, System: 0.620, Total: 5.656
+Parsing mlb/sml: 
+  User: 0.548, System: 0.164, Total: 0.712
+Resolving: 
+  User: 4.972, System: 0.740, Total: 5.712
 Normalizing
   [] = []
   (x :: xs) = (if x mod 2 = 0 then

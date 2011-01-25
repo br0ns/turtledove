@@ -1,6 +1,8 @@
 Normalising: sumlige.sml
-User: 0.568, System: 0.132, Total: 0.700
-User: 4.940, System: 0.684, Total: 5.624
+Parsing mlb/sml: 
+  User: 0.524, System: 0.196, Total: 0.720
+Resolving: 
+  User: 4.980, System: 0.712, Total: 5.692
 Normalizing
   [] = 0
   (x :: xs) = (if x mod 2 = 0 then
