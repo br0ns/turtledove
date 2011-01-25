@@ -1,21 +1,24 @@
 .PHONY: all
-all : todo size SourceExplorer NormalForm
+all : Todo Size SourceExplorer NormalForm Rewrite
+
+.PHONY : clean
+clean: clean-Todo clean-Size clean-SourceExplorer clean-NormalForm clean-Rewrite
 
 # Todo
 
-.PHONY: todo clean-todo
-todo:
-	make -C todo -f Makefile all
-clean-todo:
-	make -C todo -f Makefile clean
+.PHONY: Todo clean-Todo
+Todo:
+	make -C Todo -f Makefile all
+clean-Todo:
+	make -C Todo -f Makefile clean
 
 # Size
 
 .PHONY: size clean-size
-size:
-	make -C size -f Makefile all
-clean-size:
-	make -C size -f Makefile clean
+Size:
+	make -C Size -f Makefile all
+clean-Size:
+	make -C Size -f Makefile clean
 
 # SourceExplorer
 
@@ -33,8 +36,11 @@ NormalForm:
 clean-NormalForm:
 	make -C NormalForm -f Makefile clean
 
+# Rewrite
 
-
-.PHONY : clean
-clean: clean-todo clean-size clean-SourceExplorer clean-NormalForm
+.PHONY: Rewrite clean-Rewrite
+Rewrite:
+	make -C Rewrite -f Makefile all
+clean-Rewrite:
+	make -C Rewrite -f Makefile clean
 

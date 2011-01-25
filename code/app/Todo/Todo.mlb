@@ -6,6 +6,6 @@ local
 
 in
 
-  todo.sml
+  Todo.sml
 
 end

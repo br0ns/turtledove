@@ -1,6 +1,11 @@
-local
+local 
   $(SML_LIB)/basis/basis.mlb
+  $(SML_LIB)/mylib/MyLib.mlb
+
   ../../Turtledove.mlb
+
 in
-  NormalFormTest.sml
+
+  Size.sml
+
 end

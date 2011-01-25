@@ -1,4 +1,19 @@
+Applications 
+============
+
+This is a list of all the applications that have been implemented using
+Turtledove. 
+
+
+All applications ought to have a list of predefined test arguments for easy
+execution. TO see the list run `make tests` in the respective application
+directory and afterwards run `make XXX` for `XXX` being anything from returned
+list of tests.
+
+
 # Todo
+
+Usage: `NormalForm Project.mlb`
 
 Takes one argument, an mlb file, and walks through all referenced sml files for
 comments starting with "TODO" and prints them to the console with information of
@@ -6,6 +21,8 @@ where they are located (file and location in file).
 
 
 # Size
+
+Usage: `NormalForm Project.mlb`
 
 Takes one argument, an mlb file, and walks through all referenced sml files and
 counts their size and number of lines.
@@ -25,14 +42,40 @@ the standard library it will not be included in the count
 
 # Normalform
 
+Usage: `NormalForm [arguments] Project.mlb File.sml`
+
 Takes two arguments, an mlb file and a sml files (the sml files must be
 referenced inside the mlb file).
 
 The referenced sml file will be normalised and the result (including information
 on how it got normalised) is printed to the console.
 
+<table>
+<tr>
+  <td><strong>Arguments</strong></td>
+  <td><strong>Description</strong></td>  
+</tr>
+<tr>
+  <td>`--no-column`</td>
+  <td>The original and the result is Normally printed besides each other in two
+  column. If this argument is given, then they will be printer after each
+  other. This is used when the output is included in the report.</td>  
+</tr>
+<tr>
+  <td>`--verbose`</td>
+  <td>Will print verbose information to the console. This includes information
+  from the normalisation process</td>  
+</tr>
+<tr>
+  <td>`-v`</td>
+  <td>Same as `--verbose`</td>  
+</tr>
+<table>
+
 
 # Source explorer
+
+Usage: `NormalForm Project.mlb`
 
 Takes one argument, an mlb file, and prints "tree structure" to the console that
 can be navigated through.
@@ -84,3 +127,39 @@ Other navigation keys are:
       as quit if the current node is the top most node in the current file.</td>
 </tr>
 </table>
+
+# Rewrite
+
+This is the currently available rewriting applications
+
+## Map
+
+Usage: `NormalForm [arguments] Project.mlb File.sml`
+
+Takes two arguments, an mlb file and a sml files (the sml files must be
+referenced inside the mlb file).
+
+The referenced sml file will be normalised and then if possible rewritten
+to use map..
+
+<table>
+<tr>
+  <td><strong>Arguments</strong></td>
+  <td><strong>Description</strong></td>  
+</tr>
+<tr>
+  <td>`--no-column`</td>
+  <td>The original and the result is Normally printed besides each other in two
+  column. If this argument is given, then they will be printer after each
+  other. This is used when the output is included in the report.</td>  
+</tr>
+<tr>
+  <td>`--verbose`</td>
+  <td>Will print verbose information to the console. This includes information
+  from the normalisation process</td>  
+</tr>
+<tr>
+  <td>`-v`</td>
+  <td>Same as `--verbose`</td>  
+</tr>
+<table>

@@ -3,14 +3,37 @@ open MLBGrammar
 fun die e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.failure)
 fun quit e = (Layout.println (SOME 80) e ; OS.Process.exit OS.Process.success)
 
+
 val here = Path.new (OS.FileSys.getDir ())
 
+
+val help = "You are on your own..\n\n"
+           ^ "Usage: " ^ CommandLine.name () ^ " [flags] Project.mlb File.sml\n"
+           ^ "Known flags:\n"
+           ^ "  --no-column    : Dont write output in column mode.\n"
+           ^ "  --verbose (-v) : Enable verbose output.\n"
 
 val (flags, mlbFiles, smlFiles) = 
     let
       val args = CommandLine.arguments ()
-      val _ = length args < 2 andalso die $ Layout.txt "Needs atleast two arguments, mlb-file and sml-file."
-      val (flags, files) = List.partition (fn s => String.isPrefix "--" s) args
+
+      val (flags, files) = List.partition (fn s => String.isPrefix "-" s) args
+
+      (* Process flags *)
+      val _ = List.exists (fn s => s = "--help") flags andalso
+              quit $ Layout.txt $ help
+
+      val _ = if List.exists (fn s => s = "--verbose" orelse s = "-v") flags then
+                Flags.set "Verbose"
+              else
+                ()
+
+      (* Process files *)
+      val _ = length files <> 2 andalso 
+              die $ Layout.txt $ "Needs exactly one mlb-file and one sml-file.\n"
+                               ^  "Try \"" ^ CommandLine.name () 
+                               ^ " --help\" for further help."
+
       val (mlbFiles, smlFiles) = List.partition 
                                      (fn s => String.extract(s, size s - 3, NONE) = "mlb") 
                                      files
@@ -20,21 +43,21 @@ val (flags, mlbFiles, smlFiles) =
       (flags, mlbFiles', smlFiles')
     end
 
-val _ = List.exists (fn s => s = "--help") flags andalso
-          quit $ Layout.txt $ "You are on your own..\n\n"
-               ^ "Btw there is one flag:\n"
-               ^ "--no-column"
 
 val mlb = case mlbFiles of
             [mlb] => mlb
-          | _ => die $ Layout.txt "Only one mlb file should be given"
+          | _ => die $ Layout.txt $ "Only one mlb file should be given.\n"
+                                  ^ "Try \"" ^ CommandLine.name () 
+                                  ^ " --help\" for further help."
 
 val sml = case smlFiles of
             [sml] => sml
-          | _ => die $ Layout.txt "Only one sml file should be given"
-             
+          | _ => die $ Layout.txt $ "Only one sml file should be given.\n"
+                                  ^ "Try \"" ^ CommandLine.name () 
+                                  ^ " --help\" for further help."            
+          
 
-val _ = print $ "Normalising: " ^ Path.file sml ^ "\n"
+val _ = print $ "Normalising and rewriting: " ^ Path.file sml ^ "\n"
 
 (* fun show ast = Layout.println NONE $ Grammar.show ast *)
 
@@ -49,8 +72,10 @@ val {ast = project, ...} = Main.init mlb
          | e => (println (exnName e ^ ": " ^ exnMessage e)
                ; raise Fail "foo"
                 )
-
-;Benchmark.stopAndPrint "";
+val _ = if Flags.get "Verbose" then
+          Benchmark.stopAndPrint "Parsing mlb/sml: "
+        else
+          Benchmark.stop ()
 
 ;Benchmark.start ();
 val project = Resolve.init project
@@ -58,7 +83,10 @@ val project = Resolve.init project
            (println (exnName e ^ ": " ^ exnMessage e)
           ; raise Fail "foo"
            )
-;Benchmark.stopAndPrint "";
+val _ = if Flags.get "Verbose" then
+          Benchmark.stopAndPrint "Resolving: "
+        else
+          Benchmark.stop ()
 
 structure Map = Path.Map
 structure Set = Path.Set
@@ -112,17 +140,10 @@ val ast = case find project sml of
                                     ^ Path.file sml 
                                     ^ ") to normalise in the mlb file"
 
-fun isExhaustive (v, cs) =
-    let
-      val pss = List.map fst cs
-    in
-      NormalForm.cover pss
-    end
-
-val ast' = NormalForm.normalize bas ast
+(* Normalise and rewrite (map) *)
+val ast' = Magic.dust bas ast
 
 local open Layout infix \ ^^ in
-
 val unsorted = txt "Before:" \ PPGrammar.showUnwrapped ast
 val sorted = txt "After:" \ PPGrammar.showUnwrapped ast'
 val _ = if List.exists (fn s => "--no-column" = s) flags then
@@ -130,3 +151,4 @@ val _ = if List.exists (fn s => "--no-column" = s) flags then
         else
           Layout.println NONE $ besides 4 (unsorted, sorted)
 end
+

@@ -1,6 +1,5 @@
 SML = mlton
-APP = NormalForm
-
+APP = RewriteMap
 
 .PHONY : all
 all: $(APP)
@@ -17,30 +16,19 @@ clean :
 tests: 
 	@echo "Possible tests are:"
 	@echo "* collatz"
-	@echo "* composelist"
-	@echo "* mellemsaml"
-	@echo "* sumlige"
 	@echo "* udvaelg"
 	@echo "* mapfil"
 	@echo "* evallist"
 
+
 .PHONY: collatz
 collatz: $(APP)
 	./$(APP) -v files/test.mlb files/collatz.sml
-.PHONY: composelist
-composelist: $(APP)
-	./$(APP) -v files/test.mlb files/composelist.sml
-.PHONY: mellemsaml
-mellemsaml: $(APP)
-	./$(APP) -v files/test.mlb files/mellemsaml.sml
-.PHONY: sumlige
-sumlige: $(APP)
-	./$(APP) -v files/test.mlb files/sumlige.sml
 .PHONY: udvaelg
 udvaelg: $(APP)
 	./$(APP) -v files/test.mlb files/udvaelg.sml
 .PHONY: mapfil
-mapfil: $(APP)
+mapfil:$(APP)
 	./$(APP) -v files/test.mlb files/mapfil.sml
 .PHONY: evallist
 evallist: $(APP)
