@@ -56,19 +56,19 @@ on how it got normalised) is printed to the console.
   <td><strong>Description</strong></td>  
 </tr>
 <tr>
-  <td>`--no-column`</td>
+  <td>--no-column</td>
   <td>The original and the result is Normally printed besides each other in two
   column. If this argument is given, then they will be printer after each
   other. This is used when the output is included in the report.</td>  
 </tr>
 <tr>
-  <td>`--verbose`</td>
+  <td>--verbose</td>
   <td>Will print verbose information to the console. This includes information
   from the normalisation process</td>  
 </tr>
 <tr>
-  <td>`-v`</td>
-  <td>Same as `--verbose`</td>  
+  <td>-v</td>
+  <td>Same as --verbose</td>  
 </tr>
 <table>
 
@@ -148,18 +148,18 @@ to use map..
   <td><strong>Description</strong></td>  
 </tr>
 <tr>
-  <td>`--no-column`</td>
+  <td>--no-column</td>
   <td>The original and the result is Normally printed besides each other in two
   column. If this argument is given, then they will be printer after each
   other. This is used when the output is included in the report.</td>  
 </tr>
 <tr>
-  <td>`--verbose`</td>
+  <td>--verbose</td>
   <td>Will print verbose information to the console. This includes information
   from the normalisation process</td>  
 </tr>
 <tr>
-  <td>`-v`</td>
-  <td>Same as `--verbose`</td>  
+  <td>-v</td>
+  <td>Same as --verbose</td>  
 </tr>
 <table>
