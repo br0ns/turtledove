@@ -122,7 +122,8 @@ $\theta$ then $pat$ is obtained.
 }
 \]
 
-\paragraph{Judgement} \fbox{\matchbody{\sigma}{\theta}{sexp}{exp}} \\
+\paragraph{Judgement} \fbox{\matchbody{\sigma}{\theta}{sexp}{exp}}
+\label{sec:match-body}\\
 
 Expresses that $exp$ is an instance of $sexp$ under the environments $\sigma$
 and $\theta$. We have omitted the rules that deal with the structure of
@@ -254,37 +255,6 @@ expressions. Notice that this means that there are exactly $n$ holes in $mpat_\d
 }
 \]
 
-\paragraph{Judgement} \fbox{\matchclause{\sigma}{clause^{+}}{sclause^{+} \texttt{ where } cstrn^{+}}} \\
-
-Recall that $\rho$ is an environment of relations on $mpat$'s (see
-\fref{sec:definitions}).
-
-\[
-\inference
-{
-  \matchclause{\sigma}{clause^{+}}{sclause^{+}}
-}
-{
-  \matchclause
-  {\sigma}
-  {clause^{+}}
-  {sclause^{+} \texttt{ where }
-    \begin{tabular}{Mc}
-      \textsf{a}(\mathcal{A}_1, \ldots, \mathcal{A}_n)\\
-      \vdots \\
-      \textsf{z}(\mathcal{Z}_1, \ldots, \mathcal{Z}_m)
-    \end{tabular}
-  }
-}
-{
-  \begin{tabular}{Mc}
-    \rho(\textsf{a})(\sigma(\mathcal{A}_1), \ldots, \sigma(\mathcal{A}_n))\\
-    \vdots \\
-    \rho(\textsf{z})(\sigma(\mathcal{Z}_1), \ldots, \sigma(\mathcal{Z}_m))
-  \end{tabular}
-}
-\]
-
 \paragraph{Judgement} \fbox{\rewrite{\sigma}{rule}{clause^{+}}{clause^{+}}} \\
 
 There may be zero or more initial clauses $clause^{*}_1$ before the clauses
@@ -341,7 +311,7 @@ fun foo [x] = [x + 1]
 
 \paragraph{Judgement} \fbox{\becomesthrough{exp_1}{exp_2}{rule}}\\
 
-Recall that the \smlinline{fun ...}-syntax is just semantic sugar (see
+Recall that the \smlinline{fun}-syntax is just semantic sugar (see
 \cite[appendix B]{SML97}). Rule 2 and 3 are concerned with this.
 \[
 \inference

@@ -189,6 +189,20 @@ the relationship between \smlinline{(a, b)} and \smlinline{f (b, a)}. We do that
 simply by storing the pattern and the expression.
 
 \subsection{The ``\textsf{self}'' keyword}
+Recursion is an important feature of SML. Therefore we need to be able to
+express recursive calls in rewriting rules. We use the keyword \textsf{self} to
+refer to the function being defined (if any).
+
+It is possible to use curried arguments with the \smlinline{fun}-syntax. But a
+\smlinline{fun} declaration is rewritten to a series of anonymous functions with
+an inner case expression where the curried arguments is arranged in a
+tuple. This means that the arguments are given in curried form in recursive
+calls but in tuple form in the patterns.
+
+This detail should not affect rewriting rules. Our solution is to always use
+tuples in rewriting rules. Currying the arguments is then done during rewriting
+if needed (see the $\fbox{\matchbody{\sigma}{\theta}{sexp}{exp}}$-judgement
+above).
 
 \subsection{Schemes}
 Schemes are lists of scheme clauses. A scheme clause is essentially a pair of a
@@ -382,119 +396,78 @@ and
 \]
 
 \subsection{The $\sigma$-environment}
+The reader has probably noticed that the inference rules describe how to compute
+the $\theta$'s but not the $\sigma$.
 
-% \subsection{Rewriting rules}
+As described the $\sigma$ environment contains three things:
+\begin{enumerate}
+\item \textsf{self}, that is the name and arity of the function being defined.
+\item Contexts.
+\item Transformers.
+\end{enumerate}
 
-% \fixme{This is utterly wrong.}
-% \fixme{Reference to the definition}
+We compute each in the following manner.
+\begin{description}
+\item[\textsf{self}.] The function being defined and its arity is readily
+  apparent. The rules of the judgement
+  $\fbox{\becomesthrough{exp_1}{exp_2}{rule}}$ describe the value of
+  \textsf{self}.
+\item[Contexts.] The real problem about $\sigma$ is finding the contexts. In our
+  implementation of the \textsf{map}-rule we use a backtracking algorithm for
+  finding all candidates.
 
+  Consider the SML clause
+  \[
+  \mathsml{(x :: xs, y :: ys) = x + y :: foo (x :: xs, ys)}
+  \]
+  and the scheme clause
+  \[
+  \mathcal{C}[\ol{z}\ \ttt{::}\ \ol{zs}] = \cdots
+  \]
+  Should the $\mathcal{C}$ be bound to $\ttt{($\diamond_1$, \smlinline{y ::
+      ys})}$ or $\ttt{(\smlinline{x :: xs}, $\diamond_1$)}$? We try both in
+  turn. If the first results in the rewriting rule being successful we use that
+  one. Else we try the other.
+\item[Transformers.] When the contexts are fixed the transformers are easy to
+  determine. One can simply use the first clause in which a transformer is
+  mentioned as a prototype for it. Since both the contexts and the \textsf{self}
+  is known at this point the pattern and the body of the transformer can easily
+  be computed once the $\theta$ is known.
+\end{description}
 
-% A rewriting rule is defined from the clauses of the function that it must match,
-% thus it doesn't define any meta information such as the functions name. However
-% to be able to match recursive functions we introduce the keyword \textsf{self}
-% as a placeholder for the name of the function that is being matched.
+\section{Some rewriting rules}
+We have written rules for \ttt{map}, \ttt{foldl} and \ttt{foldr} forms.
 
-% \fixme{Her kommer normalformen på noget af en opgave, men det ser ud til at
-%   virke. Tjek det!}
+We give the rules and some examples of use in the next chapter.
 
-% A rule may match partially in the sense that if the clauses $n$ through $n+1$ of
-% a function is an instance of a rule with $i$ schemes, then the rewriting may still be
-% done for those specific clauses.
-
-% \fixme{example hereof}
-
-% \fixme{This might be broken up and then the canonical instantiation may be brought
-%   up and the rest of the text below in a subsubsection}. 
-
-% % subsubsection{simplicity of the syntax and why it looks as it does}
-
-% \fixme{Most of the below is more aimed at the schemes}
-
-% We can use the same rule syntax for both curried and uncurried functions by not
-% expressing more information about the function or its parameters in the rule.
-
-% It might be remembered that the curried function below
-
-% \begin{sml}
-% fun add n nil       = nil
-%   | add n (x :: xs) = n + x :: add n xs
-% \end{sml}
-
-% is desugared (in multiple steps) to
-
-% \begin{sml}
-% val rec add = fn n => 
-%               fn xs => (fn (n, nil) => nil
-%                          | (n, x::xs) => n + x :: add n xs) (n, xs)
-% \end{sml} 
-
-% and the same uncurried function 
-
-% \begin{sml}
-% fun add' (n, nil)     = nil
-%   | add' (n, x :: Xs) = n + x :: add' (n, xs)
-% \end{sml}
-
-% becomes
-
-% \begin{sml}
-% val rec add' = fn (n, nil) = []
-%                 | (n, x::xs) = n + x :: add' (n, xs)
-% \end{sml}
-
-               
-
-% As it is seen, both cases end up with an anonymous function. If there are more
-% than one then only the inner most is of interest as this anonymous
-% function gets the two arguments as a tuple. This anonymous function has a number
-% of clauses with pattern and body which match that of the original function
-
-% We have chosen to define our schemes in such a way that they look similar to the
-% above. Alle clauses in a scheme starts on $|$ (which except for the first clause
-% also apply for SML), since we have partial matching and thus don't know if the
-% the first function clause will match the first scheme clause.
-
-% We believe this makes up the most natural way of expressing schemes that will
-% match SML and thus a scheme is a list of $n$ scheme clauses
-
-% \begin{eqnarray*}[rqrl]
-% | & spat_1 & => sexp_1 \\
-%   &  & \vdots \\
-% | & spat_n & => sexp_n
-% \end{eqnarray*}
-
-% where $spat_n$ is a scheme pattern and $sexp_n$ is a scheme expression.
-
-% \fixme{Der beskrives slet ikke hvordan og hvorledes med resultat
-%   omskrivningen. Der beskrives kun den matchende del af skabelonen.}
-
-\subsection{Relations on meta patterns (the $\rho$-environment)}
-
-% \fixme{This is a lot of ideas of what we might need. It should be more concrete}
-
+% \subsection{Relations on meta patterns (the $\rho$-environment)}
 % We express restrictions on a scheme with the keyword \textsf{where} followed by
-% the restrictions \fixme{insert ref to the syntax definition}. 
+% the restrictions. At this time we have only considered one relation, namely
+% $samedom$.
 
-% As we saw in the \textsf{map} example above it may be necessary to introduce
-% restrictions on some of the meta patterns as a function of others, such as
-% $dom$.
+% Consider the SML functions
+% \begin{sml}
+% fun foo (x :: xs, y) = x + y :: foo xs
+%   | foo (_, _) = nil
+% \end{sml}
+% and
+% \begin{sml}
+% fun bar (x :: xs, y) = x + y :: bar xs
+%   | bar _ = nil
+% \end{sml}
+% The programmer obviously had the same idea with the two functions but their
+% normal forms differ:
+% \begin{sml}
+% fun foo (x :: xs, y) = x + y :: foo xs
+%   | foo x = nil
+% \end{sml}
+% and
+% \begin{sml}
+% fun bar (x :: xs, y) = x + y :: bar xs
+%   | bar x = nil
+% \end{sml}
 
-% Predicates and functions over expressions (and with extension over meta
-% functions) \fixme{why over metafunctions?} might come in handy, such as a
-% predicate that may determine whether an expression has side effects.
-
-% blabla....
-
-% Metafunktionerne implementeres nok kønnest ``uden for''
-% omskrivningssystemet. F.eks. omformes erklæringer til normalform før de
-% forsøges omskrevet, og man kunne forestille sig et forsimplingstrin
-% efterfølgende (eta-reduktion vil være ret nyttigt). Andre ting som
-% \texttt{let}-løftning bør også overvejes.
-
-% Bemærk at metafunktionerne kan have en nytteværdi i sig selv, og ikke blot
-% sammen med omskrivningssystemet.
-
-\subsection{Example}
+% \subsection{Example}
 
 % Introduction...
 

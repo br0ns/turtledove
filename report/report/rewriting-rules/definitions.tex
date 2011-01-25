@@ -1,5 +1,4 @@
 \section{Definitions}\label{sec:definitions}
-% \subsection{Patterns}
 A subset of patterns in SML (see \fref{sec:preparation}) can be thought of as
 trees with constructors as nodes and variables as leafs (where nullary
 constructors are seen as nodes with no leafs).
@@ -17,8 +16,8 @@ fun id x = x
 \end{sml}
 
 In the following we use the names given in \cite{SML97} for the different
-syntactic categories, we assume a fixed SML environment $E = (S\!E, T\!E, V\!E)$
-and a set of $n$-ary relations over $mpat$ (defined below), $\rho$.
+syntactic categories, we assume a fixed SML environment $E = (S\!E, T\!E,
+V\!E)$.
 
 \begin{definition}
   We write $pat^\alpha$ to mean the subset of the term algebra
@@ -70,12 +69,12 @@ status of the symbols given by $E$.
   \\
   Scheme clauses & sclause & ::= & spat => sexp \\
   Schemes & scheme & ::= & sclause^{+}\\
-  & & \mid & sclause^{+} \textsf{ where } cstrn^{+}\\
+  % & & \mid & sclause^{+} \textsf{ where } cstrn^{+}\\
 
   Transformers & trans & ::= & transvar\ sexp\\
   Transformer variables & transvar & ::= & \mathbb{D} \mid \mathbb{E} \mid \ldots\\
 
-  Constraint &  cstrn & ::= & rel(mpatvar^{+}) \\
+  % Constraint &  cstrn & ::= & rel(mpatvar^{+}) \\
   Relation & rel & ::= & \textsf{a} \mid \textsf{b} \mid \ldots\\
 
   (Rewriting) Rules & rule & ::= & scheme \Downarrow sclause^{+}\\
