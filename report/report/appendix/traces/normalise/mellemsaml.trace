@@ -1,8 +1,8 @@
 Normalising: mellemsaml.sml
 Parsing mlb/sml: 
-  User: 0.524, System: 0.192, Total: 0.716
+  User: 0.512, System: 0.200, Total: 0.712
 Resolving: 
-  User: 5.064, System: 0.636, Total: 5.700
+  User: 5.040, System: 0.668, Total: 5.708
 Normalizing
   [] = ""
   [x] = x

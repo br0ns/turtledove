@@ -1,10 +1,9 @@
-APPPATH = ../../../../../code/app
-OUTPUT = trace
+APPPATH = ../../../../code/app
 
 # NormalForm
 
 NFPATH = $(APPPATH)/NormalForm
-NFOUTPUT = $(OUTPUT)/normalise
+NFOUTPUT = normalise
 
 NFFILES = $(NFPATH)/files
 NFMLB = $(NFFILES)/test.mlb
@@ -13,7 +12,7 @@ NF = $(NFPATH)/NormalForm
 # Rewrite Map
 
 RWMPATH = $(APPPATH)/Rewrite/Map
-RWMOUTPUT = $(OUTPUT)/rewrite/map
+RWMOUTPUT = rewrite/map
 
 RWMFILES = $(RWMPATH)/files
 RWMMLB = $(RWMFILES)/test.mlb
