@@ -799,7 +799,10 @@ fun convert basis cs =
                   loop cs (c :: cs')
             val cs = rev $ loop cs nil
           in
-            cs before clauses "After elimination:" cs
+            (Flags.get "Verbose" andalso
+             (clauses "After elimination:" cs;
+              true));
+             cs
           end
 
       fun gen nil = nil
@@ -833,11 +836,15 @@ fun convert basis cs =
                                (Show.option Show.order)
                                x
             val cs = gen cs
-            val _ = clause "Generalising" c
-            val _ = clause "becomes" c'
+            val _ = Flags.get "Verbose" andalso
+                      (clause "Generalising" c;
+                       clause "becomes" c';
+                       true)
             val cs = loop cs (nil, nil) handle Next => c :: cs
-            val _ = clauses "Now have" cs
-            val _ = println ""
+            val _ = Flags.get "Verbose" andalso
+                    (clauses "Now have" cs;
+                     println "";
+                     true)
           in
             cs
           end
@@ -863,7 +870,8 @@ fun convert basis cs =
       val cons = var basis "::"
       val nill = var basis "nil"
     in
-      clauses "Normalizing" cs ;
+      (Flags.get "Verbose" andalso
+       (clauses "Normalizing" cs; true)) ;
       gen $ sort $ elim $
           List.map
           (elimLists cons nill o
