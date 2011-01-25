@@ -435,37 +435,72 @@ We compute each in the following manner.
   be computed once the $\theta$ is known.
 \end{description}
 
+\subsection{The $\rho$-environment}
+We express restrictions on a scheme with the keyword \textsf{where} followed by
+the restrictions. At this time we have only considered one relation, namely
+\textsf{samedom}.
+
+Consider the SML functions
+\begin{sml}
+fun foo (x :: xs, y) = x + y :: foo (xs, y)
+  | foo _ = nil
+\end{sml}
+,
+\begin{sml}
+fun bar (x :: xs, SOME y) = x + y :: bar (xs, SOME y)
+  | bar (_, SOME _) = nil
+  | bar _ = raise Fail "foobar"
+\end{sml}
+and
+\begin{sml}
+fun baz (x :: xs, SOME y) = x + y :: bar (xs, SOME y)
+  | baz _ = nil
+\end{sml}
+
+The two first can be rewritten to \ttt{map} forms but not the last. The problem
+is that if the last one is rewritten its patterns no longer form a cover.
+
+What we need to know is that \ttt{($\diamond_1$, y)} and \ttt{_} (first
+function) and \mbox{\ttt{($\diamond_1$, SOME y)}} and \mbox{\ttt{(_, SOME _)}}
+(second function) match the same set of values and that
+\mbox{\ttt{($\diamond_1$, SOME y)}} and \ttt{_} does not\footnote{We regard
+  $\diamond_n$ as a wildcard pattern.}.
+
+We use the relation \textsf{samedom} to express that two meta patterns match the
+same set of values.
+
+\subsubsection{Other relations}
+If the rewriting system is extended to handle expressions other useful relations
+arise.
+
+Examples include
+\begin{description}
+\item[\textsf{pure}$(exp)$] Determine if an expression is pure. Because of the
+  side-effects and exceptions in SML one cannot in general reorder
+  expression. It is for example not the case that
+  \[
+  exp_1\ \ttt{+}\ exp_2 = exp_2\ \ttt{+}\ exp_1.
+  \]
+  The (unary) relation $\textsf{pure}(exp)$ would express that $exp$ is free of
+  side-effects and exceptions. This is of course undecidable but it is not too
+  hard to come up with heuristics that cover a lot of code in practice.
+\item[\textsf{eval}$(exp_1)(exp_2)$] Try to evaluate an expression. This could be
+  useful for live testing of code inside the editor.
+\item[\textsf{simp}$(exp_1)(exp_2)$] Simplify an expression. Apart from just
+  making code simpler this could also make rewriting rules more powerful.
+\end{description}
+
+Notice that any rewriting rule is in itself a binary relation (on matches or
+expression). Thus one rule could use other rules through constraints.
+
+We have not pursued these ideas in practice.
+
 \section{Some rewriting rules}
 We have written rules for \ttt{map}, \ttt{foldl} and \ttt{foldr} forms.
 
 We give the rules and some examples of use in the next chapter.
 
 % \subsection{Relations on meta patterns (the $\rho$-environment)}
-% We express restrictions on a scheme with the keyword \textsf{where} followed by
-% the restrictions. At this time we have only considered one relation, namely
-% $samedom$.
-
-% Consider the SML functions
-% \begin{sml}
-% fun foo (x :: xs, y) = x + y :: foo xs
-%   | foo (_, _) = nil
-% \end{sml}
-% and
-% \begin{sml}
-% fun bar (x :: xs, y) = x + y :: bar xs
-%   | bar _ = nil
-% \end{sml}
-% The programmer obviously had the same idea with the two functions but their
-% normal forms differ:
-% \begin{sml}
-% fun foo (x :: xs, y) = x + y :: foo xs
-%   | foo x = nil
-% \end{sml}
-% and
-% \begin{sml}
-% fun bar (x :: xs, y) = x + y :: bar xs
-%   | bar x = nil
-% \end{sml}
 
 % \subsection{Example}
 

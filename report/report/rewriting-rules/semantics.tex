@@ -254,6 +254,34 @@ expressions. Notice that this means that there are exactly $n$ holes in $mpat_\d
   }
 }
 \]
+Recall that $\rho$ is an environment of relations on $mpat$'s (see
+\fref{sec:definitions}).
+
+\[
+\inference
+{
+  \matchclause{\sigma}{clause^{+}}{sclause^{+}}
+}
+{
+  \matchclause
+  {\sigma}
+  {clause^{+}}
+  {sclause^{+} \texttt{ where }
+    \begin{tabular}{Mc}
+      \textsf{a}(\mathcal{A}_1, \ldots, \mathcal{A}_n)\\
+      \vdots \\
+      \textsf{z}(\mathcal{Z}_1, \ldots, \mathcal{Z}_m)
+    \end{tabular}
+  }
+}
+{
+  \begin{tabular}{Mc}
+    \rho(\textsf{a})(\sigma(\mathcal{A}_1), \ldots, \sigma(\mathcal{A}_n))\\
+    \vdots \\
+    \rho(\textsf{z})(\sigma(\mathcal{Z}_1), \ldots, \sigma(\mathcal{Z}_m))
+  \end{tabular}
+}
+\]
 
 \paragraph{Judgement} \fbox{\rewrite{\sigma}{rule}{clause^{+}}{clause^{+}}} \\
 
