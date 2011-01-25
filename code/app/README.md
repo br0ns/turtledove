@@ -13,7 +13,7 @@ list of tests.
 
 # Todo
 
-Usage: `NormalForm Project.mlb`
+Usage: `Todo Project.mlb`
 
 Takes one argument, an mlb file, and walks through all referenced sml files for
 comments starting with "TODO" and prints them to the console with information of
@@ -22,7 +22,7 @@ where they are located (file and location in file).
 
 # Size
 
-Usage: `NormalForm Project.mlb`
+Usage: `Size Project.mlb`
 
 Takes one argument, an mlb file, and walks through all referenced sml files and
 counts their size and number of lines.
@@ -56,26 +56,26 @@ on how it got normalised) is printed to the console.
   <td><strong>Description</strong></td>  
 </tr>
 <tr>
-  <td>`--no-column`</td>
+  <td>--no-column</td>
   <td>The original and the result is Normally printed besides each other in two
   column. If this argument is given, then they will be printer after each
   other. This is used when the output is included in the report.</td>  
 </tr>
 <tr>
-  <td>`--verbose`</td>
+  <td>--verbose</td>
   <td>Will print verbose information to the console. This includes information
   from the normalisation process</td>  
 </tr>
 <tr>
-  <td>`-v`</td>
-  <td>Same as `--verbose`</td>  
+  <td>-v</td>
+  <td>Same as --verbose</td>  
 </tr>
 <table>
 
 
 # Source explorer
 
-Usage: `NormalForm Project.mlb`
+Usage: `SourceExplorer Project.mlb`
 
 Takes one argument, an mlb file, and prints "tree structure" to the console that
 can be navigated through.
@@ -134,7 +134,7 @@ This is the currently available rewriting applications
 
 ## Map
 
-Usage: `NormalForm [arguments] Project.mlb File.sml`
+Usage: `RewriteMap [arguments] Project.mlb File.sml`
 
 Takes two arguments, an mlb file and a sml files (the sml files must be
 referenced inside the mlb file).
@@ -148,18 +148,18 @@ to use map..
   <td><strong>Description</strong></td>  
 </tr>
 <tr>
-  <td>`--no-column`</td>
+  <td>--no-column</td>
   <td>The original and the result is Normally printed besides each other in two
   column. If this argument is given, then they will be printer after each
   other. This is used when the output is included in the report.</td>  
 </tr>
 <tr>
-  <td>`--verbose`</td>
+  <td>--verbose</td>
   <td>Will print verbose information to the console. This includes information
   from the normalisation process</td>  
 </tr>
 <tr>
-  <td>`-v`</td>
-  <td>Same as `--verbose`</td>  
+  <td>-v</td>
+  <td>Same as --verbose</td>  
 </tr>
 <table>
