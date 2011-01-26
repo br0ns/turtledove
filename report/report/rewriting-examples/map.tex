@@ -9,7 +9,10 @@
   foo \fixme{}
   \begin{center}
     \begin{tabular}{|l|l|}
-      \hline \textbf{Original function} & \textbf{Normalised function}\\ \hline
+      \hline \textbf{Original function} 
+      & \textbf{Normalised function}
+      \footnotesize{(see \fref{tr:trace-normalise-foo})}
+      \\ \hline
 \begin{sml}
 fun foo nil       = nil
   | foo (x :: xs) = x + 1 :: foo xs
@@ -76,7 +79,9 @@ fun foo (x :: xs) = x + 1 :: foo xs
   \begin{center}
     \begin{tabular}{|l|}
       \hline
-      \textbf{Rewritten function} \\ \hline
+      \textbf{Rewritten function} 
+      \footnotesize{(see \fref{tr:trace-rewrite-map-foo})}
+      \\ \hline
       \begin{sml}
 fun foo xs = map (fn a => a + 1) xs
       \end{sml} \\ \hline
@@ -100,6 +105,7 @@ fun foo xs = map (fn a => a + 1) xs
       \textbf{Original function} 
       & 
       \textbf{Normalised function}
+      \footnotesize{(see \fref{tr:trace-normalise-evallist})}
       \\ \hline
       \begin{sml}
 fun evallist (f::fs, v) = 
@@ -157,7 +163,9 @@ fun evallist (f :: fs, v) =
   \begin{center}
     \begin{tabular}{|l|}
       \hline
-      \textbf{Rewritten function} \\ \hline
+      \textbf{Rewritten function} 
+      \footnotesize{(see \fref{tr:trace-rewrite-map-evallist})}
+      \\ \hline
       \begin{sml}
 fun evallist (fs, v) = map (fn f => f v) fs
       \end{sml} \\ \hline
@@ -203,8 +211,7 @@ fun collatz [] = []
       \textbf{Modified function} 
       &
       \textbf{Normalised function}
-      \footnotesize{(see section xx on page 44)} \fixme{insert ref to
-        normalisation trace}
+      \footnotesize{(see \fref{tr:trace-normalise-collatz})}
       \\ \hline
       \begin{sml}
 fun collatz [] = []
@@ -270,8 +277,7 @@ fun collatz (x :: xs) =
     \begin{tabular}{|l|}
       \hline
       \textbf{Rewritten function} 
-      \footnotesize{(see section xx on page 44)} \fixme{insert ref to
-        test trace}
+      \footnotesize{(see \fref{tr:trace-rewrite-map-collatz})}
       \\ \hline
       \begin{sml}
 fun collatz xs = 
@@ -304,6 +310,7 @@ fun collatz xs =
       \textbf{Original function} 
       & 
       \textbf{Normalised function}
+      \footnotesize{(see \fref{tr:trace-normalise-mapfil})}
       \\ \hline
       \begin{sml}
 fun mapfil (f, p, []) = []
@@ -367,7 +374,9 @@ fun mapfil (f, p, (x :: xs)) =
   \begin{center}
     \begin{tabular}{|l|}
       \hline
-      \textbf{Rewritten function} \\ \hline
+      \textbf{Rewritten function} 
+      \footnotesize{(see \fref{tr:trace-rewrite-map-mapfil})}
+      \\ \hline
       \begin{sml}
 fun mapfil (f,p,xs) => map (fn x => if p x then f x else x) xs
       \end{sml} \\ \hline      

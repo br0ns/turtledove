@@ -34,6 +34,7 @@ fun composelist (f :: []) x = f (x)
       \textbf{Original Function \#2}
       &
       \textbf{Normalised Function \#2}
+      \footnotesize{(see \fref{tr:trace-normalise-composelist})}
       \\\hline
 \begin{sml}
 fun composelist [] x = x 
@@ -141,6 +142,7 @@ fun composelist ys x = foldr (fn (a,b) => a b) (x) ys
       \textbf{Original Function}
       & 
       \textbf{Normalised Function}
+      \footnotesize{(see \fref{tr:trace-normalise-sumlige})}
       \\\hline
   \begin{sml}
 fun sumlige [] = 0

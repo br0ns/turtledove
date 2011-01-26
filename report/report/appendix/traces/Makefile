@@ -27,7 +27,7 @@ clean : clean-normalise clean-rewrite-map
 
 
 .PONY: normalise
-normalise: normal-sumlige normal-collatz normal-composelist normal-evallist normal-mapfil normal-mellemsaml normal-sumlige normal-udvaelg
+normalise: normal-sumlige normal-collatz normal-composelist normal-evallist normal-mapfil normal-mellemsaml normal-sumlige normal-udvaelg normal-foo
 
 .PHONY: clean-normalise
 clean-normalise: 
@@ -55,10 +55,13 @@ normal-mellemsaml:
 .PHONY: normal-udvaelg
 normal-udvaelg:
 	$(NF) -v --no-column $(NFMLB)  $(NFFILES)/udvaelg.sml > $(NFOUTPUT)/udvaelg.trace
+.PHONY: normal-foo
+normal-foo:
+	$(NF) -v --no-column $(NFMLB)  $(NFFILES)/foo.sml > $(NFOUTPUT)/foo.trace
 
 
 .PHONY: rewrite-map
-rewrite-map: rewrite-map-collatz rewrite-map-udvaelg rewrite-map-mapfil rewrite-map-evallist
+rewrite-map: rewrite-map-collatz rewrite-map-udvaelg rewrite-map-mapfil rewrite-map-evallist rewrite-map-foo
 
 .PHONY: clean-rewrite-map
 clean-rewrite-map:
@@ -80,3 +83,7 @@ rewrite-map-mapfil:
 .PHONY: rewrite-map-evallist
 rewrite-map-evallist:
 	$(RWM) --no-column $(RWMMLB)  $(RWMFILES)/evallist.sml > $(RWMOUTPUT)/evallist.trace
+
+.PHONY: rewrite-map-foo
+rewrite-map-foo:
+	$(RWM) --no-column $(RWMMLB)  $(RWMFILES)/foo.sml > $(RWMOUTPUT)/foo.trace

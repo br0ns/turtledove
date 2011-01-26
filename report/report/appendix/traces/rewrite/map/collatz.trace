@@ -1,12 +1,12 @@
 Normalising and rewriting: collatz.sml
-collatz(34770, 34770, Val)
+collatz(34773, 34773, Val)
 1
 Exp_App
-  1 Exp_Var collatz(34770, 34770, Val)
-  2 Exp_Var xs(34772, 34772, Val)
+  1 Exp_Var collatz(34773, 34773, Val)
+  2 Exp_Var xs(34775, 34775, Val)
 Exp_App
-  1 Exp_Var collatz(34770, 34770, Val)
-  2 Exp_Var xs(34772, 34772, Val)
+  1 Exp_Var collatz(34773, 34773, Val)
+  2 Exp_Var xs(34775, 34775, Val)
 foo
 Before:
 fun collatz [] = []

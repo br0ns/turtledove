@@ -1,16 +1,16 @@
 Normalising and rewriting: udvaelg.sml
-udvaelg(34765, 34765, Val)
+udvaelg(34768, 34768, Val)
 1
 Exp_App
   1 Exp_App
-      1 Exp_Var udvaelg(34765, 34765, Val)
-      2 Exp_Var xs(34767, 34767, Val)
-  2 Exp_Var ys(34769, 34769, Val)
+      1 Exp_Var udvaelg(34768, 34768, Val)
+      2 Exp_Var xs(34770, 34770, Val)
+  2 Exp_Var ys(34772, 34772, Val)
 Exp_App
   1 Exp_App
-      1 Exp_Var udvaelg(34765, 34765, Val)
-      2 Exp_Var xs(34767, 34767, Val)
-  2 Exp_Var ys(34769, 34769, Val)
+      1 Exp_Var udvaelg(34768, 34768, Val)
+      2 Exp_Var xs(34770, 34770, Val)
+  2 Exp_Var ys(34772, 34772, Val)
 foo
 Before:
 fun udvaelg xs [] = []

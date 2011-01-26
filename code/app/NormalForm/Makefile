@@ -16,6 +16,7 @@ clean :
 .PHONY: tests
 tests: 
 	@echo "Possible tests are:"
+	@echo "* foo"
 	@echo "* collatz"
 	@echo "* composelist"
 	@echo "* mellemsaml"
@@ -24,6 +25,10 @@ tests:
 	@echo "* mapfil"
 	@echo "* evallist"
 
+
+.PHONY: foo
+foo: $(APP)
+	./$(APP) -v files/test.mlb files/foo.sml
 .PHONY: collatz
 collatz: $(APP)
 	./$(APP) -v files/test.mlb files/collatz.sml
