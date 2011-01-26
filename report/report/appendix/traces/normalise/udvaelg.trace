@@ -1,8 +1,8 @@
 Normalising: udvaelg.sml
 Parsing mlb/sml: 
-  User: 0.504, System: 0.196, Total: 0.700
+  User: 0.500, System: 0.212, Total: 0.712
 Resolving: 
-  User: 4.868, System: 0.684, Total: 5.552
+  User: 4.912, System: 0.708, Total: 5.620
 Normalizing
   xs [] = []
   xs (y :: ys) = List.nth (xs, y) :: udvaelg xs ys

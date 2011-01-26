@@ -1,5 +1,19 @@
 Normalising and rewriting: mapfil.sml
 mapfil(34776, 34776, Val)
+1
+Exp_App
+  1 Exp_Var mapfil(34776, 34776, Val)
+  2 Exp_Tuple
+      1 Exp_Var f(34779, 34779, Val)
+      2 Exp_Var p(34780, 34780, Val)
+      3 Exp_Var xs(34782, 34782, Val)
+Exp_App
+  1 Exp_Var mapfil(34776, 34776, Val)
+  2 Exp_Tuple
+      1 Exp_Var f(34779, 34779, Val)
+      2 Exp_Var p(34780, 34780, Val)
+      3 Exp_Var xs(34782, 34782, Val)
+foo
 Before:
 fun mapfil (f, p, []) = []
   | mapfil (f, p, (x :: xs)) = (if p x then
@@ -8,8 +22,7 @@ fun mapfil (f, p, []) = []
                                   x) :: mapfil (f, p, xs)
 
 After:
-fun mapfil (f, p, (x :: xs)) = (if p x then
-                                  f x
-                                else
-                                  x) :: mapfil (f, p, xs)
-  | mapfil x = (nil)
+fun mapfil (f, p, xs) = map (fn x => (if p x then
+                                        f x
+                                      else
+                                        x)) xs

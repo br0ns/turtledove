@@ -1,9 +1,20 @@
 Normalising and rewriting: evallist.sml
 evallist(34783, 34783, Val)
+1
+Exp_App
+  1 Exp_Var evallist(34783, 34783, Val)
+  2 Exp_Tuple
+      1 Exp_Var fs(34785, 34785, Val)
+      2 Exp_Var v(34786, 34786, Val)
+Exp_App
+  1 Exp_Var evallist(34783, 34783, Val)
+  2 Exp_Tuple
+      1 Exp_Var fs(34785, 34785, Val)
+      2 Exp_Var v(34786, 34786, Val)
+foo
 Before:
 fun evallist (f :: fs, v) = f v :: evallist (fs, v)
   | evallist ([], _) = []
 
 After:
-fun evallist (f :: fs, v) = f v :: evallist (fs, v)
-  | evallist y = (nil)
+fun evallist (fs, v) = map (fn f => f v) fs
