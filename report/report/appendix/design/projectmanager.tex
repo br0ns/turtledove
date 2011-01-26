@@ -1,0 +1,162 @@
+
+\section{Project manager}
+\label{sec:appendix-project-manager}
+
+Below are the desired functionality of project files that makes up a more
+restricted format compared to MLB files, but with the same expressive powers.
+
+\begin{description}
+\item[Files] added, removed or renamed. \\
+
+  A file is any valid file that one would normally reference in an MLB file.
+  There is however the restriction that a file may only be added once, and can
+  then be referenced as a dependency multiple times.
+  
+\item[Groupings] added, removed or renamed. \\
+
+  We want to introduce a form of logical grouping of files to ease dependency
+  references by using the name of the grouping instead of all the files inside
+  the grouping. Groupings should also assist in controlling what visible to the
+  outside of a grouping by the means of exposed files which is exactly what a
+  local declaration in MLB files does.
+
+  A grouping should be able to contain other groupings, such that smaller
+  logical groupings can be combined to one or more larger groupings. 
+
+\item[Dependencies] added or removed. \\
+
+  Dependencies make sure that files are parsed in the correct order. A common
+  use of dependencies is that structures must depend upon the signatures that
+  they implement such that the signature is parsed before the structure.
+
+  One might ask why this is not auto generated? In some (if not most) cases it
+  can't be determined, most obviously if there exists two modules with the same
+  name but with different meaning. However in most cases a fair guess can be
+  generated, though it leaves the few cases unsolved where it is not possible
+  and it would be complicated and time consuming to implement. So the other
+  solution has been chosen which also offer more flexibility to the user at the
+  cost of being a bit more complicated to use.
+
+\item[Exposure] added or removed. \\
+
+  It is often desired to have control of which files are visible to other files
+  by writing local declarations in MLB files, so the environment aren't
+  polluted.  
+
+  For example a grouping containing two files \textit{FooUtils.sml} and
+  \textit{Foo.sml}, here we don't necessarily want to expose the functions
+  defined in the utility file as these may only have meaning to the functions
+  defined in the foo file. In this case we would also have a dependency from
+  \textit{Foo.sml} to \textit{FooUtils.sml} such that the utility file is parsed
+  before the foo file.
+
+
+\item[Properties] added or removed. \\
+
+  A project files should have a list of key-value pairs that forms some
+  predefined properties for this specific project. Such properties could be
+  Turtledove specific user preferences.
+
+\end{description}
+
+\paragraph{Note.} All names of files and groups must be unique as no separate
+unique id fields are used as dependency/exposure references. Thus the name of a
+file is chosen to be its path and the name of groupings are just the name they
+are given. This way dependency and exposure references will be this unique name.
+
+Files contains the path and a list of what it depends on and groupings contains
+their name and lists of containing files/groupings, dependent files/groupings
+and exposed files/groupings.
+
+As a project must consist of some sort of top level element (the project
+itself), we have kept it simple and chosen to use a grouping for this. Thus a
+project file is made up of a list of properties and a top level project
+grouping.
+
+As a grouping may consists sub groupings, only the first level of sub groupings
+are allowed in exposure references. In dependency, references are
+only allowed from any first level element in a grouping (file or exposure of sub grouping)
+to any first level element within the group or to any first level element in the
+parent group. The below example illustrates this:
+
+\begin{example}[Project description for a project named ``Posidon'']\ \\
+  \label{ex:Sample-project-file-posidon}  
+  The \texttt{Posidon} project contains the following 
+  
+  \begin{description}
+  \item[Files]\ \\
+    \texttt{u.sml} and \texttt{j.sml}.
+    
+  \item[Groupings]\
+    \begin{itemize}
+    \item Group \texttt{A} which
+      \begin{itemize}
+      \item Contains the file \texttt{x.sml}.
+      \item Exposes the file \texttt{x.sml}.
+      \item Doesn't depend on anything.
+      \end{itemize}
+      
+    \item Group \texttt{B} which
+      \begin{itemize}
+      \item Contains the files \texttt{y.sml} and \texttt{z.sml}.
+      \item Exposes the file \texttt{z.sml}.
+      \item Has dependencies
+        \begin{itemize}
+        \item \texttt{y.sml} depends on \texttt{x.sml}.
+        \item \texttt{z.sml} depends on \texttt{y.sml}.
+        \end{itemize}
+      \end{itemize}
+      
+    \item Group \texttt{C} which
+      \begin{itemize}
+      \item Contains the files \texttt{n.sml} and \texttt{m.sml}.
+      \item Exposes the files \texttt{n.sml} and \texttt{m.sml}.
+      \item Doesn't depend on anything.
+      \end{itemize}
+    \end{itemize}
+
+
+  \item[Exposes]\ \\
+    Group \texttt{C} and file \texttt{j.sml}
+    
+  \item[Dependencies]\
+    \begin{itemize}
+    \item \texttt{C} depends on \texttt{B}
+    \item \texttt{j.sml} depends on \texttt{u.sml}
+    \item \texttt{j.sml} depends on \texttt{B}.
+    \end{itemize} 
+  \end{description}
+
+\end{example}
+
+
+There is one problem with this design, that it doesn't emulate exactly the
+expressive power of MLB files, however we believe that it lets the user emulate
+exactly the need that a novice programmer need. One of the drawbacks of this
+design is that it doesn't currently allow for structure, signature or functor
+replication and exposure. We have personally used this in some of our code (see
+\fref{ex:parsers.mlb}) but we have newer come across this need/usage in our
+teaching.
+
+If Turtledove at some point were extended to give back a list of
+signatures, structures or functors in a given set of files, then it wouldn't be
+that big a deal extending the design to not only expose files or groups but also
+the name and or replicating of such a structure, signature or functor in
+cooperation with the Editor.
+
+\subsubsection{Input files}
+
+The project manager should be able to handle three types of input files: MLB files,
+Project files (turtledove project files) and stand alone SML files. This will
+make it possible for advanced users to create their own MLB but however loose
+most of the project managers facilities. It should also be possible to use just
+a single SML file, as this is what novice programmers often tend to use, by either
+wrapping it in an MLB template that includes the basis library or an empty Turtledove
+project file template. See \fref{sec:design-parsers} for information about the
+MLB and SML parser.
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../../report"
+%%% End: 
