@@ -1,52 +1,82 @@
 \section{Rules}
 
-We have made rules for map, foldl and foldr:
+\subsection{\textsf{map}}
+As it turns out we need two \textsf{map} rules.
 
-\begin{definition}[Map]
-
+\begin{definition}[\textsf{map$_\textsf{a}$}]
 \begin{eqnarray*}[x]
-  \begin{eqnalign}[rcl]
-    \mathcal{C}[ \ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ \mathcal{C}[\ol{x}]
-    \ttt{:: self}\ \mathcal{C}[\ol{xs}] \\
+  \begin{eqnalign}[lcl]
+    \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &=>& \mathbb{D}(\mathcal{C}[\ol{x}])\
+    \ttt{::}\ \ttt{self}(\mathcal{C}[\ttt{xs}]) \\
     \mathcal{D} &=>& \ttt{nil} \\
-  \end{eqnalign}
-  \quad \ttt{where} \quad
-  dom (\mathcal{C}, \mathcal{D}) \\
+  \end{eqnalign}\\
+  \ttt{where}\ \textsf{samedom} (\mathcal{C}, \mathcal{D}) \\
 %
   \Downarrow \\
 %
-  \begin{eqnalign}[rcl]
-    \mathcal{C}[\ol{xs}] &=>& \ttt{map (fn $\ol{m}$ => $\mathbb{D} \
-    \mathcal{C}[\ol{m}]$)} \ \ol{xs} \\
+  \begin{eqnalign}[lcl]
+    \mathcal{C}[\ttt{xs}] &=>& \ttt{map (fn x => $\mathbb{D}(
+    \mathcal{C}[$x$])$)} \ \ttt{xs} \\
   \end{eqnalign}
  \end{eqnarray*}
-\fixme{The m is fishy it should be $\ol{m}$? and what about kappa when removing
-  the overline?}
-\fixme{The \ttt{nil} in the second clause will lead to problems as the
-  normalform may produce an x as body of that clause.}
 \end{definition}
 
-
-
-\begin{definition}[Fold right]
-
+\begin{definition}[\textsf{map$_\textsf{b}$}]
 \begin{eqnarray*}[x]
-  \begin{eqnalign}[rcl]
-    \mathcal{C}[\ol{x} \ttt{::} \ol{xs}] &=>& \mathbb{D}\ (\mathcal{C}[\ol{x}],\
-    \ttt{self}\ \mathcal{C}[\ol{xs}])\\
-    \mathcal{D} &=>& \mathbb{E}\ \mathcal{D}
-  \end{eqnalign} 
-  \quad \ttt{where} \quad
-  dom (\mathcal{C}, \mathcal{D}) \\
+  \begin{eqnalign}[lcl]
+    \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &=>& \mathbb{D}(\mathcal{C}[\ol{x}])\
+    \ttt{::}\ \ttt{self}(\mathcal{C}[\ttt{xs}]) \\
+    \mathcal{C}[\ttt{x}] &=>& \ttt{x} \\
+  \end{eqnalign}\\
 %
   \Downarrow \\
 %
-  \begin{eqnalign}[rcl]
-    \mathcal{C}[\ol{xs}] &=>& \ttt{foldr (fn (a, b) =>
-      $\mathbb{D}(\mathcal{C}[$a$],\ $b$)$) ($\mathbb{E}\ \mathcal{D}$) $\ol{xs}$}
+  \begin{eqnalign}[lcl]
+    \mathcal{C}[\ttt{xs}] &=>& \ttt{map (fn x => $\mathbb{D}(
+    \mathcal{C}[$x$])$)} \ \ttt{xs} \\
   \end{eqnalign}
  \end{eqnarray*}
- \fixme{Same issues with \ttt{(a, b)} as with $\ol{m}$ in map}
+\end{definition}
+
+Foobar about the need for two rules. \fixme{Write this}
+
+\subsection{\textsf{foldr}}
+
+\begin{definition}[\textsf{foldr}]
+\begin{eqnarray*}[x]
+  \begin{eqnalign}[lcl]
+    \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &=>& \mathbb{D}(\mathcal{C}[\ol{x}],\
+    \ttt{self}(\mathcal{C}[\ttt{xs}]))\\
+    \mathcal{D} &=>& \mathbb{E}(\mathcal{D})
+  \end{eqnalign}\\
+  \ttt{where}\ \textsf{samedom}(\mathcal{C}, \mathcal{D}) \\
+%
+  \Downarrow \\
+%
+  \begin{eqnalign}[lcl]
+    \mathcal{C}[\ttt{xs}] &=>& \ttt{foldr (fn (x, a) =>
+      $\mathbb{D}(\mathcal{C}[$x$],\ $a$)$) ($\mathbb{E}(\mathcal{D})$) \ttt{xs}}
+  \end{eqnalign}
+ \end{eqnarray*}
+\end{definition}
+
+\subsection{\textsf{foldl}}
+
+\begin{definition}[\textsf{foldl}]
+\begin{eqnarray*}[x]
+  \begin{eqnalign}[lcl]
+    \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}][\ol{a}] &=>&
+    \ttt{self}(\mathcal{C}[\ol{x}][\mathbb{D}(\mathcal{C}[\ol{x}][\ol{a}])])\\
+    \mathcal{C}[\ol{x}][\ol{a}] &=>& \ol{a}
+  \end{eqnalign}\\
+%
+  \Downarrow \\
+%
+  \begin{eqnalign}[lcl]
+    \mathcal{C}[\ttt{xs}][\ttt{a}] &=>& \ttt{foldl (fn (x, a) =>
+      $\mathbb{D}(\mathcal{C}[$x$][$a$])$) \ttt{a} \ttt{xs}}
+  \end{eqnalign}
+ \end{eqnarray*}
 \end{definition}
 
 %%% Local Variables: 
