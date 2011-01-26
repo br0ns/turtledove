@@ -1,18 +1,20 @@
-\chapter{Concrete Examples} 
+\chapter{Concrete Examples}
+In this chapter we present rewriting rules for \ttt{map}, \ttt{foldl} and
+\ttt{foldr} forms. We then show the rules in action on a body of example code.
 
-This chapter will present examples of SML code being normalised and if possible
-rewritten using the various rewriting rules that we have made.
+We have chosen rules concerning list combinators since they turn up very
+often. The \ttt{map} form was chosen for its simplicity whereas the
+\ttt{fold$($l$|$r$)$} forms was chosen their complexity; it is our experience as
+teaching assistants that students often struggle with these forms.
+
+Other forms concerning list combinators that turn up often are \ttt{exists} and
+\ttt{all} forms. But we have not made rules for these.
 
 \input{rewriting-examples/rules}
 
-\input{rewriting-examples/map}
+\section{Examples}
 
-% \begin{example}
-%   \begin{eqnarray*}
-%     (nil, \_) &=>& nil\\
-%     (x::xs, n) &=>& F\ (x * n) :: \mathsf{foo} (xs, n)\\
-%   \end{eqnarray*}
-% \end{example}
+\input{rewriting-examples/map}
 
 \input{rewriting-examples/fold}
 
