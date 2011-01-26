@@ -1,4 +1,5 @@
-\section{Rule syntax}\label{sec:rule-syntax}
+\section{Rule syntax}
+\label{sec:rule-syntax}
 The actual syntax of rewriting rules are defined by the grammar in
 \fref{tab:rule-grammar}. One or more rules may be defined in a rule-file. This
 makes it possible to create ``groupings'' of the rewriting rules. Such groupings
@@ -9,9 +10,8 @@ by the operating system through a directory listing.
 
 \subsection{Syntax quirks}
 
-The rule syntax has been designed to resemble SML syntax, but still not the
-extend where it is confusing to see which is SML and which is rule specific
-syntax.
+The rule syntax has been designed to resemble SML, but not the extend where it
+is confusing to see which is SML and which is rule specific syntax.
 
 \begin{description}
 \item[Clauses] all starts with a pipe (\ttt{|}), also the first. We chose this as
@@ -25,10 +25,6 @@ syntax.
 \item[Meta patterns] all starts with a section sign (\ttt{§}) followed by any
   valid SML function name. This was chosen as it is not a valid SML token so it
   would stand out as being something special.
-
-\item[Meta variables] all starts with a underscore (\ttt{\_}) followed by any
-  valid SML varaible name. This was chosen as no SML identifier may start with
-  an underscore.
 \end{description}
 
 Not all valid SML code may be written inside a rule definition. As seen from the

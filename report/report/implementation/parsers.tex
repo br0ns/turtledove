@@ -3,39 +3,47 @@
 
 \subsection{ML Basis files}
 
-The MLB parser parses the files in two steps, First is a regular parse and the
-second parse pulls out information about which files were included, etc. so any
-MLB files referenced may also be parsed and their AST inserted.  ... bla blah
+Parsing an MLB file is a two step process. First the MLB file is parsed by the
+MLB parser and afterwards all references to external files are swapped with the
+AST gotten from parsing that particular file (MLB or SML).
 
-\fixme{Write this section}
+The lex and yacc files for the MLB parser are heavily inspired by MLton's MLB
+parser.
 
-\subsection{Standard ML}
+\subsection{SML and rules}
 
-Some clever stuff?
+The SML and rule parser shares the same AST as to make it easier for the
+matching process later on. This means that the AST is extended with some rule
+specific tokens.
 
-\fixme {Write this section}
+The lex and yacc files for the SML parser, and thus also the rule parser, are
+heavily inspired by MLton's SML parser.
 
-\subsection{Rule}
+\subsubsection{Rule parser}
 
-The Rule parser is based on the SML parser with some added tokens to the lexer
-and rules to the grammar to handle the rule syntax (see
-\fref{tab:rule-grammar}).
+As of this writing the rule parser only supports a subset of SML expressions and
+patterns. The rule parser extends upon the SML parser adding a \ttt{ruleProgram}
+non terminal as the first rule (no \ttt{\%start} symbol is defined). We have
+defined \ttt{spat} as \ttt{pat} and \ttt{sexp} as \ttt{exp}, where all the
+extensions introduced by \synth{spat} and \synth{sexp} are added directly to the
+\ttt{pat} and \ttt{exp} non terminals. Currently exceptions and type annotations
+are commented out for simplicity.
 
-\subsubsection{Unicode}
+\subsubsection{Unicode in rule parser}
 
 The rule syntax uses the symbols \texttt{£} and \texttt{§} to denote
-transformers and meta patterns respectively. These were a bit tricky to
-implement as they are not ASCII characters. By default SML-Lex\cite{ml-lex-yacc}
-only supports 8-bit characters and thus if the upper parts of UTF-8 characters
-are needed they must be specially handled. One way to handle it would be to
-convert the input file into some fixed length encoding (i.e., UTF-32), but as
-SML only uses ASCII chars that would demand a total remake of the Rule lexer
-definition. Instead we went with a UTF-8 solution which only need to be
-specially fitted for the transformer and meta patterns as it seems that most
-editors now a days use UTF-8 as default encoding (seems to be the case for emacs
-on linux). Implementing the two UTF-8 values in the lexer was then just a matter
-of defining a named expression containing the conjunction of the two decimal
-values making up each of the UTF-8 values (see \fref{tab:utf8-rule-values}).
+transformers and meta patterns respectively. These need some special handling as
+the lexer\cite{ml-lex-yacc} just reads 8-bit characters.
+
+One way to handle it would be to convert the input file into some fixed length
+encoding (f.x., UTF-32), but that would demand a total remake of the lexer
+definition, which would not just be a major job but also be error prone.
+
+Instead we just handle it as UTF-8\footnote{We remember that UTF-8 is a variable
+  length encoding from one to four 8-bit characters}. Implementing the two
+UTF-8 values in the lexer was then just a matter of defining a named expression
+containing the conjunction of the two decimal values making up each of the UTF-8
+values (see \fref{tab:utf8-rule-values}).
 
 \begin{table}
   \centering
@@ -46,14 +54,13 @@ values making up each of the UTF-8 values (see \fref{tab:utf8-rule-values}).
     Section sign (§) & U+00A7 & 0xC2 0xA7 & $194$ $167$ \\ \hline
   \end{tabular}
 
-  \caption{Table of UTF-8 and hex values of \texttt{£} and \texttt{§}}
+  \caption{Table of UTF-8, hex and decimal values of \texttt{£} and \texttt{§}}
   \label{tab:utf8-rule-values}
 \end{table}
 
-As we are using the internal SML-Lex position feature \texttt{yypos} we have to
-decrement it by one each time a transformer or meta pattern is encountered as it
-is counted as two characters, where it actually is just one (composite)
-character.
+As we are using the internal lexer position \texttt{yypos} we have to decrement
+it by one each time a transformer or meta pattern is encountered as it is
+counted as two characters, where it actually is just one composite character.
 
 
 %%% Local Variables: 
