@@ -10,7 +10,7 @@ AST gotten from parsing that particular file (MLB or SML).
 The lex and yacc files for the MLB parser are heavily inspired by MLton's MLB
 parser.
 
-\subsection{SML and rules}
+\subsection{SML and rule files}
 
 The SML and rule parser shares the same AST as to make it easier for the
 matching process later on. This means that the AST is extended with some rule
@@ -25,7 +25,7 @@ As of this writing the rule parser only supports a subset of SML expressions and
 patterns. The rule parser extends upon the SML parser adding a \ttt{ruleProgram}
 non terminal as the first rule (no \ttt{\%start} symbol is defined). We have
 defined \ttt{spat} as \ttt{pat} and \ttt{sexp} as \ttt{exp}, where all the
-extensions introduced by \synth{spat} and \synth{sexp} are added directly to the
+extensions introduced by \synt{spat} and \synt{sexp} are added directly to the
 \ttt{pat} and \ttt{exp} non terminals. Currently exceptions and type annotations
 are commented out for simplicity.
 

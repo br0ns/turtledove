@@ -1,0 +1,60 @@
+\section{Abstract Syntax Tree}
+
+All the parsers implement the design idea (see section XX \fixme{ref to design})
+of only having one data type for the possible nodes in the AST. 
+
+The MLB and SML AST is defined as a tree of wrapped nodes. We recall that the
+wrap type is a record with a left, right and node field, where the left and
+right fields are of the same type:
+
+\begin{sml}
+signature Wrap =
+sig
+  type ('a, 'b) t = {node: 'a, left: 'b, right: 'b}
+  ...
+end
+\end{sml}
+
+The node field stays the same for both AST's but the type of the left and right
+fields change over time as the AST is resolved or transformed by tools.
+
+The MLB parser returns unit in the left and right wrap fields and the SML parser
+returns the nodes left and right integer position in the source code as the left
+and right wrap fields respectively.
+
+Right now the left and right fields of the MLB AST are not used (only set to
+unit), but the idea is that the environment, as it looks prior to the SML or MLB
+file, should be saved such that if the file changes we only need to re parse the
+changed part and can then use the environment as it looked before this
+file. This way we don't need to re parse the whole MLB file (most likely
+including a re parse of the basis library). This has however not been implement
+as of this writing (see \fref{sec:future-work} for discussion about space issues
+where this could help out).
+
+\subsection{Resolving}
+
+The two implemented resolvers are working purely on the SML AST and they share
+the same idea of the left field being how it all looks before the node and the
+right is what the node contributes/changes.
+
+\subsection{Infix resolving}
+
+The infix resolver adds an infix basis to every node and changes all
+\ttt{Exp_FlatApp} and \ttt{Pat_FlagApp} to \ttt{Exp_App} and \ttt{Pat_app}
+respectively. The right hand infix basis is always empty unless the node is an infix
+declaration.
+
+The infix basis is a dictionary of variable names to their fixity status (left,
+right or nonfix).
+
+\subsection{Environment resolving}
+
+\fixme{insert brief description of what is storred and the unique numberings}
+
+
+ 
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End: 
