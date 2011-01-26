@@ -1,0 +1,16 @@
+Normalising and rewriting: foo.sml
+foo(34765, 34765, Val)
+1
+Exp_App
+  1 Exp_Var foo(34765, 34765, Val)
+  2 Exp_Var xs(34767, 34767, Val)
+Exp_App
+  1 Exp_Var foo(34765, 34765, Val)
+  2 Exp_Var xs(34767, 34767, Val)
+foo
+Before:
+fun foo nil = nil
+  | foo (x :: xs) = x + 1 :: foo xs
+
+After:
+fun foo xs = map (fn x => x + 1) xs

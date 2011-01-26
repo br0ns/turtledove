@@ -1,0 +1,33 @@
+Normalising: foo.sml
+Parsing mlb/sml: 
+  User: 0.488, System: 0.212, Total: 0.700
+Resolving: 
+  User: 4.872, System: 0.660, Total: 5.532
+Normalizing
+  nil = nil
+  (x :: xs) = x + 1 :: foo xs
+After elimination:
+  nil = nil
+  (x :: xs) = x + 1 :: foo xs
+Generalising
+  nil = nil
+becomes
+  x = x
+Now have
+  x = x
+
+Generalising
+  (x :: xs) = x + 1 :: foo xs
+becomes
+  (x :: xs) = x + 1 :: foo xs
+Now have
+  (x :: xs) = x + 1 :: foo xs
+  x = x
+
+Before:
+fun foo nil = nil
+  | foo (x :: xs) = x + 1 :: foo xs
+
+After:
+fun foo (x :: xs) = x + 1 :: foo xs
+  | foo x = x

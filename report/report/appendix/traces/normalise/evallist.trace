@@ -1,8 +1,8 @@
 Normalising: evallist.sml
 Parsing mlb/sml: 
-  User: 0.480, System: 0.232, Total: 0.712
+  User: 0.528, System: 0.168, Total: 0.696
 Resolving: 
-  User: 5.008, System: 0.708, Total: 5.716
+  User: 4.904, System: 0.696, Total: 5.600
 Normalizing
   (f :: fs, v) = f v :: evallist (fs, v)
   ([], _) = []
