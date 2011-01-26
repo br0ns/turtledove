@@ -69,8 +69,8 @@ fun rewriteMap (nill, cons, mapp) self ((ps1, e1) :: (ps2, e2) :: cs) =
             many ps
           end
     in
-      case (this e1, children e1, this e2) of
-        (Exp_App, [e1, e2], Exp_Var v1) =>
+      case (this e1, children e1) of
+        (Exp_App, [e1, e2]) =>
         (case (this e1, this e2, children e2) of
            (Exp_Var v2, Exp_Tuple, [e1, e2]) =>
            if (* isNil v1 andalso *) isCons v2 then
