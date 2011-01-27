@@ -1,15 +1,10 @@
 \subsection{\textsf{map}}
-
-\fixme{We should properly introduce where these exams and assignments orriginate
-  from, i.e. ``Introduction to Programming''}
-
 \begin{example}[Simple \textsf{map}-instance]\
   \label{ex:map-instance-foo}\\
-  \noindent
-  foo \fixme{}
+  A short warming up example.
   \begin{center}
     \begin{tabular}{|l|l|}
-      \hline \textbf{Original function} 
+      \hline \textbf{Original function}
       & \textbf{Normalised function}
       \footnotesize{(see \fref{tr:trace-normalise-foo})}
       \\ \hline
@@ -25,69 +20,48 @@ fun foo (x :: xs) = x + 1 :: foo xs
       \\ \hline
     \end{tabular}
   \end{center}
+  The second clause is normalised so we need to use the rule \textsf{map$_\textsf{b}$}.
 
-  \noindent
-  There is not much the normalisation changes here other than the order of the
-  clauses as \ttt{x :: xs} is more specific than \ttt{nil}
-  
-  We have the following scheme instance of the \textsf{map} rule for the
-  normalised \ttt{foo} function
-  
+  The rewriting rules succeeds with the environments
   \begin{center}
     \begin{tabular}{c | Mr @{} Ml Mr @{} Ml Mr @{} Ml !{\hspace{3em}} Mr @{} Ml}
-      \textbf{Clause} 
+      \textbf{Clause}
       & \multicolumn{6}{c !{\hspace{3em}}}{\textbf{Metapatterns/-variables}}
-      & \multicolumn{2}{c}{\textbf{Transformers}} 
+      & \multicolumn{2}{c}{\textbf{Transformers}}
       \\ \hline
       \#1
-      &\mathcal{C} \mathrel{} & \mapsto \diamond 
-      & \ol{x} \mathrel{} & \mapsto \ttt{x} 
-      & \ol{xs} \mathrel{} & \mapsto \ttt{xs} 
-      & \mathbb{D}\ a \mathrel{} & = a\ \ttt{+ 1}
+      &\mathcal{C} \mathrel{} & \mapsto \diamond_1
+      & \ol{x} \mathrel{} & \mapsto \ttt{x}
+      & &
+      & \mathbb{D} \mathrel{} & = (\ttt{x}, \mathsml{x + 1})
       \\
       % same clause
-      & \ttt{self} \mathrel{} & \mapsto \ttt{foo}
+      & \textsf{self} \mathrel{} & \mapsto (\ttt{foo}, 1)
       &&
       &&
       &&
       \\ \hline
       \#2
-      & \mathcal{D} \mathrel{} & \mapsto \ttt{nil}
       &&
-      && 
+      &&
+      &&
       &&
       \\
     \end{tabular}
   \end{center}
-  
-  \noindent
-  and thus it can be rewritten with the following
- 
-  \begin{eqnarray*}[c]
-    \mathcal{C}[\ol{xs}]  -> \mathcal{C}[\ttt{xs}] -> \kappa{(\ttt{xs})} -> \ttt{xs}
-    \qquad\quad
-    \mathcal{C}[\ol{m}] -> \kappa{(\ol{m})} -> \ttt{a}^{(\dag)} 
-    \\ 
-    \mathbb{D}\ \ttt{a} -> \ttt{a + 1}
-    \\
-    \text{\small{$(\dag)$} for \ttt{a} being a free variable in the environment}
-  \end{eqnarray*}
-  
-  \noindent
-  to
-  
+  under which
   \begin{center}
     \begin{tabular}{|l|}
       \hline
-      \textbf{Rewritten function} 
+      \textbf{Rewritten function}
       \footnotesize{(see \fref{tr:trace-rewrite-map-foo})}
       \\ \hline
       \begin{sml}
-fun foo xs = map (fn a => a + 1) xs
+fun foo xs = map (fn x => x + 1) xs
       \end{sml} \\ \hline
     \end{tabular}
   \end{center}
-
+  is a result.
 \end{example}
 
 \begin{example}[Simple \textsf{map}-instance with extra argument]\
@@ -98,52 +72,47 @@ fun foo xs = map (fn a => a + 1) xs
 
   The below \ttt{evallist} function was written as part of this group assignment
   by four students.
-  
   \begin{center}
     \begin{tabular}{|l|l|}
       \hline
-      \textbf{Original function} 
-      & 
+      \textbf{Original function}
+      &
       \textbf{Normalised function}
       \footnotesize{(see \fref{tr:trace-normalise-evallist})}
       \\ \hline
       \begin{sml}
-fun evallist (f::fs, v) = 
-      f v :: evallist(fs, v) 
+fun evallist (f :: fs, v) =
+      f v :: evallist(fs, v)
   | evallist ([], _) = []
       \end{sml}
       &
       \begin{sml}
-fun evallist (f :: fs, v) = 
+fun evallist (f :: fs, v) =
       f v :: evallist (fs, v)
   | evallist y = nil
-      \end{sml} 
+      \end{sml}
       \\ \hline
     \end{tabular}
   \end{center}
+  Generalisation demands that the largest possible subpattern is generalised
+  (see \fref{def:gener-patt}) which is why the \ttt{nil} on the right hand side
+  is kept. That means that this time we need the \textsf{map$_\textsf{a}$} rule.
 
-  The normalisation didn't rearrange the order of the clauses as they already
-  were in order of most specific due to the wildcard in the pair of the second
-  clause. It however did generalise the pair of the second clause to be a
-  variable.
-  
-  We have the following scheme instance of the \textsf{map} rule for the
-  normalised \ttt{foo} function
-  
+  We get these environments:
   \begin{center}
     \begin{tabular}{c | Mr @{} Ml Mr @{} Ml Mr @{} Ml !{\hspace{3em}} Mr @{} Ml}
-      \textbf{Clause} 
+      \textbf{Clause}
       & \multicolumn{6}{c !{\hspace{3em}}}{\textbf{Metapatterns/-variables}}
-      & \multicolumn{2}{c}{\textbf{Transformers}} 
+      & \multicolumn{2}{c}{\textbf{Transformers}}
       \\ \hline
       \#1
-      &\mathcal{C} \mathrel{} & \mapsto (\diamond, \ttt{v})
-      & \ol{x} \mathrel{} & \mapsto \ttt{f} 
-      & \ol{xs} \mathrel{} & \mapsto \ttt{fs} 
-      & \mathbb{D}\ (a, \ttt{v}) \mathrel{} & = a\ \ttt{v}
+      &\mathcal{C} \mathrel{} & \mapsto \ttt{($\diamond_1$, v)}
+      & \ol{x} \mathrel{} & \mapsto \ttt{f}
+      & &
+      & \mathbb{D} \mathrel{} & = (\ttt{(f, v)}, \ttt{f v})
       \\
       % same clause
-      & \ttt{self} \mathrel{} & \mapsto \ttt{evallist}
+      & \textsf{self} \mathrel{} & \mapsto (\ttt{evallist}, 1)
       &&
       &&
       &&
@@ -156,14 +125,11 @@ fun evallist (f :: fs, v) =
       \\
     \end{tabular}
   \end{center}
-  
-  \noindent
-  and thus it can be rewritten to
-  
+  and we get the result
   \begin{center}
     \begin{tabular}{|l|}
       \hline
-      \textbf{Rewritten function} 
+      \textbf{Rewritten function}
       \footnotesize{(see \fref{tr:trace-rewrite-map-evallist})}
       \\ \hline
       \begin{sml}
@@ -171,116 +137,111 @@ fun evallist (fs, v) = map (fn f => f v) fs
       \end{sml} \\ \hline
     \end{tabular}
   \end{center}
-  
 \end{example}
 
 \begin{example}[Advanced \textsf{map}-instance]\
   \label{ex:map-instance-collatz}\\
-  \noindent
   From the exam set of 2009, the students was asked to take the below
   function and then rewrite it using higher order functions. Since the recursion
   is inside the \ttt{if}-statement, it will not directly match the
   \textsf{map}-rule. To be able to match it we need to modify it slightly such
-  that the recursion is outside the \ttt{if}-statement. 
+  that the recursion is outside the \ttt{if}-statement.
 
   \paragraph{Note.} This modification could just as well have been done by
-  a rewriting rule. 
-
-  \fixme{Maybe some reference to the simp set of rewriting rules and how they in
-    general could help the original rewriting rules matching more code}
-
+  a rewriting rule (on expressions).
   \begin{center}
     \begin{tabular}{|l|l|}
       \hline
-      \textbf{Original function} 
-      & 
+      \textbf{Original function}
+      &
       % Empty cell
       \\ \hline
       \begin{sml}
 fun collatz [] = []
-  | collatz (x :: xs) = 
-      if x mod 2 = 0 then 
+  | collatz (x :: xs) =
+      if x mod 2 = 0 then
         x div 2 :: collatz xs
-      else 
-        3*x + 1 :: collatz xs
-      \end{sml}  
-      & 
+      else
+        3 * x + 1 :: collatz xs
+      \end{sml}
+      &
       % Empty cell
       \\ \hline
       % New row
-      \textbf{Modified function} 
+      \textbf{Modified function}
       &
       \textbf{Normalised function}
       \footnotesize{(see \fref{tr:trace-normalise-collatz})}
       \\ \hline
       \begin{sml}
 fun collatz [] = []
-  | collatz (x :: xs) = 
-      (if x mod 2 = 0 then 
-       x div 2 else 3*x + 1)
-      :: collatz xs        
+  | collatz (x :: xs) =
+      (if x mod 2 = 0 then
+       x div 2 else 3 * x + 1)
+      :: collatz xs
       \end{sml}
       &
       \begin{sml}
-fun collatz (x :: xs) = 
+fun collatz (x :: xs) =
       (if x mod 2 = 0 then
-       x div 2 else 3 * x + 1) 
+       x div 2 else 3 * x + 1)
       :: collatz xs
-  | collatz x = x        
-      \end{sml} 
+  | collatz x = x
+      \end{sml}
       \\ \hline
     \end{tabular}
   \end{center}
-
-  \noindent
-  We have the following scheme instance of the \textsf{map} rule for the
-  normalised \ttt{collatz} function
-  
+  The \textsf{map$_\textsf{b}$} rule succeeds withe the following environments:
   \begin{center}
     \begin{tabular}{c | Mr @{} Ml Mr @{} Ml Mr @{} Ml !{\hspace{3em}} Mr @{} Ml}
-      \textbf{Clause} 
+      \textbf{Clause}
       & \multicolumn{6}{c !{\hspace{3em}}}{\textbf{Metapatterns/-variables}}
-      & \multicolumn{2}{c}{\textbf{Transformers}} 
+      & \multicolumn{2}{c}{\textbf{Transformers}}
       \\ \hline
       \#1
-      &\mathcal{C} \mathrel{} & \mapsto \diamond
-      & \ol{x} \mathrel{} & \mapsto \ttt{x} 
-      & \ol{xs} \mathrel{} & \mapsto \ttt{xs} 
-      & \multirow{3}{*}{$\mathbb{D}\ a =\ $}
-      & \ttt{if $a$ mod 2 = 0}
+      &\mathcal{C} \mathrel{} & \mapsto \diamond_1
+      & \ol{x} \mathrel{} & \mapsto \ttt{x}
+      & &
+      & \multirow{3}{*}{$\mathbb{D}\mathrel{} =$}
+      & \multirow{3}{*}{
+        $\left(\ttt{x},\
+        \begin{tabular}{>{\ttfamily}l}
+          if x mod 2 = 0\\
+          then x div 2\\
+          else 3 * x + 1
+        \end{tabular}
+        \right)$
+      }
       \\
       % same clause
-      & \ttt{self} \mathrel{} & \mapsto \ttt{collatz}
+      & \textsf{self} \mathrel{} & \mapsto (\ttt{collatz}, 1)
       &&
       &&
-      & & \ttt{then $a$ div 2}
+      &&
       \\
       % same clause
       &&
       &&
       &&
-      & & \ttt{else 3 * $a$ + 1}
+      & & %
       \\ \hline
       \#2
       & \mathcal{D} \mathrel{} & \mapsto \ttt{x}
       &&
-      && 
+      &&
       &&
       \\
     \end{tabular}
   \end{center}
-  
-  \noindent
-  and thus it can be rewritten to
-  
+  and we get the result
   \begin{center}
     \begin{tabular}{|l|}
       \hline
-      \textbf{Rewritten function} 
+      \textbf{Rewritten function}
       \footnotesize{(see \fref{tr:trace-rewrite-map-collatz})}
       \\ \hline
       \begin{sml}
-fun collatz xs = 
+fun collatz xs =
       map (fn x => if x mod 2 = 0 then
                      x div 2
                    else
@@ -293,93 +254,92 @@ fun collatz xs =
 
 \begin{example}[Advanced \textsf{map}-instance with multiple arguments]\
   \label{ex:map-instance-mapfil}\\
-  \noindent
   One of the assignments from the 2008 exam set, which however didn't end up in
   the final exam set, was to create a function \ttt{mapfil} that goes through a
   list and applies a function \ttt{f} on each element if the predicate function \ttt{p}
   is true and leaves the element unchanged if false.
 
   The \ttt{mapfil} function below has been created by us and by the same
-  reasoning as the \ttt{collatz} function (see \ref{ex:map-instance-collats}) we
-  have explicitly factored out the recursive call so it will match.
+  reasoning as the \ttt{collatz} function (see \fref{ex:map-instance-collatz}) we
+  have explicitly factored out the recursive call.
 
 
   \begin{center}
     \begin{tabular}{|l|l|}
       \hline
-      \textbf{Original function} 
-      & 
+      \textbf{Original function}
+      &
       \textbf{Normalised function}
       \footnotesize{(see \fref{tr:trace-normalise-mapfil})}
       \\ \hline
       \begin{sml}
 fun mapfil (f, p, []) = []
-  | mapfil (f, p, (x::xs)) = 
-      (if p x then f x else x) 
-      :: mapfil(f, p, xs)
+  | mapfil (f, p, x :: xs) =
+      (if p x then f x else x)
+      :: mapfil (f, p, xs)
       \end{sml}
       &
       \begin{sml}
-fun mapfil (f, p, (x :: xs)) = 
-      (if p x then f x else x) 
+fun mapfil (f, p, x :: xs) =
+      (if p x then f x else x)
       :: mapfil (f, p, xs)
   | mapfil x = nil
-      \end{sml} 
+      \end{sml}
       \\ \hline
     \end{tabular}
   \end{center}
-
-  
-  \noindent
-  We have the following scheme instance of the \textsf{map} rule for the
-  normalised \ttt{mapfil} function
-  
+  This is an instance of the \textsf{map$_\textsf{a}$} rule. We get the environments
   \begin{center}
     \begin{tabular}{c | Mr @{} Ml Mr @{} Ml Mr @{} Ml !{\hspace{3em}} Mr @{} Ml}
-      \textbf{Clause} 
+      \textbf{Clause}
       & \multicolumn{6}{c !{\hspace{3em}}}{\textbf{Metapatterns/-variables}}
-      & \multicolumn{2}{c}{\textbf{Transformers}} 
+      & \multicolumn{2}{c}{\textbf{Transformers}}
       \\ \hline
       \#1
-      &\mathcal{C} \mathrel{} & \mapsto (\ttt{f},\ \ttt{p},\ \diamond)
-      & \ol{x} \mathrel{} & \mapsto \ttt{x} 
-      & \ol{xs} \mathrel{} & \mapsto \ttt{xs} 
-      & \multirow{3}{*}{$\mathbb{D}\ (\ttt{f},\ \ttt{p},\ a) =\ $}
-      & \ttt{if p $a$}
+      &\mathcal{C} \mathrel{} & \mapsto \ttt{(f, p, $\diamond_1$)}
+      & \ol{x} \mathrel{} & \mapsto \ttt{x}
+      & &
+      & \multirow{3}{*}{$\mathbb{D}\mathrel{} =$}
+      & \multirow{3}{*}{
+        $\left(\ttt{(f, p, x)},\
+        \begin{tabular}{>{\ttfamily}l}
+          if p x\\
+          then f x\\
+          else x
+        \end{tabular}
+        \right)$
+      }
       \\
       % same clause
-      & \ttt{self} \mathrel{} & \mapsto \ttt{collatz}
+      & \textsf{self} \mathrel{} & \mapsto (\ttt{collatz}, 1)
       &&
       &&
-      & & \ttt{then f $a$}
+      &&
       \\
       % same clause
       &&
       &&
       &&
-      & & \ttt{else $a$}
+      & & %
       \\ \hline
       \#2
       & \mathcal{D} \mathrel{} & \mapsto \ttt{x}
       &&
-      && 
+      &&
       &&
       \\
     \end{tabular}
   \end{center}
-  
-  \noindent
-  and thus it can be rewritten to
-  
+  and we get the result
   \begin{center}
     \begin{tabular}{|l|}
       \hline
-      \textbf{Rewritten function} 
+      \textbf{Rewritten function}
       \footnotesize{(see \fref{tr:trace-rewrite-map-mapfil})}
       \\ \hline
       \begin{sml}
-fun mapfil (f,p,xs) => map (fn x => if p x then f x else x) xs
-      \end{sml} \\ \hline      
+fun mapfil (f, p, xs) => map (fn x => if p x then f x else x) xs
+      \end{sml} \\ \hline
     \end{tabular}
   \end{center}
 \end{example}
