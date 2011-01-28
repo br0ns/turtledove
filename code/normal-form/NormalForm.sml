@@ -787,12 +787,16 @@ fun convert basis cs =
             fun loop nil cs' = cs'
               | loop (c :: cs) cs' =
                 if cover cs' then
-                  (clauses "These are a cover:" $ rev cs' ;
-                   clauses "Dropping:" $ rev (c :: cs) ;
+                  ((Flags.get "Verbose" andalso
+                   (clauses "These are a cover:" $ rev cs' ;
+                    clauses "Dropping:" $ rev (c :: cs) ;
+                    true));
                    cs'
                   )
                 else if shadowed c cs' then
-                  (clause "This is shadowed:" c ;
+                  ((Flags.get "Verbose" andalso
+                    (clause "This is shadowed:" c ;
+                    true));
                    loop cs cs'
                   )
                 else
@@ -816,7 +820,9 @@ fun convert basis cs =
                   (* Case 1 *)
                   (_, SOME EQUAL) =>
                   if eq c' c'' then
-                    (clause "Deleted through unification:" c'' ;
+                    ((Flags.get "Verbose" andalso
+                      (clause "Deleted through unification:" c'' ;
+                       true));
                      loop cs (csa, csb)
                     )
                   else
