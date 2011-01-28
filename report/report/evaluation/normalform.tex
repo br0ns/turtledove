@@ -1,6 +1,20 @@
 \section{Normal form}
 \label{sec:eval-normal-form}
 
+The implemented \ttt{NormalForm} application heavily relies on the SML pretty
+printer for printing the AST. Since the pretty printer has only been partly
+implemented the \ttt{NormalForm} application is limited by this. The main
+limitations of the pretty printer right now are data type declarations, signatures,
+structures and functors. The biggest problem with this is that the application
+can't normalise a function that uses data types. Actually the normalisation
+procedure works just fine, but when the application tries to pretty print the
+original and normalised code it throws an exception.
+
+We give some examples of the output produced by the \ttt{NormalForm} application
+including comments. More traces of the functions mentioned in
+\fref{chap:concrete-examples} can bee seen in \fref{sec:trace-normalform}.
+
+\input{evaluation/examples/normalform}
 
 
 %%% Local Variables: 

@@ -1,0 +1,393 @@
+\subsection{Examples}
+\label{sec:eval-normalform-examples}
+
+
+\begin{example}[Complex function getting simpler -- f]\
+  \label{ex:eval-normal-example-f}\\
+  
+  \begin{center}
+    \begin{tabular}{|l|}
+      \hline
+      \textbf{Original function}
+      \\\hline
+      \begin{sml}
+fun f (SOME (SOME (a, b), c)) = SOME (c, SOME (a, b))
+  | f (SOME (a, b)) = SOME (b, a)
+  | f NONE = NONE
+  | f x = x
+  | f (SOME (a, SOME (b, c))) = SOME (SOME (c, b), a)        
+      \end{sml}
+      \\\hline
+    \end{tabular}
+  \end{center}
+  
+  This rather complex function, that switches the pair $(a,\ b)$ to $(b,\ a)$ inside a
+  \ttt{SOME} constructor, can be drastically simplified.
+  
+  \begin{narrow}{-3em}{0em}
+    \setlength{\linewidth}{1.2\linewidth}
+    \footnotesize
+    
+    \begin{multicols}{2}           
+      \begin{sml}
+Normalising: f.sml
+Parsing mlb/sml: 
+  User: 0.536, System: 0.196, Total: 0.732
+Resolving: 
+  User: 5.100, System: 0.660, Total: 5.760
+(@\cmt{The normalisation of f begins}@)
+Normalizing
+  (SOME (SOME (a, b), c)) = SOME (c, SOME (a, b))
+  (SOME (a, b)) = SOME (b, a)
+  NONE = NONE
+  x = x
+  (SOME (a, SOME (b, c))) = SOME (SOME (c, b), a)
+(@\cmt{These tree clauses forms a cover}@)
+These are a cover:
+  (SOME (SOME (a, b), c)) = SOME (c, SOME (a, b))
+  (SOME (a, b)) = SOME (b, a)
+  NONE = NONE
+(@\cmt{So these can be dropped}@)
+Dropping:
+  (SOME (a, SOME (b, c))) = SOME (SOME (c, b), a)
+  x = x
+(@\cmt{and we end up with these}@)
+After elimination:
+  (SOME (SOME (a, b), c)) = SOME (c, SOME (a, b))
+  (SOME (a, b)) = SOME (b, a)
+  NONE = NONE
+(@\cmt{The generalisation process is bottom up, thus it starts with the 3rd clause}@)
+Generalising
+  NONE = NONE
+(@\cmt{Which can be generalised to}@)
+becomes
+  x = x
+Now have
+  x = x
+
+(@\cmt{Generalisation of the 2nd clause}@)
+Generalising
+  (SOME (a, b)) = SOME (b, a)
+(@\cmt{which can't be generalised}@)
+becomes
+  (SOME (a, b)) = SOME (b, a)
+Now have
+  (SOME (a, b)) = SOME (b, a)
+  x = x
+
+(@\cmt{Generalisation of the 1st clause}@)
+Generalising
+  (SOME (SOME (a, b), c)) = SOME (c, SOME (a, b))
+(@\cmt{Which can be generalised to}@)
+becomes
+  (SOME (d, c)) = SOME (c, d)
+(@\cmt{And now it can be removed as it unifies with}@)
+Deleted through unification:
+  (SOME (a, b)) = SOME (b, a)
+(@\cmt{We end up with these two clauses as the result}@)
+Now have
+  (SOME (d, c)) = SOME (c, d)
+  x = x
+
+Before:
+fun f (SOME (SOME (a, b), c)) = SOME (c, SOME (a, b))
+  | f (SOME (a, b)) = SOME (b, a)
+  | f NONE = NONE
+  | f x = x
+  | f (SOME (a, SOME (b, c))) = SOME (SOME (c, b), a)
+
+After:
+fun f (SOME (d, c)) = SOME (c, d)
+  | f x = x      
+    \end{sml}
+    \end{multicols}
+  \end{narrow}
+\end{example}
+
+\begin{example}[]\
+  \label{ex:eval-normal-example-flipodd}\\
+  
+  \begin{center}
+    \begin{tabular}{|l|}
+      \hline
+      \textbf{Original functions}
+      \\\hline
+      \begin{sml}
+fun flip (a, b) = (b, a)
+fun flipodd ((a, b) :: (c, d) :: xs) = (a, b) :: flip (c, d) 
+                                              :: flipodd xs
+  | flipodd [(a, b)] = [(a, b)]
+  | flipodd [] = []
+  | flipodd _ = nil        
+      \end{sml}
+      \\\hline
+    \end{tabular}
+  \end{center}
+  
+  some text
+  
+  \begin{narrow}{-3em}{0em}
+    \setlength{\linewidth}{1.2\linewidth}
+    \footnotesize
+    
+    \begin{multicols}{2}           
+      \begin{sml}
+Normalising: flipodd.sml
+Parsing mlb/sml: 
+  User: 0.508, System: 0.224, Total: 0.732
+Resolving: 
+  User: 5.188, System: 0.612, Total: 5.800
+(@\cmt{First the \ttt{flip} function is normalised}@)
+Normalizing
+  (a, b) = (b, a)
+After elimination:
+  (a, b) = (b, a)
+Generalising
+  (a, b) = (b, a)
+becomes
+  (a, b) = (b, a)
+Now have
+  (a, b) = (b, a)
+
+
+(@\cmt{Then the \ttt{flipodd} function is normalised}@)
+Normalizing
+  ((a, b) :: (c, d) :: xs) = (a, b) :: flip (c, d) 
+                                    :: flipodd xs
+  [(a, b)] = [(a, b)]
+  [] = []
+  _ = nil
+These are a cover:
+  ((a, b) :: (c, d) :: xs) = (a, b) :: flip (c, d) 
+                                    :: flipodd xs
+  ((a, b) :: nil) = ((a, b) :: nil)
+  (nil) = (nil)
+Dropping:
+  x = nil
+After elimination:
+  ((a, b) :: (c, d) :: xs) = (a, b) :: flip (c, d) 
+                                    :: flipodd xs
+  ((a, b) :: nil) = ((a, b) :: nil)
+  (nil) = (nil)
+Generalising
+  (nil) = (nil)
+becomes
+  x = x
+Now have
+  x = x
+
+Generalising
+  ((a, b) :: nil) = ((a, b) :: nil)
+becomes
+  x = x
+Deleted through unification:
+  x = x
+Now have
+  x = x
+
+Generalising
+  ((a, b) :: (c, d) :: xs) = (a, b) :: flip (c, d) 
+                                    :: flipodd xs
+becomes
+  (e :: h :: xs) = e :: flip h :: flipodd xs
+Now have
+  (e :: h :: xs) = e :: flip h :: flipodd xs
+  x = x
+
+Before:
+fun flip (a, b) = (b, a)
+fun flipodd ((a, b) :: (c, d) :: xs) = (a, b) 
+                                       :: flip (c, d) 
+                                       :: flipodd xs
+  | flipodd [(a, b)] = [(a, b)]
+  | flipodd [] = []
+  | flipodd _ = nil
+
+After:
+fun flip (a, b) = (b, a)
+fun flipodd (e :: h :: xs) = e :: flip h 
+                               :: flipodd xs
+  | flipodd x = x      
+    \end{sml}
+    \end{multicols}
+  \end{narrow}
+\end{example}
+
+\begin{example}[]\
+  \label{ex:eval-normal-example-g}\\
+  
+  \begin{center}
+    \begin{tabular}{|l|}
+      \hline
+      \textbf{Original functions}
+      \\\hline
+      \begin{sml}
+fun g (NONE, _) = NONE
+  | g (SOME x, _) = SOME x
+
+fun g (SOME x, _) = SOME x
+  | g (NONE, _) = NONE
+
+fun g (NONE, _) = NONE
+  | g _ = NONE        
+      \end{sml}
+      \\\hline
+    \end{tabular}
+  \end{center}
+  
+  some text\fixme{Explain the why this is the same even though one might think
+    this could be generalised even further}
+  
+  \begin{narrow}{-3em}{0em}
+    \setlength{\linewidth}{1.2\linewidth}
+    \footnotesize
+    
+    \begin{multicols}{2}           
+      \begin{sml}
+Normalising: g.sml
+Parsing mlb/sml: 
+  User: 0.500, System: 0.224, Total: 0.724
+Resolving: 
+  User: 5.068, System: 0.648, Total: 5.716
+Normalizing
+  (NONE, _) = NONE
+  (SOME x, _) = SOME x
+After elimination:
+  (NONE, x) = NONE
+  (SOME x, y) = SOME x
+Generalising
+  (NONE, x) = NONE
+becomes
+  y = NONE
+Now have
+  y = NONE
+
+Generalising
+  (SOME x, y) = SOME x
+becomes
+  (a, y) = a
+Now have
+  (a, y) = a
+  y = NONE
+
+Normalizing
+  (SOME x, _) = SOME x
+  (NONE, _) = NONE
+After elimination:
+  (SOME x, y) = SOME x
+  (NONE, x) = NONE
+Generalising
+  (NONE, x) = NONE
+becomes
+  y = NONE
+Now have
+  y = NONE
+
+Generalising
+  (SOME x, y) = SOME x
+becomes
+  (a, y) = a
+Now have
+  (a, y) = a
+  y = NONE
+
+Normalizing
+  (NONE, _) = NONE
+  _ = NONE
+After elimination:
+  (NONE, x) = NONE
+  x = NONE
+Generalising
+  x = NONE
+becomes
+  x = NONE
+Now have
+  x = NONE
+
+Generalising
+  (NONE, x) = NONE
+becomes
+  y = NONE
+Deleted through unification:
+  x = NONE
+Now have
+  y = NONE
+
+Before:
+fun g1 (NONE, _) = NONE
+  | g1 (SOME x, _) = SOME x
+fun g2 (SOME x, _) = SOME x
+  | g2 (NONE, _) = NONE
+fun g3 (NONE, _) = NONE
+  | g3 _ = NONE
+
+After:
+fun g1 (a, y) = a
+  | g1 y = NONE
+fun g2 (a, y) = a
+  | g2 y = NONE
+fun g3 y = NONE
+      \end{sml}
+    \end{multicols}
+  \end{narrow}
+\end{example}
+
+\begin{example}[Not exhaustive function -- bastard]\
+  \label{ex:eval-normal-example-bastard}\\
+
+  \begin{center}  
+  \begin{tabular}{|l|}
+    \hline
+    \textbf{Original function}
+    \\ \hline
+\begin{sml}
+fun bastard (xs as x :: _, y :: ys) = (x, y) :: bastard (xs, ys)
+  | bastard (_, nil) = nil    
+\end{sml}
+    \\\hline    
+  \end{tabular}
+  \end{center}
+
+  As seen below this function is not normalised, as
+  the \ttt{bastard} function is not exhaustive.
+
+  \begin{narrow}{-3em}{0em}
+    \setlength{\linewidth}{1.2\linewidth}
+    \footnotesize
+    
+    \begin{multicols}{2}           
+      \begin{sml}
+Normalising: bastard.sml
+Parsing mlb/sml: 
+  User: 0.496, System: 0.212, Total: 0.708
+Resolving: 
+  User: 4.892, System: 0.696, Total: 5.588
+(@\cmt{Normalisation starts}@)
+Normalizing
+  (xs as x :: _, y :: ys) = (x, y) :: bastard (xs, ys)
+  (_, nil) = nil
+(@\cmt{But terminates as it is not exhaustive}@)
+Match is not exhaustive
+  (x :: z, y :: ys) = (x, y) :: bastard ((x :: z), ys)
+  (x, nil) = nil
+(@\cmt{Thus the same before and after code are written}@)
+Before:
+fun bastard (xs as x :: _, y :: ys) = (x, y) 
+                                      :: bastard (xs, ys)
+  | bastard (_, nil) = nil
+
+After:
+fun bastard (xs as x :: _, y :: ys) = (x, y) 
+                                      :: bastard (xs, ys)
+  | bastard (_, nil) = nil    
+      \end{sml}
+    \end{multicols}
+  \end{narrow}
+\end{example}
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../../report"
+%%% End: 
