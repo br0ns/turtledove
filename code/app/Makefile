@@ -4,7 +4,10 @@ all : Todo Size SourceExplorer NormalForm Rewrite README.html
 .PHONY : clean
 clean: clean-Todo clean-Size clean-SourceExplorer clean-NormalForm clean-Rewrite clean-README
 
-# README
+# README 
+#
+# The README can be converted to html by the markdown tool. The markdown tool
+# ought to be in any sane unix repository.
 
 README.html : README.md
 	markdown README.md > README.html
