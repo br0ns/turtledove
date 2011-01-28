@@ -851,6 +851,14 @@ fun convert basis cs =
 
       val sort = List.sort (fn (ps1, _) => fn (ps2, _) => totalcmp ps1 ps2)
 
+      exception NonExhaustive
+
+      fun checkCover cs =
+          if cover cs then
+            cs
+          else
+            raise NonExhaustive before clauses "Match is not exhaustive" cs
+
       fun var {environment, interface, infixing} name =
           let
             val id = Ident.fromString Fixity.Nonfix name
@@ -870,15 +878,17 @@ fun convert basis cs =
       val cons = var basis "::"
       val nill = var basis "nil"
     in
-      (Flags.get "Verbose" andalso
-       (clauses "Normalizing" cs; true)) ;
-      gen $ sort $ elim $
-          List.map
-          (elimLists cons nill o
-           elimLayers o
-           elimWildcards o
-           elimShortLabels)
-          cs
+      (
+       (Flags.get "Verbose" andalso
+        (clauses "Normalizing" cs; true)) ;
+       gen $ sort $ elim $ checkCover $
+           List.map
+           (elimLists cons nill o
+            elimLayers o
+            elimWildcards o
+            elimShortLabels)
+           cs
+      ) handle NonExhaustive => cs
     end
 
 fun normalize basis t =
@@ -906,17 +916,7 @@ fun normalize basis t =
         Match =>
         let
           val (n, cs) = extract ts
-          val pss = List.map fst cs
-          val cs' =
-              if cover pss then
-                convert basis cs
-              else
-                cs before
-                Layout.println
-                  NONE
-                  $ Layout.\
-                  (Layout.txt "Match is not exhaustive:",
-                   showClauses cs)
+          val cs' = convert basis cs
           val ts' = inject (n, cs')
         in
           join Match ts'
