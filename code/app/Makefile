@@ -1,8 +1,17 @@
 .PHONY: all
-all : Todo Size SourceExplorer NormalForm Rewrite
+all : Todo Size SourceExplorer NormalForm Rewrite README.html
 
 .PHONY : clean
-clean: clean-Todo clean-Size clean-SourceExplorer clean-NormalForm clean-Rewrite
+clean: clean-Todo clean-Size clean-SourceExplorer clean-NormalForm clean-Rewrite clean-README
+
+# README
+
+README.html : README.md
+	markdown README.md > README.html
+
+.PHONY: clean-README
+clean-README :
+	-rm README.html
 
 # Todo
 
