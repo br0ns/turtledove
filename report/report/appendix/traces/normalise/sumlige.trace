@@ -1,20 +1,20 @@
 Normalising: sumlige.sml
 Parsing mlb/sml: 
-  User: 0.480, System: 0.236, Total: 0.716
+  User: 0.260, System: 0.140, Total: 0.400
 Resolving: 
-  User: 4.924, System: 0.680, Total: 5.604
+  User: 3.060, System: 0.540, Total: 3.600
 Normalizing
   [] = 0
-  (x :: xs) = (if x mod 2 = 0 then
-                 x div 2
-               else
-                 0) + sumlige xs
+  (x :: xs) = if x mod 2 = 0 then
+                x div 2 + sumlige xs
+              else
+                sumlige xs
 After elimination:
   (nil) = 0
-  (x :: xs) = (if x mod 2 = 0 then
-                 x div 2
-               else
-                 0) + sumlige xs
+  (x :: xs) = if x mod 2 = 0 then
+                x div 2 + sumlige xs
+              else
+                sumlige xs
 Generalising
   (nil) = 0
 becomes
@@ -23,32 +23,32 @@ Now have
   x = 0
 
 Generalising
-  (x :: xs) = (if x mod 2 = 0 then
-                 x div 2
-               else
-                 0) + sumlige xs
+  (x :: xs) = if x mod 2 = 0 then
+                x div 2 + sumlige xs
+              else
+                sumlige xs
 becomes
-  (x :: xs) = (if x mod 2 = 0 then
-                 x div 2
-               else
-                 0) + sumlige xs
+  (x :: xs) = if x mod 2 = 0 then
+                x div 2 + sumlige xs
+              else
+                sumlige xs
 Now have
-  (x :: xs) = (if x mod 2 = 0 then
-                 x div 2
-               else
-                 0) + sumlige xs
+  (x :: xs) = if x mod 2 = 0 then
+                x div 2 + sumlige xs
+              else
+                sumlige xs
   x = 0
 
 Before:
 fun sumlige [] = 0
-  | sumlige (x :: xs) = (if x mod 2 = 0 then
-                           x div 2
-                         else
-                           0) + sumlige xs
+  | sumlige (x :: xs) = if x mod 2 = 0 then
+                          x div 2 + sumlige xs
+                        else
+                          sumlige xs
 
 After:
-fun sumlige (x :: xs) = (if x mod 2 = 0 then
-                           x div 2
-                         else
-                           0) + sumlige xs
+fun sumlige (x :: xs) = if x mod 2 = 0 then
+                          x div 2 + sumlige xs
+                        else
+                          sumlige xs
   | sumlige x = 0
