@@ -140,13 +140,6 @@ val ast = case find project sml of
                                     ^ Path.file sml 
                                     ^ ") to normalise in the mlb file"
 
-fun isExhaustive (v, cs) =
-    let
-      val pss = List.map fst cs
-    in
-      NormalForm.cover pss
-    end
-
 val ast' = NormalForm.normalize bas ast
 
 local open Layout infix \ ^^ in
