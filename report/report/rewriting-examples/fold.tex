@@ -1,15 +1,14 @@
-\section{Fold}
-
-\begin{example}[...]\
+\section{\textsf{foldl}}
+\begin{example}\
   \label{ex:fold-instance-composelist}\\
   In the 2008 exam set, the students were asked to implement a \ttt{composelist}
-  function which given a list of functions $[f_1, f_2, \ldots, f_n]$ and a value
-  $v$ would compute the result of $f_1(f_2(\ldots(f_n(v))))$.
+  function which given a list of functions \ttt{[$f_1$, $f_2$, $\ldots$, $f_n$]}
+  and a value $v$ would compute the result \ttt{$f_1$($f_2$($\cdots$($f_n\
+    v$)$\cdots$))}.
 
-  We saw that this assignment gave rise for two solutions below that would be
-  desirable to rewrite. The below is student code, hence the questionable choice
-  of variables in function \#2.
-
+  Among all the solutions nearly everyone handed in one very similar to one of
+  the two below. The functions are taken from the students' solutions as-is ---
+  hence the questionable choice of variable names in function \#2.
   \begin{center}
     \begin{tabular}{|l|l|}
       \hline
@@ -18,17 +17,17 @@
       \textbf{Normalised Function \#1}
       \\\hline
 \begin{sml}
-fun composelist [] x = x 
-  | composelist (f :: []) x = f(x) 
-  | composelist (f :: fs) x = 
+fun composelist [] x = x
+  | composelist (f :: []) x = f(x)
+  | composelist (f :: fs) x =
       f(composelist fs x)
 \end{sml}
       &
 \begin{sml}
 fun composelist (f :: []) x = f (x)
-  | composelist (f :: fs) x = 
+  | composelist (f :: fs) x =
       f (composelist fs x)
-  | composelist y x = x        
+  | composelist y x = x
 \end{sml}
       \\\hline
       \textbf{Original Function \#2}
@@ -37,101 +36,72 @@ fun composelist (f :: []) x = f (x)
       \footnotesize{(see \fref{tr:trace-normalise-composelist})}
       \\\hline
 \begin{sml}
-fun composelist [] x = x 
-  | composelist (y::ys) x = 
+fun composelist [] x = x
+  | composelist (y::ys) x =
      y (composelist (ys) x)
 \end{sml}
       &
 \begin{sml}
-fun composelist (y :: ys) x = 
+fun composelist (y :: ys) x =
       y (composelist (ys) x)
   | composelist y x = x
 \end{sml}
       \\\hline
     \end{tabular}
   \end{center}
+  The first version of the \ttt{composelist} function can't be matched any of
+  the \tsf{fold}-rules because the first clause can't be generalised during the
+  conversion to normal form. We discuss how this might be done in
+  \fref{sec:furth-gener}.
 
-  \noindent
-  The first version of the \ttt{composelist} function can't be matched by the
-  any of the \tsf{fold}-rules\footnote{Obviously a rule could be made that would
-    match, but that would kind of defeat the purpose of the system. It should be
-    general enough such that as few rules as possible ought to be defined.} as
-  it has the extra clause trying to specially handle the case where there is
-  exactly one element in the list, which is a typical novice mistake, not to see
-  that the two clauses can be joined (see XXX \fixme{ref to the unification} for
-  why we can't do anything about this).
+  Writing an extra clause (when it is not necessary) for the special case where
+  there is exactly one element in a list is a typical novice mistake.
 
-  There were (luckily) only a small number that used the first approach whereas
-  the second approach was the main way of solving the assignment besides using a
-  right fold.
-
-  As the first approach can't be rewritten with the current rules, we will
-  disregard it in this example and only rewrite the second.
+  The first function can't be rewritten using our rules. The second however can
+  be rewritten using the \textsf{foldr} rule.
   \\
 
   \noindent
-  We have the following scheme instance of the \textsf{foldr} rule for the
-  normalised \ttt{composelist} function \#2
-  
+  The rule succeeds with the following environments.
   \begin{center}
     \begin{tabular}{c | Mr @{} Ml Mr @{} Ml Mr @{} Ml !{\hspace{3em}} Mr @{} Ml}
-      \textbf{Clause} 
+      \textbf{Clause}
       & \multicolumn{6}{c !{\hspace{3em}}}{\textbf{Metapatterns/-variables}}
-      & \multicolumn{2}{c}{\textbf{Transformers}} 
+      & \multicolumn{2}{c}{\textbf{Transformers}}
       \\ \hline
       \#1
-      &\mathcal{C} \mathrel{} & \mapsto (\diamond, \ttt{x})
-      & \ol{x} \mathrel{} & \mapsto \ttt{y} 
-      & \ol{xs} \mathrel{} & \mapsto \ttt{ys} 
-      & \mathbb{D}\ ((a,b),\ x) \mathrel{} & = a\ (x)
+      &\mathcal{C} \mathrel{} & \mapsto \ttt{($\diamond_1$, x)}
+      & \ol{x} \mathrel{} & \mapsto \ttt{y}
+      & &
+      & \mathbb{D} \mathrel{} & \mapsto (\mathsml{((y, x), a)}, \mathsml{y a})
       \\
       % same clause
-      & \ttt{self} \mathrel{} & \mapsto \ttt{composelist}
+      & \textsf{self} \mathrel{} & \mapsto (\ttt{composelist}, 2)
       &&
       &&
       &&
       \\ \hline
       \#2
-      & \mathcal{D} \mathrel{} & \mapsto \ttt{(y, x)}
+      & \mathcal{D} \mathrel{} & \mapsto \mathsml{(y, x)}
       &&
-      && 
-      & \mathbb{E}\ (a,\ b) \mathrel{} & \mapsto b
+      &&
+      & \mathbb{E} \mathrel{} & \mapsto (\mathsml{(y, x)}, \mathsml{x})
       \\
     \end{tabular}
   \end{center}
-  
-  \noindent
-  and thus it can be rewritten with the following
- 
-  \begin{eqnarray*}[c]
-    \mathcal{C}[\ol{xs}] -> \mathcal{C}[\ttt{ys}] -> (\ttt{ys},\ \ttt{x})
-    \qquad\quad
-    \mathcal{C}[\ttt{a}] -> (\ttt{a},\ \ttt{x})
-    \\
-    \mathbb{D}((\ttt{a},\ \ttt{x}),\ \ttt{b}) -> a (b)
-    \qquad\quad
-    \mathbb{E} \ttt{(y, x)} -> \ttt{x}
-  \end{eqnarray*}
-  
-  \noindent
-  to
-
+  And we get the result
   \begin{center}
     \begin{tabular}{|l|}
       \hline
       \textbf{Rewritten function} \\ \hline
       \begin{sml}
-fun composelist ys x = foldr (fn (a,b) => a b) (x) ys
+fun composelist ys x = foldr (fn (y, a) => y a) (x) ys
       \end{sml} \\ \hline
     \end{tabular}
   \end{center}
-
 \end{example}
 
-
-
-
-\begin{example}[...]\
+\begin{example}\
   \label{ex:fold-instance-sumlige}\\
   In the 2009 exam set the students were asked to rewrite the \ttt{sumlige}
   function using higher order functions.
@@ -139,73 +109,90 @@ fun composelist ys x = foldr (fn (a,b) => a b) (x) ys
   \begin{center}
     \begin{tabular}{|l|l|}
       \hline
-      \textbf{Original Function}
-      & 
-      \textbf{Normalised Function}
+      \textbf{Original function}
+      &
+      \textbf{Normalised function}
       \footnotesize{(see \fref{tr:trace-normalise-sumlige})}
       \\\hline
   \begin{sml}
 fun sumlige [] = 0
-  | sumlige (x :: xs) = 
-      if x mod 2 = 0 
-      then x div 2 + sumlige xs 
-      else sumlige xs     
+  | sumlige (x :: xs) =
+      if x mod 2 = 0
+      then x div 2 + sumlige xs
+      else sumlige xs
   \end{sml}
       &
-      \fixme{insert normalised function}
-      \\\hline
+  \begin{sml}
+fun sumlige (x :: xs) =
+      if x mod 2 = 0
+      then x div 2 + sumlige xs
+      else sumlige xs
+  | sumlige x = 0
+  \end{sml}
+  \\\hline
     \end{tabular}
   \end{center}
 
-  \fixme[inline, margin=false]{Insert rest of example when foldl rule is made}
-
+Now the \textsf{foldr}-rule succeeds with the environments
+  \begin{center}
+    \begin{tabular}{c | Mr @{} Ml Mr @{} Ml Mr @{} Ml !{\hspace{3em}} Mr @{} Ml}
+      \textbf{Clause}
+      & \multicolumn{6}{c !{\hspace{3em}}}{\textbf{Metapatterns/-variables}}
+      & \multicolumn{2}{c}{\textbf{Transformers}}
+      \\ \hline
+      \#1
+      &\mathcal{C} \mathrel{} & \mapsto \diamond_1
+      & \ol{x} \mathrel{} & \mapsto \ttt{x}
+      & &
+      % & \mathbb{D} \mathrel{} & \mapsto (\mathsml{(x, a)}, \mathsml{(if x mod 2
+        % = 0 then x div 2 else 0})
+      & \multirow{3}{*}{$\mathbb{D}\mathrel{} \mapsto$}
+      & \multirow{3}{*}{
+        $\left(\ttt{(x, a)},\
+        \begin{tabular}{>{\ttfamily}l}
+          if x mod 2 = 0\\
+          then x div 2 + a\\
+          else a
+        \end{tabular}
+        \right)$
+      }
+      \\
+      &&
+      &&
+      &&
+      &&
+      \\
+      % same clause
+      & \textsf{self} \mathrel{} & \mapsto (\ttt{sumlige}, 1)
+      &&
+      &&
+      &&
+      \\ \hline
+      \#2
+      & \mathcal{D} \mathrel{} & \mapsto \mathsml{x}
+      &&
+      &&
+      & \mathbb{E} \mathrel{} & \mapsto (\mathsml{x}, \mathsml{0})
+      \\
+    \end{tabular}
+  \end{center}
+  And we get the result
+  \begin{center}
+    \begin{tabular}{|l|}
+      \hline
+      \textbf{Rewritten function} \\ \hline
+      \begin{sml}
+fun sumlige xs = foldr (fn (x, a) =>
+                           if x mod 2 = 0 then
+                             x div 2 + a
+                           else
+                             a
+                       ) 0 xs
+      \end{sml} \\ \hline
+    \end{tabular}
+  \end{center}
 \end{example}
 
-
-
-\begin{example}[\textsf{fold}-instans]\
-  \label{ex:fold-instance-sum}\\
-  \fixme{some text}
-\begin{sml}
-fun sum nil       = 0
-  | sum (x :: xs) = sum xs + x
-\end{sml}
-
-normaliseres til
-
-\begin{sml}
-fun sum (x :: xs) = sum xs + x
-  | sum _         = 0
-\end{sml}
-
-De to klausuler er en instans af \textsf{foldl}-reglen med
-
-\begin{eqnarray*}[rl]
-  \mathcal{C} &\mapsto \diamond\\
-  \overline{x} &\mapsto \texttt{x}\\
-  \overline{xs} &\mapsto \texttt{xs}\\
-  \mathbb{D}(\texttt{($\overline{a}$, $\overline{b}$)}) &=
-  \kappa(\overline{b}) \texttt{ + } \kappa(\overline{a})\\
-  \mathcal{D} &\mapsto \texttt{\_}\\
-  \mathbb{E}(\overline{a}) &= \texttt{0}
-\end{eqnarray*}
-
-Så de skrives om til
-  \begin{eqnarray*}[c]
-    \texttt{$\mathcal{C}[xs]$ => foldl (fn ($a$, $b$) =>
-      $\mathbb{D}($($\mathcal{C}[a]$, $b$)$)$) $\mathbb{E}(\mathcal{C}[$nil$])$
-      $xs$}\\
-    =\\
-    \texttt{a => foldl (fn (a, b) => b + a) 0 a}
-  \end{eqnarray*}
-
-Og det endelige resultat er
-
-\begin{sml}
-fun sum a = foldl (fn (a, b) => b + a) 0 a
-\end{sml}
-  
-\end{example}
 
 %%% Local Variables: 
 %%% mode: latex

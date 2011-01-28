@@ -1,5 +1,5 @@
 \subsection{\textsf{map}}
-\begin{example}[Simple \textsf{map}-instance]\
+\begin{example}\
   \label{ex:map-instance-foo}\\
   A short warming up example.
   \begin{center}
@@ -33,7 +33,7 @@ fun foo (x :: xs) = x + 1 :: foo xs
       &\mathcal{C} \mathrel{} & \mapsto \diamond_1
       & \ol{x} \mathrel{} & \mapsto \ttt{x}
       & &
-      & \mathbb{D} \mathrel{} & = (\ttt{x}, \mathsml{x + 1})
+      & \mathbb{D} \mathrel{} & \mapsto (\ttt{x}, \mathsml{x + 1})
       \\
       % same clause
       & \textsf{self} \mathrel{} & \mapsto (\ttt{foo}, 1)
@@ -64,7 +64,7 @@ fun foo xs = map (fn x => x + 1) xs
   is a result.
 \end{example}
 
-\begin{example}[Simple \textsf{map}-instance with extra argument]\
+\begin{example}\
   \label{ex:map-instance-evallist}\\
   A group assignment in 2009 and 2010 asked for a function \ttt{evallist} which
   given a list of functions and a value will apply that value to all the
@@ -109,7 +109,7 @@ fun evallist (f :: fs, v) =
       &\mathcal{C} \mathrel{} & \mapsto \ttt{($\diamond_1$, v)}
       & \ol{x} \mathrel{} & \mapsto \ttt{f}
       & &
-      & \mathbb{D} \mathrel{} & = (\ttt{(f, v)}, \ttt{f v})
+      & \mathbb{D} \mathrel{} & \mapsto (\ttt{(f, v)}, \ttt{f v})
       \\
       % same clause
       & \textsf{self} \mathrel{} & \mapsto (\ttt{evallist}, 1)
@@ -139,7 +139,7 @@ fun evallist (fs, v) = map (fn f => f v) fs
   \end{center}
 \end{example}
 
-\begin{example}[Advanced \textsf{map}-instance]\
+\begin{example}\
   \label{ex:map-instance-collatz}\\
   From the exam set of 2009, the students was asked to take the below
   function and then rewrite it using higher order functions. Since the recursion
@@ -202,7 +202,7 @@ fun collatz (x :: xs) =
       &\mathcal{C} \mathrel{} & \mapsto \diamond_1
       & \ol{x} \mathrel{} & \mapsto \ttt{x}
       & &
-      & \multirow{3}{*}{$\mathbb{D}\mathrel{} =$}
+      & \multirow{3}{*}{$\mathbb{D}\mathrel{} \mapsto$}
       & \multirow{3}{*}{
         $\left(\ttt{x},\
         \begin{tabular}{>{\ttfamily}l}
@@ -252,7 +252,7 @@ fun collatz xs =
   \end{center}
 \end{example}
 
-\begin{example}[Advanced \textsf{map}-instance with multiple arguments]\
+\begin{example}\
   \label{ex:map-instance-mapfil}\\
   One of the assignments from the 2008 exam set, which however didn't end up in
   the final exam set, was to create a function \ttt{mapfil} that goes through a
@@ -299,7 +299,7 @@ fun mapfil (f, p, x :: xs) =
       &\mathcal{C} \mathrel{} & \mapsto \ttt{(f, p, $\diamond_1$)}
       & \ol{x} \mathrel{} & \mapsto \ttt{x}
       & &
-      & \multirow{3}{*}{$\mathbb{D}\mathrel{} =$}
+      & \multirow{3}{*}{$\mathbb{D}\mathrel{} \mapsto$}
       & \multirow{3}{*}{
         $\left(\ttt{(f, p, x)},\
         \begin{tabular}{>{\ttfamily}l}
