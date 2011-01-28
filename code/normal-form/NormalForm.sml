@@ -906,7 +906,15 @@ fun normalize basis t =
         Match =>
         let
           val (n, cs) = extract ts
-          val cs' = convert basis cs
+          val cs' =
+              if cover cs then
+                convert basis cs
+              else
+                cs before
+                Layout.println
+                  NONE
+                  (txt "Match is not exhaustive:" \
+                       showClauses cs)
           val ts' = inject (n, cs')
         in
           join Match ts'
