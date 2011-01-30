@@ -169,6 +169,7 @@ After elimination:
                                     :: flipodd xs
   ((a, b) :: nil) = ((a, b) :: nil)
   (nil) = (nil)
+(@\cmt{Generalisation starts bottom up}@)
 Generalising
   (nil) = (nil)
 becomes
@@ -222,21 +223,32 @@ fun flipodd (e :: h :: xs) = e :: flip h
       \textbf{Original functions}
       \\\hline
       \begin{sml}
-fun g (NONE, _) = NONE
-  | g (SOME x, _) = SOME x
+fun g1 (NONE, _) = NONE
+  | g1 (SOME x, _) = SOME x
 
-fun g (SOME x, _) = SOME x
-  | g (NONE, _) = NONE
+fun g2 (SOME x, _) = SOME x
+  | g2 (NONE, _) = NONE
 
-fun g (NONE, _) = NONE
-  | g _ = NONE        
+fun g3 (NONE, _) = NONE
+  | g3 _ = NONE      
       \end{sml}
       \\\hline
     \end{tabular}
   \end{center}
+
+  When looking at the generalisation of \ttt{g1} and \ttt{g2} one might think
+  that they both ought to be generalised to \inlinesml{fun g (x, y) = x}. This
+  is however not the case as can be seen below. As \ttt{SOME x} and \ttt{NONE}
+  are confused with each other, they will be generalised in alphabetic order and
+  thus \ttt{(NONE, _)} will always be generalised first. Again one might think
+  that \inlinesml{(NONE, _) = NONE} would be generalised to \inlinesml{(x, _) =
+    x} but that is not the case, as there is nothing on the right hand side that
+  relies on the left hand side, and thus the biggest generalisation possible is
+  \inlinesml{x = NONE}. This has the side effect that the two resulting clauses
+  can't be unified.
+
+  \fixme{Better explanation, possibly some refs to the normal form chapter.}
   
-  some text\fixme{Explain the why this is the same even though one might think
-    this could be generalised even further}
   
   \begin{narrow}{-3em}{0em}
     \setlength{\linewidth}{1.2\linewidth}
@@ -249,6 +261,7 @@ Parsing mlb/sml:
   User: 0.500, System: 0.224, Total: 0.724
 Resolving: 
   User: 5.068, System: 0.648, Total: 5.716
+(@\cmt{g1}@)
 Normalizing
   (NONE, _) = NONE
   (SOME x, _) = SOME x
@@ -270,6 +283,7 @@ Now have
   (a, y) = a
   y = NONE
 
+(@\cmt{g2}@)
 Normalizing
   (SOME x, _) = SOME x
   (NONE, _) = NONE
@@ -291,6 +305,7 @@ Now have
   (a, y) = a
   y = NONE
 
+(@\cmt{g3}@)
 Normalizing
   (NONE, _) = NONE
   _ = NONE
