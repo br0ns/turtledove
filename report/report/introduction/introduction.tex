@@ -1,13 +1,18 @@
 \chapter{Introduction}
+Our goal for this project has been to create a system --- which we have named
+\textit{Turtledove} --- for ``Tool assisted programming in SML, with special
+emphasis on semi-automatic rewriting''.
 
-This project set out with the goals to create a system (Turtledove) for ``Tool
-assisted programming in SML, with special emphasis on semi- automatic
-rewriting'' in SML. To do this Turtledove is made of a few key components and a
-plug-in system for tools. The key components include an parser for MLB and
-SML files inspired by the work of \cite{mbp08}, a project manager for managing
-the users source files and any changes done to them by the user outside
-Turtledove or any changes made by Turtledove, a communication bridge to handle
-all communication between Turtledove and the user's development environment.
+We wanted the system to make a clear distinction between the back-end and the
+front-end in order to make it easy to port to different editors and IDE's. Our
+own preference goes towards Emacs.
+
+To do this Turtledove is made of a few key components and a plug-in system for
+tools. The key components include an parser for MLB and SML files inspired by
+the work of \cite{mbp08}, a project manager for managing the users source files
+and any changes done to them by the user outside Turtledove or any changes made
+by Turtledove, a communication bridge to handle all communication between
+Turtledove and the user's development environment.
 
 Rewriting of programs are done trough a rewriting tool. This tool has its own
 (rule) parser that extends on the SML parser, for reading in rules at run
