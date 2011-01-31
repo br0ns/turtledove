@@ -237,14 +237,14 @@ fun g3 (NONE, _) = NONE
   \end{center}
 
   When looking at the generalisation of \ttt{g1} and \ttt{g2} one might think
-  that they both ought to be generalised to \inlinesml{fun g (x, y) = x}. This
+  that they both ought to be generalised to \smlinline{fun g (x, y) = x}. This
   is however not the case as can be seen below. As \ttt{SOME x} and \ttt{NONE}
   are confused with each other, they will be generalised in alphabetic order and
   thus \ttt{(NONE, _)} will always be generalised first. Again one might think
-  that \inlinesml{(NONE, _) = NONE} would be generalised to \inlinesml{(x, _) =
+  that \smlinline{(NONE, _) = NONE} would be generalised to \smlinline{(x, _) =
     x} but that is not the case, as there is nothing on the right hand side that
   relies on the left hand side, and thus the biggest generalisation possible is
-  \inlinesml{x = NONE}. This has the side effect that the two resulting clauses
+  \smlinline{x = NONE}. This has the side effect that the two resulting clauses
   can't be unified.
 
   \fixme{Better explanation, possibly some refs to the normal form chapter.}
