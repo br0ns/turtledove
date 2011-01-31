@@ -1,15 +1,95 @@
 \chapter{Introduction}
 
-This stuff is meget eftertragtet...
+This project set out with the goals to create a system (Turtledove) for ``Tool
+assisted programming in SML, with special emphasis on semi- automatic
+rewriting'' in SML. To do this Turtledove is made of a few key components and a
+plug-in system for tools. The key components include an parser for MLB and
+SML files inspired by the work of \cite{mbp08}, a project manager for managing
+the users source files and any changes done to them by the user outside
+Turtledove or any changes made by Turtledove, a communication bridge to handle
+all communication between Turtledove and the user's development environment.
 
-http://mlton.org/pipermail/mlton/2005-July/027571.html 
+Rewriting of programs are done trough a rewriting tool. This tool has its own
+(rule) parser that extends on the SML parser, for reading in rules at run
+time. Thus new rules can be added by the user without any changes to the
+internals of Turtledove. Rules may be defined for both expressions and
+(function) clauses:
 
-The peeeps want this stuff.
+\begin{description}
+\item[Expressions] These rules mainly intend to function as a set of
+  simplification rules but are not limited to this. 
 
-An example is the similar but much more developed, and much larger project, The
-Haskell Refactorer, HaRe\footnote{See \cite{HARE}.} that performs
-transformations in Haskell. At present twenty three transformations has been
-implemented in HaRe.
+  Such simplifications could be 
+
+  \begin{center}    
+  \begin{tabular}{ccc}
+    "" \^{} s $->$ s
+    & n + 0 $->$ n
+    & 0 * n $->$ 0
+    \\
+    n * 1 $->$ 1
+    &l @ [] $->$ l
+    &\\
+    true orelse b $->$ true
+    &if b then true else false $->$ b
+    &if b then true else t $->$ b orelse t    
+  \end{tabular}
+  \end{center}
+
+\item[Clauses] These are more high level rewrites that intend to rewrite entire
+  functions and are the main focus for this project. Examples of functions that
+  can be rewritten are 
+
+\begin{minipage}{1.0\linewidth}
+  \begin{tabular}{lcl}
+\begin{sml}
+fun foo (x::xs) = x+1 :: foo xs
+  | foo []      = []     
+\end{sml}
+  & $->$ &
+\begin{sml}
+fun foo xs = map op+ xs      
+\end{sml}
+  \end{tabular}
+\end{minipage}
+\end{description}
+
+\noindent
+and we define three rules for rewriting clauses to \ttt{map}, \ttt{foldl} and \ttt{foldr}.
+
+Other tools include
+
+\begin{description}
+\item[Todo] Returns all SML comments that start with the string ``TODO'' in the
+  current project to the development environment.
+
+\item[Auto completion] Returns a list of visible names given a position in the
+  source text (scope) to the development environment\footnote{The auto
+    completion has been request on the MLton mailing list
+    \url{http://mlton.org/pipermail/mlton/2005-July/027571.html} among other
+    features that could be implemented as tools.}.
+\end{description}
+
+
+Unfortunately the goals were not fully met. The achievements of the project
+are limited to
+
+\begin{itemize}
+
+\item A discussion of the implemented software as well as suggestions for
+improvements and future work.
+\item An MLB and SML parser. 
+\item Environment and infix resolving on SML AST's.
+\item A general purpose library with auxiliary functions and data structures.
+\item A partial SML AST pretty printer (mainly missing signatures, structures
+  and functors). 
+\item Stand alone application that can normalise an SML AST
+\item Stand alone application that implement a hard coded map rewriter
+  \fixme{minor bugs with this one}
+
+\item A few stand alone applications that implement various features of intended
+  tools such as todo's and total project code size
+\end{itemize}
 
 
 
@@ -18,6 +98,10 @@ implemented in HaRe.
 Refer to HARE and Stratego at the least.
 
 {\footnotesize [Huge explanation about the actual problem.]}
+
+An example is the similar but much more developed, and much larger project, The
+Haskell Refactorer, HaRe\footnote{See \cite{HARE}.} that performs
+transformations in Haskell. 
 
 
 \section{Motivation}
