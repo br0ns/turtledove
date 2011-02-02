@@ -884,17 +884,20 @@ fun convert basis cs =
       val cons = var basis "::"
       val nill = var basis "nil"
     in
-      (
-       (Flags.get "Verbose" andalso
-        (clauses "Normalizing" cs; true)) ;
-       gen $ sort $ elim $ checkCover $
-           List.map
-           (elimLists cons nill o
-            elimLayers o
-            elimWildcards o
-            elimShortLabels)
-           cs
-      ) handle NonExhaustive => cs
+      (fn cs =>
+          (
+           (Flags.get "Verbose" andalso
+            (clauses "Normalizing" cs; true)) ;
+           gen $ sort $ elim $ checkCover cs
+           handle NonExhaustive => cs
+          )
+      )
+          $ List.map
+          (elimLists cons nill o
+           elimLayers o
+           elimWildcards o
+           elimShortLabels)
+          cs
     end
 
 fun normalize basis t =
