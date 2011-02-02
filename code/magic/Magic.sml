@@ -84,10 +84,15 @@ fun rewriteMap (nill, cons, mapp) self ((ps1, e1) :: (ps2, e2) :: cs) =
                fun loop nil = NONE
                  | loop ((ins, x, xs) :: ctxs) =
                    let
+               val _= println "Original recursive call"
                val _ = Layout.println NONE $ Grammar.showUnwrapped NONE e2
+               val _ =  println "Recursive call with xs inserted into the hole of the context"
                val _ = Layout.println NONE $ Grammar.showUnwrapped NONE $
                                       pstoe $ ins $ singleton $ Pat_Var xs
-               val _ = if equiv (e2, pstoe $ ins $ singleton $ Pat_Var xs) then println "foo" else println "bar"
+               val _ = if equiv (e2, pstoe $ ins $ singleton $ Pat_Var xs) then 
+                         println "Recursive call match." 
+                       else 
+                         println "Recursive call does NOT match."
 
 in
                    if List.all

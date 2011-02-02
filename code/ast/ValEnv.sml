@@ -49,10 +49,14 @@ fun show (E (ve, te, se)) =
     end
 
 fun vidToString (id, v, stat) =
-    Int.toString id ^ ", " ^
+    "id: " ^ Int.toString id 
+(* The value is not updated as of right now.
+    ^ ", value: " ^
     (case v of
        Left id => Int.toString id
-     | Right scon => SCon.toString scon) ^ ", " ^
+     | Right scon => SCon.toString scon) 
+*)
+    ^ ", is: " ^
     (case stat of
        Val => "Val"
      | Con dat => "Con"
