@@ -134,6 +134,13 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \newtheorem{example}{Example}
 \newtheorem{trace}{Trace}
 
+\frefformat{plain}{\fancyrefchaplabelprefix}{%
+  \frefchapname\fancyrefdefaultspacing#1%
+}
+\Frefformat{plain}{\fancyrefchaplabelprefix}{%
+  \Frefchapname\fancyrefdefaultspacing#1%
+}
+
 \newcommand*{\fancyrefdeflabelprefix}{def}
 \fancyrefaddcaptions{english}{
   \newcommand*{\Frefdefname}{Definition}
@@ -272,11 +279,14 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
   \begin{center}\leavevmode
     \normalfont
     \Huge{\raggedleft \@title\par}%
+    \small{\raggedright \hspace{15pt}\raisebox{-0.7em}{\@date}\par}%
     \hrulefill\par
     \Large{\raggedright \subtitle\par}%
-    \vskip 2cm
-    {\@date\par}%
   \end{center}%
+  \vskip 3em
+  \begin{abstract}
+    \textit{\descript}
+  \end{abstract}
   \vfill
 \begin{minipage}{80pt}
 \includegraphics*[scale=0.75]{imgs/nat-logo}
@@ -295,16 +305,34 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %		Data til forside
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Turtledove}
-\def\subtitle{\footnotesize{Tool assisted programming in SML, with special emphasis on semi-automatic rewriting to
-predefined standard forms.}}
-\author{Morten Brøns-Pedersen {\footnotesize{(mortenbp@gmail.com)}}\\  
-Jesper Reenberg \footnotesize{(jesper.reenberg@gmail.com)}}
-\def\suplementInfo{
-  \kern 5pt \hrule width 11pc \kern 5pt % putter 5pt spacing oven over og neden under stregen
+\title{{\color{White}Lipstick on a Bulldog aka. }Turtledove}
+\def\subtitle{\footnotesize{Tool assisted programming in SML, with special
+    emphasis on semi-automatic rewriting to predefined standard
+    forms. {\color{White}In some sense this is exactly ``lipstick on a bulldog''
+      --- we might be able to make the code look pretty but it's still broken
+      nonetheless.}}}
+\author{Morten Brøns-Pedersen {\footnotesize{(mortenbp@gmail.com)}}\\
+  Jesper Reenberg \footnotesize{(jesper.reenberg@gmail.com)}}
+\def\suplementInfo{ \kern 5pt \hrule width 11pc \kern
+  5pt % putter 5pt spacing oven over og neden under stregen
   Dept. of Computer Science \\
-  University of Copenhagen}
-\date{21st January 2011} % used to set explicit dates
+  University of Copenhagen} \date{21st January
+  2011} % used to set explicit dates
+
+\def\descript{%
+  We define a normal form for SML functions and implement a program that can
+  convert functions to their normal form. Building on the normal form we then
+  give a DSL for describing rewriting rules among whole functions in SML is
+  given, along with its semantics and examples of use.
+
+  A small suite of rewriting rules is developed and tested on a body of code
+  written by ourselves and sophomore students during an introductory programming
+  course.
+
+  We implement a full parser for SML and MLB and we give a novel internal
+  representation of syntax trees that we find to work very well in
+  practice. Furthermore we have implemented a general purpose library for
+  programming in SML.  }
 
 \pagestyle{plain}
 
@@ -314,10 +342,6 @@ Jesper Reenberg \footnotesize{(jesper.reenberg@gmail.com)}}
 
 \maketitle
 \thispagestyle{empty}
-
-\begin{abstract}
-
-\end{abstract}
 
 \clearpage
 \chapter*{Preface}
