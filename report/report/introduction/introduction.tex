@@ -162,33 +162,6 @@ fun add (x :: xs) = x + 1 :: add xs
 \end{sml}
 Conversion to normal form will not capture this, but we give some suggestions on
 how it might in \fref{sec:furth-gener}.
-% In the first function the patterns in line one and two is \smlinline{x :: xs}
-% and \smlinline{x :: nil}, so we can try to instantiate \smlinline{xs} to
-% \smlinline{nil} in the first function body, to try to eliminate the second line
-% of the function.
-
-% The first body becomes \smlinline{x + 1 :: add nil} which is not equal to the
-% second which is \smlinline{x + 1 :: nil}. But if we inline the definition of
-% \smlinline{add} in the first body we get \smlinline{x + 1 :: nil}. And so the
-% second line of the body can be eliminated.
-
-% Of course inlining function definitions to find a normal form, makes the
-% reduction to normal forms an undecidable problem.
-
-% For this reason we have decided to define a normal form that can always be
-% found, and then build on top of that.
-
-% Consider this other example:
-% \begin{sml}
-% fun add (x :: xs, b) = x + b :: add xs
-%   | add (nil, _)     = nil
-% \end{sml}
-% That too can be written using \smlinline{map}. But again we would need a new
-% rewriting rule for that. A solution could be to use meta patterns in rewriting
-% rules.
-
-% \fixme[inline,margin=false]{Ok, I'm just ranting here. Keeping the example for
-%   further brainstorm later on.}
 
 \section{Related work}
 Several tools performing rewriting of program codes exists. Of relevance to this
@@ -220,12 +193,10 @@ Literature that may prove helpful:
 \item The definition of Standard ML revised, \cite{SML97}.
 \item Commentary on Standard ML, \cite{SMLCOMM}. Very helpful when reading
   \cite{SML97}.
-\item A Lexical Analyzer Generator for Standard ML, \cite{MLLEX}. A description
-  of, and a tutorial to, the software ML-Lex. It is not in print, but can be
-  viewed online here: \url{http://www.smlnj.org/doc/ML-Lex/manual.html}
-\item ML-Yac Users Manual, \cite{MLYACC}. A description of, and a tutorial to,
-  the software ML-Yacc. It is not in print, but can be viewed online here:\\
-  \mbox{\url{http://www.smlnj.org/doc/ML-Yacc/index.html}}.
+\item A Lexical Analyzer Generator for Standard ML, \cite{MLLEX, ml-lex-yacc}. A description
+  of, and a tutorial to, the software ML-Lex.
+\item ML-Yac Users Manual, \cite{MLYACC, ml-lex-yacc}. A description of, and a tutorial to,
+  the software ML-Yacc. 
 \end{itemize}
 
 For general ideas on program refactoring in funcational programming languages
