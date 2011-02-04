@@ -1,35 +1,54 @@
 \chapter{Rewriting rules}
+We defined rules for \ttt{map}, \ttt{foldr} and \ttt{foldr} forms in
+\fref{chap:concrete-examples}. Here we give the rules as their ASCII
+representation.
 
-\section{Map}
+Note that we do not yet support the underscore-syntax for pattern variables.
 
-
-\fixme{The missing notation of meta variables makes the xs in the matching seem
-  exactly the same.}
+\section{\textsf{map$_\textsf{a}$}}
 \begin{verbatim}
-Rule Clauses Map
-   | §C[x :: xs] => :: (£D §C[x],  self §C[xs])
+Rule Clauses map_a
+   | §C[_x :: xs] => £D §C[_x] :: self §C[xs]
    | §D => nil
 where
-   dom (§D, §C)
+   samedom (§D, §C)
 becomes
-   | §C[xs] => map (fn m => £D §C[m]) xs
+   | §C[xs] => map (fn x => £D §C[x]) xs
 end
 \end{verbatim}
 
+\section{\textsf{map$_\textsf{b}$}}
+\begin{verbatim}
+Rule Clauses map_b
+   | §C[_x :: xs] => £D §C[_x] :: self §C[xs]
+   | §C[x] => x
+becomes
+   | §C[xs] => map (fn x => £D §C[x]) xs
+end
+\end{verbatim}
 
-\section{Fold}
-
+\section{\textsf{foldr}}
 \begin{verbatim}
 Rule Clauses foldr
-   | §C[x :: xs] => £D (§C[x], self §C[xs])
-   | §D => [E] §D
+   | §C[_x :: xs] => £D (§C[_x], self §C[xs])
+   | §D => £E §D
 where
-   dom (§D, §C)
+   samedom (§D, §C)
 becomes
-   | §C[xs] => foldr (fn (a, b) => £D (§C[a], b)) (£E §C) xs
+   | §C[xs] => foldr (fn (x, a) => £D (§C[x], a)) (£E §C[xs]) xs
 end
 \end{verbatim}
 
+\newpage
+\section{\textsf{foldl}}
+\begin{verbatim}
+Rule Clauses foldl
+   | §C[_x :: xs][_a] => self §C[_x][£D §C[_x][_a]]
+   | §C[_x][_a] => _a
+becomes
+   | §C[xs][a] => foldl (fn (x, a) => £D §C[x][a]) a xs
+end
+\end{verbatim}
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "../report"

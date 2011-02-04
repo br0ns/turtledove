@@ -1,61 +1,77 @@
-\chapter{Introduction}
+\chapter{Introduction}\label{chap:introduction}
+Our goal for this project has been to create a system --- which we have named
+\textit{Turtledove} --- for ``Tool assisted programming in SML, with special
+emphasis on semi-automatic rewriting to predefined standard forms''.
 
-This project set out with the goals to create a system (Turtledove) for ``Tool
-assisted programming in SML, with special emphasis on semi- automatic
-rewriting'' in SML. To do this Turtledove is made of a few key components and a
-plug-in system for tools. The key components include an parser for MLB and
-SML files inspired by the work of \cite{mbp08}, a project manager for managing
-the users source files and any changes done to them by the user outside
-Turtledove or any changes made by Turtledove, a communication bridge to handle
-all communication between Turtledove and the user's development environment.
+We wanted the system to make a clear distinction between the back-end and the
+front-end in order to make it easy to port to different editors and IDE's. Our
+own preference goes towards Emacs.
 
-Rewriting of programs are done trough a rewriting tool. This tool has its own
-(rule) parser that extends on the SML parser, for reading in rules at run
-time. Thus new rules can be added by the user without any changes to the
-internals of Turtledove. Rules may be defined for both expressions and
-(function) clauses:
+Even though this project focuses on rewriting of functions to standard forms we
+wanted the system to be extensible in order for it to provide other tools to
+programmer (like auto completion or variable renaming).
+
+To accomodate this Turtledove should consist of a few key components and a
+plug-in system for implementing individual tools. The key components include
+\begin{itemize}
+\item A parser for MLB and SML files inspired by the work of \cite{mbp08}.
+\item Resolving of source file dependencies, variable infix status and program
+  environment. Type inference would also be useful for some tools but that is
+  beyond the scope of this project.
+\item A project manager for managing the users source files and any changes done
+  to them by the user outside Turtledove or any changes made by Turtledove
+  itself.
+\item A communication bridge to handle communication between Turtledove and the
+  user's development environment.
+\item An SML pretty printer for converting abstract syntax trees to source code.
+\end{itemize}
+
+Rewriting of programs will be done trough a rewriting tool. This tool should
+have its own (rule) parser that extends on the SML parser, for reading in rules
+at run time. Thus new rules can be added by the user without any changes to the
+internals of Turtledove. One should be able to define rewriting rules for both
+expressions and functions.
 
 \begin{description}
-\item[Expressions] These rules mainly intend to function as a set of
-  simplification rules but are not limited to this. 
+\item[Expressions] These rules were mainly intend to function as a set of
+  simplification rules but are not limited to that.
 
-  Such simplifications could be 
+  Such simplifications could be
 
-  \begin{center}    
-  \begin{tabular}{ccc}
-    "" \^{} s $->$ s
-    & n + 0 $->$ n
-    & 0 * n $->$ 0
-    \\
-    n * 1 $->$ 1
-    &l @ [] $->$ l
-    &\\
-    true orelse b $->$ true
-    &if b then true else false $->$ b
-    &if b then true else t $->$ b orelse t    
-  \end{tabular}
+  \begin{center}
+    {\allowdisplaybreaks
+      \begin{tabular}{c@{$\quad ->\quad $}c}
+        \mathsml{"" \^ s} & \mathsml{s}\\
+        \mathsml{n + 0} & \mathsml{n}\\
+        \mathsml{0 * n} & \mathsml{0}\\
+        \mathsml{n * 1} & \mathsml{1}\\
+        \mathsml{l @ []} & \mathsml{l}\\
+        \mathsml{true orelse b} & \mathsml{true}\\
+        \mathsml{if b then true else false} & \mathsml{b}\\
+        \mathsml{if b then true else t} & \mathsml{b orelse t}
+      \end{tabular}
+    }
   \end{center}
 
-\item[Clauses] These are more high level rewrites that intend to rewrite entire
-  functions and are the main focus for this project. Examples of functions that
-  can be rewritten are 
+\item[Functions] These are more high level rewrites that intend to rewrite
+  entire functions and are the main focus for this project. An example of a
+  function that can be rewritten is
 
 \begin{minipage}{1.0\linewidth}
   \begin{tabular}{lcl}
 \begin{sml}
 fun foo (x::xs) = x+1 :: foo xs
-  | foo []      = []     
+  | foo []      = []
 \end{sml}
   & $->$ &
 \begin{sml}
-fun foo xs = map op+ xs      
+fun foo xs = map op+ xs
 \end{sml}
   \end{tabular}
 \end{minipage}
 \end{description}
-
-\noindent
-and we define three rules for rewriting clauses to \ttt{map}, \ttt{foldl} and \ttt{foldr}.
+and we define three rules for rewriting functions to utilise the list
+combinators \ttt{map}, \ttt{foldl} and \ttt{foldr}.
 
 Other tools include
 
@@ -70,39 +86,25 @@ Other tools include
     features that could be implemented as tools.}.
 \end{description}
 
-
 Unfortunately the goals were not fully met. The achievements of the project
 are limited to
 
 \begin{itemize}
 
 \item A discussion of the implemented software as well as suggestions for
-improvements and future work.
-\item An MLB and SML parser. 
+improvements and suggestions for futher work.
+\item An MLB and SML parser.
 \item Environment and infix resolving on SML AST's.
 \item A general purpose library with auxiliary functions and data structures.
 \item A partial SML AST pretty printer (mainly missing signatures, structures
-  and functors). 
+  and functors).
 \item Stand alone application that can normalise an SML AST
-\item Stand alone application that implement a hard coded map rewriter
-  \fixme{minor bugs with this one}
-
+\item Stand alone application that implement a hard coded map rewriter.
 \item A few stand alone applications that implement various features of intended
-  tools such as todo's and total project code size
+  tools such as todo's and total project code size.
 \end{itemize}
 
-
-
-\section{Problem Statement}
-
-Refer to HARE and Stratego at the least.
-
-{\footnotesize [Huge explanation about the actual problem.]}
-
-An example is the similar but much more developed, and much larger project, The
-Haskell Refactorer, HaRe\footnote{See \cite{HARE}.} that performs
-transformations in Haskell. 
-
+For guidelines on using Turtledove see \fref{chap:using-turtledove}.
 
 \section{Motivation}
 \label{sec:motivation}
@@ -117,7 +119,6 @@ can be rewritten to
 \begin{sml}
 val add = map (fn x => x + 1)
 \end{sml}
-
 But suppose that the first function was instead
 \begin{sml}
 fun add nil       = nil
@@ -133,12 +134,14 @@ fun add (x :: xs) = x + 1 :: add xs
 Of course all three examples can be rewritten to the same form. So should we
 have three rewriting rules? Infinitely many? No.
 
-Our problem here is that equivalent matches (a match is a list of pairs of
-patterns and expressions) can take many forms.
+Our problem here is that equivalent matches (a match is a list of clauses) can
+take many forms.
 
-In this paper we define a language similar to Core SML. We define a
-normal form for matches. We then show how to obtain an equivalent normal form
-from an arbitrary match.
+Therefore we define a normal form for matches in a language similar to SML. We
+also give an algorithm for computing normal forms.
+
+We then define a domain specific language for defining rewriting rules on
+matches which have been converted to normal form.
 
 \paragraph{Further work.}
 The reader might find it odd that the second line in the last example above ends
@@ -157,36 +160,52 @@ is indeed equivalent to
 fun add (x :: xs) = x + 1 :: add xs
   | add nil       = nil
 \end{sml}
-In the first function the patterns in line one and two is \smlinline{x :: xs}
-and \smlinline{x :: nil}, so we can try to instantiate \smlinline{xs} to
-\smlinline{nil} in the first function body, to try to eliminate the second line
-of the function.
+Conversion to normal form will not capture this, but we give some suggestions on
+how it might in \fref{sec:furth-gener}.
+% In the first function the patterns in line one and two is \smlinline{x :: xs}
+% and \smlinline{x :: nil}, so we can try to instantiate \smlinline{xs} to
+% \smlinline{nil} in the first function body, to try to eliminate the second line
+% of the function.
 
-The first body becomes \smlinline{x + 1 :: add nil} which is not equal to the
-second which is \smlinline{x + 1 :: nil}. But if we inline the definition of
-\smlinline{add} in the first body we get \smlinline{x + 1 :: nil}. And so the
-second line of the body can be eliminated.
+% The first body becomes \smlinline{x + 1 :: add nil} which is not equal to the
+% second which is \smlinline{x + 1 :: nil}. But if we inline the definition of
+% \smlinline{add} in the first body we get \smlinline{x + 1 :: nil}. And so the
+% second line of the body can be eliminated.
 
-Of course inlining function definitions to find a normal form, makes the
-reduction to normal forms an undecidable problem.
+% Of course inlining function definitions to find a normal form, makes the
+% reduction to normal forms an undecidable problem.
 
-For this reason we have decided to define a normal form that can always be
-found, and then build on top of that.
+% For this reason we have decided to define a normal form that can always be
+% found, and then build on top of that.
 
-Consider this other example:
-\begin{sml}
-fun add (x :: xs, b) = x + b :: add xs
-  | add (nil, _)     = nil
-\end{sml}
-That too can be written using \smlinline{map}. But again we would need a new
-rewriting rule for that. A solution could be to use meta patterns in rewriting
-rules.
+% Consider this other example:
+% \begin{sml}
+% fun add (x :: xs, b) = x + b :: add xs
+%   | add (nil, _)     = nil
+% \end{sml}
+% That too can be written using \smlinline{map}. But again we would need a new
+% rewriting rule for that. A solution could be to use meta patterns in rewriting
+% rules.
 
-\fixme[inline,margin=false]{Ok, I'm just ranting here. Keeping the example for
-  further brainstorm later on.}
+% \fixme[inline,margin=false]{Ok, I'm just ranting here. Keeping the example for
+%   further brainstorm later on.}
+
+\section{Related work}
+Several tools performing rewriting of program codes exists. Of relevance to this
+project we find The Haskell Refactorer HaRe (see \cite{HARE}) and Stratego (see
+\cite{stratego}) most notable.
+
+HaRe performs a number of refactorings in Haskell, among which are function
+lifting and variable renaming.
+
+Stratego is a general framework for expressing rewritings in any programming
+language. Thus one must first describe the grammar of the language for which one
+will define rewriting rules.\\
+
+To our knowledge there exists no tool that implement rewriting of whole
+functions.
 
 \section{Readers prerequisites}
-
 Readers of this text should, as a minimal prerequisite, be familiar with
 Standard ML. Some knowledge of compiler design and programming language theory,
 is also recommended. Also some algorithmic and mathematically maturity will be
@@ -198,22 +217,47 @@ knowledge.\\
 Literature that may prove helpful:
 
 \begin{itemize}
-\item {The definition of Standard ML revised, \cite{SML97}.}.
-\item {Commentary on Standard ML, \cite{SMLCOMM}.} Very helpful when reading
+\item The definition of Standard ML revised, \cite{SML97}.
+\item Commentary on Standard ML, \cite{SMLCOMM}. Very helpful when reading
   \cite{SML97}.
-\item {A Lexical Analyzer Generator for Standard ML, \cite{MLLEX}.} A
-  description of, and a tutorial to, the software ML-Lex. It is not in print,
-  but can be viewed online here:
-  \url{http://www.smlnj.org/doc/ML-Lex/manual.html}
-\item {ML-Yac Users Manual, \cite{MLYACC}.} A description of, and a tutorial to, the
-  software ML-Yacc. It is not in print, but can be viewed online here:
-  \url{http://www.smlnj.org/doc/ML-Yacc/index.html}.
+\item A Lexical Analyzer Generator for Standard ML, \cite{MLLEX}. A description
+  of, and a tutorial to, the software ML-Lex. It is not in print, but can be
+  viewed online here: \url{http://www.smlnj.org/doc/ML-Lex/manual.html}
+\item ML-Yac Users Manual, \cite{MLYACC}. A description of, and a tutorial to,
+  the software ML-Yacc. It is not in print, but can be viewed online here:\\
+  \mbox{\url{http://www.smlnj.org/doc/ML-Yacc/index.html}}.
 \end{itemize}
 
-\fixme{Why not reference the paper where lex and yacc are combined? It seems to
-  be much newer and updated examples}
+For general ideas on program refactoring in funcational programming languages
+\cite{HARE} is a good source.
 
 \section{Structure outline}
+\begin{description}
+\item[Chapter 1 -- Introduction.]
+  This outline concludes the introduction.
+\item[Chapter 2 -- Normal form.]
+  We construct a small language similar to SML and define a normal form on
+  matches in this language. We conclude by sketching an extension to SML.
+\item[Chapter 3 -- Rewriting rules.]
+  We define a language for describing rewriting rules. We give a system of
+  inference rules that define how rewriting should be carried out. We conclude
+  the chapter by giving an intuitive understanding of the rules and some further
+  suggestions.
+\item[Chapter 4 -- Concrete examples.]
+  We define three concrete rules and use the to rewrite a suite of example
+  code.
+\item[Chapter 5 -- Design.]
+  We give a high level description of our design goals and ideas.
+\item[Chapter 6 -- Implementation.]
+  Here we describe the system that was actually implemented.
+\item[Chapter 7 -- Using Turtledove.]
+  We give guidelines on how to get, compile and use Turtledove.
+\item[Chapter 8 -- Evaluation.]
+  This is a summary of the implemented system along with representative examples.
+\item[Chapter 9 -- Conclusion.]
+  We summarise our experiences during the project and assess on the result as a
+  whole.
+\end{description}
 
 
 %%% Local Variables: 
