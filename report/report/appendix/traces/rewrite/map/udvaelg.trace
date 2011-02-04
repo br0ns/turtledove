@@ -1,17 +1,22 @@
 Normalising and rewriting: udvaelg.sml
-udvaelg(34768, 34768, Val)
-1
+self -> udvaelg(id: 34768, is: Val)
+Number of found contexts: 1
+
+Original recursive call:
 Exp_App
   1 Exp_App
-      1 Exp_Var udvaelg(34768, 34768, Val)
-      2 Exp_Var xs(34770, 34770, Val)
-  2 Exp_Var ys(34772, 34772, Val)
+      1 Exp_Var udvaelg(id: 34768, is: Val)
+      2 Exp_Var xs(id: 34770, is: Val)
+  2 Exp_Var ys(id: 34772, is: Val)
+Recursive call with xs inserted into the hole
+of the context:
 Exp_App
   1 Exp_App
-      1 Exp_Var udvaelg(34768, 34768, Val)
-      2 Exp_Var xs(34770, 34770, Val)
-  2 Exp_Var ys(34772, 34772, Val)
-foo
+      1 Exp_Var udvaelg(id: 34768, is: Val)
+      2 Exp_Var xs(id: 34770, is: Val)
+  2 Exp_Var ys(id: 34772, is: Val)
+Recursive call match original.
+
 Before:
 fun udvaelg xs [] = []
   | udvaelg xs (y :: ys) = List.nth (xs, y) :: udvaelg xs ys

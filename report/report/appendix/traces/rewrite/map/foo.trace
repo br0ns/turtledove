@@ -1,13 +1,18 @@
 Normalising and rewriting: foo.sml
-foo(34765, 34765, Val)
-1
+self -> foo(id: 34765, is: Val)
+Number of found contexts: 1
+
+Original recursive call:
 Exp_App
-  1 Exp_Var foo(34765, 34765, Val)
-  2 Exp_Var xs(34767, 34767, Val)
+  1 Exp_Var foo(id: 34765, is: Val)
+  2 Exp_Var xs(id: 34767, is: Val)
+Recursive call with xs inserted into the hole
+of the context:
 Exp_App
-  1 Exp_Var foo(34765, 34765, Val)
-  2 Exp_Var xs(34767, 34767, Val)
-foo
+  1 Exp_Var foo(id: 34765, is: Val)
+  2 Exp_Var xs(id: 34767, is: Val)
+Recursive call match original.
+
 Before:
 fun foo nil = nil
   | foo (x :: xs) = x + 1 :: foo xs

@@ -1,8 +1,8 @@
 Normalising: mapfil.sml
 Parsing mlb/sml: 
-  User: 0.532, System: 0.184, Total: 0.716
+  User: 0.552, System: 0.156, Total: 0.708
 Resolving: 
-  User: 4.916, System: 0.720, Total: 5.636
+  User: 4.964, System: 0.704, Total: 5.668
 Normalizing
   (f, p, []) = []
   (f, p, (x :: xs)) = (if p x then

@@ -1,17 +1,22 @@
 Normalising and rewriting: evallist.sml
-evallist(34783, 34783, Val)
-1
+self -> evallist(id: 34783, is: Val)
+Number of found contexts: 1
+
+Original recursive call:
 Exp_App
-  1 Exp_Var evallist(34783, 34783, Val)
+  1 Exp_Var evallist(id: 34783, is: Val)
   2 Exp_Tuple
-      1 Exp_Var fs(34785, 34785, Val)
-      2 Exp_Var v(34786, 34786, Val)
+      1 Exp_Var fs(id: 34785, is: Val)
+      2 Exp_Var v(id: 34786, is: Val)
+Recursive call with xs inserted into the hole
+of the context:
 Exp_App
-  1 Exp_Var evallist(34783, 34783, Val)
+  1 Exp_Var evallist(id: 34783, is: Val)
   2 Exp_Tuple
-      1 Exp_Var fs(34785, 34785, Val)
-      2 Exp_Var v(34786, 34786, Val)
-foo
+      1 Exp_Var fs(id: 34785, is: Val)
+      2 Exp_Var v(id: 34786, is: Val)
+Recursive call match original.
+
 Before:
 fun evallist (f :: fs, v) = f v :: evallist (fs, v)
   | evallist ([], _) = []

@@ -1,19 +1,24 @@
 Normalising and rewriting: mapfil.sml
-mapfil(34776, 34776, Val)
-1
+self -> mapfil(id: 34776, is: Val)
+Number of found contexts: 1
+
+Original recursive call:
 Exp_App
-  1 Exp_Var mapfil(34776, 34776, Val)
+  1 Exp_Var mapfil(id: 34776, is: Val)
   2 Exp_Tuple
-      1 Exp_Var f(34779, 34779, Val)
-      2 Exp_Var p(34780, 34780, Val)
-      3 Exp_Var xs(34782, 34782, Val)
+      1 Exp_Var f(id: 34779, is: Val)
+      2 Exp_Var p(id: 34780, is: Val)
+      3 Exp_Var xs(id: 34782, is: Val)
+Recursive call with xs inserted into the hole
+of the context:
 Exp_App
-  1 Exp_Var mapfil(34776, 34776, Val)
+  1 Exp_Var mapfil(id: 34776, is: Val)
   2 Exp_Tuple
-      1 Exp_Var f(34779, 34779, Val)
-      2 Exp_Var p(34780, 34780, Val)
-      3 Exp_Var xs(34782, 34782, Val)
-foo
+      1 Exp_Var f(id: 34779, is: Val)
+      2 Exp_Var p(id: 34780, is: Val)
+      3 Exp_Var xs(id: 34782, is: Val)
+Recursive call match original.
+
 Before:
 fun mapfil (f, p, []) = []
   | mapfil (f, p, (x :: xs)) = (if p x then

@@ -1,8 +1,8 @@
 Normalising: foo.sml
 Parsing mlb/sml: 
-  User: 0.496, System: 0.216, Total: 0.712
+  User: 0.472, System: 0.232, Total: 0.704
 Resolving: 
-  User: 4.912, System: 0.712, Total: 5.624
+  User: 4.948, System: 0.720, Total: 5.668
 Normalizing
   nil = nil
   (x :: xs) = x + 1 :: foo xs

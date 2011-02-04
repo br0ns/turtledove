@@ -1,13 +1,18 @@
 Normalising and rewriting: collatz.sml
-collatz(34773, 34773, Val)
-1
+self -> collatz(id: 34773, is: Val)
+Number of found contexts: 1
+
+Original recursive call:
 Exp_App
-  1 Exp_Var collatz(34773, 34773, Val)
-  2 Exp_Var xs(34775, 34775, Val)
+  1 Exp_Var collatz(id: 34773, is: Val)
+  2 Exp_Var xs(id: 34775, is: Val)
+Recursive call with xs inserted into the hole
+of the context:
 Exp_App
-  1 Exp_Var collatz(34773, 34773, Val)
-  2 Exp_Var xs(34775, 34775, Val)
-foo
+  1 Exp_Var collatz(id: 34773, is: Val)
+  2 Exp_Var xs(id: 34775, is: Val)
+Recursive call match original.
+
 Before:
 fun collatz [] = []
   | collatz (x :: xs) = (if x mod 2 = 0 then
