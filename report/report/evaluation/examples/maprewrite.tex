@@ -1,0 +1,215 @@
+\subsection{Examples}
+\label{sec:eval-normalform-examples}
+
+Some of the verbose text prints parts of the AST. This is done in the same way
+as the \ttt{SourceExplorer} application. Indentation is used to mark children of
+a node and numbering is used to indicate ordering. Thus the function call
+\ttt{foo (xs, ys)} would be written as
+
+\begin{sml}
+Exp_App
+  1 Exp_Var foo(id: 34765, is: Val)
+  2 Exp_Tuple
+      1 Exp_Var ys(id: 34768, is: Val)
+      2 Exp_Var xs(id: 34767, is: Val)  
+\end{sml}
+
+where the tuple \ttt{(id: 34765, is: Val)} given for all \ttt{Exp_Var} indicates
+the variable has (unique) id 34765 and is a value. It can either be a value,
+constructor or an exception. The id is used to decide whether two variables are
+the same (in effect a unique renaming of all variables).
+
+\begin{example}[Non possible rewriting -- foo]\
+  \label{ex:eval-map-rewrite-foo}\\
+
+  \begin{center}
+    \begin{tabular}{|l|}
+      \hline
+      \textbf{Original function}
+      \\\hline
+      \begin{sml}
+fun foo (x :: xs, ys) = x :: foo (ys, xs)
+  | foo (nil, _) = nil
+      \end{sml}
+      \\\hline
+      \textbf{Normalised function}
+      \\\hline
+      \begin{sml}
+fun foo (x :: xs, ys) = x :: foo (ys, xs)
+  | foo y = nil        
+      \end{sml}
+      \\\hline
+    \end{tabular}
+  \end{center}
+
+  \noindent
+  This function swaps the \ttt{xs} and \ttt{ys} arguments for each recursive
+  call and thus does not match any of the defined \tsf{map} rewriting
+  rules. This is seen when $\ol{xs}$ is inserted into the hole of the context
+  $\mathcal{C}$ and we don't get a recursive call that matches that of the
+  original code.
+
+  \begin{narrow}{-3em}{0em}
+    \setlength{\linewidth}{1.2\linewidth}
+    \footnotesize
+    
+    \begin{multicols}{2}           
+      \begin{sml}
+Normalising and rewriting: test.sml
+self -> foo(id: 34765, is: Val)
+Number of found contexts: 1
+
+(@\cmt{AST of the original recursive call}@)
+Original recursive call:
+Exp_App
+  1 Exp_Var foo(id: 34765, is: Val)
+  2 Exp_Tuple
+      1 Exp_Var ys(id: 34768, is: Val)
+      2 Exp_Var xs(id: 34767, is: Val)
+
+
+Recursive call with xs inserted into the hole
+of the context:
+(@\cmt{It is seen that the resulting recursive call\ 
+       has xs and ys switched and thus does not match}@)
+Exp_App
+  1 Exp_Var foo(id: 34765, is: Val)
+  2 Exp_Tuple
+      1 Exp_Var xs(id: 34767, is: Val)
+      2 Exp_Var ys(id: 34768, is: Val)
+Recursive call does NOT match original.
+
+Before:
+fun foo (x :: xs, ys) = x :: foo (ys, xs)
+  | foo (nil, _) = nil
+
+(@\cmt{Thus we are not able to rewrite the function\ 
+       but only return its normal form.}@)
+After:
+fun foo (x :: xs, ys) = x :: foo (ys, xs)
+  | foo y = nil
+      \end{sml}
+    \end{multicols}
+  \end{narrow} 
+\end{example}
+
+
+\begin{example}[Non exhaustive with two contexts -- bar]\
+  \label{ex:eval-map-rewrite-bar}\\
+
+  \begin{center}
+    \begin{tabular}{|l|l|}
+      \hline
+      \textbf{Original function}
+      \\\hline
+      \begin{sml}
+fun bar (xs as x :: _, y :: ys) = y + x :: bar (xs, ys)
+  | bar (_ :: _, nil) = nil
+      \end{sml}
+      \\\hline
+      \textbf{Normalised function}
+      \\\hline
+      \begin{sml}
+fun bar (xs as x :: _, y :: ys) = y + x :: bar (xs, ys)
+  | bar (_ :: _, nil) = nil        
+      \end{sml}
+      \\\hline
+    \end{tabular}
+  \end{center}
+
+  \noindent
+  This function is obviously not exhaustive, as also noted by the
+  \ttt{RewriteMap} application. This does however not influence the validity of
+  the rewriting produced in this case as the two clauses actually does cover the
+  same domain\footnote{Remember that this implementation does not check the
+    \ttt{where} condition of the map rule as described in
+    \fref[plain]{sec:using-current-features}}.
+
+  In this function we have deliberately chosen that the \ttt{ys} variable is the
+  one being changed in the recursive call and thus this is where the hole should
+  be in the context. The algorithm that tries to find the correct context places
+  the holes from left to right. The effect of this is that it will find an
+  invalid context at first, but second time it will find a valid one.
+
+  \begin{narrow}{-3em}{0em}
+    \setlength{\linewidth}{1.2\linewidth}
+    \footnotesize
+    
+    \begin{multicols}{2}           
+      \begin{sml}
+Normalising and rewriting: test1.sml
+Match is not exhaustive
+  (x :: z, y :: ys) = y + x :: bar ((x :: z), ys)
+  (x :: y, nil) = nil
+self -> bar(id: 34769, is: Val)
+(@\cmt{As described two contexts are found}@)
+Number of found contexts: 2
+
+Original recursive call:
+Exp_App
+  1 Exp_Var bar(id: 34769, is: Val)
+  2 Exp_Tuple
+      1 Exp_Par
+          1 Exp_App
+              1 Exp_Var ::(id: 4, is: Con)
+              2 Exp_Tuple
+                  1 Exp_Var x(id: 34770, is: Val)
+                  2 Exp_Var z(id: 34774, is: Val)
+      2 Exp_Var ys(id: 34773, is: Val)
+Recursive call with xs inserted into the hole
+of the context:
+(@\cmt{Here the wrong context is found, as when inserting\ 
+  $\ol{xs}$ into the hole it generates a recursive call that\
+  is not a match to the original.}@)
+Exp_App
+  1 Exp_Var bar(id: 34769, is: Val)
+  2 Exp_Tuple
+      1 Exp_Var z(id: 34774, is: Val)
+      2 Exp_App
+          1 Exp_Var ::(id: 4, is: Con)
+          2 Exp_Tuple
+              1 Exp_Var y(id: 34772, is: Val)
+              2 Exp_Var ys(id: 34773, is: Val)
+Recursive call does NOT match original.
+
+Original recursive call:
+Exp_App
+  1 Exp_Var bar(id: 34769, is: Val)
+  2 Exp_Tuple
+      1 Exp_Par
+          1 Exp_App
+              1 Exp_Var ::(id: 4, is: Con)
+              2 Exp_Tuple
+                  1 Exp_Var x(id: 34770, is: Val)
+                  2 Exp_Var z(id: 34774, is: Val)
+      2 Exp_Var ys(id: 34773, is: Val)
+Recursive call with xs inserted into the hole
+of the context:
+(@\cmt{Where as the second context found is a correct match}@)
+Exp_App
+  1 Exp_Var bar(id: 34769, is: Val)
+  2 Exp_Tuple
+      1 Exp_App
+          1 Exp_Var ::(id: 4, is: Con)
+          2 Exp_Tuple
+              1 Exp_Var x(id: 34770, is: Val)
+              2 Exp_Var z(id: 34774, is: Val)
+      2 Exp_Var ys(id: 34773, is: Val)
+Recursive call match original.
+
+Before:
+fun bar (xs as x :: _, y :: ys) = y + x :: bar (xs, ys)
+  | bar (_ :: _, nil) = nil
+
+(@\cmt{And thus we can rewrite the function according to the map rule}@)
+After:
+fun bar (x :: z, ys) = map (fn y => y + x) ys
+      \end{sml}
+    \end{multicols}
+  \end{narrow} 
+\end{example}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../../report"
+%%% End: 

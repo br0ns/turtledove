@@ -1,6 +1,19 @@
 \section{Map rewriting}
 \label{sec:eval-map-rewriting}
 
+The implemented \ttt{RewriteMap} application normalises the function before
+trying to rewrite it and therefore it has the same issues as the
+\ttt{NormalForm} application described above in
+\fref[plain]{sec:eval-normal-form}. Where the biggest issue is the pretty
+printer not being fully implemented.
+
+
+We give some examples of the output produced by the \ttt{RewriteMap} application
+including comments. More traces of the functions mentioned in
+\fref{chap:concrete-examples} can bee seen in
+\fref{sec:trace-map-rewrite}.
+
+\input{evaluation/examples/maprewrite}
 
 %%% Local Variables: 
 %%% mode: latex

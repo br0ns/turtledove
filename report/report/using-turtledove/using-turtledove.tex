@@ -34,7 +34,9 @@ The currently implemented, major, features of Turtledove includes:
   the \textit{RewriteMap} application. Remember that the rewriting framework, as
   described in the design, is not implemented. This is just a hard coded example
   of the possibilities that are available. See \fref{sec:eval-map-rewriting} for
-  an evaluation of this implementation.
+  an evaluation of this implementation. This implementation does currently not
+  verify any of the \ttt{where} constraints in the map rules. Meaning that it
+  may rewrite functions that doesn't have the same domain of both clauses.
 \end{description}
 
 A list of future features and further work are given in \fref{sec:further-work}
