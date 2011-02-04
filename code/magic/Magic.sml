@@ -5,6 +5,7 @@ fun fail s = raise Fail ("Magic: " ^ s)
 
 fun rewriteMap (nill, cons, mapp) self ((ps1, e1) :: (ps2, e2) :: cs) =
     let open Grammar Tree
+      val _ = print "self -> "
       val _ = println $ Variable.toString self
       fun isVar v =
           case Variable.load v of
@@ -76,7 +77,9 @@ fun rewriteMap (nill, cons, mapp) self ((ps1, e1) :: (ps2, e2) :: cs) =
            if (* isNil v1 andalso *) isCons v2 then
              let open NormalForm
                val ctxs = contexts ps1
-               val _ = println $ Show.int $ length ctxs
+               val _ = println $ "Number of found contexts: "
+                               ^ (Show.int $ length ctxs)
+                               ^ "\n"
                fun braid [p] = kappa p
                  | braid (p1 :: p2 :: ps) = braid (join Pat_App [p1, p2] :: ps)
                  | braid _ = Crash.impossible "Magic.map.braid"
@@ -84,15 +87,16 @@ fun rewriteMap (nill, cons, mapp) self ((ps1, e1) :: (ps2, e2) :: cs) =
                fun loop nil = NONE
                  | loop ((ins, x, xs) :: ctxs) =
                    let
-               val _= println "Original recursive call"
+               val _= println "Original recursive call:"
                val _ = Layout.println NONE $ Grammar.showUnwrapped NONE e2
-               val _ =  println "Recursive call with xs inserted into the hole of the context"
+               val _ = println "Recursive call with xs inserted into the hole"
+               val _ = println "of the context:"
                val _ = Layout.println NONE $ Grammar.showUnwrapped NONE $
                                       pstoe $ ins $ singleton $ Pat_Var xs
                val _ = if equiv (e2, pstoe $ ins $ singleton $ Pat_Var xs) then 
-                         println "Recursive call match." 
+                         println "Recursive call match original.\n" 
                        else 
-                         println "Recursive call does NOT match."
+                         println "Recursive call does NOT match original.\n"
 
 in
                    if List.all
