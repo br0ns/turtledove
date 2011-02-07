@@ -10,7 +10,7 @@ As it turns out we need two \textsf{map} rules.
     \ttt{::}\ \ttt{self}(\mathcal{C}[\ttt{xs}]) \\
     \mathcal{D} &=>& \ttt{nil} \\
   \end{eqnalign}\\
-  \ttt{where}\ \textsf{samedom} (\mathcal{C}, \mathcal{D}) \\
+  \textsf{where}\ \textsf{samedom} (\mathcal{C}, \mathcal{D}) \\
 %
   \Downarrow \\
 %
@@ -37,8 +37,29 @@ As it turns out we need two \textsf{map} rules.
   \end{eqnalign}
  \end{eqnarray*}
 \end{definition}
-
-Foobar about the need for two rules. \fixme{Write this}
+To see the need for two rules consider the two functions
+\begin{multicols}{2}
+\begin{sml}
+fun f (x :: xs) = x + 42 :: f xs
+  | f nil       = nil
+\end{sml}
+\begin{sml}
+fun g (x :: xs) = x + 42 :: g xs
+  | g _         = nil
+\end{sml}
+\end{multicols}
+Their normal forms are
+\begin{multicols}{2}
+\begin{sml}
+fun f (x :: xs) = x + 42 :: f xs
+  | f x         = x
+\end{sml}
+\begin{sml}
+fun g (x :: xs) = x + 42 :: g xs
+  | g x         = nil
+\end{sml}
+\end{multicols}
+Which is essentially why we need two rules.
 
 \subsection{\textsf{foldr}}
 
@@ -49,7 +70,7 @@ Foobar about the need for two rules. \fixme{Write this}
     \ttt{self}(\mathcal{C}[\ttt{xs}]))\\
     \mathcal{D} &=>& \mathbb{E}(\mathcal{D})
   \end{eqnalign}\\
-  \ttt{where}\ \textsf{samedom}(\mathcal{C}, \mathcal{D}) \\
+  \textsf{where}\ \textsf{samedom}(\mathcal{C}, \mathcal{D}) \\
 %
   \Downarrow \\
 %

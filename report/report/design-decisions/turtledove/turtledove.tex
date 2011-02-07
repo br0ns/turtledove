@@ -5,8 +5,8 @@ Turtledove is an all-in-one solution to ``Tool assisted programming in SML with
 special emphasis on semi-automatic rewriting to predefined standard forms''. As
 of this writing no integrated development environment exists for SML that offers
 high level assistance such as ``refactoring'' or ``go to definition''.
-Turtledove is an aim at being the first a back end system that can easily be
-integrated into most of the currently available development environments.
+Turtledove is an aim at being a back end system that can easily be integrated
+into most of the currently available development environments.
 
 To facilitate this Turtledove should be a modular system with a few key tools
 described below. At the core of turtledove are the parsers (SML, MLB and Rules),
@@ -28,7 +28,7 @@ programmer in building medium/large programs, whereas the rewriting tool is the
 main purpose behind the creation of Turtledove in the first place. Both are
 explained in detail below.
 
-\paragraph{Threading}
+\paragraph{Threading.}
 
 Threading is an easy way of executing the desired modular design idea of
 Turtledove but also as a high throughput is needed by the development
@@ -41,8 +41,6 @@ of them wait.
 
 All components within Turtledove including the tools is thus run in a thread for
 itself and the communication bridge is used to bind all the threads together.
-
-
 
 \input{design-decisions/turtledove/commbridge}
 

@@ -70,36 +70,36 @@ Below is a summarised list of symbols that will be introduced in this chapter
   \hline
   \textbf{Symbol} & \textbf{Description} & \textbf{Defined at} \\ \hline
 %
-  ++ & Union of two arbitrary mappings. 
+  ++ & Union mappings.
   & \Fref[plain]{sec:auxil-defin}  \\ \hline
 %
   = & Syntactic equality. & \\ \hline
-%  
-  ==_\pi & Equivalence of two patterns. 
+%
+  ==_\pi & Equivalence of two patterns.
   & \Fref[plain]{def:equivalence-patterns} \\ \hline
 %
-  ==a & Alpha equivalence of two expressions or pattern-expression pairs. 
+  ==a & Alpha equivalence of two expressions or clauses.
   & \Fref[plain]{def:alpha-equivalence} \\ \hline
 %
-  \lessdot & Some total ordering on constructors and variables. 
+  \lessdot & Some total ordering on constructors and variables.
   & \Fref[plain]{def:pat-total-order-strict} \\ \hline
 %
-  <, \ <=& Total ordering of patterns 
+  <, \ <=& Total ordering of patterns.
   & \Fref[plain]{lem:pat-total-orderings} \\ \hline
 %
-  <', \ <='& Partial ordering of patterns
+  <', \ <='& Partial ordering of patterns.
   & \Fref[plain]{lem:pat-partial-orderings} \\ \hline
 %
-  || & Confusion of two patterns (when they don't partially order) &
+  || & Confusion of two patterns (when they don't partially order). &
   \Fref[plain]{def:pat-confusion} \\ \hline
 %
-  ->e & Elimination of one unused pattern from a match. 
+  ->e & Elimination of one unused pattern from a match.
   & \Fref[plain]{def:shadowed-patterns-1} \\ \hline
 %
-  |> & Generalisation of a single pattern-expression pair. 
+  |> & Generalisation of a single clause.
   & \Fref[plain]{def:gener-patt} \\ \hline
 %
-  ->g & Generalisation of one pattern in a match. 
+  ->g & Generalisation of one pattern in a match.
   & \Fref[plain]{def:gener-match} \\ \hline
 \end{tabular}
 
@@ -177,12 +177,12 @@ If $p_1$ and $p_2$ are equivalent we write $==_\pi$ where $\pi$ is a permutation
 of variables, such that for each variable $x$ in $p_1$ its counterpart in $p_2$
 is $\pi(x)$.
 
-For example we have $A(x,y) ==_\pi A(z,x)$ where $\pi = [x \mapsto z, y \mapsto x]$.
+For example we have $A(x,y) ==_\pi A(z,x)$ where $\pi = \{x \mapsto z, y \mapsto x\}$.
 
 \begin{definition}[Equivalence of patterns, $==_\pi$]
 \label{def:equivalence-patterns}
   \begin{eqnarray}[rlqTl]
-    v_1 &==_{\pi} v_2  & where $\pi = [v_1 \mapsto v_2]$ \label{eq:struct-eq-var} \\
+    v_1 &==_{\pi} v_2  & where $\pi = \{v_1 \mapsto v_2\}$ \label{eq:struct-eq-var} \\
     c\ttt{(}p^1_1 \ttt{,} \ldots \ttt{,} p^1_n \ttt{)} & ==_{\pi}
     c\ttt{(}p^2_1 \ttt{,} \ldots \ttt{,} p^2_n \ttt{)} & \label{eq:struct-eq-con}
   \end{eqnarray}
@@ -210,8 +210,8 @@ is not fixed.
   \end{eqnarray*}
 with
   \begin{eqnarray*}
-    \pi &=& [x\mapsto f, y \mapsto g] \\
-    \pi' &=& [f \mapsto x, g \mapsto y]
+    \pi &=& \{\ttt{x}\mapsto \ttt{f}, \ttt{y} \mapsto \ttt{g}\} \\
+    \pi' = \pi^{-1} &=& \{\ttt{f} \mapsto \ttt{x}, \ttt{g} \mapsto \ttt{y}\}
 \end{eqnarray*}
 
 Whereas these patterns are not equivalent
@@ -233,7 +233,7 @@ Whereas these patterns are not equivalent
 
 \subsection{Free variables}\label{sec:free-variables}
 
-We denote the free variables of expressions, matches and patterns with the tree
+We denote the free variables of expressions, matches and patterns with the three
 functions $\FV_{exp}$, $\FV_{match}$ and $\FV_{pat}$, respectively.
 
 \begin{definition}[Free variables of expressions, $\FV_{exp}$]\ \\
@@ -314,8 +314,8 @@ We define substitution in expressions. An expression can be substituted for any
   \end{eqnarray}
 Where in \fref{eq:subst-lam} we have
 \begin{eqnarray*}[rlqTl]
-  e'_1 &= e_1 & iff $FV_{exp}(e_3) \cap FV_{pat}(p_1) = \emptyset$\\
-  e'_1 &= e_1[e_2/e_3]
+  e'_1 &= e_1 & if $FV_{exp}(e_3) \cap FV_{pat}(p_1) = \emptyset$\\
+  e'_1 &= e_1[e_2/e_3] & otherwise
 \end{eqnarray*}
 and
 \[
@@ -362,7 +362,7 @@ fn x . z
   \end{eqnalign} \\
 \end{eqnarray*}
 
-whereas this is not
+whereas
 
 \begin{eqnarray*}
 \left(
@@ -383,11 +383,11 @@ fn z . z
 \subsection{Alpha equivalence}
 \label{sec:alpha-equivalence}
 
-We define alpha equivalence for expressions and clauses. We use the symbol $==a$
+We define alpha equivalence on expressions and clauses. We use the symbol $==a$
 for both relations.
 
-\begin{definition}[Alpha equivalence of expressions, $==a$]\ \\
-\label{def:alpha-equivalence}
+\begin{definition}[Alpha equivalence of expressions, $==a$]\
+\label{def:alpha-equivalence}\\
   First we define alpha equivalence given a mapping of bound variables:
   \begin{eqnarray}
     \sigma |- v_1 &==a& v_2 \label{eq:alpha-var} \\
@@ -398,7 +398,7 @@ for both relations.
     \sigma |- c\ttt{(}e^1_1 \ttt{,} \ldots \ttt{,} e^1_n \ttt{)} &==a&
     c\ttt{(}e^2_1 \ttt{,} \ldots \ttt{,} e^2_n \ttt{)} \label{eq:alpha-con}
   \end{eqnarray}
-where \fref{eq:alpha-var} holds
+where \fref{eq:alpha-var} holds when
 \begin{eqnarray*}[rlqTl]
 \sigma (v_1) &= v_2 & if $v_1 \in \Dom(\sigma)$\\
 v_1 &= v_2 & otherwise,
@@ -418,8 +418,8 @@ and \fref{eq:alpha-con} holds if
 \sigma |- e^1_1 ==a e^1_n \land \ldots \land \sigma |- e^2_1 ==a e^2_n.
 \]
 
-\begin{definition}[Alpha equivalence of clauses, $==a$]\ \\
-\label{def:alpha-equivalence-patexp}
+\begin{definition}[Alpha equivalence of clauses, $==a$]\
+\label{def:alpha-equivalence-patexp}\\
   Again we assume a mapping of bound variables. It is the case that
   \[
   \sigma |- \clause{p_1}{e_1} ==a \clause{p_2}{e_2}
@@ -431,8 +431,8 @@ If $e_1$ and $e_2$ are alpha equivalent expressions we write $e_1 ==a e_2$ which
 is a shorthand for $[] |- e_1 ==a e_2$. Similarly for clauses.
 \end{definition}
 
-\begin{example}[Alpha equivalence, $==a$]\ \\
-\label{ex:alpha-equivalence1}
+\begin{example}[Alpha equivalence, $==a$]\
+\label{ex:alpha-equivalence1}\\
   These are alpha equivalent
   \begin{eqnarray*}[c]
     \begin{eqnalign}[Tl]
@@ -479,7 +479,7 @@ fn Nil . Nil
 
 \section{Orderings on patterns}
 \label{sec:orderings-patterns}
-We define a total ($<=$) relation on patterns, and a partial ($<='$) relation on
+We define a total relation ($<=$) on patterns, and a partial relation ($<='$) on
 the quotient set of patterns by $\equiv$. Then we show that they indeed are
 orderings.
 
@@ -489,8 +489,8 @@ respectively.
 As it turns out it is easier to define $<$ and $<='$ directly and then define
 $<=$ and $<'$ in turn of those.
 
-\begin{definition}[Strict total ordering, $<$]\ \\
-  \label{def:pat-total-order-strict}
+\begin{definition}[Strict total ordering, $<$]\
+  \label{def:pat-total-order-strict}\\
   Assume a total strict ordering $\lessdot$ on constructors and
   variables\footnote{For example let all constructors order less than all
     variables and let variables and constructors be ordered lexicographically
@@ -543,8 +543,8 @@ b
   Note: Keep in mind that the exact names of the variables are unimportant.
 \end{example}
 
-\begin{definition}[Total ordering, $<=$]\ \\
-  \label{def:pat-total-order-weak}
+\begin{definition}[Total ordering, $<=$]\
+  \label{def:pat-total-order-weak}\\
   We define the reflexive cousin:
   \begin{eqnarray*}
     p_1 <= p_2 \Longleftrightarrow p_1 < p_2 \lor p_1 = p_2
@@ -553,8 +553,8 @@ b
 
 
 
-\begin{definition}[Partial ordering, $<='$]\ \\
-  \label{def:pat-partial-order-weak}
+\begin{definition}[Partial ordering, $<='$]\
+  \label{def:pat-partial-order-weak}\\
   We say that $p_2$ weakly generalises $p_1$ or $p_1$ is at least as specific as
   $p_2$ and we write $p_1 <=' p_2$. Inductively defined.
   \begin{eqnarray}
@@ -564,18 +564,20 @@ b
     \label{eq:pat-partial-order-weak-con}
   \end{eqnarray}
   Where \fref{eq:pat-partial-order-weak-con} hold if
-  \begin{eqnarray*}
-    c_1 &=& c_2 \quad \land\\
-    p_1 &<='& p'_1 \quad \land\\
-    &\ldots&\\
-    p_n &<='& p'_n
-  \end{eqnarray*}
+  \[
+  \begin{eqnalign}[ccc@{\quad}l]
+    c_1 &=& c_2 & \land\\
+    p_1 &<='& p'_1 & \land\\
+    &\ldots& & \land\\
+    p_n &<='& p'_n &
+  \end{eqnalign}
+  \]
 \end{definition}
 
 
 
-\begin{definition}[Strict partial ordering, $<'$]\ \\
-  \label{def:pat-partial-order-strict}
+\begin{definition}[Strict partial ordering, $<'$]\
+  \label{def:pat-partial-order-strict}\\
   We define the strict counterpart of $<='$ by
   \begin{eqnarray*}
       p_1 <' p_2 \Longleftrightarrow p_1 <=' p_2 \land p_1 \not == p_2
@@ -607,8 +609,8 @@ b
 \end{example}
 
 
-\begin{lemma}[Total ordering]\ \\
-  \label{lem:pat-total-orderings}
+\begin{lemma}[Total ordering]\
+  \label{lem:pat-total-orderings}\\
   The relation $<=$ is a total ordering, and $<$ is a strict total ordering on
   patterns.
 
@@ -616,8 +618,8 @@ b
 \end{lemma}
 
 
-\begin{lemma}[Partial ordering]\ \\
-  \label{lem:pat-partial-orderings}
+\begin{lemma}[Partial ordering]\
+  \label{lem:pat-partial-orderings}\\
   The relation $<='$ is a partial ordering and $<'$ is a strict partial ordering
   on the equivalence classes of patterns modulo structural equivalence
   ($pat_{/_{==}}$).
@@ -628,8 +630,8 @@ b
 We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
 < p_1$, $p_2 <= p_1$, $p_2 <' p_1$ and $p_2 <=' p_1$ respectively.
 
-\begin{lemma}[]\ \\
-  \label{lem:total-implies-partial}
+\begin{lemma}[]\
+  \label{lem:total-implies-partial}\\
   If two patterns $p_1$ and $p_2$ are ordered by the partial ordering then they
   are also ordered by the total one. That is
   \begin{eqnarray*}
@@ -640,15 +642,15 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
   Straightforward using induction.
 \end{proof}
 
-\begin{definition}[Confusion, $||$]\ \\
-  \label{def:pat-confusion}
+\begin{definition}[Confusion, $||$]\
+  \label{def:pat-confusion}\\
   Let two patterns $p_1$ and $p_2$ be given. If it is the case that neither $p_1
   <=' p_2$ nor $p_1 >=' p_2$ we say that $p_1$ and $p_2$ are confused and we
   write $p_1 || p_2$.
 \end{definition}
 
-\begin{lemma}[Unique relation]\ \\
-  \label{lem:unique-rel}
+\begin{lemma}[Unique relation]\
+  \label{lem:unique-rel}\\
   Given two patterns $p_1$ and $p_2$ exactly one of the following hold
   \begin{eqnarray*}
     p_1 &==& p_2\\
@@ -661,8 +663,8 @@ We write $p_1 > p_2$, $p_1 >= p_2$, $p_1 >' p_2$ and $p_1 >=' p_2$ to mean $p_2
   Immediately by inspection.
 \end{proof}
 
-\begin{lemma}[]\ \\
-  \label{lem:more-specific-confused}
+\begin{lemma}[]\
+  \label{lem:more-specific-confused}\\
   If $p_1 <' p_2$ and $p_2 || p_3$, then $p_1 || p_3$.
 
   Proof is given in \fref{sec:proof-partial-orderings}.
@@ -677,13 +679,12 @@ During pattern matching the input to a function is tried against the patterns
 from top to bottom. An unused pattern is a pattern that will never see a value
 which it matches.
 
-\paragraph{Elimination reasons}\ \\
 This can happen for two reasons.
 \begin{enumerate}
 \item The pattern will never be tried against the input because the input
-  matches an earlier pattern. \label{item:unused-reason-1}.
+  matches an earlier pattern\label{item:unused-reason-1}.
 \item The pattern is only tried against inputs it doesn't
-  match. \label{item:unused-reason-2}.
+  match\label{item:unused-reason-2}.
 \end{enumerate}
 
 \subsection{Cover}
@@ -710,7 +711,7 @@ Now $P$ can be a cover for two reasons
   \]
   In either case the set of constructors associated with the data type is
   \[
-  \{c_1, \ldots, c_l\} = \psi(t).
+  \{c_1, \ldots, c_l\} = \psi(c).
   \]
   Partition $P$ into $l$ subsets, $P_1, \ldots, P_l$, such that the root node of
   all the patterns in $P_i$ is the constructor $c_i$. Note that every pattern
@@ -743,8 +744,8 @@ it is shadowed.
 \subsection{Elimination}
 
 We can now define the elimination of unused patterns.
-\begin{definition}[Elimination, $->e$]\ \\
-\label{def:shadowed-patterns-1}
+\begin{definition}[Elimination, $->e$]\
+\label{def:shadowed-patterns-1}\\
   We define a reduction relation $->e$ that expresses the
   elimination of exactly one pattern from a match.
 
@@ -817,7 +818,6 @@ We can now define the elimination of unused patterns.
 % \end{proof}
 
 \section{Generalisation}\label{sec:generalisiation}
-\fixme{Require that patterns form a cover.}
 Sometimes patterns get unnecessary complex. If for example a pattern (or one of
 its subpatterns) is a constructor pattern whose subpatterns are all variables,
 and those variables are only used as arguments to the same constructor (in the
@@ -1047,8 +1047,8 @@ Four scenarios arise
   generalised. \label{item:gen-scen-4}
 \end{enumerate}
 
-\begin{definition}[Generalisation, $->g$]\ \\
-\label{def:gener-match}
+\begin{definition}[Generalisation, $->g$]\
+\label{def:gener-match}\\
   We define a reduction relation $->g$ that expresses the
   generalisation of exactly one clause in a match.
 
@@ -1107,7 +1107,6 @@ Four scenarios arise
 
 \begin{example}[Generalisation, $->g$]\ \\
 Assume the existence of a function \texttt{flip}.
-\fixme{Indsæt refernece til appendix hvor lortet kører in the wild!}
 
 Consider
 
@@ -1153,6 +1152,9 @@ fn Cons (Cons (x, y), xs) .
  | x . x
 \end{sml}
 which cannot be generalised or eliminated upon. So it is a normal form.
+
+In \fref{ex:eval-normal-example-flipodd} we use Turtledove to find the normal
+form of a similar SML function.
 
 \end{example}
 
@@ -1202,7 +1204,6 @@ ordered form by repeated elimination.
 \begin{example}\ \\
 Assume that $t = \{\texttt{A}, \texttt{B}\}$ is a data type and that the arity
 of \texttt{A} and \texttt{B} are 2 and 0 respectively.
-\fixme{Reference til appendixs (it works bitches).}
 
 Consider
 \begin{sml}
@@ -1263,7 +1264,7 @@ fn A (a, b) . A (b, a)
  | B        . B
 \end{sml}
 
-And lastly the second the second clause can be generalised. We end up with
+And lastly the second clause can be generalised. We end up with
 
 \begin{sml}
 val f =
@@ -1272,6 +1273,9 @@ fn A (a, b) . A (b, a)
 \end{sml}
 
 which cannot be generalised or eliminated further, so it is a normal form.
+
+We demonstrate Turtledove on a similar function in
+\fref{ex:eval-normal-example-f}.
 \end{example}
 
 \section{Further generalisation}\label{sec:furth-gener}
@@ -1286,7 +1290,6 @@ considered two techniques:
 \begin{description}
 \item[Simplification.] Clause bodies that have the same meaning can take many
   forms. One could devise a set of rules for simplifying clause bodies.
-  \fixme{Reference til afsnit om Simpset.}
 \item[Inlining of function calls.] The inlining of function calls where the
   argument(s) is a value can sometimes simplify a clause body as we show below.
 \end{description}

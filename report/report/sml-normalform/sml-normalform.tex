@@ -24,7 +24,7 @@ main differences between our toy language and SML.
   particular one has to consider rebinding of variables, modules, data type
   declarations, type specification, unnecessary parenthesis, etc.
 \item There are many more forms of expressions in SML. Again this has no real
-  theoretical implication safe one thing: the \texttt{let}-construct. The
+  theoretical implication save one thing: the \texttt{let}-construct. The
   problem is that the order of declarations, and even whether to have them or
   not, is arbitrary to some extend. One way around this could be elimination of
   \texttt{let}-expressions by inlining of non-recursive value declarations and
@@ -89,7 +89,7 @@ There are three reasons there is no $\kappa$-function in SML. They are
 The algorithm for checking coverage (see \fref{sec:cover}) must be altered
 slightly because of tuples and records. In our toy language a pattern always has
 a single root node. But in SML a tuple can be regarded as several root nodes, or
-a list of patterns. And that is exactly what we do; we determines if a set of
+a list of patterns. And that is exactly what we do; we determine if a set of
 lists (of equal length) of patterns is a cover.
 
 In each step we check if all the heads of the lists are a cover, and then we
@@ -107,12 +107,16 @@ cases:
   the tuples and variables are replicated $n$ times.
 \end{enumerate}
 
-\begin{example}
-  Is \fixme{Husk at indsætte en tabpause så alting bliver pænt}
-  \begin{sml}
-(SOME (a, b), x)
-(x, NONE)
-  \end{sml}
+\begin{example}\ \\
+  Is
+  \[
+  \left\{
+    \begin{array}{l}
+      \mathsml{(SOME (a, b), x)}\quad,\\
+      \mathsml{(x, NONE)}
+    \end{array}
+    \right\}
+  \]
   a cover? The algorithm runs like this (we suffix $Cov$ with the name of the
   constructor of the subset we check):
   {\allowdisplaybreaks
@@ -147,7 +151,7 @@ cases:
       Cov_{\ttt{\tiny SOME}} \left\{
         \begin{eqnalign}[l]
           \left[\ttt{a}, \ttt{b}, \ttt{x}\right]\\
-          \left[\ttt{x}, \ttt{y}, \ttt{NONE}\right]
+          \left[\ttt{x}, \ttt{x}, \ttt{NONE}\right]
         \end{eqnalign}
       \right\} \land
       Cov_{\ttt{\tiny NONE}} \left\{
@@ -159,7 +163,7 @@ cases:
       Cov_{\ttt{\tiny SOME}} \left\{
         \begin{eqnalign}[l]
           \left[\ttt{b}, \ttt{x}\right]\\
-          \left[\ttt{y}, \ttt{NONE}\right]
+          \left[\ttt{x}, \ttt{NONE}\right]
         \end{eqnalign}
       \right\} \land
       \left(
@@ -208,7 +212,7 @@ a ordered match can be eliminated or generalised then it is a normal form, but
 we do not give a order in which elimination and generalisation should be carried
 out.
 
-It turns out (but we have not proven this) that it is enough to first do try to
+It turns out (but we have not proven this) that it is enough to first try to
 eliminate each clause from top to bottom and then try to generalise each clause
 from bottom to top.
 

@@ -132,7 +132,7 @@ expressions and scheme expressions, as it is unchanged.
 The binding of SML variables is taken into account, e.g. if
 $\matchbody{\sigma}{\theta}{sexp}{exp_1}$ and $exp_1 ==a exp_2$ then $\matchbody{\sigma}{\theta}{sexp}{exp_2}$.
 
-We write $exp[pat/exp']$ for the substitution of $exp'$ in $exp$ according to
+We write $exp[exp'/pat]$ for the substitution of $exp'$ in $exp$ according to
 the pattern $pat$ (see \ref{sec:substitution}).
 
 \[
@@ -336,8 +336,9 @@ fun foo [x] = [x + 1]
   | foo xs  = map (fn x => x + 2) xs
   \end{sml}
   which would be wrong (the argument \smlinline{[1,2]} is a counter example). So
-  we require that the patterns of the clauses $clause^{*}_1$ are confused (see
-  \fref{def:pat-confusion}) with the patterns of the clauses $clause^{+}_2$.
+  we require that the patterns of the clauses $clause^{*}_1$ are pairwise
+  confused (see \fref{def:pat-confusion}) with the patterns of the clauses
+  $clause^{+}_2$.
 \end{description}
 
 \paragraph{Judgement} \fbox{\becomesthrough{exp_1}{exp_2}{rule}}\\
