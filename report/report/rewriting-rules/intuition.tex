@@ -132,7 +132,7 @@ and then
     {\ttt{$\ol{y}\ $::$\ \ol{ys}$}}
     {
       \left\{
-        \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
+        \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}
           \ol{y} & \ttt{x}\\
           \ol{ys} & \mathsml{y :: xs}
         \end{tabular}
@@ -146,7 +146,7 @@ and then
   {\ttt{($\ol{a}$, $\ol{y}\ $::$\ \ol{ys}$)}}
   {
     \left\{
-      \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
+      \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}
         \ol{a} & \ttt{(a, b)}\\
         \ol{y} & \ttt{x}\\
         \ol{ys} & \mathsml{y :: xs}
@@ -161,7 +161,7 @@ In this case we get
 \[
 \theta =
 \left\{
-  \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
+  \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}
     \ol{a} & \ttt{(a, b)}\\
     \ol{y} & \ttt{x}\\
     \ol{ys} & \mathsml{y :: xs}
@@ -278,7 +278,7 @@ where
 \[
 \theta_1 =
     \left\{
-      \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
+      \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}
         \ol{x} & \ttt{(a, b)}\\
         \ol{xs} & \ttt{xs}
       \end{tabular}
@@ -484,9 +484,9 @@ Examples include
   The (unary) relation $\textsf{pure}(exp)$ would express that $exp$ is free of
   side-effects and exceptions. This is of course undecidable but it is not too
   hard to come up with heuristics that cover a lot of code in practice.
-\item[\textsf{eval}$(exp_1)(exp_2)$] Try to evaluate an expression. This could be
+\item[\textsf{eval}$(exp_1, exp_2)$] Try to evaluate an expression. This could be
   useful for live testing of code inside the editor.
-\item[\textsf{simp}$(exp_1)(exp_2)$] Simplify an expression. Apart from just
+\item[\textsf{simp}$(exp_1, exp_2)$] Simplify an expression. Apart from just
   making code simpler this could also make rewriting rules more powerful.
 \end{description}
 
