@@ -7,7 +7,7 @@ Parsing an MLB file is a two step process. First the MLB file is parsed by the
 MLB parser and afterwards all references to external files are swapped with the
 AST gotten from parsing that particular file (MLB or SML).
 
-The lex and yacc files for the MLB parser are heavily inspired by MLton's MLB
+The Lex and Yacc files for the MLB parser are heavily inspired by MLTon's MLB
 parser.
 
 \subsection{SML and rule files}
@@ -16,8 +16,8 @@ The SML and rule parser shares the same AST as to make it easier for the
 matching process later on. This means that the AST is extended with some rule
 specific tokens.
 
-The lex and yacc files for the SML parser, and thus also the rule parser, are
-heavily inspired by MLton's SML parser.
+The Lex and Yacc files for the SML parser, and thus also the rule parser, are
+heavily inspired by MLTon's SML parser.
 
 \subsubsection{Rule parser}
 
@@ -50,8 +50,8 @@ values (see \fref{tab:utf8-rule-values}).
   \begin{tabular}{|l|c|c|c|}
     \hline
     \textbf{Letter} & \textbf{UTF-8} & \textbf{Hex} & \textbf{Decimal} \\ \hline
-    Pound sign (£)   & U+00A3 & 0xC2 0xA3 &  $194$ $163$ \\ \hline
-    Section sign (§) & U+00A7 & 0xC2 0xA7 & $194$ $167$ \\ \hline
+    Pound sign (\ttt{£})   & U+00A3 & 0xC2 0xA3 &  $194$ $163$ \\ \hline
+    Section sign (\ttt{§}) & U+00A7 & 0xC2 0xA7 & $194$ $167$ \\ \hline
   \end{tabular}
 
   \caption{Table of UTF-8, hex and decimal values of \texttt{£} and \texttt{§}}

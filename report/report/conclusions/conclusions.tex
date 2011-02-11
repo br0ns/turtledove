@@ -1,11 +1,29 @@
 \chapter{Conclusion}
+We have written a substantial amount of code during this project. About 17500
+lines to be specific. Much of this should be usable as a starting point for
+other projects or of a good enough quality to continue developing.
 
+We are especially happy with our library MyLib, SML parser and AST
+representation. We have not seen as AST representation similar to ours before,
+but we think that it works really well in practice.\\[1em]
 
-\fixme[inline=true,margin=false]{Was it a good idea with the AST, only having one data type instead of
-  many different}
+\noindent
+Unfortunately our software never got to the state where it is usable inside an
+editor. We think that is a pity since we have already implemented some useful
+tools and others would not take much additional work with the current code
+base.
 
-\fixme[inline=true,margin=false]{Something about the issues with the map rule,
-  that we need two of them.}
+We believe just a few simple tools would make programming with SML a much more
+enjoyable endeavour --- especially for newcomers.
+
+As the rewriting rules are concerned we've had a hard time judging their
+benefit, since we never got to the point where we could test many rules on large
+amounts of code.
+
+While we trust that function rewriting can be very useful, we also think that
+rewriting of expressions is a good place to look for further
+work. In particular simplification of boolean expressions seems to be hard for
+new programmers.
 
 %%% Local Variables: 
 %%% mode: latex

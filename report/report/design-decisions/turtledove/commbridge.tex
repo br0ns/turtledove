@@ -34,7 +34,7 @@ to and from the desired tools inside Turtledove.
 
 The protocol is defined (see \fref{fig:intercom-protocol-def}) as a JSON-object
 encoded string with two newlines at the end as the stop delimiter. The JSON
-object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination),
+object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination) or
 ``Orig'' (Origin) and ``Data'' (Data payload) which is described below.
 
 \begin{description}
@@ -52,7 +52,7 @@ object contains three fields, ``Meta'' (Metadata), ``Dest'' (Destination),
   \texttt{null} will be used.
 
 \item[Dest/Orig] is a non empty JSON string that needs to match a named destination in
-  Turtledove. Examples of such a named destination, also including name of
+  Turtledove. Examples of such a named destinations, also include names of
   tools.
 \end{description}
 

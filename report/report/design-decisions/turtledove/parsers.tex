@@ -6,17 +6,16 @@ project is described by one or more ML Basis files and consists of a collection
 of source files containing SML code. Thus we need to be able to parse these two
 kinds of data.
 
-We use MLton's mllex and mlyacc for that task. At the time of writing those tools are
-really the only option there is when working in Standard ML, apart from writing
-the parsers from scratch. The shortcomings of mllex and mlyacc is more than
-paid for in that we can let us inspire by existing parsers that use those
-tools. The MLKit and MLTon compilers contains parsers for both MLB and SML and
-SML/NJ contains a SML parser all written using lex and yacc.
+We use MLTon's ML-Lex and ML-Yacc for that task. At the time of writing those
+tools are really the only option there is when working in Standard ML, apart
+from writing the parsers from scratch. The shortcomings of ML-Lex and ML-Yacc is
+more than paid for in that we can let us inspire by existing parsers that use
+those tools. The MLKit and MLTon compilers contains parsers for both MLB and SML
+and SML/NJ contains a SML parser all written using lex and yacc.
 
 We have chosen to mimic the parsers found in MLTon. That is we have copied the
 rules of the lexer and the productions of the grammar with very minor
 exceptions. The code for each rule and production is our own though.
-
 
 \subsubsection{Abstract syntax tree}
 
@@ -30,7 +29,7 @@ each category of the BNF (or nonterminal of the grammar). This approach has
 several benefits:
 
 \begin{enumerate}
-\item It is easy to design the representation. It can be written directly of the
+\item It is easy to design the representation. It can be written directly off the
       BNF. Another side effect of this is that the representation is already
       documented.
 \item The type system ensures that it is only possible to represent data with a
@@ -41,9 +40,9 @@ several benefits:
 
 However the type safety offered is also a limitation; where ever one wants to
 walk through the representation one needs to define a set of mutually recursive
-functions, one for each data type. This represents a significant overhead, when
-working with the parsed data and various examples are given in \cite{mbp08} of
-how this way of representing the AST blows up code vise. Oftentimes one is only
+functions, one for each datatype. This represents a significant overhead, when
+working with the parsed data. Various examples are given in \cite{mbp08} of how
+this way of representing the AST blows up code wise. Oftentimes one is only
 interested in a small selection of tokens when working through a syntax
 tree. Consider for example the task of collecting the names of all defined
 functions in a SML program.
@@ -66,7 +65,7 @@ one category is a subset of the other. Take for example the grammar
 If we didn't have the type system values of \textit{b} would also be values of
 \textit{a}. But we do have a type system and we model values as mutually
 recursive datatypes. This means that the type of values of \textit{a} and the
-type of values of \textit{b} are distinct, and so we need a \textit{a}
+type of values of \textit{b} are distinct, and so we need an \textit{a}
 constructor to hold \textit{b} values. A representation could be
 
 \begin{quote}
@@ -80,17 +79,15 @@ datatype a = a_A
 
 When we work with more complex grammars, as the one for SML, wrapping values for
 the sake of the type system gets quite obtrusive and thus we have chosen to
-represent the AST using only one data type. This doesn't give any integrity but
-it gives a great deal of flexibility (``code by convention''). Integrity check
-seems to be a small ``price to pay'' compared to the extra flexibility and what
-seems to be less code to work with the AST.
+represent the AST as a tree over a single datatype. This doesn't give any
+integrity but it gives a great deal of flexibility (``code by
+convention'').
+
+Integrity check seems to be a small price to pay compared to the extra
+flexibility and what seems to be less code to work with the AST.
 
 \subsubsection{Payload}
-
-\fixme[inline, margin=false]{This was some text about the wrap, but it most
-  likely doesn't apply anymore.}
-
-Actually the AST is not just a n-ary tree structure of the above mentioned
+Actually the AST is not just an $n$-ary tree structure of the above mentioned
 single data type. Each node in the AST is a \textit{wrap} of a token (the data
 type) and a left and right field both of type $\alpha$. These two fields, left
 and right, are polymorph such that any manipulations to the AST can transform it
@@ -103,15 +100,11 @@ contain infix status and environment information, where the environment
 information is that just before, in the left part, and the information after
 this node, in the right part.
 
-\fixme{give a reference to where all this is explained in detail}
-
 \subsubsection{Representing SML and Rules}
-
-
 Both the SML and Rule parser will uses the same AST of one combined data type as
 argued above, as this will make it much easier
 when comparing actual SML code to a scheme in the defined rules and since the
-rule grammar is SML with some extensions. 
+rule grammar is SML with some extensions.
 
 \subsubsection{Representing MLB}
 

@@ -1,6 +1,5 @@
 \section{Abstract syntax tree}
-
-All the parsers implement the design idea (see section XX \fixme{ref to design})
+All the parsers implement the design idea (see section \fref{sec:design-parsers})
 of only having one data type for the possible nodes in the AST. 
 
 The MLB and SML AST is defined as a tree of wrapped nodes. We recall that the
@@ -24,11 +23,11 @@ and right wrap fields respectively.
 
 Right now the left and right fields of the MLB AST are not used (only set to
 unit), but the idea is that the environment, as it looks prior to the SML or MLB
-file, should be saved such that if the file changes we only need to re parse the
+file, should be saved such that if the file changes we only need to re-parse the
 changed part and can then use the environment as it looked before this
-file. This way we don't need to re parse the whole MLB file (most likely
-including a re parse of the basis library). This has however not been implement
-as of this writing (see \fref{sec:future-work} for discussion about space issues
+file. This way we don't need to re-parse the whole MLB file (most likely
+including a re-parse of the basis library). This has however not been implement
+as of this writing (see \fref{sec:further-work} for discussion about space issues
 where this could help out).
 
 \subsection{Resolving}
@@ -48,11 +47,15 @@ The infix basis is a dictionary of variable names to their fixity status (left,
 right or nonfix).
 
 \subsection{Environment resolving}
+During environment resolving every identifier is equipped with a unique
+identifier. This has essentially the same effect as renaming every identifier
+uniquely.
 
-\fixme{insert brief description of what is storred and the unique numberings}
+We also note each identifiers status, that is whether its an exception, a value
+or a constructor.
 
-
- 
+A interface environment is also resolved. It contains the declared identifiers
+in signatures and functors.
 
 %%% Local Variables: 
 %%% mode: latex

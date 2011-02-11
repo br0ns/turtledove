@@ -1,16 +1,14 @@
 \subsection{Source management}
+Parsing of malformed code is a major challenge and will always be present when
+parsing code that is currently being written. If a new function is currently
+being written it will inhibit the SML parser for giving an AST of the entire
+file.
 
-Parsing of non well formed code is a major challenge and will always be present
-when parsing code that is currently being written. Whether it being a new
-function that is currently being written or one or more parts of non well formed
-code it will inhibit the SML parser for giving an AST of the entire file. 
+Parsing of entire projects is a relatively costly operation, the source
+management should thus only make the SML parser re-parse as small fragments of
+code as possible to maintain low response times.
 
-Parsing of entire projects is a relative costly operation, the source management
-should thus only make the SML parser re parse as small fragments of code as
-possible to maintain low response times. 
-
-
-Multiple steps are taken to make sure these two issues are handled. 
+Multiple steps are taken to make sure these two issues are handled.
 
 \begin{itemize}
 \item Remove non well formed code chunks from the source such that an AST can be

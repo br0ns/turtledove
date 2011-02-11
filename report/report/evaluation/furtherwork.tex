@@ -5,38 +5,39 @@
   especially semantics (and preserving thereof) are left unproven.
 
 \item[Extend normal forms to full SML] In our implementation we are only concerned
-  with \ttt{fun ...}-declarations and we do not handle records (flexible or
-  otherwise). To fully handle records one would have to perform type inference
-  (see \fref{sec:preparation}).
+  with \ttt{fun}-declarations and we do not handle records (flexible or
+  otherwise). See \fref{sec:preparation}.
 
 \item[Modules] Turtledove does currently not implement all the described
   components of the design (see \fref{fig:turtledove-design}). 
   \begin{description}
   \item[Project manager] This has almost been implemented, but could do with a
     complete rewrite. Currently it does not compile due to changes in MyLib's
-    JSON module. Also it only parses turtledove project files.
+    JSON module. Also it only parses Turtledove project files.
 
   \item[Communication bridge] Needs implementing.
 
   \item[Source Management] Needs implementing and needs investigation of cashing
-    possibilities. Example could be not to re parse files that haven't changed
+    possibilities. Example could be not to re-parse files that haven't changed
     such as the basis library (which rarely changes). Use the parser to do
     incremental parsing such that only newly inserted code is parsed.
 
   \item[SML parser] Better reporting of erroneous SML code. For example when
     multiple clauses of a function is defined using different number of
     arguments because parenthesis are missing around constructors or lists,
-    which is a common by novice programmers.
+    which is a common mistake among novice programmers.
   \end{description}
 
-\item[Tools] Create useful tools that can work with the AST and interact the
-  user and the development environment.
+\item[Tools] Create useful tools that can work with the AST and interact with
+  the user and the development environment.
 
   \begin{description}
   \item[Todo] Merge the already created todo application into a tool, so the
     user may get a list of ``TODO'''s in currently open project.
 
-  \item[Refactoring] Implement various refactoring commands such as renaming.
+  \item[Refactoring] Implement various refactoring commands such as renaming
+    (note that this is almost trivial as every identifier is equipped with a
+    unique id).
 
   \item[Auto completion] Use all information available in the environment to
     ease code creation for the developer. Connect this with ML-Doc to also show
@@ -51,28 +52,31 @@
   rewriting rules from files when started, such that rules may be added or
   removed without changing the source code. This includes figuring out how to
   automaticly find the transformers and contexts and the following:
-  \fixme{transformers and contexts}
   \begin{description}
   \item[Rule Parser] The rule parser does currently not compile against the
     latest AST, due to some changes of the wrap. Also meta variables needs to be
     parsed and added to the BNF. We imagine a syntax of \ttt{_xs} (normal
     identifier prefixed with an underscore) to mean $\ol{xs}$.
 
-  \item[Rules] Currently there are only defined a few rewriting rules (map and
-    fold). For proper use a wide variety of rules needs to be defined. This
-    includes the set of simplification (expression) rules.
+  \item[Rules] Currently there are only defined a few rewriting rules
+    (\textsf{map$_\textsf{a}$}, \textsf{map$_\textsf{b}$}, \textsf{foldl} and
+    \textsf{foldr}). For proper use a wide variety of rules needs to be
+    defined. This includes the set of simplification (expression) rules.
   \end{description}
 
 \item[Development Environment] Write plugins/extensions to existing development
   environments such that they may integrade Turtledove. Our original idea was to
-  write bindings to emacs.
+  write bindings to Emacs.
 
+\item[AST] Currently the environment is stored at every node in the AST. Due to
+  the persistency of the data structure one might think this not to be a
+  problem. But since the environment uses maps that are implemented as balanced
+  search trees a lot of the benefits of persistency goes out the window when
+  trees are balanced.
 
-\item[AST] Currently every node in the AST have a copy of the environment as it
-  looks at this point in the code. This means that the basis library is stored
-  quite a lot of places which may not be the best way of doing it. Just as an
-  indicator, running the current source explorer application on basis.mlb (The
-  basis library) consumes roughly 300MB of memory and roughly 1GB on MyLib.mlb.
+  Just as an indicator, running the current source explorer application on
+  \ttt{basis.mlb} (The Basis Library) consumes roughly 300MB of memory and
+  roughly 1GB on \ttt{MyLib.mlb}.
 
 \item[Threading] Look at threading the tools and the various parses such that
   they don't influence the responsiveness of Turtledove when communicating with

@@ -8,7 +8,7 @@ front-end in order to make it easy to port to different editors and IDE's. Our
 own preference goes towards Emacs.
 
 Even though this project focuses on rewriting of functions to standard forms we
-wanted the system to be extensible in order for it to provide other tools to
+wanted the system to be extensible in order for it to provide other tools to the
 programmer (like auto completion or variable renaming).
 
 To accomodate this Turtledove should consist of a few key components and a
@@ -33,7 +33,7 @@ internals of Turtledove. One should be able to define rewriting rules for both
 expressions and functions.
 
 \begin{description}
-\item[Expressions] These rules were mainly intend to function as a set of
+\item[Expressions.] These rules were mainly intended to function as a set of
   simplification rules but are not limited to that.
 
   Such simplifications could be
@@ -53,7 +53,7 @@ expressions and functions.
     }
   \end{center}
 
-\item[Functions] These are more high level rewrites that intend to rewrite
+\item[Functions.] These are more high level rewrites that intend to rewrite
   entire functions and are the main focus for this project. An example of a
   function that can be rewritten is
 
@@ -76,12 +76,12 @@ combinators \ttt{map}, \ttt{foldl} and \ttt{foldr}.
 Other tools include
 
 \begin{description}
-\item[Todo] Returns all SML comments that start with the string ``TODO'' in the
+\item[Todo.] Returns all SML comments that start with the string ``TODO'' in the
   current project to the development environment.
 
-\item[Auto completion] Returns a list of visible names given a position in the
+\item[Auto completion.] Returns a list of visible names given a position in the
   source text (scope) to the development environment\footnote{The auto
-    completion has been request on the MLton mailing list
+    completion has been requested on the MLton mailing list
     \url{http://mlton.org/pipermail/mlton/2005-July/027571.html} among other
     features that could be implemented as tools.}.
 \end{description}
@@ -99,9 +99,9 @@ improvements and suggestions for futher work.
 \item A partial SML AST pretty printer (mainly missing signatures, structures
   and functors).
 \item Stand alone application that can normalise an SML AST
-\item Stand alone application that implement a hard coded map rewriter.
+\item Stand alone application that implement a hard coded \textsf{map} rewriter.
 \item A few stand alone applications that implement various features of intended
-  tools such as todo's and total project code size.
+  tools such as a ``todo'' extractor and total project code size calculator.
 \end{itemize}
 
 For guidelines on using Turtledove see \fref{chap:using-turtledove}.
@@ -208,7 +208,7 @@ functions.
 \section{Readers prerequisites}
 Readers of this text should, as a minimal prerequisite, be familiar with
 Standard ML. Some knowledge of compiler design and programming language theory,
-is also recommended. Also some algorithmic and mathematically maturity will be
+is also recommended. Also some algorithmic and mathematical maturity will be
 of help. Any to-be computer scientist with a few years experience should be able
 to either directly understand this text, or be able to easily acquire the needed
 knowledge.\\
@@ -244,7 +244,7 @@ For general ideas on program refactoring in funcational programming languages
   the chapter by giving an intuitive understanding of the rules and some further
   suggestions.
 \item[Chapter 4 -- Concrete examples.]
-  We define three concrete rules and use the to rewrite a suite of example
+  We define three concrete rules and use them to rewrite a suite of example
   code.
 \item[Chapter 5 -- Design.]
   We give a high level description of our design goals and ideas.

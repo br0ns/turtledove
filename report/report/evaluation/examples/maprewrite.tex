@@ -123,7 +123,7 @@ fun bar (xs as x :: _, y :: ys) = y + x :: bar (xs, ys)
   the rewriting produced in this case as the two clauses actually does cover the
   same domain\footnote{Remember that this implementation does not check the
     \ttt{where} condition of the map rule as described in
-    \fref[plain]{sec:using-current-features}}.
+    \fref[plain]{sec:using-current-features}.}.
 
   In this function we have deliberately chosen that the \ttt{ys} variable is the
   one being changed in the recursive call and thus this is where the hole should
