@@ -11,7 +11,7 @@ tools are really the only option there is when working in Standard ML, apart
 from writing the parsers from scratch. The shortcomings of ML-Lex and ML-Yacc is
 more than paid for in that we can let us inspire by existing parsers that use
 those tools. The MLKit and MLTon compilers contains parsers for both MLB and SML
-and SML/NJ contains a SML parser all written using lex and yacc.
+and SML/NJ contains an SML parser all written using lex and yacc.
 
 We have chosen to mimic the parsers found in MLTon. That is we have copied the
 rules of the lexer and the productions of the grammar with very minor
@@ -24,7 +24,7 @@ parsing. In this regard we take an unorthodox approach to representing SML.
 
 The structure of the data one wishes to parse is often described by a BNF
 grammar, that is also the case for MLB and SML. The most common way to represent
-parsed data is then to define a set of mutually recursive datatypes; one for
+parsed data is then to define a set of mutually recursive data types; one for
 each category of the BNF (or nonterminal of the grammar). This approach has
 several benefits:
 
@@ -40,12 +40,12 @@ several benefits:
 
 However the type safety offered is also a limitation; where ever one wants to
 walk through the representation one needs to define a set of mutually recursive
-functions, one for each datatype. This represents a significant overhead, when
+functions, one for each data type. This represents a significant overhead, when
 working with the parsed data. Various examples are given in \cite{mbp08} of how
 this way of representing the AST blows up code wise. Oftentimes one is only
 interested in a small selection of tokens when working through a syntax
 tree. Consider for example the task of collecting the names of all defined
-functions in a SML program.
+functions in an SML program.
 
 
 Another limitation is that ``wrapper constructors'' are often needed. It happens
@@ -64,7 +64,7 @@ one category is a subset of the other. Take for example the grammar
 
 If we didn't have the type system values of \textit{b} would also be values of
 \textit{a}. But we do have a type system and we model values as mutually
-recursive datatypes. This means that the type of values of \textit{a} and the
+recursive data types. This means that the type of values of \textit{a} and the
 type of values of \textit{b} are distinct, and so we need an \textit{a}
 constructor to hold \textit{b} values. A representation could be
 
@@ -79,7 +79,7 @@ datatype a = a_A
 
 When we work with more complex grammars, as the one for SML, wrapping values for
 the sake of the type system gets quite obtrusive and thus we have chosen to
-represent the AST as a tree over a single datatype. This doesn't give any
+represent the AST as a tree over a single data type. This doesn't give any
 integrity but it gives a great deal of flexibility (``code by
 convention'').
 
@@ -108,7 +108,7 @@ rule grammar is SML with some extensions.
 
 \subsubsection{Representing MLB}
 
-We take the common approach of mutually recursive datatypes for representing
+We take the common approach of mutually recursive data types for representing
 MLB. There are two reasons for this.
 
 \begin{enumerate}

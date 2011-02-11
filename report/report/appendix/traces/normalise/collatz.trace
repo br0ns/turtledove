@@ -1,10 +1,10 @@
 Normalising: collatz.sml
 Parsing mlb/sml: 
-  User: 0.528, System: 0.180, Total: 0.708
+  User: 0.320, System: 0.070, Total: 0.390
 Resolving: 
-  User: 4.960, System: 0.708, Total: 5.668
+  User: 3.260, System: 0.340, Total: 3.600
 Normalizing
-  [] = []
+  (nil) = (nil)
   (x :: xs) = (if x mod 2 = 0 then
                  x div 2
                else

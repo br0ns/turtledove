@@ -1,11 +1,11 @@
 Normalising: mellemsaml.sml
 Parsing mlb/sml: 
-  User: 0.496, System: 0.212, Total: 0.708
+  User: 0.290, System: 0.090, Total: 0.380
 Resolving: 
-  User: 5.040, System: 0.636, Total: 5.676
+  User: 3.110, System: 0.430, Total: 3.540
 Normalizing
-  [] = ""
-  [x] = x
+  (nil) = ""
+  (x :: nil) = x
   (x :: xs) = x ^ " " ^ (mellemsaml xs)
 After elimination:
   (nil) = ""

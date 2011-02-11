@@ -1,16 +1,16 @@
 Normalising and rewriting: collatz.sml
-self -> collatz(id: 34773, is: Val)
+self -> collatz(id: 33780, is: Val)
 Number of found contexts: 1
 
 Original recursive call:
 Exp_App
-  1 Exp_Var collatz(id: 34773, is: Val)
-  2 Exp_Var xs(id: 34775, is: Val)
+  1 Exp_Var collatz(id: 33780, is: Val)
+  2 Exp_Var xs(id: 33782, is: Val)
 Recursive call with xs inserted into the hole
 of the context:
 Exp_App
-  1 Exp_Var collatz(id: 34773, is: Val)
-  2 Exp_Var xs(id: 34775, is: Val)
+  1 Exp_Var collatz(id: 33780, is: Val)
+  2 Exp_Var xs(id: 33782, is: Val)
 Recursive call match original.
 
 Before:

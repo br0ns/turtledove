@@ -1,20 +1,20 @@
 Normalising and rewriting: evallist.sml
-self -> evallist(id: 34783, is: Val)
+self -> evallist(id: 33790, is: Val)
 Number of found contexts: 1
 
 Original recursive call:
 Exp_App
-  1 Exp_Var evallist(id: 34783, is: Val)
+  1 Exp_Var evallist(id: 33790, is: Val)
   2 Exp_Tuple
-      1 Exp_Var fs(id: 34785, is: Val)
-      2 Exp_Var v(id: 34786, is: Val)
+      1 Exp_Var fs(id: 33792, is: Val)
+      2 Exp_Var v(id: 33793, is: Val)
 Recursive call with xs inserted into the hole
 of the context:
 Exp_App
-  1 Exp_Var evallist(id: 34783, is: Val)
+  1 Exp_Var evallist(id: 33790, is: Val)
   2 Exp_Tuple
-      1 Exp_Var fs(id: 34785, is: Val)
-      2 Exp_Var v(id: 34786, is: Val)
+      1 Exp_Var fs(id: 33792, is: Val)
+      2 Exp_Var v(id: 33793, is: Val)
 Recursive call match original.
 
 Before:
