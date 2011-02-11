@@ -3,18 +3,23 @@
 
 Turtledove.mlb
 
-app/GaaSomEnDatalog/GaaSomEnDatalog.mlb
-app/size/size.mlb
-app/todo/todo.mlb
+app/SourceExplorer/SourceExplorer.mlb
+app/NormalForm/NormalForm.mlb
+app/Rewrite/Map/RewriteMap.mlb
+app/Size/Size.mlb
+app/Todo/Todo.mlb
 
-test/benchmark/main.sml
-test/benchmark1/main.sml
-test/more_magic/more_magic.mlb
-test/parsers/rule/test.mlb
 test/pp/pp.mlb
-test/ProjectManager/ProjectManager.mlb
+(* Borken Tests *)
+test/broken/benchmark.broken/main.sml
+test/broken/benchmark1.broken/main.sml
+test/broken/more_magic.broken/more_magic.mlb
+test/broken/parsers.broken/rule/test.mlb
+test/broken/ProjectManager.broken/ProjectManager.mlb
 
-tool/Magic.mlb
+magic/Magic.sml
+
+
 
 modules/projectmanager/ProjectManager.mlb
 

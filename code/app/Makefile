@@ -26,7 +26,7 @@ clean-Todo:
 
 # Size
 
-.PHONY: size clean-size
+.PHONY: Size clean-Size
 Size:
 	make -C Size -f Makefile all
 clean-Size:
