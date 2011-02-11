@@ -7,8 +7,8 @@ The $\sigma$-environment binds variables of the form $\mathcal{C}$ to meta
 patterns with zero or more holes. They can be thought of as contexts since other
 (hole free) meta patterns can inhabit the holes. A (variable denoting a) meta
 pattern applied to as many hole free meta patterns as it has holes is called a
-context. If $\sigma(\mathcal{C}) = \diamond_1\ \ttt{::}\ \ol{ys}$ then --- as an
-example --- this is a context:
+context. If $\sigma(\mathcal{C}) = \diamond_1\ \ttt{::}\ \ol{ys}$ then this is a
+context:
 \[
 \mathcal{C}[\ttt{SOME}\ \ol{a}]
 \]
@@ -171,11 +171,11 @@ In this case we get
 
 \subsection{Transformers}
 In the bodies of scheme clauses, that is scheme expressions, we want to express that
-\textit{some} computation takes place without being too specific about
+\textit{some} computation takes place, without being too specific about
 \textit{what} it actually is. We use transformers to that end.
 
 A transformer is simply a pair of a (concrete) SML pattern and an SML
-expression. On can think of it as a single clause, or a function definition
+expression. One can think of it as a single clause, or a function definition
 without the benefits of pattern matching.
 
 Consider the function definition
@@ -195,9 +195,9 @@ refer to the function being defined (if any).
 
 It is possible to use curried arguments with the \smlinline{fun}-syntax. But a
 \smlinline{fun} declaration is rewritten to a series of anonymous functions with
-an inner case expression where the curried arguments is arranged in a
-tuple. This means that the arguments are given in curried form in recursive
-calls but in tuple form in the patterns.
+an inner case expression where the curried arguments is arranged in a tuple (see
+\cite[Appendix A]{SML97}). This means that the arguments are given in curried
+form in recursive calls but in tuple form in the patterns.
 
 This detail should not affect rewriting rules. Our solution is to always use
 tuples in rewriting rules. Currying the arguments is then done during rewriting
@@ -396,10 +396,10 @@ and
 \]
 
 \subsection{The $\sigma$-environment}
-The reader has probably noticed that the inference rules describe how to compute
+The alert reader has probably noticed that the inference rules describe how to compute
 the $\theta$'s but not the $\sigma$.
 
-As described the $\sigma$ environment contains three things:
+As described the $\sigma$-environment contains three things:
 \begin{enumerate}
 \item \textsf{self}, that is the name and arity of the function being defined.
 \item Contexts.
@@ -440,19 +440,15 @@ We express restrictions on a scheme with the keyword \textsf{where} followed by
 the restrictions. At this time we have only considered one relation, namely
 \textsf{samedom}.
 
-Consider the SML functions
+Consider the three SML functions
 \begin{sml}
 fun foo (x :: xs, y) = x + y :: foo (xs, y)
   | foo _ = nil
-\end{sml}
-,
-\begin{sml}
+
 fun bar (x :: xs, SOME y) = x + y :: bar (xs, SOME y)
   | bar (_, SOME _) = nil
   | bar _ = raise Fail "foobar"
-\end{sml}
-and
-\begin{sml}
+
 fun baz (x :: xs, SOME y) = x + y :: bar (xs, SOME y)
   | baz _ = nil
 \end{sml}
@@ -475,107 +471,25 @@ arise.
 
 Examples include
 \begin{description}
-\item[\textsf{pure}$(exp)$] Determine if an expression is pure. Because of the
+\item[\textsf{pure}] Determine if an expression is pure. Because of the
   side-effects and exceptions in SML one cannot in general reorder
-  expression. It is for example not the case that
+  expressions. It is for example not the case that
   \[
   exp_1\ \ttt{+}\ exp_2 = exp_2\ \ttt{+}\ exp_1.
   \]
   The (unary) relation $\textsf{pure}(exp)$ would express that $exp$ is free of
   side-effects and exceptions. This is of course undecidable but it is not too
-  hard to come up with heuristics that cover a lot of code in practice.
-\item[\textsf{eval}$(exp_1, exp_2)$] Try to evaluate an expression. This could be
-  useful for live testing of code inside the editor.
-\item[\textsf{simp}$(exp_1, exp_2)$] Simplify an expression. Apart from just
+  hard to come up with heuristics that cover a lot of code in practice..
+\item[\textsf{simp}] Simplify an expression. Apart from just
   making code simpler this could also make rewriting rules more powerful.
+\item[\textsf{eval}] Try to evaluate an expression. This could be
+  useful for the simplification of expressions.
 \end{description}
 
 Notice that any rewriting rule is in itself a binary relation (on matches or
 expression). Thus one rule could use other rules through constraints.
 
 We have not pursued these ideas in practice.
-
-\section{Some rewriting rules}
-We have written rules for \ttt{map}, \ttt{foldl} and \ttt{foldr} forms.
-
-We give the rules and some examples of use in the next chapter.
-
-% \subsection{Relations on meta patterns (the $\rho$-environment)}
-
-% \subsection{Example}
-
-% Introduction...
-
-% \begin{example}[Matching / use of pattern variables] \
-% \label{ex:intuition-example}
-
-%   \fixme{Find ordenligt eksempel navn/tekst}
-
-%   \fixme{this example uses dom. Rearrange the text so dom is explained before}
-
-%   \fixme{add reference to the map rule definition, instead of hiding that this
-%     is a map example.}
-  
-%   Given the below function \texttt{foo}, we will try and match it up with the
-%   \textsf{map}-rule
-
-% \begin{sml}
-% fun foo (a, b :: xs) = b + a
-%   | foo _            = 0
-% \end{sml}
-
-%   The first clause in \texttt{foo} is an instance of the first
-%   scheme in the \textsf{map}-rule
-
-%   \[
-%   |\ \mathcal{C}[\overline{x}\texttt{ :: }\overline{xs}] =>
-%   \mathbb{D}(\mathcal{C}[\overline{x}])
-%   \]
-
-%   with
-
-%   \begin{eqnarray*}[rl]
-%     \mathcal{C} &\mapsto \texttt{(}\overline{y}\texttt{,} \diamond\texttt{)}\\
-%     \overline{a} &\mapsto \texttt{a}\\
-%     \overline{x} &\mapsto \texttt{b}\\
-%     \overline{xs} &\mapsto \texttt{xs}\\
-%     \mathbb{D}(\texttt{(}\overline{a}\texttt{,} \overline{b}\texttt{)}) &=
-%     \kappa(\overline{b}) \texttt{ + } \kappa(\overline{a})
-%   \end{eqnarray*}
-
-%   The second clause is an instance of the scheme
-
-%   \[
-%   |\ \mathcal{D} => \mathbb{E}(\mathcal{D})
-%   \]
-
-%   with
-
-%   \begin{eqnarray*}[rl]
-%     \mathcal{D} &\mapsto \overline{a}\\
-%     \overline{a} &\mapsto \texttt{\_}\\
-%     \mathbb{E}(\overline{a}) &= \texttt{0}
-%   \end{eqnarray*}
-  
-%   Finally, if $dom(\lfloor\mathcal{D}\rfloor) =
-%   dom(\lfloor\mathcal{C[\texttt{\_}]}\rfloor)$, which is the case here, then the
-%   function \texttt{foo} is an instance of the $\mathsf{map}$-rule and may be
-%   rewritten accordingly:
-
-%   \fixme{maybe some more text about the dom}
-
-%   \begin{eqnarray*}[c]
-%     \texttt{fun foo $\lfloor \mathcal{C} \rfloor [\lfloor xs \rfloor]$ = map (fn $x$ =>
-%       $\mathbb{D}(\lfloor \mathcal{C} \rfloor[\lfloor x \rfloor])$) $\lfloor xs
-%       \rfloor$}\\
-%     =\\
-%     \texttt{fun foo (a, b) = map (fn b => b + a) b}
-%   \end{eqnarray*}
-  
-%   We have explicitly written the canonical instantiation, but as noted before
-%   this will not always be done.
-% \end{example}
-
 
 
 %%% Local Variables: 

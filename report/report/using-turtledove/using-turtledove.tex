@@ -56,12 +56,12 @@ The MLB variable paths are used by the MLTon basis library MLB files and as such
 would have to be completely changed for any other interpreter/compiler than
 MLTon.
 
-To test that the system is set up correctly the command ``\ttt{mlton
-  Turtledove.mlb}'' can be run, and if it compiles without any errors,
-everything should compile. Remember that MyLib must be installed before
-attempting to compile any Turtledove related code.
+The command ``\ttt{mlton Turtledove.mlb}'' can be run, to test that the system
+is set up correctly. If it compiles without any errors, everything should be
+fine. Remember that MyLib must be installed before attempting to compile any
+Turtledove related code.
 
-The root code folder contains a \ttt{Makefile} that will build all the
+The root code folder contains a make file, that will build all the
 applications and the test applications. All individual applications and test
 applications also have their own make files as well. Some of these make files
 are even extended with shorthands for running the executable on a predefined set
