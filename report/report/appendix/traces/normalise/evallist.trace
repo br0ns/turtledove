@@ -1,11 +1,11 @@
 Normalising: evallist.sml
 Parsing mlb/sml: 
-  User: 0.500, System: 0.208, Total: 0.708
+  User: 0.270, System: 0.130, Total: 0.400
 Resolving: 
-  User: 4.948, System: 0.724, Total: 5.672
+  User: 3.160, System: 0.430, Total: 3.590
 Normalizing
   (f :: fs, v) = f v :: evallist (fs, v)
-  ([], _) = []
+  ((nil), x) = (nil)
 After elimination:
   (f :: fs, v) = f v :: evallist (fs, v)
   ((nil), x) = (nil)

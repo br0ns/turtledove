@@ -1,10 +1,10 @@
 Normalising: mapfil.sml
 Parsing mlb/sml: 
-  User: 0.552, System: 0.156, Total: 0.708
+  User: 0.310, System: 0.080, Total: 0.390
 Resolving: 
-  User: 4.964, System: 0.704, Total: 5.668
+  User: 3.170, System: 0.420, Total: 3.590
 Normalizing
-  (f, p, []) = []
+  (f, p, (nil)) = (nil)
   (f, p, (x :: xs)) = (if p x then
                          f x
                        else

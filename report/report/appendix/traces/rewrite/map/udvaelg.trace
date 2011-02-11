@@ -1,20 +1,20 @@
 Normalising and rewriting: udvaelg.sml
-self -> udvaelg(id: 34768, is: Val)
+self -> udvaelg(id: 33775, is: Val)
 Number of found contexts: 1
 
 Original recursive call:
 Exp_App
   1 Exp_App
-      1 Exp_Var udvaelg(id: 34768, is: Val)
-      2 Exp_Var xs(id: 34770, is: Val)
-  2 Exp_Var ys(id: 34772, is: Val)
+      1 Exp_Var udvaelg(id: 33775, is: Val)
+      2 Exp_Var xs(id: 33777, is: Val)
+  2 Exp_Var ys(id: 33779, is: Val)
 Recursive call with xs inserted into the hole
 of the context:
 Exp_App
   1 Exp_App
-      1 Exp_Var udvaelg(id: 34768, is: Val)
-      2 Exp_Var xs(id: 34770, is: Val)
-  2 Exp_Var ys(id: 34772, is: Val)
+      1 Exp_Var udvaelg(id: 33775, is: Val)
+      2 Exp_Var xs(id: 33777, is: Val)
+  2 Exp_Var ys(id: 33779, is: Val)
 Recursive call match original.
 
 Before:

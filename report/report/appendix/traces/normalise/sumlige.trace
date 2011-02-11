@@ -1,10 +1,10 @@
 Normalising: sumlige.sml
 Parsing mlb/sml: 
-  User: 0.524, System: 0.192, Total: 0.716
+  User: 0.300, System: 0.100, Total: 0.400
 Resolving: 
-  User: 5.056, System: 0.620, Total: 5.676
+  User: 3.200, System: 0.410, Total: 3.610
 Normalizing
-  [] = 0
+  (nil) = 0
   (x :: xs) = if x mod 2 = 0 then
                 x div 2 + sumlige xs
               else

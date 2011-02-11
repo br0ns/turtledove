@@ -1,11 +1,11 @@
 Normalising: composelist.sml
 Parsing mlb/sml: 
-  User: 0.540, System: 0.168, Total: 0.708
+  User: 0.310, System: 0.080, Total: 0.390
 Resolving: 
-  User: 4.944, System: 0.732, Total: 5.676
+  User: 3.080, System: 0.450, Total: 3.530
 Normalizing
-  [] x = x
-  (f :: []) x = f (x)
+  (nil) x = x
+  (f :: (nil)) x = f (x)
   (f :: fs) x = f (composelist fs x)
 After elimination:
   (nil) x = x
@@ -36,7 +36,7 @@ Now have
   y x = x
 
 Normalizing
-  [] x = x
+  (nil) x = x
   (y :: ys) x = y (composelist (ys) x)
 After elimination:
   (nil) x = x

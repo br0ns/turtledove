@@ -1,16 +1,16 @@
 Normalising and rewriting: foo.sml
-self -> foo(id: 34765, is: Val)
+self -> foo(id: 33772, is: Val)
 Number of found contexts: 1
 
 Original recursive call:
 Exp_App
-  1 Exp_Var foo(id: 34765, is: Val)
-  2 Exp_Var xs(id: 34767, is: Val)
+  1 Exp_Var foo(id: 33772, is: Val)
+  2 Exp_Var xs(id: 33774, is: Val)
 Recursive call with xs inserted into the hole
 of the context:
 Exp_App
-  1 Exp_Var foo(id: 34765, is: Val)
-  2 Exp_Var xs(id: 34767, is: Val)
+  1 Exp_Var foo(id: 33772, is: Val)
+  2 Exp_Var xs(id: 33774, is: Val)
 Recursive call match original.
 
 Before:
