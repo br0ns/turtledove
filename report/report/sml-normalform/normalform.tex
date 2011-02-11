@@ -37,15 +37,17 @@ We use (with superfixes, subfixes and primes) $v$, $c$, $m$, $p$, $e$ and $d$ to
 range over $var$, $con$, $match$, $pat$, $exp$ and $dec$ respectively.
 
 \paragraph{Data types.} Every constructor belongs to exactly one data type. For
-simplicity it is not possible to define data types and constructors in the
-language but we will assume a fixed function $\psi$ mapping constructors to the
+simplicity, it is not possible to define data types and constructors in the
+language, but we will assume a fixed function $\psi$ mapping constructors to the
 set of constructors of its own data type. This information is used solely when
 determining coverage (see \fref[plain]{sec:cover}).
 
-For the sake of examples assume that $list = \{\texttt{Nil}, \texttt{Cons}\}$,
-$pair = \{\texttt{Pair}\}$ and $number = \{\texttt{1}, \texttt{2}, \ldots\}$ are
-data types and that the arity of \texttt{Cons} and \texttt{Pair} are 2 and that
-the arity of \texttt{Nil} and all $numbers$ are 0.
+For the sake of examples, assume that there exists data types $list =
+\{\texttt{Nil},\ \texttt{Cons}\}$, $pair = \{\texttt{Pair}\}$ and $number =
+\{\texttt{1},\ \texttt{2},\ \ldots\}$, the constructors \texttt{Cons} and
+\texttt{Pair} have arity 2 and constructors \texttt{Nil} and all $number$s have
+arity 0. Then $\psi(\ttt{Cons}) = \{\ttt{Cons},\ \ttt{Nil}\}$, $\psi(\ttt{Nil})
+= \{\ttt{Cons},\ \ttt{Nil}\}$, $\psi(\ttt{Pair}) = \{\ttt{Pair}\}$, etc.
 
 \paragraph{Well-formedness.}
 \begin{itemize}
@@ -113,9 +115,9 @@ program
 \ttt{x $\mapsto$ plus (Pair (1, 8))}
 % \end{verbatim}
 \end{quote}
-might make perfect sense (if in particular \ttt{plus} is a variable bound to a
+might make perfect sense, if in particular \ttt{plus} is a variable bound to a
 suitable function (perhaps addition), and \texttt{Pair}, \texttt{1} and
-\texttt{8} are constructors of arity 2, 0 and 0, respectively).
+\texttt{8} are constructors of arity 2, 0 and 0, respectively.
 \section{Auxiliary definitions}
 \label{sec:auxil-defin}
 
@@ -689,8 +691,8 @@ This can happen for two reasons.
 
 \subsection{Cover}
 \label{sec:cover}
-We define a cover to be a set of patterns such that for every input at least one
-of the patterns will match that input and we write $Cov(P)$ if $P$ is a cover.
+A cover is defined to be a set of patterns, such that for every input at least one
+of the patterns will match that input. We write $Cov(P)$ if $P$ is a cover.
 
 Let
 \[
@@ -1289,7 +1291,8 @@ We have not worked towards this but we have some ideas. In particular we have
 considered two techniques:
 \begin{description}
 \item[Simplification.] Clause bodies that have the same meaning can take many
-  forms. One could devise a set of rules for simplifying clause bodies.
+  forms. One could devise a set of rules for simplifying clause
+  bodies\footnote{Examples of such are given in the introduction}.
 \item[Inlining of function calls.] The inlining of function calls where the
   argument(s) is a value can sometimes simplify a clause body as we show below.
 \end{description}
@@ -1325,7 +1328,7 @@ Cons (x, xs) . Cons (plus (x, 42), xs)
 We arrive at generalisation scenario \ref{item:gen-scen-1}. If we substitute
 the second pattern for the first in the second body we get
 \begin{eqnarray*}
-\ttt{Cons (plus (x, 42), tricky xs)}[\ttt{Cons (x, xs)}/\ttt{Cons (x, Nil)}] =\\
+\ttt{Cons (plus (x, 42), tricky xs)}[\ttt{Cons (x, Nil)}/\ttt{Cons (x, xs)}] =\\
 \ttt{Cons (plus (x, 42), tricky Nil)}
 \end{eqnarray*}
 

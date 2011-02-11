@@ -12,7 +12,7 @@ transfered to work on any well-formed and well-typed SML program.
 
 \section{Extension to SML}
 
-We have shown what we mean by a functions normal form and -- more or less -- how
+We have shown what we mean by a functions normal form and (more or less) how
 to compute it.
 
 Now we consider the challenges in extending the work to SML. Here we list the
@@ -51,7 +51,7 @@ $\kappa$-function defined.
 \subsubsection{Name bindings}
 To avoid (pun intended) the difficulties of capture avoiding substitution, checking
 of alpha equivalence, etc. when names can be rebound we simply provide every
-name in a SML program with a unique identifier. We then use the identifiers to
+name in an SML program with a unique identifier. We then use the identifiers to
 check whether two names are bound to the same value or not.
 
 \subsubsection{Lists}
@@ -67,7 +67,7 @@ instead of the longer
 We simply rewrite the former to the latter everywhere.
 
 \subsubsection{The $\kappa$-function}
-There are three reasons there is no $\kappa$-function in SML. They are
+There are three reasons why there can't exist a $\kappa$-function for full SML:
 \begin{description}
 \item[Layered patterns] are patterns of the form
   \[
@@ -77,7 +77,7 @@ There are three reasons there is no $\kappa$-function in SML. They are
   corresponding clause body.
 \item[Wildcards] are a special pattern ``variable'' that can not be bound. We
   eliminate wildcards by replacing them with fresh variables.
-\item[Flexible records] are a special kind of record pattern where only some of
+\item[Flexible records] are a special kind of record patterns, where only some of
   the records fields are used. For example:
   \[
   \ttt{\{x = $p$, ...\}}
@@ -108,7 +108,7 @@ cases:
 \end{enumerate}
 
 \begin{example}\ \\
-  Is
+  Is the following a cover? 
   \[
   \left\{
     \begin{array}{l}
@@ -117,7 +117,7 @@ cases:
     \end{array}
     \right\}
   \]
-  a cover? The algorithm runs like this (we suffix $Cov$ with the name of the
+  The algorithm runs like this (we suffix $Cov$ with the name of the
   constructor of the subset we check):
   {\allowdisplaybreaks
     \begin{eqnarray*}
@@ -185,7 +185,7 @@ cases:
       \left(
         \textsf{false} \land \textsf{true}
       \right)\\
-      \tabpause{now we can see that the result is \textsf{false}, eg. it is not a
+      \tabpause{now we can see that the result is \textsf{false}, that is it is not a
         cover. But we run the algorithm to the end just to illustrate.}
       &=&
       \left(
@@ -207,8 +207,8 @@ cases:
   }
 \end{example}
 
-\paragraph{Elimination and generalisation order.} We say that if a no clause in
-a ordered match can be eliminated or generalised then it is a normal form, but
+\paragraph{Elimination and generalisation order.} We say that if no clause in
+an ordered match can be eliminated or generalised then it is a normal form, but
 we do not give a order in which elimination and generalisation should be carried
 out.
 

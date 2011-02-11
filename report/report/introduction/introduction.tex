@@ -9,18 +9,18 @@ own preference goes towards Emacs.
 
 Even though this project focuses on rewriting of functions to standard forms we
 wanted the system to be extensible in order for it to provide other tools to
-programmer (like auto completion or variable renaming).
+programmers\footnote{Or as it were: ``... developers, developers, developers.''}
+(e.g., list of TODO's, auto completion or renaming/refactoring).
 
-To accomodate this Turtledove should consist of a few key components and a
+To accommodate this Turtledove should consist of a few key components and a
 plug-in system for implementing individual tools. The key components include
 \begin{itemize}
 \item A parser for MLB and SML files inspired by the work of \cite{mbp08}.
 \item Resolving of source file dependencies, variable infix status and program
   environment. Type inference would also be useful for some tools but that is
   beyond the scope of this project.
-\item A project manager for managing the users source files and any changes done
-  to them by the user outside Turtledove or any changes made by Turtledove
-  itself.
+\item A project manager for managing the users source files, and any changes
+  done to them by the user (outside Turtledove) or by Turtledove itself.
 \item A communication bridge to handle communication between Turtledove and the
   user's development environment.
 \item An SML pretty printer for converting abstract syntax trees to source code.
@@ -30,7 +30,7 @@ Rewriting of programs will be done trough a rewriting tool. This tool should
 have its own (rule) parser that extends on the SML parser, for reading in rules
 at run time. Thus new rules can be added by the user without any changes to the
 internals of Turtledove. One should be able to define rewriting rules for both
-expressions and functions.
+expressions and functions:
 
 \begin{description}
 \item[Expressions] These rules were mainly intend to function as a set of
@@ -53,9 +53,9 @@ expressions and functions.
     }
   \end{center}
 
-\item[Functions] These are more high level rewrites that intend to rewrite
-  entire functions and are the main focus for this project. An example of a
-  function that can be rewritten is
+\item[Functions] These are more high level and are intended to rewrite entire
+  functions and are the main focus of this project. An example of a function
+  that can be rewritten is
 
 \begin{minipage}{1.0\linewidth}
   \begin{tabular}{lcl}
@@ -70,24 +70,12 @@ fun foo xs = map op+ xs
   \end{tabular}
 \end{minipage}
 \end{description}
-and we define three rules for rewriting functions to utilise the list
+
+We define three rules for rewriting functions to utilise the list
 combinators \ttt{map}, \ttt{foldl} and \ttt{foldr}.
 
-Other tools include
-
-\begin{description}
-\item[Todo] Returns all SML comments that start with the string ``TODO'' in the
-  current project to the development environment.
-
-\item[Auto completion] Returns a list of visible names given a position in the
-  source text (scope) to the development environment\footnote{The auto
-    completion has been request on the MLton mailing list
-    \url{http://mlton.org/pipermail/mlton/2005-July/027571.html} among other
-    features that could be implemented as tools.}.
-\end{description}
-
 Unfortunately the goals were not fully met. The achievements of the project
-are limited to
+are
 
 \begin{itemize}
 
@@ -104,7 +92,7 @@ improvements and suggestions for futher work.
   tools such as todo's and total project code size.
 \end{itemize}
 
-For guidelines on using Turtledove see \fref{chap:using-turtledove}.
+For guidelines on using and installing Turtledove see \fref{chap:using-turtledove}.
 
 \section{Motivation}
 \label{sec:motivation}
@@ -164,9 +152,9 @@ Conversion to normal form will not capture this, but we give some suggestions on
 how it might in \fref{sec:furth-gener}.
 
 \section{Related work}
-Several tools performing rewriting of program codes exists. Of relevance to this
-project we find The Haskell Refactorer HaRe (see \cite{HARE}) and Stratego (see
-\cite{stratego}) most notable.
+There exists several tools for performing rewriting of program code. Of
+relevance to this project we find HaRe (The Haskell Refactorer, see \cite{HARE})
+and Stratego (see \cite{stratego}) most notable.
 
 HaRe performs a number of refactorings in Haskell, among which are function
 lifting and variable renaming.
@@ -215,7 +203,7 @@ For general ideas on program refactoring in funcational programming languages
   the chapter by giving an intuitive understanding of the rules and some further
   suggestions.
 \item[Chapter 4 -- Concrete examples.]
-  We define three concrete rules and use the to rewrite a suite of example
+  We define three concrete rules and use them to rewrite a suite of example
   code.
 \item[Chapter 5 -- Design.]
   We give a high level description of our design goals and ideas.
