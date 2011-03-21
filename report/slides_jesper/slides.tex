@@ -1,0 +1,139 @@
+% xcolor=table is because it seems that beamer uses the xcolor package in a
+% strange way and thus don't accept us giving arguments to the package.
+\documentclass[slidestop,compress,mathserif, xcolor=table]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[danish]{babel}
+
+\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
+
+
+% Use the NAT theme in uk (also possible in DK)
+\usetheme[nat, uk, footstyle=low]{Frederiksberg}
+
+% Make overlay sweet nice by having different transparancy depending on how
+% "far" ahead the overlay is. AWSOME!!
+\setbeamercovered{highly dynamic}
+% possible to shift back, so they are just invisible untill they should overlay
+% \setbeamercovered{invisible}
+
+% Extend figures into either left or right margin
+% Ex: \begin{narrow}{-1in}{0in} .. \end{narrow} will place 1in into left margin
+\newenvironment{narrow}[2]{%
+  \begin{list}{}{%
+  \setlength{\topsep}{0pt}%
+  \setlength{\leftmargin}{#1}%
+  \setlength{\rightmargin}{#2}%
+  \setlength{\listparindent}{\parindent}%
+  \setlength{\itemindent}{\parindent}%
+  \setlength{\parsep}{\parskip}}%
+\item[]}{\end{list}}
+
+\usepackage[final]{listings} % Make sure we show the listing even though we are
+                             % making a final report.
+
+\lstset{ %
+% language=Octave,                % choose the language of the code
+basicstyle=\ttfamily,        % the size of the fonts that are used for the code
+basewidth=0.5em,
+% numbers=left,                   % where to put the line-numbers
+% numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+% stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+% numbersep=5pt,                  % how far the line-numbers are from the code
+% backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+% showspaces=false,               % show spaces adding particular underscores
+% showstringspaces=false,         % underline spaces within strings
+% showtabs=false,                 % show tabs within strings adding particular underscores
+% frame=single	                % adds a frame around the code
+% tabsize=2,	                % sets default tabsize to 2 spaces
+% captionpos=b,                   % sets the caption-position to bottom
+% breaklines=true,                % sets automatic line breaking
+% breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+escapeinside={(@}{@)}          % if you want to add a comment within your code
+}
+
+\lstnewenvironment{sml}
+{%\lstset{}
+ } % starting code, ex a lstset that is more specific;
+{} % ending code
+
+% Write a short text to have that shown in the footer of slides other than the
+% title slide.
+\title[]{Turtledove}
+% A possible subslide.
+\subtitle{\tiny{Tool assisted programming in SML, with special emphasis on
+    semi-automatic\\ rewriting to predefined standard forms.}}
+
+\author{Jesper Reenberg}
+
+% Only write DIKU in the footer of slides (except the title slide).
+\institute[DIKU]{Department of Computer Science}
+
+% Remove the date stamp from the footer of slides (except title slide) by giving
+% it no short "text"
+\date[]{\today} 
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+\begin{frame}[c]
+  \frametitle{Oversigt}  
+
+
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Sammenligning -- HaRe}  
+
+  \begin{columns}
+    
+    \begin{column}{0.5\textwidth{}}
+      \begin{itemize}
+      \item Kommentar og layout bevarelse 
+        \begin{itemize}
+        \item Haskell kan bruge layout regler
+        \end{itemize}    
+      \item Mulighed for brugerdefineret refaktorering og program transformationer.      
+      \end{itemize}      
+    \end{column}
+    \begin{column}{0.5\textwidth{}}
+      Turtledove:
+      \begin{itemize}
+      \item Kommentar og layout bevarelse 
+        \begin{itemize}
+        \item Haskell kan bruge layout regler
+        \end{itemize}    
+      \item Mulighed for brugerdefineret refaktorering og program transformationer.      
+      \end{itemize}      
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Programatica}  
+
+
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Strafunski}
+
+
+\end{frame}
+
+
+\begin{frame}[c]
+  \frametitle{Stratego}
+
+
+\end{frame}
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
