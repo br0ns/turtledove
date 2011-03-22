@@ -1,0 +1,590 @@
+% xcolor=table is because it seems that beamer uses the xcolor package in a
+% strange way and thus don't accept us giving arguments to the package.
+\documentclass[slidestop,compress,mathserif, xcolor=dvipsnames]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[danish]{babel}
+
+\renewcommand{\ttdefault}{txtt} % Bedre typewriter font
+
+
+% Use the NAT theme in uk (also possible in DK)
+\usetheme[nat, uk, footstyle=low]{Frederiksberg}
+
+% Make overlay sweet nice by having different transparancy depending on how
+% "far" ahead the overlay is. AWSOME!!
+\setbeamercovered{highly dynamic}
+% possible to shift back, so they are just invisible untill they should overlay
+% \setbeamercovered{invisible}
+
+% Extend figures into either left or right margin
+% Ex: \begin{narrow}{-1in}{0in} .. \end{narrow} will place 1in into left margin
+\newenvironment{narrow}[2]{%
+  \begin{list}{}{%
+  \setlength{\topsep}{0pt}%
+  \setlength{\leftmargin}{#1}%
+  \setlength{\rightmargin}{#2}%
+  \setlength{\listparindent}{\parindent}%
+  \setlength{\itemindent}{\parindent}%
+  \setlength{\parsep}{\parskip}}%
+\item[]}{\end{list}}
+
+\usepackage{mdwtab}
+\usepackage{mathenv}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{semantic} % for the \mathlig function
+
+\usepackage[final]{listings} % Make sure we show the listing even though we are
+                             % making a final report.
+\lstset{ %
+language=ml,                % choose the language of the code
+basicstyle=\ttfamily\tiny,        % the size of the fonts that are used for the code
+basewidth=0.5em,
+numbers=left,                   % where to put the line-numbers
+numberstyle=\tiny,      % the size of the fonts that are used for the line-numbers
+% stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+% numbersep=5pt,                  % how far the line-numbers are from the code
+% backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+% showspaces=false,               % show spaces adding particular underscores
+% showstringspaces=false,         % underline spaces within strings
+% showtabs=false,                 % show tabs within strings adding particular underscores
+% frame=single	                % adds a frame around the code
+% tabsize=2,	                % sets default tabsize to 2 spaces
+% captionpos=b,                   % sets the caption-position to bottom
+% breaklines=true,                % sets automatic line breaking
+% breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+escapeinside={(@}{@)}          % if you want to add a comment within your code
+}
+
+\lstnewenvironment{sml}
+{%\lstset{}
+ } % starting code, ex a lstset that is more specific;
+{} % ending code
+
+% Write a short text to have that shown in the footer of slides other than the
+% title slide.
+\title[]{\ \ Turtledove}
+% A possible subslide.
+\subtitle{\tiny{Tool assisted programming in SML, with special emphasis on
+    semi-automatic\\ rewriting to predefined standard forms.}}
+
+\author{Morten Brøns-Pedersen}
+
+% Only write DIKU in the footer of slides (except the title slide).
+\institute[DIKU]{Department of Computer Science}
+
+% Remove the date stamp from the footer of slides (except title slide) by giving
+% it no short "text"
+\date[]{\today}
+
+
+\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\tnm}[1]{\textnormal{#1}}
+\newcommand{\tsf}[1]{\textsf{#1}}
+\newcommand{\mrm}[1]{\mathrm{#1}}
+\newcommand{\ol}[1]{\overline{#1}}
+
+\def\TheTrueColour{purple}
+\newcommand{\cc}[1]{{\color{\TheTrueColour}#1}}
+\newcommand{\subspat}[3]{\ensuremath{#1\cc{(}#2\cc{)}\mathrel{\cc{=}}#3}}
+\newcommand{\matchpat}[3]{\ensuremath{\cc{{\color{black}#1}\mathrel{:}\left\langle{\color{black}#2},\mathrel{ }{\color{black}#3}\right\rangle}}}
+\newcommand{\matchbody}[4]{\ensuremath{#1\cc{,}\mathrel{ }#2\mathrel{\cc{|-}}#3\mathrel{\cc{:}}#4}}
+\newcommand{\matchclause}[3]{\ensuremath{#1\mathrel{\cc{|-}}#2\mathrel{\cc{:}}#3}}
+\newcommand{\rewrite}[4]{\ensuremath{#1\mathrel{\cc{,}}#2\mathrel{\cc{|-}}#3\mathrel{\cc{\curvearrowright}}#4}}
+\newcommand{\becomesthrough}[3]{\ensuremath{#1\mathrel{\textsf{\cc{becomes}}}#2\mathrel{\textsf{\cc{through}}}#3}}
+\newcommand{\mathsml}[1]{\textnormal{\lstinline{#1}}}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+
+\begin{frame}
+  \frametitle{Oversigt}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Regler for \texttt{exists} og \texttt{all}}
+
+  \begin{block}{$\textsf{exists}_{\textsf{a}}$}
+    \scriptsize
+    \begin{eqnarray*}[x]
+      \begin{eqnalign}[lcl]
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &=>& \mathbb{D}(\mathcal{C}[\ol{x}])\
+        \ttt{orelse}\ \ttt{self}(\mathcal{C}[\ttt{xs}]) \\
+        \mathcal{D} &=>& \ttt{false} \\
+      \end{eqnalign}\\
+      \textsf{where}\ \textsf{samedom} (\mathcal{C}, \mathcal{D}) \\
+      %
+      \Downarrow \\
+      %
+      \begin{eqnalign}[lcl]
+        \mathcal{C}[\ttt{xs}] &=>& \ttt{List.exists (fn x => $\mathbb{D}(
+          \mathcal{C}[$x$])$)} \ \ttt{xs} \\
+      \end{eqnalign}
+    \end{eqnarray*}
+  \end{block}
+  \begin{block}{$\textsf{all}_{\textsf{a}}$}
+    \scriptsize
+    \begin{eqnarray*}[x]
+      \begin{eqnalign}[lcl]
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &=>& \mathbb{D}(\mathcal{C}[\ol{x}])\
+        \ttt{andalso}\ \ttt{self}(\mathcal{C}[\ttt{xs}]) \\
+        \mathcal{D} &=>& \ttt{true} \\
+      \end{eqnalign}\\
+      \textsf{where}\ \textsf{samedom} (\mathcal{C}, \mathcal{D}) \\
+      %
+      \Downarrow \\
+      %
+      \begin{eqnalign}[lcl]
+        \mathcal{C}[\ttt{xs}] &=>& \ttt{List.all (fn x => $\mathbb{D}(
+          \mathcal{C}[$x$])$)} \ \ttt{xs} \\
+      \end{eqnalign}
+    \end{eqnarray*}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Eksempel}
+
+  \begin{block}{}
+    \begin{sml}
+      fun member (_, nil) = false
+        | member (x, y :: ys) = x = y orelse member (x, ys)
+
+      fun sublist (nil, _) = true
+        | sublist (x :: xs, ys) = member (x, ys) andalso sublist (xs, ys)
+    \end{sml}
+  \end{block}
+  kan skrives om til
+  \begin{block}{}
+    \begin{sml}
+      fun member (x, ys) = List.exists (fn y => x = y) ys
+
+      fun sublist (xs, ys) = List.all (fn x => member (x, ys)) xs
+    \end{sml}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Eksempel --- Normalform}
+
+  \begin{block}{}
+    \begin{sml}
+      fun member (_, nil) = false
+        | member (x, y :: ys) = x = y orelse member (x, ys)
+    \end{sml}
+  \end{block}
+  \begin{block}{}
+    \begin{sml}
+      fun member (x, y :: ys) = x = y orelse member (x, ys)
+        | member x = false
+    \end{sml}
+  \end{block}
+  \vspace{5pt}\hrule
+  \begin{block}{}
+    \begin{sml}
+      fun sublist (nil, _) = true
+        | sublist (x :: xs, ys) = member (x, ys) andalso sublist (xs, ys)
+    \end{sml}
+  \end{block}
+  \begin{block}{}
+    \begin{sml}
+      fun sublist (x :: xs, ys) = member (x, ys) andalso sublist (xs, ys)
+        | sublist x = true
+    \end{sml}
+  \end{block}
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Eksempel --- Normalform}
+
+  \begin{center}
+    \Huge{Live demo}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Eksempel --- Omskrivning}
+
+  Først undersøges om funktionen er en instans af reglen. For hvert klausulpar skal
+  eksistere en afledning
+  \begin{block}{}
+    \scriptsize
+    \[
+    \inference
+    { \mathcal{H} & \mathcal{I} & \mathcal{J} \\
+      \subspat{\sigma}{spat}{mpat} &
+      \matchpat{pat}{mpat}{\theta} &
+      \matchbody{\sigma}{\theta}{sexp}{exp}
+    }
+    {
+      \matchclause{\sigma}{pat \texttt{ => } exp}{spat => sexp}
+    }
+    \]
+  \end{block}\ \\[1em]
+  Jeg demonstrerer omskrivning af \texttt{member}.
+
+  Lad
+  {\scriptsize
+    \[
+    \sigma =
+    \left\{
+      \begin{tabular}{Mc@{$\ \mapsto\ $}Mr}
+        \mathcal{C} & \ttt{($\ol{a}$, $\diamond_1$)}\\
+        \mathcal{D} & \ol{a}\\
+        \mathbb{E} & (\ttt{(v, w)}, \ttt{v = w})\\
+        \textsf{self} & (\ttt{member}, 1)
+      \end{tabular}
+    \right\}
+    \]
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Eksempel --- Omskrivning}
+
+  \begin{block}{}
+    \begin{sml}
+      fun member (@\color{purple}(x, y :: ys) = x = y orelse member (x, ys)@)
+        | member x = false
+    \end{sml}
+  \end{block}
+
+  \begin{block}{}
+    \scriptsize
+    \begin{eqnarray*}[x]
+      \begin{eqnalign}[lcl]
+        \color{purple}
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &\color{purple}=>&
+        \color{purple}
+        \mathbb{D}(\mathcal{C}[\ol{x}])\ \ttt{orelse}\ \ttt{self}(\mathcal{C}[\ttt{xs}]) \\
+        \mathcal{D} &=>& \ttt{false} \\
+      \end{eqnalign}
+    \end{eqnarray*}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Eksempel --- Omskrivning}
+
+  \begin{block}{}
+    \tiny
+    \[
+    \mathcal{H}:\
+    \inference
+    {
+    }
+    {
+      \subspat
+      {\sigma}
+      {\mathcal{C}[\ttt{$\ol{x}$ :: xs}]}
+      {\ttt{($\ol{a}$, $\diamond_1$)$[\ol{x}$ :: xs$ / \diamond_1]$}}
+    }
+    \]
+  \end{block}
+  \begin{block}{}
+    \tiny
+    \[
+    \mathcal{I}:\
+    \inference
+    {
+      \inference
+      {
+      }
+      {
+        \matchpat
+        {\ttt{x}}
+        {\ol{a}}
+        {\{\ol{a} \mapsto \ttt{x}\}}
+      } &
+      \inference
+      {
+        \inference
+        {
+        }
+        {
+          \matchpat
+          {\ttt{y}}
+          {\ol{x}}
+          {\{\ol{x} \mapsto \ttt{y}\}}
+        } &
+        \inference
+        {
+        }
+        {
+          \matchpat
+          {\ttt{ys}}
+          {\ttt{xs}}
+          {\emptyset}
+        }
+      }
+      {
+        \matchpat
+        {\ttt{y :: ys}}
+        {\ttt{$\ol{x}$ :: xs}}
+        {\{\ol{x} \mapsto \ttt{y}\}}
+      }
+    }
+    {
+      \matchpat
+      {\ttt{(x, y :: ys)}}
+      {\ttt{($\ol{a}$, $\ol{x}$ :: xs)}}
+      {\{\ol{a} \mapsto \ttt{x}, \ol{x} \mapsto \ttt{y}\}}
+    }
+    \]
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Eksempel --- Omskrivning}
+
+  \center\tiny Lad $\theta = \{\ol{a} \mapsto \ttt{x}, \ol{x} \mapsto
+  \ttt{y}\}$, og husk at \ttt{xs} identificeres med \ttt{ys}.
+  \begin{block}{}
+    \tiny
+    \[
+    \mathcal{J}_1:\
+    \inference
+    {
+      \inference
+      {
+        \inference
+        {
+          \inference
+          {
+          }
+          {
+            \matchbody
+            {\sigma}
+            {\theta}
+            {\ol{a}}
+            {\ttt{x}}
+          } &
+          \inference
+          {
+          }
+          {
+            \matchbody
+            {\sigma}
+            {\theta}
+            {\ol{x}}
+            {\ttt{y}}
+          }
+        }
+        {
+          \matchbody
+          {\sigma}
+          {\theta}
+          {\ttt{($\ol{a}$, $\diamond_1$)$[\ol{x}/\diamond_1]$}}
+          {\ttt{(x, y)}}
+        }
+      }
+      {
+        \matchbody
+        {\sigma}
+        {\theta}
+        {\mathcal{C}[\ol{x}]}
+        {\ttt{(x, y)}}
+      }
+    }
+    {
+      \matchbody
+      {\sigma}
+      {\theta}
+      {\mathbb{D}(\mathcal{C}[\ol{x}])}
+      {\ttt{$($v = w$)[$(x, y)$/$(v, w)$]$}}
+    }
+    \]
+  \end{block}
+  \begin{block}{}
+    \[
+    \mathcal{J}_2:\
+    \inference
+    {
+      \inference
+      {
+        \inference
+        {
+          \inference
+          {
+          }
+          {
+            \matchbody
+            {\sigma}
+            {\theta}
+            {\ol{a}}
+            {\ttt{x}}
+          } &
+          \inference
+          {
+          }
+          {
+            \matchbody
+            {\sigma}
+            {\theta}
+            {\ttt{xs}}
+            {\ttt{ys}}
+          }
+        }
+        {
+          \matchbody
+          {\sigma}
+          {\theta}
+          {\ttt{($\ol{a}$, $\diamond_1$)$[$xs$/\diamond_1]$}}
+          {\ttt{(x, y)}}
+        }
+      }
+      {
+        \matchbody
+        {\sigma}
+        {\theta}
+        {\ttt{$\mathcal{C}[$xs$]$}}
+        {\ttt{(x, ys)}}
+      }
+    }
+    {
+      \matchbody
+      {\sigma}
+      {\theta}
+      {\ttt{self$(\mathcal{C}[$xs$])$}}
+      {\ttt{$($member x$)[$(x, ys)$/$x$]$}}
+    }
+    \]
+  \end{block}
+  \begin{block}{}
+    \tiny
+    \[
+    \mathcal{J}:\
+    \inference
+    {\mathcal{J}_1 & & & & & & & & \mathcal{J}_2}
+    {
+      \matchbody
+      {\sigma}
+      {\theta}
+      {\ttt{$\mathbb{D}(\mathcal{C}[\ol{x}])$ orelse self$(\mathcal{C}[$xs$])$}}
+      {\ttt{x = y orelse member (x, ys)}}
+    }
+    \]
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Eksempel --- Resultat}
+
+  \begin{block}{}
+    \tiny
+    \begin{eqnarray*}[x]
+      \begin{eqnalign}[lcl]
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &=>& \mathbb{D}(\mathcal{C}[\ol{x}])\
+        \ttt{orelse}\ \ttt{self}(\mathcal{C}[\ttt{xs}]) \\
+        \mathcal{D} &=>& \ttt{false} \\
+      \end{eqnalign}\\
+      \textsf{where}\ \textsf{samedom} (\mathcal{C}, \mathcal{D}) \\
+      %
+      \Downarrow \\
+      %
+      \begin{eqnalign}[lcl]
+        \color{purple}
+        \mathcal{C}[\ttt{xs}] &\color{purple}=>&
+        \color{purple}\ttt{List.exists (fn x => $\mathbb{D}(
+          \mathcal{C}[$x$])$)} \ \ttt{xs} \\
+      \end{eqnalign}
+    \end{eqnarray*}
+  \end{block}
+
+  \begin{block}{}
+    \tiny
+    \[
+    \inference
+    {
+      \inference
+      {
+        \inference
+        {
+          \inference
+          {
+            \inference
+            {
+            }
+            {
+              \matchbody
+              {\sigma}
+              {\theta}
+              {\ol{a}}
+              {\ttt{x}}
+            } &
+            \inference
+            {
+            }
+            {
+              \matchbody
+              {\sigma}
+              {\theta}
+              {\ttt{x}}
+              {\ttt{y}}
+            }
+          }
+          {
+            \matchbody
+            {\sigma}
+            {\theta}
+            {\ttt{($\ol{a}$, $\diamond_1$)$[\ttt{x}/\diamond_1]$}}
+            {\ttt{(x, y)}}
+          }
+        }
+        {
+          \matchbody
+          {\sigma}
+          {\theta}
+          {\mathcal{C}[\ttt{x}]}
+          {\ttt{(x, y)}}
+        }
+      }
+      {
+        \matchbody
+        {\sigma}
+        {\theta}
+        {\mathbb{D}(\mathcal{C}[\ttt{x}])}
+        {\ttt{$($v = w$)[$(x, y)$/$(v, w)$]$}}
+      } &
+      \inference
+      {
+      }
+      {
+        \matchbody
+        {\sigma}
+        {\theta}
+        {\ttt{xs}}
+        {\ttt{ys}}
+      }
+    }
+    {
+      \matchbody
+      {\sigma}
+      {\theta}
+      {\ttt{List.exists (fn x => $\mathbb{D}(\mathcal{C}[$x$])$)} \ \ttt{xs}}
+      {\ttt{List.exists (fn y => x = y) ys}}
+    }
+    \]
+  \end{block}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Stratego}
+
+\end{frame}
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
