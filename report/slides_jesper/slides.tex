@@ -1,6 +1,6 @@
 % xcolor=table is because it seems that beamer uses the xcolor package in a
 % strange way and thus don't accept us giving arguments to the package.
-\documentclass[slidestop,compress,mathserif, xcolor=table]{beamer}
+\documentclass[slidestop,compress,mathserif, xcolor=dvipsnames]{beamer}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -30,6 +30,8 @@
   \setlength{\parsep}{\parskip}}%
 \item[]}{\end{list}}
 
+%\usepackage{movie15}
+
 \usepackage[final]{listings} % Make sure we show the listing even though we are
                              % making a final report.
 
@@ -58,6 +60,58 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
  } % starting code, ex a lstset that is more specific;
 {} % ending code
 
+\newcommand{\smlinline}[1]{\lstinline{#1}}
+\newcommand{\mathsml}[1]{\textnormal{\lstinline{#1}}}
+
+\usepackage{mdwtab}
+\usepackage{mathenv}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{semantic} % for the \mathlig function
+
+
+\def\TheTrueColour{BrickRed}
+\newcommand{\cc}[1]{{\color{\TheTrueColour}#1}}
+\newcommand{\subspat}[3]{\ensuremath{#1\cc{(}#2\cc{)}\mathrel{\cc{=}}#3}}
+\newcommand{\matchpat}[3]{\ensuremath{\cc{{\color{black}#1}\mathrel{:}\left\langle{\color{black}#2},\mathrel{ }{\color{black}#3}\right\rangle}}}
+\newcommand{\matchbody}[4]{\ensuremath{#1\cc{,}\mathrel{ }#2\mathrel{\cc{|-}}#3\mathrel{\cc{:}}#4}}
+\newcommand{\matchclause}[3]{\ensuremath{#1\mathrel{\cc{|-}}#2\mathrel{\cc{:}}#3}}
+\newcommand{\rewrite}[4]{\ensuremath{#1\mathrel{\cc{,}}#2\mathrel{\cc{|-}}#3\mathrel{\cc{\curvearrowright}}#4}}
+\newcommand{\becomesthrough}[3]{\ensuremath{#1\mathrel{\textsf{\cc{becomes}}}#2\mathrel{\textsf{\cc{through}}}#3}}
+
+\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\tnm}[1]{\textnormal{#1}}
+\newcommand{\tsf}[1]{\textsf{#1}}
+\newcommand{\mrm}[1]{\mathrm{#1}}
+\newcommand{\ol}[1]{\overline{#1}}
+
+\newcommand{\Cov}{\mathrm{Cov}}
+\providecommand{\FV}{\mathrm{FV}}
+\providecommand{\Dom}{\mathrm{Dom}}
+
+
+\mathlig{||}{\parallel}
+\mathlig{<'}{\prec}
+\mathlig{>'}{\succ}
+\mathlig{<='}{\preccurlyeq}
+\mathlig{>='}{\succcurlyeq}
+\mathlig{<=}{\leqslant}
+\mathlig{>=}{\geqslant}
+\mathlig{<>}{\neq}
+\mathlig{|=}{\sqsubset}
+\mathlig{=|}{\sqsupset}
+\mathlig{==}{\equiv}
+\mathlig{==a}{=_{\alpha}}
+\mathlig{<|}{\lhd}
+\mathlig{|>}{\rhd}
+\mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
+% ~>e or ~>g conflicts with the \cite command for some reason.
+\mathlig{->e}{\stackrel{elim}{\leadsto}}
+\mathlig{->g}{\stackrel{gen}{\leadsto}}
+\mathlig{++}{\mathrel{\mbox{+\!\!\!+}}}
+
 % Write a short text to have that shown in the footer of slides other than the
 % title slide.
 \title[]{Turtledove}
@@ -74,22 +128,52 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 % it no short "text"
 \date[]{\today} 
 
+
+
+
 \begin{document}
 
 \frame[plain]{\titlepage}
 
 \begin{frame}[c]
-  \frametitle{Oversigt}  
+  \frametitle{Program}
 
+  \begin{itemize}
+  \item Oversigt over relateret arbejde
+    \begin{itemize}
+    \item Live demo: (Meget) simpel omdøbning af funktionsnavne
+    \end{itemize}
+
+  \item Afledning af inferensregel
+
+  \item Konklusion
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Oversigt -- Relateret arbejde}  
+  Af stører (nutidige) projekter findes:
+  
+  \begin{itemize}
+  \item HaRe {\footnotesize{(Haskell)}} -- Nærmeste "`Konkurrent"'
+    
+  \item Værktøjer       
+    \begin{itemize}
+    \item Programatica {\footnotesize{(brugt i HaRe)}}
+    \item Strafunski {\footnotesize{(brugt i HaRe)}}
+    \item Stratego
+    \end{itemize}       
+  \end{itemize}
 
 \end{frame}
 
 \begin{frame}[c]
-  \frametitle{Sammenligning -- HaRe}  
+  \frametitle{Sammenligning -- HaRe 1/3}  
 
-  \begin{columns}
-    
+  \begin{columns}    
     \begin{column}{0.5\textwidth{}}
+      \textbf{HaRe:}
       \begin{itemize}
       \item Kommentar og layout bevarelse 
         \begin{itemize}
@@ -99,38 +183,679 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
       \end{itemize}      
     \end{column}
     \begin{column}{0.5\textwidth{}}
-      Turtledove:
+      \textbf{Turtledove:}
       \begin{itemize}
-      \item Kommentar og layout bevarelse 
+      \item Ingen layout bevarelse 
         \begin{itemize}
-        \item Haskell kan bruge layout regler
-        \end{itemize}    
-      \item Mulighed for brugerdefineret refaktorering og program transformationer.      
-      \end{itemize}      
+        \item Ikke strengt nødvendigt
+        \item Bruger en simpel pretty printer
+        \end{itemize}
+      \item Forberedt for brugerdefinerede omskrivnings regler.
+      \end{itemize}
     \end{column}
   \end{columns}
-
 \end{frame}
+
+\begin{frame}[c]
+  \frametitle{Sammenligning -- HaRe 2/3}  
+
+  Refaktoreringer i HaRe (Ikke nødvendigvis begrænset til):
+
+  \begin{itemize}
+  \item Structural
+    \begin{itemize}
+    \item Rename
+    \item Add/Remove argument to fun-definition
+    \end{itemize}
+
+  \item Modul
+    \begin{itemize}
+    \item Clean import lists
+    \item Move definition between modules
+    \item Add/Remove entity to module export list
+    \end{itemize}
+
+  \item Data-Oriented
+    \begin{itemize}
+    \item Concrete to abstract data type \\ 
+      {\footnotesize{(hide the value constructors from the user)}}
+    \item Create discriminator functions \\
+      {\footnotesize{(isLeaf, isNode, ...)}}
+    \item Create constructor functions  \\
+      {\footnotesize{(mkLeaf, mkNode ...)}}
+    \end{itemize}                                                        
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[c]
+  \frametitle{Sammenligning -- HaRe 3/3}  
+
+  Alle nævnte refaktoreringer fra HaRe kan implementeres som plug-ins i
+  Turtledove.
+  \\ \ \\
+
+  Udviklede "`Apps"' er eksempler på simple plug-ins. 
+  \\ \ \\
+  
+  \begin{center}
+    Eksempel/Demo: Simpel omdøbning af funktions navne.
+  \end{center}
+  
+\end{frame}
+
 
 \begin{frame}[c]
   \frametitle{Programatica}  
 
+  \begin{quote}
+    "`A Haskell front-end, with functionality similar to what you find in a
+    compiler front-end for Haskell, implemented in Haskell."'
+    \\ \raggedleft \cite{programatica-features}
+  \end{quote}
 
+  \begin{columns}    
+    \begin{column}{0.3\textwidth{}}
+      Features:
+      \begin{itemize}
+      \item Lexer
+      \item Parser
+      \item Type checker
+      \item Pretty printer
+      \item etc.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth{}}
+      Ikke brugbar fordi:
+      \begin{itemize}
+      \item Haskell parser
+      \item Havde SML/MLB parser 
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}[c]
   \frametitle{Strafunski}
 
+  \begin{quote}
+    "`Strafunski is a Haskell-centred software bundle for implementing language
+    processing components --- most notably program analyses and
+    transformation"'\\ \raggedleft \cite{LV03-PADL}
+  \end{quote}
 
+  \ \\ \ \\
+
+  \begin{columns}    
+    \begin{column}{0.5\textwidth{}}
+      Features:
+      \begin{itemize}
+      \item Generisk travasering og tranformation af AST's
+        \begin{itemize}
+        \item Via forskellige strategier
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth{}}
+      Ikke brugbar fordi:
+      \begin{itemize}
+      \item Alt arbejde skal udføres i Haskell
+      \item (Umiddelbart) begrænset til omskrivninger
+      \end{itemize}
+    \end{column}
+
+  \end{columns} 
 \end{frame}
 
 
 \begin{frame}[c]
-  \frametitle{Stratego}
+  \frametitle{Stratego/XT}
 
+  \begin{columns}    
+    \begin{column}{0.5\textwidth{}}
+      Stratego
+      \begin{itemize}
+      \item Sprog til program transformationer
+      \end{itemize}
+      Xt 
+      \begin{itemize}
+      \item Toolset
+      \item Parser, pretty print
+      \item Transformator komponenter      
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth{}}
+      Ikke brugbar fordi:
+      \begin{itemize}
+      \item Syntaks skal defineres så der kan genereres en parser.
+
+      \item Vi havde allerede en parser.
+
+      \item (Umiddelbart) begrænset til omskrivninger
+      \end{itemize}
+    \end{column}
+
+  \end{columns} 
 
 \end{frame}
 
+
+\begin{frame}[c, fragile]
+  \frametitle{Eksempel: Foldr}
+  
+  Hvis vi kikker på den inferens regel der "`matcher"' en funktions clausul og
+  regel clausul: \fbox{\matchclause{\sigma}{clause}{sclause}} .
+  
+  {
+    \scriptsize
+    \begin{block}{Regel: Definition 21}    
+      \begin{eqnarray*}[x]
+        \begin{eqnalign}[lcl]
+          \color{red}
+          \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &
+          \color{red} =>& 
+          \color{red}\mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))\\
+          \mathcal{D} &=>& \mathbb{E}(\mathcal{D})
+        \end{eqnalign}\\
+        \textsf{where}\ \textsf{samedom}(\mathcal{C}, \mathcal{D}) \\
+        % 
+        \Downarrow \\
+        % 
+        \begin{eqnalign}[lcl]
+          \mathcal{C}[\ttt{xs}] &=>& \ttt{foldr (fn (x, a) =>
+            $\mathbb{D}(\mathcal{C}[$x$],\ $a$)$) ($\mathbb{E}(\mathcal{C}[$xs$])$) \ttt{xs}}
+        \end{eqnalign}
+      \end{eqnarray*}
+    \end{block}
+    
+    \begin{block}{Norm fun: Eksempel 19, uden curry, forkortet navn}
+      \begin{sml}
+fun cmplist (@\color{red}(y :: ys, x) = y (cmplist (ys, x))@)
+  | cmplist (y, x) = x
+      \end{sml}    
+    \end{block}
+  }
+Dog kun første clausul, da anden clausul er ikke spændene.
+\end{frame}
+
+\begin{frame}[c, fragile]
+  \frametitle{Eksempel: Foldr 1/4}
+
+
+  {
+    \tiny   
+
+    \textnormal{Lad} $\sigma(C) = (\diamond_1,\ \ol{a})$:
+    \\ \ \\
+
+    \fbox{$\matchclause{\sigma}{clause}{sclause}$}   
+
+    \ \\ \ \\ \ 
+
+    \begin{block}{}     
+    \[
+    \inference
+    {
+      %
+      % \sigma(spat) = mpat    
+      %
+      \inference
+      {
+      }
+      {
+        \subspat{\sigma}
+        {spat}
+        {mpat} 
+      }
+      &
+      % 
+      % pat : <mpat, \theta>
+      %
+      \inference
+      {
+      }
+      {
+        \matchpat{pat}
+        {mpat}
+        {\theta}
+      }    
+      &
+      %
+      % \sigma, \theta |- sexp : exp
+      % 
+      \inference
+      {}
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathit{sexp}}
+        {\mathit{exp}}
+      }
+    }
+    {
+      \matchclause{\sigma}
+      {\mathsml{(y :: ys, x) => y (cmplist (ys, x))}}
+      {
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]
+        =>
+        \mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))
+      }
+    }
+    \]
+        \end{block}
+
+  }
+
+\end{frame}
+
+\begin{frame}[c, fragile]
+  \frametitle{Eksempel: Foldr 2/4}
+
+  {
+    \tiny   
+
+    \textnormal{Lad} $\sigma(C) = (\diamond_1,\ \ol{a})$:
+    \\ \ \\
+
+    \fbox{$\subspat{\sigma}{spat}{mpat}$}
+
+    \ \\ \ \\ \
+
+    \begin{block}{}     
+    \[   
+      \inference
+      {}
+      {
+        \subspat{\sigma}
+        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]}
+        {(\diamond_1,\ \ol{a})[\ol{x} \ttt{ :: xs}/\diamond_1]}
+      }
+      {\sigma(C) = (\diamond_1,\ \ol{a})}
+    \]   
+    \end{block}
+    
+    \ \\ \ \\
+
+    \begin{block}{}     
+    \[
+    \inference
+    {
+      %
+      % \sigma(spat) = mpat    
+      %
+      \inference
+      {
+      }
+      {
+        \subspat{\sigma}
+        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]}
+        {\ttt{($\ol{x}$ \ttt{ :: xs}, $\ol{a}$)}}
+      }
+      &
+      % 
+      % pat : <mpat, \theta>
+      %
+      \inference
+      {
+      }
+      {
+        \matchpat{pat}
+        {mpat}
+        {\theta}
+      }    
+      &
+      %
+      % \sigma, \theta |- sexp : exp
+      % 
+      \inference
+      {}
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathit{sexp}}
+        {\mathit{exp}}
+      }
+    }
+    {
+      \matchclause{\sigma}
+      {\mathsml{(y :: ys, x) => y (cmplist (ys, x))}}
+      {
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]
+        =>
+        \mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))
+      }
+    }
+    \]
+  \end{block}
+  }
+
+\end{frame}
+
+
+
+\begin{frame}[c, fragile]
+  \frametitle{Eksempel: Foldr 3/4}
+
+  {
+    \tiny   
+
+    \textnormal{Lad} $\sigma(C) = (\diamond_1,\ \ol{a})$:
+    \\ \ \\
+
+    \fbox{$\matchpat{pat}{mpat}{\theta}$}
+
+    \ \\ \ \\ \
+
+    \begin{block}{}         
+    \[
+    \inference
+    {
+      \inference
+      {}
+      {
+        \matchpat{\mathsml{y :: ys}}
+        {\ttt{$\ol{x}$ :: xs}}
+        {         
+          \left\{
+            \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}                
+              \ol{x} & \ttt{y}
+            \end{tabular}
+          \right\}
+        }
+      }
+      &
+      \inference
+      {}
+      { 
+        \matchpat{\mathsml{x}}
+        {\ol{a}}
+        {
+          \{\ol{a} \mapsto \ttt{x}\}
+        }
+      }
+    }
+    {
+      \matchpat{\mathsml{(y :: ys, x)}}
+      {\ttt{($\ol{x}$ :: xs, $\ol{a}$)}}
+      {
+        \theta = 
+        \left\{                       
+          \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}
+            \ol{x} & \ttt{y} \\
+            \ol{a} & \ttt{x}
+          \end{tabular}
+        \right\}
+      }        
+    }
+    \]
+    \end{block}
+
+    Bemærk \texttt{xs $\mapsto$ ys}
+
+    \ \\ \ \\         
+
+    \begin{block}{}          
+    \[
+    \inference
+    {
+      %
+      % \sigma(spat) = mpat    
+      %
+      \inference
+      {
+      }
+      {
+        \subspat{\sigma}
+        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]}
+        {\ttt{($\ol{x}$ \ttt{ :: xs}, $\ol{a}$)}}
+      }
+      &
+      % 
+      % pat : <mpat, \theta>
+      %
+      \inference
+      {
+        \vdots
+      }
+      {
+        \matchpat{\mathsml{(y :: ys, x)}}
+        {\ttt{($\ol{x}$ :: xs, $\ol{a}$)}}
+        {\theta}
+      }        
+      \\
+      %
+      % \sigma, \theta |- sexp : exp
+      % 
+      \inference
+      {}
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathit{sexp}}
+        {\mathit{exp}}
+      }
+    }
+    {
+      \matchclause{\sigma}
+      {\mathsml{(y :: ys, x) => y (cmplist (ys, x))}}
+      {
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]
+        =>
+        \mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))
+      }
+    }
+    \]
+    \end{block}
+  }
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]
+  \frametitle{Eksempel: Foldr 4/4}
+
+  {
+    \tiny   
+
+    \textnormal{Lad} $\sigma(C) = (\diamond_1,\ \ol{a})$:
+    
+    \ \\ \ \\ \
+
+    \begin{tabular}{p{20em}r}
+      \fbox{$\matchbody{\sigma}{\theta}
+        {\mathit{sexp}}
+        {\mathit{exp}}
+        \equiv       
+        $}    
+      &
+      $\sigma(\mathcal{C}) = (\diamond_1, \ol{a}) : \dagger$ \\
+      & $\sigma(\mathtt{self}) = (\mathtt{cmplist}, 1) : \ddagger$\\
+      & $\sigma(\mathbb{D}) = (\mathit{pat}, \mathit{exp}) = 
+    (\mathsml{((a,_), b)}, \mathsml{a b}) : \dagger\dagger$      
+    \end{tabular} 
+
+        \ \\ \ \\ \
+
+    \begin{block}{}          
+      \begin{narrow}{-2em}{0em}       
+    \[
+    \inference
+    {
+      \inference
+      {               
+          \inference
+          {               
+            \vdots
+          }
+          {
+            \matchbody{\sigma}{\theta}
+            {(\diamond_1, \ol{a})[\ol{x}/\diamond_1]}
+            {\mathsml{(y, x)}}
+          }
+      }
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathcal{C}[\ol{x}]}
+        {\mathsml{(y, x)}}
+      }      
+      {$\dagger$}
+      & 
+      \inference
+      {      
+        \inference
+        {               
+          \inference
+          {               
+            \vdots
+          }
+          {
+            \matchbody{\sigma}{\theta}
+            {(\diamond_1, \ol{a})[\ttt{xs}/\diamond_1]}
+            {\mathsml{(ys, x)}}
+          }
+        }
+        {
+          \matchbody{\sigma}{\theta}
+          {\mathcal{C}[\ttt{xs}]}
+          {\mathsml{(ys, x)}}          
+        } 
+        {$\dagger$}
+      }
+      {
+        \matchbody{\sigma}{\theta}
+        {\ttt{self}(\mathcal{C}[\ttt{xs}])}
+        {(\mathtt{cmplist}\  x_1)[\mathsml{(ys, x)}/x_1]}
+      }    
+      {$\ddagger$}  
+    }
+    {
+      \matchbody{\sigma}{\theta}
+      {\mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))}
+      {\mathsml{a b}[(\mathsml(y, x), \mathsml{cmplist (ys, x)})/\mathsml{((a,_), b)}]}
+    }
+    {\dagger\dagger}
+    \]
+    \end{narrow}
+    \end{block}   
+    \begin{block}{}     
+    \[
+    \inference
+    {
+      %
+      % \sigma(spat) = mpat    
+      %
+      \inference
+      {
+      }
+      {
+        \subspat{\sigma}
+        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]}
+        {\ttt{($\ol{x}$ \ttt{ :: xs}, $\ol{a}$)}}
+      }
+      &
+      % 
+      % pat : <mpat, \theta>
+      %
+      \inference
+      {
+        \vdots
+      }
+      {
+        \matchpat{\mathsml{(y :: ys, x)}}
+        {\ttt{($\ol{x}$ :: xs, $\ol{a}$)}}
+        {\theta}
+      }        
+      \\
+      %
+      % \sigma, \theta |- sexp : exp
+      % 
+      \inference
+      {\vdots}
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))}
+        {\mathsml{y (cmplist (ys, x))}}
+      }
+    }
+    {
+      \matchclause{\sigma}
+      {\mathsml{(y :: ys, x) => y (cmplist (ys, x))}}
+      {
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]
+        =>
+        \mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))
+      }
+    }
+    \]
+    \end{block}
+  }
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]
+  \frametitle{Fejl i normalform}
+
+  \tiny
+  
+    \begin{block}{Eksempel: (foo [1,2,3])}
+    \begin{sml}
+fun foo (x :: y :: ys) = x + 41 :: foo ( y :: ys)
+  | foo _ = nil      
+    \end{sml}
+
+Smider sidste element væk.
+
+Normaliseres til 
+\begin{sml}  
+fun foo (x :: c) = x + 41 :: foo c
+  | foo x = nil
+\end{sml}
+
+Smider IKKE sidste element væk.    
+  \end{block}
+
+  \smlinline{y :: ys} generaliseres. Fix: Skal kun generaliseres når alle
+  konstruktørene er representeret (her mangler tilfældet nil). \\ \ \\
+  
+  
+  Første eksempel er normalform i sig selv. Dette er fint eksempel på hvorfor
+  map reglerne kræver en konkret variabel \texttt{xs} og ikke $\ol{xs}$ da
+  $\ol{xs}$ ville matche \texttt{y :: ys} og ovenstående ville blive omskrevet
+  til en map.
+  
+\end{frame}
+
+
+\begin{frame}[c, fragile]
+  \frametitle{Konklusion}
+
+  \footnotesize
+
+  \begin{itemize}
+  \item Eksisterende miljøer/frameworks kan ikke tilbyde samme funktionalitet
+
+  \item Der eksisterer ikke nogle værktøjer til SML
+    \begin{itemize}
+    \item Dokumentations væktøjer undtaget.
+    \end{itemize}
+
+  \item Simple væktøjer (se implementerede apps) gør det mere "`behageligt"' og
+    "`effektivt"' at kode SML.
+
+
+  \item Turtledove er platforms uafhængigt.
+
+
+  \end{itemize}
+  
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Bibliografi}
+
+  \bibliographystyle{../report/bibliography/theseurl}
+  \bibliography{../report/bibliography/bibliography}
+  
+\end{frame}
 \end{document}
 
 %%% Local Variables: 

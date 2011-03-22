@@ -1,0 +1,59 @@
+# HaRe built on top of Programatica's Haskell frontend ans Strafunski's generic
+programming technique.
+
+Tries to do "program appearance preservation" (comments and layout preservation,
+remember Haskells may use layout rules)
+
+Exposes an API for implementing user defined refactorings/program
+transformations.
+
+A simple lambda language for verification of refactorings.
+
+Refactorings:
+        Structural
+                Renaming
+                Add/Remove arguments to fun-definition
+                Unfold/Inline definition
+                etc.
+        Module
+                Clean import lists
+                Move definition from between modules
+                Add/Remove entity to module export list
+        Data-Oriented
+                Concrete to abstract data type
+                         (hide the value constructors from the user)
+                Create discriminator functions
+                         isLeaf, isNode ... :: Tree a -> Bool
+                Create constructor functions 
+                         mkLeaf, mkNode ...
+                
+use mutually recursive data types for AST
+
+Programatica
+        Lexer, Parser, Type checker, Pretty printer
+Strafunski
+        AST traversal functions and strategys.
+
+fold/unfold?`Relook the HARE paper for his references.
+
+
+
+
+
+# FOLD/UNFOLD [18]
+
+# Stratego
+
+
+appearance preservation
+
+  * Indentation
+  * Comment placement
+  * recognisability
+
+Summary
+
+* behaviour-preserving
+* appearance preservation 
+  * We haven't made any effort into this.
+
