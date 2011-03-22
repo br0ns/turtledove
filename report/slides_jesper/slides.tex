@@ -136,11 +136,27 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \frame[plain]{\titlepage}
 
 \begin{frame}[c]
-  \frametitle{Oversigt}  
+  \frametitle{Program}
+
+  \begin{itemize}
+  \item Oversigt over relateret arbejde
+    \begin{itemize}
+    \item Live demo: (Meget) simpel omdøbning af funktionsnavne
+    \end{itemize}
+
+  \item Afledning af inferensregel
+
+  \item Konklusion
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Oversigt -- Relateret arbejde}  
   Af stører (nutidige) projekter findes:
   
   \begin{itemize}
-  \item HaRe {\footnotesize{(Haskell)}}
+  \item HaRe {\footnotesize{(Haskell)}} -- Nærmeste "`Konkurrent"'
     
   \item Værktøjer       
     \begin{itemize}
@@ -252,10 +268,8 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
     \begin{column}{0.5\textwidth{}}
       Ikke brugbar fordi:
       \begin{itemize}
-      \item Haskell specifik
-      \item Havde SML lexer/parser 
-      \item Havde MLB lexer/parser
-      \item Lille/ingen dokumentation
+      \item Haskell parser
+      \item Havde SML/MLB parser 
       \end{itemize}
     \end{column}
   \end{columns}
@@ -286,6 +300,7 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
       Ikke brugbar fordi:
       \begin{itemize}
       \item Alt arbejde skal udføres i Haskell
+      \item (Umiddelbart) begrænset til omskrivninger
       \end{itemize}
     \end{column}
 
@@ -294,9 +309,33 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 
 
 \begin{frame}[c]
-  \frametitle{Stratego}
+  \frametitle{Stratego/XT}
 
-fooo
+  \begin{columns}    
+    \begin{column}{0.5\textwidth{}}
+      Stratego
+      \begin{itemize}
+      \item Sprog til program transformationer
+      \end{itemize}
+      Xt 
+      \begin{itemize}
+      \item Toolset
+      \item Parser, pretty print
+      \item Transformator komponenter      
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth{}}
+      Ikke brugbar fordi:
+      \begin{itemize}
+      \item Syntaks skal defineres så der kan genereres en parser.
+
+      \item Vi havde allerede en parser.
+
+      \item (Umiddelbart) begrænset til omskrivninger
+      \end{itemize}
+    \end{column}
+
+  \end{columns} 
 
 \end{frame}
 
@@ -309,22 +348,22 @@ fooo
   
   {
     \scriptsize
-    \begin{block}{Regel: Definition 22}    
+    \begin{block}{Regel: Definition 21}    
       \begin{eqnarray*}[x]
         \begin{eqnalign}[lcl]
           \color{red}
-          \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}][\ol{a}]
-          & \color{red} =>&
-          \color{red} \ttt{self}(\mathcal{C}[\ol{x}][\mathbb{D}(\mathcal{C}[\ol{x}][\ol{a}])])
-          \\
-          \mathcal{C}[\ol{x}][\ol{a}] &=>& \ol{a}
+          \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}] &
+          \color{red} =>& 
+          \color{red}\mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))\\
+          \mathcal{D} &=>& \mathbb{E}(\mathcal{D})
         \end{eqnalign}\\
+        \textsf{where}\ \textsf{samedom}(\mathcal{C}, \mathcal{D}) \\
         % 
         \Downarrow \\
         % 
         \begin{eqnalign}[lcl]
-          \mathcal{C}[\ttt{xs}][\ttt{a}] &=>& \ttt{foldl (fn (x, a) =>
-            $\mathbb{D}(\mathcal{C}[$x$][$a$])$) \ttt{a} \ttt{xs}}
+          \mathcal{C}[\ttt{xs}] &=>& \ttt{foldr (fn (x, a) =>
+            $\mathbb{D}(\mathcal{C}[$x$],\ $a$)$) ($\mathbb{E}(\mathcal{C}[$xs$])$) \ttt{xs}}
         \end{eqnalign}
       \end{eqnarray*}
     \end{block}
@@ -340,103 +379,20 @@ Dog kun første clausul, da anden clausul er ikke spændene.
 \end{frame}
 
 \begin{frame}[c, fragile]
-  \frametitle{Eksempel: Foldr}
+  \frametitle{Eksempel: Foldr 1/4}
 
 
-  \begin{narrow}{-3em}{-3em}
   {
     \tiny   
 
-    \textnormal{Lad} $\sigma(C) = (\diamond_1 \mathtt{::} \ol{ys},\
-    \diamond_2)$:
+    \textnormal{Lad} $\sigma(C) = (\diamond_1,\ \ol{a})$:
     \\ \ \\
 
-    $
-    \subspat{\sigma}
-    {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}][\ol{a}])}
-    {\ttt{($\ol{y}$ :: $\ol{ys}$, $\ol{x}$)}} 
-    \equiv
-    $
+    \fbox{$\matchclause{\sigma}{clause}{sclause}$}   
 
-    \[   
-      \inference
-      {}
-      {
-        \subspat{\sigma}
-        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}][\ol{a}])}
-        {(\diamond_1 \mathsml{::} \ol{ys},\ \diamond_2)[\ol{y}/\diamond_1][\ol{x}/\diamond_2]}
-      }
-    \]      
- 
-    
-    $\matchpat{\mathsml{(y :: ys, x)}}
-    {\ttt{($\ol{y}$ :: $\ol{ys}$, $\ol{x}$)}}
-    {\Theta}
-    \equiv$
+    \ \\ \ \\ \ 
 
-    \[
-    \inference
-    {
-      \inference
-      {}
-      {
-        \matchpat{\mathsml{y :: ys}}
-        {\ttt{$\ol{y}$ :: $\ol{ys}$}}
-        {         
-          \left\{
-            \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}                
-              \ol{y} & \ttt{y} \\
-              \ol{ys} & \ttt{ys}
-            \end{tabular}
-          \right\}
-        }
-      }
-      &
-      \inference
-      {}
-      { 
-        \matchpat{\mathsml{x}}
-        {\ol{x}}
-        {
-          \{\ol{x} \mapsto \ttt{x}\}
-        }
-      }
-    }
-    {
-      \matchpat{\mathsml{(y :: ys, x)}}
-      {\ttt{($\ol{y}$ :: $\ol{ys}$, $\ol{x}$)}}
-      {
-        \Theta = 
-        \left\{                       
-          \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}
-            \ol{y} & \ttt{y} \\
-            \ol{ys} & \ttt{ys} \\
-            \ol{x} & \ttt{x}
-          \end{tabular}
-        \right\}
-      }        
-    }
-    \]
-    
-    $\matchbody{\sigma}{\Theta}
-    {a}
-    {b}
-    \equiv
-    $
-
-    \[
-    \inference
-    {}
-    {
-      \matchbody{\sigma}{\Theta}
-      {\ttt{self}(\mathcal{C}[\ol{x}][\mathbb{D}(\mathcal{C}[\ol{x}][\ol{a}])])}
-      {\ttt{cmplist} (...,...)}
-    }
-    {\sigma(\mathsf{self}) = (\ttt{cmplist}, 1)}
-    \]
-    
-FOLDR!
-
+    \begin{block}{}     
     \[
     \inference
     {
@@ -448,52 +404,447 @@ FOLDR!
       }
       {
         \subspat{\sigma}
-        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}][\ol{a}])}
-        {\ttt{($\ol{y}$ :: $\ol{ys}$, $\ol{x}$)}} 
+        {spat}
+        {mpat} 
       }
       &
       % 
-      % pat : <mpat, \Theta>
+      % pat : <mpat, \theta>
       %
       \inference
       {
       }
       {
-        \matchpat{\mathsml{(y :: ys, x)}}
-        {\ttt{($\ol{y}$ :: $\ol{ys}$, $\ol{x}$)}}
-        {\Theta}
+        \matchpat{pat}
+        {mpat}
+        {\theta}
       }    
       &
       %
-      % \sigma, \Theta |- sexp : exp
+      % \sigma, \theta |- sexp : exp
       % 
       \inference
       {}
       {
-        \matchbody{\sigma}{\Theta}
-        {sexp}
-        {exp}
+        \matchbody{\sigma}{\theta}
+        {\mathit{sexp}}
+        {\mathit{exp}}
       }
     }
     {
       \matchclause{\sigma}
       {\mathsml{(y :: ys, x) => y (cmplist (ys, x))}}
-      {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}][\ol{a}] =>
-        \ttt{self}(\mathcal{C}[\ol{x}][\mathbb{D}(\mathcal{C}[\ol{x}][\ol{a}])])
+      {
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]
+        =>
+        \mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))
       }
     }
     \]
+        \end{block}
+
   }
-  \end{narrow}
+
+\end{frame}
+
+\begin{frame}[c, fragile]
+  \frametitle{Eksempel: Foldr 2/4}
+
+  {
+    \tiny   
+
+    \textnormal{Lad} $\sigma(C) = (\diamond_1,\ \ol{a})$:
+    \\ \ \\
+
+    \fbox{$\subspat{\sigma}{spat}{mpat}$}
+
+    \ \\ \ \\ \
+
+    \begin{block}{}     
+    \[   
+      \inference
+      {}
+      {
+        \subspat{\sigma}
+        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]}
+        {(\diamond_1,\ \ol{a})[\ol{x} \ttt{ :: xs}/\diamond_1]}
+      }
+      {\sigma(C) = (\diamond_1,\ \ol{a})}
+    \]   
+    \end{block}
+    
+    \ \\ \ \\
+
+    \begin{block}{}     
+    \[
+    \inference
+    {
+      %
+      % \sigma(spat) = mpat    
+      %
+      \inference
+      {
+      }
+      {
+        \subspat{\sigma}
+        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]}
+        {\ttt{($\ol{x}$ \ttt{ :: xs}, $\ol{a}$)}}
+      }
+      &
+      % 
+      % pat : <mpat, \theta>
+      %
+      \inference
+      {
+      }
+      {
+        \matchpat{pat}
+        {mpat}
+        {\theta}
+      }    
+      &
+      %
+      % \sigma, \theta |- sexp : exp
+      % 
+      \inference
+      {}
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathit{sexp}}
+        {\mathit{exp}}
+      }
+    }
+    {
+      \matchclause{\sigma}
+      {\mathsml{(y :: ys, x) => y (cmplist (ys, x))}}
+      {
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]
+        =>
+        \mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))
+      }
+    }
+    \]
+  \end{block}
+  }
 
 \end{frame}
 
 
-\begin{frame}[c]
+
+\begin{frame}[c, fragile]
+  \frametitle{Eksempel: Foldr 3/4}
+
+  {
+    \tiny   
+
+    \textnormal{Lad} $\sigma(C) = (\diamond_1,\ \ol{a})$:
+    \\ \ \\
+
+    \fbox{$\matchpat{pat}{mpat}{\theta}$}
+
+    \ \\ \ \\ \
+
+    \begin{block}{}         
+    \[
+    \inference
+    {
+      \inference
+      {}
+      {
+        \matchpat{\mathsml{y :: ys}}
+        {\ttt{$\ol{x}$ :: xs}}
+        {         
+          \left\{
+            \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}                
+              \ol{x} & \ttt{y}
+            \end{tabular}
+          \right\}
+        }
+      }
+      &
+      \inference
+      {}
+      { 
+        \matchpat{\mathsml{x}}
+        {\ol{a}}
+        {
+          \{\ol{a} \mapsto \ttt{x}\}
+        }
+      }
+    }
+    {
+      \matchpat{\mathsml{(y :: ys, x)}}
+      {\ttt{($\ol{x}$ :: xs, $\ol{a}$)}}
+      {
+        \theta = 
+        \left\{                       
+          \begin{tabular}{Mc@{$\ \mapsto\ $}Ml}
+            \ol{x} & \ttt{y} \\
+            \ol{a} & \ttt{x}
+          \end{tabular}
+        \right\}
+      }        
+    }
+    \]
+    \end{block}
+
+    Bemærk \texttt{xs $\mapsto$ ys}
+
+    \ \\ \ \\         
+
+    \begin{block}{}          
+    \[
+    \inference
+    {
+      %
+      % \sigma(spat) = mpat    
+      %
+      \inference
+      {
+      }
+      {
+        \subspat{\sigma}
+        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]}
+        {\ttt{($\ol{x}$ \ttt{ :: xs}, $\ol{a}$)}}
+      }
+      &
+      % 
+      % pat : <mpat, \theta>
+      %
+      \inference
+      {
+        \vdots
+      }
+      {
+        \matchpat{\mathsml{(y :: ys, x)}}
+        {\ttt{($\ol{x}$ :: xs, $\ol{a}$)}}
+        {\theta}
+      }        
+      \\
+      %
+      % \sigma, \theta |- sexp : exp
+      % 
+      \inference
+      {}
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathit{sexp}}
+        {\mathit{exp}}
+      }
+    }
+    {
+      \matchclause{\sigma}
+      {\mathsml{(y :: ys, x) => y (cmplist (ys, x))}}
+      {
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]
+        =>
+        \mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))
+      }
+    }
+    \]
+    \end{block}
+  }
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]
+  \frametitle{Eksempel: Foldr 4/4}
+
+  {
+    \tiny   
+
+    \textnormal{Lad} $\sigma(C) = (\diamond_1,\ \ol{a})$:
+    
+    \ \\ \ \\ \
+
+    \begin{tabular}{p{20em}r}
+      \fbox{$\matchbody{\sigma}{\theta}
+        {\mathit{sexp}}
+        {\mathit{exp}}
+        \equiv       
+        $}    
+      &
+      $\sigma(\mathcal{C}) = (\diamond_1, \ol{a}) : \dagger$ \\
+      & $\sigma(\mathtt{self}) = (\mathtt{cmplist}, 1) : \ddagger$\\
+      & $\sigma(\mathbb{D}) = (\mathit{pat}, \mathit{exp}) = 
+    (\mathsml{((a,_), b)}, \mathsml{a b}) : \dagger\dagger$      
+    \end{tabular} 
+
+        \ \\ \ \\ \
+
+    \begin{block}{}          
+      \begin{narrow}{-2em}{0em}       
+    \[
+    \inference
+    {
+      \inference
+      {               
+          \inference
+          {               
+            \vdots
+          }
+          {
+            \matchbody{\sigma}{\theta}
+            {(\diamond_1, \ol{a})[\ol{x}/\diamond_1]}
+            {\mathsml{(y, x)}}
+          }
+      }
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathcal{C}[\ol{x}]}
+        {\mathsml{(y, x)}}
+      }      
+      {$\dagger$}
+      & 
+      \inference
+      {      
+        \inference
+        {               
+          \inference
+          {               
+            \vdots
+          }
+          {
+            \matchbody{\sigma}{\theta}
+            {(\diamond_1, \ol{a})[\ttt{xs}/\diamond_1]}
+            {\mathsml{(ys, x)}}
+          }
+        }
+        {
+          \matchbody{\sigma}{\theta}
+          {\mathcal{C}[\ttt{xs}]}
+          {\mathsml{(ys, x)}}          
+        } 
+        {$\dagger$}
+      }
+      {
+        \matchbody{\sigma}{\theta}
+        {\ttt{self}(\mathcal{C}[\ttt{xs}])}
+        {(\mathtt{cmplist}\  x_1)[\mathsml{(ys, x)}/x_1]}
+      }    
+      {$\ddagger$}  
+    }
+    {
+      \matchbody{\sigma}{\theta}
+      {\mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))}
+      {\mathsml{a b}[(\mathsml(y, x), \mathsml{cmplist (ys, x)})/\mathsml{((a,_), b)}]}
+    }
+    {\dagger\dagger}
+    \]
+    \end{narrow}
+    \end{block}   
+    \begin{block}{}     
+    \[
+    \inference
+    {
+      %
+      % \sigma(spat) = mpat    
+      %
+      \inference
+      {
+      }
+      {
+        \subspat{\sigma}
+        {\mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]}
+        {\ttt{($\ol{x}$ \ttt{ :: xs}, $\ol{a}$)}}
+      }
+      &
+      % 
+      % pat : <mpat, \theta>
+      %
+      \inference
+      {
+        \vdots
+      }
+      {
+        \matchpat{\mathsml{(y :: ys, x)}}
+        {\ttt{($\ol{x}$ :: xs, $\ol{a}$)}}
+        {\theta}
+      }        
+      \\
+      %
+      % \sigma, \theta |- sexp : exp
+      % 
+      \inference
+      {\vdots}
+      {
+        \matchbody{\sigma}{\theta}
+        {\mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))}
+        {\mathsml{y (cmplist (ys, x))}}
+      }
+    }
+    {
+      \matchclause{\sigma}
+      {\mathsml{(y :: ys, x) => y (cmplist (ys, x))}}
+      {
+        \mathcal{C}[\ol{x}\ \ttt{::}\ \ttt{xs}]
+        =>
+        \mathbb{D}(\mathcal{C}[\ol{x}],\ \ttt{self}(\mathcal{C}[\ttt{xs}]))
+      }
+    }
+    \]
+    \end{block}
+  }
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]
+  \frametitle{Fejl i normalform}
+
+  \tiny
+  
+    \begin{block}{Eksempel: (foo [1,2,3])}
+    \begin{sml}
+fun foo (x :: y :: ys) = x + 41 :: foo ( y :: ys)
+  | foo _ = nil      
+    \end{sml}
+
+Smider sidste element væk.
+
+Normaliseres til 
+\begin{sml}  
+fun foo (x :: c) = x + 41 :: foo c
+  | foo x = nil
+\end{sml}
+
+Smider IKKE sidste element væk.    
+  \end{block}
+
+  \smlinline{y :: ys} generaliseres. Fix: Skal kun generaliseres når alle
+  konstruktørene er representeret (her mangler tilfældet nil). \\ \ \\
+  
+  
+  Første eksempel er normalform i sig selv. Dette er fint eksempel på hvorfor
+  map reglerne kræver en konkret variabel \texttt{xs} og ikke $\ol{xs}$ da
+  $\ol{xs}$ ville matche \texttt{y :: ys} og ovenstående ville blive omskrevet
+  til en map.
+  
+\end{frame}
+
+
+\begin{frame}[c, fragile]
   \frametitle{Konklusion}
 
-Vi valgte at lave vores eget.
-  Det kan være svært at sætte sig ind i andre frameworks på "`kort tid"'.
+  \footnotesize
+
+  \begin{itemize}
+  \item Eksisterende miljøer/frameworks kan ikke tilbyde samme funktionalitet
+
+  \item Der eksisterer ikke nogle værktøjer til SML
+    \begin{itemize}
+    \item Dokumentations væktøjer undtaget.
+    \end{itemize}
+
+  \item Simple væktøjer (se implementerede apps) gør det mere "`behageligt"' og
+    "`effektivt"' at kode SML.
+
+
+  \item Turtledove er platforms uafhængigt.
+
+
+  \end{itemize}
   
 
 \end{frame}
