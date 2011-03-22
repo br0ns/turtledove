@@ -103,9 +103,34 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
 \frame[plain]{\titlepage}
 
 
-\begin{frame}
-  \frametitle{Oversigt}
+\begin{frame}[c]
+  \frametitle{Program}
 
+  \begin{itemize}
+  \item Introduktion.
+  \item Regler for \ttt{exists} og \ttt{all}.
+  \item Eksempel: \ttt{member} er en \ttt{exists}-instans.
+  \item Afrunding.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Introduktion}
+
+  Ideen bag Turtledove
+    \begin{enumerate}
+    \item Et system til at udvikle front-end-uafhængige
+      refaktoreringer og værktøjer til SML.
+    \item Et værktøj til at opdage og omskrive funktioner i henhold til et antal
+      foruddefinerede skabeloner.
+    \end{enumerate}
+  Nærmeste "`konkurrent"': HaRe
+  \begin{enumerate}
+  \item Implementerer mange forskellige refaktoreringer.
+  \item Kun "`simple"' refaktoreringer.
+  \item Layoutbevarende.
+  \end{enumerate}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -124,8 +149,8 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
       \Downarrow \\
       %
       \begin{eqnalign}[lcl]
-        \mathcal{C}[\ttt{xs}] &=>& \ttt{List.exists (fn x => $\mathbb{D}(
-          \mathcal{C}[$x$])$)} \ \ttt{xs} \\
+        \mathcal{C}[\ttt{xs}] &=>& \ttt{List.exists (fn a => $\mathbb{D}(
+          \mathcal{C}[$a$])$)} \ \ttt{xs} \\
       \end{eqnalign}
     \end{eqnarray*}
   \end{block}
@@ -142,8 +167,8 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
       \Downarrow \\
       %
       \begin{eqnalign}[lcl]
-        \mathcal{C}[\ttt{xs}] &=>& \ttt{List.all (fn x => $\mathbb{D}(
-          \mathcal{C}[$x$])$)} \ \ttt{xs} \\
+        \mathcal{C}[\ttt{xs}] &=>& \ttt{List.all (fn a => $\mathbb{D}(
+          \mathcal{C}[$a$])$)} \ \ttt{xs} \\
       \end{eqnalign}
     \end{eqnarray*}
   \end{block}
@@ -339,13 +364,15 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
     }
     \]
   \end{block}
+  \tiny
+  Og vi identificerer \ttt{xs} med \ttt{ys}.
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Eksempel --- Omskrivning}
 
-  \center\tiny Lad $\theta = \{\ol{a} \mapsto \ttt{x}, \ol{x} \mapsto
-  \ttt{y}\}$, og husk at \ttt{xs} identificeres med \ttt{ys}.
+  \tiny Lad $\theta = \{\ol{a} \mapsto \ttt{x}, \ol{x} \mapsto
+  \ttt{y}\}$ og husk at vi identificerer \ttt{xs} med \ttt{ys}.
   \begin{block}{}
     \tiny
     \[
@@ -437,14 +464,14 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
           {\sigma}
           {\theta}
           {\ttt{($\ol{a}$, $\diamond_1$)$[$xs$/\diamond_1]$}}
-          {\ttt{(x, y)}}
+          {\ttt{(x, ys)}}
         }
       }
       {
         \matchbody
         {\sigma}
         {\theta}
-        {\ttt{$\mathcal{C}[$xs$]$}}
+        {\ttt{$\mathcal{C}[\ttt{xs}]$}}
         {\ttt{(x, ys)}}
       }
     }
@@ -452,7 +479,7 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
       \matchbody
       {\sigma}
       {\theta}
-      {\ttt{self$(\mathcal{C}[$xs$])$}}
+      {\ttt{self$(\mathcal{C}[\ttt{xs}])$}}
       {\ttt{$($member x$)[$(x, ys)$/$x$]$}}
     }
     \]
@@ -467,14 +494,14 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
       \matchbody
       {\sigma}
       {\theta}
-      {\ttt{$\mathbb{D}(\mathcal{C}[\ol{x}])$ orelse self$(\mathcal{C}[$xs$])$}}
+      {\ttt{$\mathbb{D}(\mathcal{C}[\ol{x}])$ orelse self$(\mathcal{C}[\ttt{xs}])$}}
       {\ttt{x = y orelse member (x, ys)}}
     }
     \]
   \end{block}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Eksempel --- Resultat}
 
   \begin{block}{}
@@ -492,8 +519,8 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
       \begin{eqnalign}[lcl]
         \color{purple}
         \mathcal{C}[\ttt{xs}] &\color{purple}=>&
-        \color{purple}\ttt{List.exists (fn x => $\mathbb{D}(
-          \mathcal{C}[$x$])$)} \ \ttt{xs} \\
+        \color{purple}\ttt{List.exists (fn a => $\mathbb{D}(
+          \mathcal{C}[$a$])$)} \ \ttt{xs} \\
       \end{eqnalign}
     \end{eqnarray*}
   \end{block}
@@ -526,32 +553,32 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
               \matchbody
               {\sigma}
               {\theta}
-              {\ttt{x}}
-              {\ttt{y}}
+              {\ttt{a}}
+              {\ttt{a}}
             }
           }
           {
             \matchbody
             {\sigma}
             {\theta}
-            {\ttt{($\ol{a}$, $\diamond_1$)$[\ttt{x}/\diamond_1]$}}
-            {\ttt{(x, y)}}
+            {\ttt{($\ol{a}$, $\diamond_1$)$[\ttt{a}/\diamond_1]$}}
+            {\ttt{(x, a)}}
           }
         }
         {
           \matchbody
           {\sigma}
           {\theta}
-          {\mathcal{C}[\ttt{x}]}
-          {\ttt{(x, y)}}
+          {\mathcal{C}[\ttt{a}]}
+          {\ttt{(x, a)}}
         }
       }
       {
         \matchbody
         {\sigma}
         {\theta}
-        {\mathbb{D}(\mathcal{C}[\ttt{x}])}
-        {\ttt{$($v = w$)[$(x, y)$/$(v, w)$]$}}
+        {\mathbb{D}(\mathcal{C}[\ttt{a}])}
+        {\ttt{$($v = w$)[$(x, a)$/$(v, w)$]$}}
       } &
       \inference
       {
@@ -568,18 +595,67 @@ escapeinside={(@}{@)}          % if you want to add a comment within your code
       \matchbody
       {\sigma}
       {\theta}
-      {\ttt{List.exists (fn x => $\mathbb{D}(\mathcal{C}[$x$])$)} \ \ttt{xs}}
-      {\ttt{List.exists (fn y => x = y) ys}}
+      {\ttt{List.exists (fn a => $\mathbb{D}(\mathcal{C}[$a$])$)} \ \ttt{xs}}
+      {\ttt{List.exists (fn a => x = a) ys}}
     }
     \]
+  \end{block}
+  \begin{block}{}
+    \begin{sml}
+      fun member (x, ys) = List.exists (fn a => x = a) ys
+    \end{sml}
   \end{block}
 
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Fejl i normalform}
+
+  \begin{block}{}
+    \begin{sml}
+      fun foo (x :: y :: ys) = x + 42 :: foo (y :: ys)
+        | foo _ = nil
+    \end{sml}
+  \end{block}
+  \begin{block}{}
+    \begin{sml}
+      fun foo (x :: c) = x + 42 :: foo c
+        | foo x = nil
+    \end{sml}
+  \end{block}
+  Løsning: Sørg for at alle konstruktører fra datatypen eksisterer før et
+  delmønster generaliseres.
+  \begin{block}{}
+    \begin{sml}
+      fun foo (x :: y :: ys) = x + 42 :: foo (y :: ys)
+        | foo (x :: nil) = x + 42 :: foo nil
+        | foo _ = nil
+    \end{sml}
+  \end{block}
+\end{frame}
 
 \begin{frame}
-  \frametitle{Stratego}
+  \frametitle{Afrunding}
 
+  \begin{itemize}
+  \item Forholdsvist let at lave simple værktøjer:
+    \begin{itemize}
+    \item Udtræk "`todo"'-lister.
+    \item Omdøb variable.
+    \item Auto-completion.
+    \item Gå til definition.
+    \item Indfør ekstra funktionparameter.
+    \item Generér stubimplementering fra signatur.
+    \item \ldots
+    \end{itemize}
+  \item Svært at lave skabelonbaseret omkskrivninger:
+    \begin{itemize}
+    \item Semantikbevarelse.
+    \item Det samme program kan skrives på mange måder. Skabeloner skal ramme en
+      balance hvor flest mulige programmer med samme betydning dækkes, men ingen
+      med forskellig.
+    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \end{document}
